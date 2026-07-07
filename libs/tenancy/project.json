@@ -1,0 +1,19 @@
+{
+  "name": "tenancy",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/tenancy/src",
+  "projectType": "library",
+  "tags": ["scope:tenancy", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/tenancy",
+        "main": "libs/tenancy/src/index.ts",
+        "tsConfig": "libs/tenancy/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
