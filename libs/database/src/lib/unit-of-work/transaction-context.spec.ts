@@ -1,5 +1,10 @@
+import { IDomainEvent } from '@abms/kernel';
 import type { EntityManager } from 'typeorm';
 import { TypeOrmTransactionContext } from './transaction-context';
+
+function fakeEvent(eventName: string): IDomainEvent {
+  return { eventId: eventName, occurredAt: new Date(), eventName, aggregateId: 'agg-1' };
+}
 
 describe('TypeOrmTransactionContext', () => {
   it('exposes the given manager and a generated correlation id', () => {
@@ -20,5 +25,20 @@ describe('TypeOrmTransactionContext', () => {
     const b = new TypeOrmTransactionContext(manager);
 
     expect(a.correlationId).not.toBe(b.correlationId);
+  });
+
+  it('starts with no buffered events', () => {
+    const ctx = new TypeOrmTransactionContext({} as EntityManager);
+
+    expect(ctx.events).toHaveLength(0);
+  });
+
+  it('accumulates events added during the transaction, in order', () => {
+    const ctx = new TypeOrmTransactionContext({} as EntityManager);
+
+    ctx.addEvent(fakeEvent('first'));
+    ctx.addEvent(fakeEvent('second'));
+
+    expect(ctx.events.map((e) => e.eventName)).toEqual(['first', 'second']);
   });
 });
