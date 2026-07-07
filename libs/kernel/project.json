@@ -1,0 +1,19 @@
+{
+  "name": "kernel",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/kernel/src",
+  "projectType": "library",
+  "tags": ["scope:kernel", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/kernel",
+        "main": "libs/kernel/src/index.ts",
+        "tsConfig": "libs/kernel/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
