@@ -35,7 +35,8 @@
       "@abms/core-http": ["./libs/core/http/src/index.ts"],
       "@abms/core-exceptions": ["./libs/core/exceptions/src/index.ts"],
       "@abms/core-security": ["./libs/core/security/src/index.ts"],
-      "@abms/tenancy": ["./libs/tenancy/src/index.ts"]
+      "@abms/tenancy": ["./libs/tenancy/src/index.ts"],
+      "@abms/database": ["./libs/database/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
