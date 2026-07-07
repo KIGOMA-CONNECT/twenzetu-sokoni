@@ -1,0 +1,19 @@
+{
+  "name": "core-security",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/security/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/core/security",
+        "main": "libs/core/security/src/index.ts",
+        "tsConfig": "libs/core/security/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

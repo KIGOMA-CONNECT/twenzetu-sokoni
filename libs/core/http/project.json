@@ -1,0 +1,19 @@
+{
+  "name": "core-http",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/core/http/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/core/http",
+        "main": "libs/core/http/src/index.ts",
+        "tsConfig": "libs/core/http/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
