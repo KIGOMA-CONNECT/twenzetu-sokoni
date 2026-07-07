@@ -38,6 +38,11 @@ testem.log
 .DS_Store
 Thumbs.db
 
+# environment secrets (see .env.example for the template)
+.env
+.env.local
+.env.*.local
+
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs

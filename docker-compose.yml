@@ -1,0 +1,27 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: abms-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_BOOTSTRAP_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_BOOTSTRAP_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-abms}
+      DB_OWNER_USER: ${DB_OWNER_USER:-abms_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:-abms_owner_dev_password}
+      DB_RUNTIME_USER: ${DB_RUNTIME_USER:-abms_runtime}
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-abms_runtime_dev_password}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - abms-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_BOOTSTRAP_USER:-postgres} -d ${DB_NAME:-abms}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+volumes:
+  abms-postgres-data:
