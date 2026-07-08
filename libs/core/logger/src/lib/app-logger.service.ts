@@ -1,4 +1,4 @@
-import { Injectable, LoggerService } from '@nestjs/common';
+import { Injectable, LoggerService, Optional } from '@nestjs/common';
 import { AppConfigService } from '@abms/core-config';
 import pino from 'pino';
 
@@ -9,7 +9,7 @@ export class AppLoggerService implements LoggerService {
   private readonly logger: pino.Logger;
   private readonly enrichers: ContextEnricher[] = [];
 
-  public constructor(config: AppConfigService, loggerInstance?: pino.Logger) {
+  public constructor(config: AppConfigService, @Optional() loggerInstance?: pino.Logger) {
     if (loggerInstance) {
       this.logger = loggerInstance;
       return;

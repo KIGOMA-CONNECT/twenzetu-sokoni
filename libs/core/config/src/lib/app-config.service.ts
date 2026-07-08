@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { AppEnv, NodeEnv, parseEnv } from './env.schema';
 
 export interface AppConfig {
@@ -28,7 +28,7 @@ export interface LoggingConfig {
 export class AppConfigService {
   private readonly env: AppEnv;
 
-  public constructor(source: NodeJS.ProcessEnv = process.env) {
+  public constructor(@Optional() source: NodeJS.ProcessEnv = process.env) {
     this.env = parseEnv(source);
   }
 
