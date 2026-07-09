@@ -38,7 +38,10 @@
       "@abms/tenancy": ["./libs/tenancy/src/index.ts"],
       "@abms/database": ["./libs/database/src/index.ts"],
       "@abms/cqrs": ["./libs/cqrs/src/index.ts"],
-      "@abms/organization-domain": ["./libs/organization/domain/src/index.ts"]
+      "@abms/organization-domain": ["./libs/organization/domain/src/index.ts"],
+      "@abms/organization-infrastructure": [
+        "./libs/organization/infrastructure/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]

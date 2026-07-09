@@ -1,0 +1,15 @@
+{
+  "name": "@abms/organization-infrastructure",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "typeorm": "^1.0.0",
+    "@abms/kernel": "0.0.1",
+    "@abms/database": "0.0.1",
+    "@abms/organization-domain": "0.0.1"
+  }
+}

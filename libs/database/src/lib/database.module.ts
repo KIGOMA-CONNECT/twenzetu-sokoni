@@ -1,8 +1,10 @@
 import { AppConfigModule, AppConfigService } from '@abms/core-config';
+import { TenancyModule } from '@abms/tenancy';
 import { DynamicModule, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { buildDataSourceOptions } from './config/build-data-source-options';
+import { TenantAwareUnitOfWork } from './unit-of-work/tenant-aware-unit-of-work';
 
 @Module({})
 export class DatabaseModule {
@@ -13,6 +15,7 @@ export class DatabaseModule {
       module: DatabaseModule,
       imports: [
         AppConfigModule,
+        TenancyModule,
         TypeOrmModule.forRootAsync({
           imports: [AppConfigModule],
           inject: [AppConfigService],
@@ -24,7 +27,8 @@ export class DatabaseModule {
             ),
         }),
       ],
-      exports: [TypeOrmModule],
+      providers: [TenantAwareUnitOfWork],
+      exports: [TypeOrmModule, TenantAwareUnitOfWork],
     };
   }
 }

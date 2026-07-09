@@ -1,0 +1,19 @@
+{
+  "name": "organization-infrastructure",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/organization/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:organization", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/organization/infrastructure",
+        "main": "libs/organization/infrastructure/src/index.ts",
+        "tsConfig": "libs/organization/infrastructure/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

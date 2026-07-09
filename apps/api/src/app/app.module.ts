@@ -2,6 +2,7 @@ import { AppConfigModule } from '@abms/core-config';
 import { AppLoggerModule } from '@abms/core-logger';
 import { CqrsModule } from '@abms/cqrs';
 import { DatabaseModule } from '@abms/database';
+import { ORGANIZATION_ENTITIES } from '@abms/organization-infrastructure';
 import { TenancyModule, TenantMiddleware } from '@abms/tenancy';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { HealthModule } from './health/health.module';
@@ -11,7 +12,7 @@ import { HealthModule } from './health/health.module';
     AppConfigModule,
     AppLoggerModule,
     TenancyModule,
-    DatabaseModule.forRoot([]),
+    DatabaseModule.forRoot([...ORGANIZATION_ENTITIES]),
     CqrsModule,
     HealthModule,
   ],

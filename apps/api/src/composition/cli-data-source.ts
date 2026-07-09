@@ -14,7 +14,10 @@ export default new DataSource(
     config.database,
     { username: config.database.ownerUser, password: config.database.ownerPassword },
     {
-      migrations: ['libs/database/src/lib/migrations/*.migration.ts'],
+      migrations: [
+        'libs/database/src/lib/migrations/*.migration.ts',
+        'libs/organization/infrastructure/src/lib/migrations/*.migration.ts',
+      ],
     },
   ),
 );
