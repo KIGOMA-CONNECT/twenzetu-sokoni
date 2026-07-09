@@ -41,6 +41,9 @@
       "@abms/organization-domain": ["./libs/organization/domain/src/index.ts"],
       "@abms/organization-infrastructure": [
         "./libs/organization/infrastructure/src/index.ts"
+      ],
+      "@abms/organization-application": [
+        "./libs/organization/application/src/index.ts"
       ]
     }
   },
