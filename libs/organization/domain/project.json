@@ -1,0 +1,19 @@
+{
+  "name": "organization-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/organization/domain/src",
+  "projectType": "library",
+  "tags": ["scope:organization", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/organization/domain",
+        "main": "libs/organization/domain/src/index.ts",
+        "tsConfig": "libs/organization/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

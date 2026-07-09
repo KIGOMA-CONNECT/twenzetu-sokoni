@@ -73,6 +73,13 @@ export default [
                             sourceTag: "scope:cqrs",
                             onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs"]
                         },
+                        // Bounded-context module libraries (e.g. Organization) may depend
+                        // on any foundation library plus their own sibling libs, but not
+                        // on other bounded-context modules, keeping modules independent.
+                        {
+                            sourceTag: "scope:organization",
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs", "scope:organization"]
+                        },
                         {
                             sourceTag: "scope:api",
                             onlyDependOnLibsWithTags: ["*"]
