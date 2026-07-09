@@ -10,11 +10,11 @@
     "format": "nx format:write",
     "format:check": "nx format:check",
     "graph": "nx graph",
-    "migration:generate": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:generate -d libs/database/src/lib/cli-data-source.ts",
+    "migration:generate": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:generate -d apps/api/src/composition/cli-data-source.ts",
     "migration:create": "typeorm-ts-node-commonjs migration:create",
-    "migration:run": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:run -d libs/database/src/lib/cli-data-source.ts",
-    "migration:revert": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:revert -d libs/database/src/lib/cli-data-source.ts",
-    "seed:run": "cross-env TS_NODE_PROJECT=tsconfig.cli.json ts-node -r tsconfig-paths/register libs/database/src/lib/seed/run-seeders.ts"
+    "migration:run": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:run -d apps/api/src/composition/cli-data-source.ts",
+    "migration:revert": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:revert -d apps/api/src/composition/cli-data-source.ts",
+    "seed:run": "cross-env TS_NODE_PROJECT=tsconfig.cli.json ts-node -r tsconfig-paths/register apps/api/src/composition/seed-runner.ts"
   },
   "private": true,
   "dependencies": {

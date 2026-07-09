@@ -3,6 +3,7 @@ export * from './lib/database.module';
 export * from './lib/entity/tenant-aware.entity';
 export * from './lib/migrations/support/rls-helper';
 export * from './lib/repository/typeorm.repository.base';
+export * from './lib/seed/run-seeders';
 export * from './lib/seed/seeder-runner';
 export * from './lib/seed/seeder.interface';
 export * from './lib/seed/seeders.registry';

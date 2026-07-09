@@ -7,7 +7,14 @@ import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/c
 import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [AppConfigModule, AppLoggerModule, TenancyModule, DatabaseModule, CqrsModule, HealthModule],
+  imports: [
+    AppConfigModule,
+    AppLoggerModule,
+    TenancyModule,
+    DatabaseModule.forRoot([]),
+    CqrsModule,
+    HealthModule,
+  ],
 })
 export class AppModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {

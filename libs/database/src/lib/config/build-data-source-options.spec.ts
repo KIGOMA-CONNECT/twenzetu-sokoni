@@ -57,4 +57,27 @@ describe('buildDataSourceOptions', () => {
 
     expect(options.synchronize).toBe(false);
   });
+
+  it('defaults to no entities and the database library\'s own migrations glob', () => {
+    const options = buildDataSourceOptions(fakeDatabaseConfig(), {
+      username: 'abms_owner',
+      password: 'owner-secret',
+    });
+
+    expect(options.entities).toEqual([]);
+    expect(options.migrations).toEqual(['libs/database/src/lib/migrations/*.migration.ts']);
+  });
+
+  it('lets a composition root override entities and migrations', () => {
+    class FakeEntity {}
+
+    const options = buildDataSourceOptions(
+      fakeDatabaseConfig(),
+      { username: 'abms_owner', password: 'owner-secret' },
+      { entities: [FakeEntity], migrations: ['libs/modules/organization/**/*.migration.ts'] },
+    );
+
+    expect(options.entities).toEqual([FakeEntity]);
+    expect(options.migrations).toEqual(['libs/modules/organization/**/*.migration.ts']);
+  });
 });

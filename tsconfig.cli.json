@@ -7,5 +7,5 @@
   "ts-node": {
     "require": ["tsconfig-paths/register"]
   },
-  "include": ["libs/database/src/lib/cli-data-source.ts", "libs/database/src/lib/seed/run-seeders.ts"]
+  "include": ["apps/api/src/composition/cli-data-source.ts", "apps/api/src/composition/seed-runner.ts"]
 }
