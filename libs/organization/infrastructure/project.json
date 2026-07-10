@@ -14,6 +14,14 @@
         "tsConfig": "libs/organization/infrastructure/tsconfig.lib.json",
         "assets": []
       }
+    },
+    "test-integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/organization-infrastructure-integration"],
+      "options": {
+        "jestConfig": "libs/organization/infrastructure/jest.integration.config.cts",
+        "runInBand": true
+      }
     }
   }
 }
