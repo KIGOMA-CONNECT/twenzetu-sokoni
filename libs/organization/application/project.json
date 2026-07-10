@@ -14,6 +14,11 @@
         "tsConfig": "libs/organization/application/tsconfig.lib.json",
         "assets": []
       }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
     }
   }
 }

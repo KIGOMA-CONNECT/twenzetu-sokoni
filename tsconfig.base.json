@@ -44,7 +44,8 @@
       ],
       "@abms/organization-application": [
         "./libs/organization/application/src/index.ts"
-      ]
+      ],
+      "@abms/organization-api": ["./libs/organization/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

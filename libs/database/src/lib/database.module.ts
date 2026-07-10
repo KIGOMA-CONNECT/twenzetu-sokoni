@@ -1,11 +1,14 @@
 import { AppConfigModule, AppConfigService } from '@abms/core-config';
 import { TenancyModule } from '@abms/tenancy';
-import { DynamicModule, Module } from '@nestjs/common';
+import { DynamicModule, Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { buildDataSourceOptions } from './config/build-data-source-options';
 import { TenantAwareUnitOfWork } from './unit-of-work/tenant-aware-unit-of-work';
 
+// Global, matching AppConfigModule/AppLoggerModule/TenancyModule: every future
+// business module needs DB access, so none should have to re-import this.
+@Global()
 @Module({})
 export class DatabaseModule {
   // entities is supplied by the composition root (apps/api), which aggregates every
