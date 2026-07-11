@@ -25,8 +25,8 @@ export class AppModule implements NestModule {
       .apply(TenantMiddleware)
       .exclude(
         { path: 'health', method: RequestMethod.ALL },
-        { path: 'health/(.*)', method: RequestMethod.ALL },
+        { path: 'health/*path', method: RequestMethod.ALL },
       )
-      .forRoutes('*');
+      .forRoutes('*path');
   }
 }
