@@ -5,6 +5,7 @@ import { EntityId, TenantId } from '@abms/kernel';
 import { OrgUnit } from '@abms/organization-domain';
 import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { DataSource } from 'typeorm';
+import { ORGANIZATION_ENTITIES } from '../organization-entities';
 import { TypeOrmOrgUnitRepository } from './typeorm-org-unit.repository';
 
 const TEST_TENANT_ID = '33333333-3333-4333-8333-333333333333';
@@ -47,6 +48,7 @@ describe('Organization closure-table correctness (integration)', () => {
       password: config.database.runtimePassword,
       ssl: config.database.ssl ? { rejectUnauthorized: false } : false,
       logging: false,
+      entities: ORGANIZATION_ENTITIES,
     });
     await runtimeDataSource.initialize();
 
@@ -67,13 +69,15 @@ describe('Organization closure-table correctness (integration)', () => {
   });
 
   afterAll(async () => {
-    await ownerDataSource.query(`DELETE FROM "org_unit_closure" WHERE "tenant_id" = $1`, [
-      TEST_TENANT_ID,
-    ]);
-    await ownerDataSource.query(`DELETE FROM "org_unit" WHERE "tenant_id" = $1`, [TEST_TENANT_ID]);
-    await ownerDataSource.query(`DELETE FROM "org_unit_type" WHERE "tenant_id" = $1`, [
-      TEST_TENANT_ID,
-    ]);
+    // FORCE ROW LEVEL SECURITY applies to the owner role too, not just the runtime role —
+    // the tenant GUC must be set within the same transaction before these DELETEs, or RLS
+    // silently filters them to zero rows affected (see rls-helper.ts's inline comment).
+    await ownerDataSource.transaction(async (manager) => {
+      await manager.query(`SELECT set_config('app.tenant_id', $1, true)`, [TEST_TENANT_ID]);
+      await manager.query(`DELETE FROM "org_unit_closure" WHERE "tenant_id" = $1`, [TEST_TENANT_ID]);
+      await manager.query(`DELETE FROM "org_unit" WHERE "tenant_id" = $1`, [TEST_TENANT_ID]);
+      await manager.query(`DELETE FROM "org_unit_type" WHERE "tenant_id" = $1`, [TEST_TENANT_ID]);
+    });
     await ownerDataSource.destroy();
     await runtimeDataSource.destroy();
   });
@@ -96,12 +100,15 @@ describe('Organization closure-table correctness (integration)', () => {
   }
 
   async function fetchClosureRows(): Promise<ClosureRow[]> {
-    return ownerDataSource.query(
-      `SELECT "ancestor_id", "descendant_id", "depth" FROM "org_unit_closure"
-       WHERE "tenant_id" = $1
-       ORDER BY "ancestor_id", "descendant_id"`,
-      [TEST_TENANT_ID],
-    );
+    return ownerDataSource.transaction(async (manager) => {
+      await manager.query(`SELECT set_config('app.tenant_id', $1, true)`, [TEST_TENANT_ID]);
+      return manager.query(
+        `SELECT "ancestor_id", "descendant_id", "depth" FROM "org_unit_closure"
+         WHERE "tenant_id" = $1
+         ORDER BY "ancestor_id", "descendant_id"`,
+        [TEST_TENANT_ID],
+      );
+    });
   }
 
   function pairSet(rows: ClosureRow[]): Set<string> {
