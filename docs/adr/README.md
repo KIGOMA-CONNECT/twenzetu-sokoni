@@ -36,3 +36,4 @@ three decision tiers.
 | [0001](./0001-shared-schema-row-level-security-multi-tenancy.md) | Shared-schema multi-tenancy via PostgreSQL Row-Level Security | Accepted |
 | [0002](./0002-nx-monorepo-tooling.md) | Nx as the monorepo tool | Accepted |
 | [0003](./0003-adjacency-list-plus-closure-table-for-organization-hierarchy.md) | Adjacency list + closure table for the Organization hierarchy | Accepted |
+| [0004](./0004-org-unit-type-profiles-and-shared-financial-value-objects.md) | Org unit type profiles and shared financial value objects | Accepted |
