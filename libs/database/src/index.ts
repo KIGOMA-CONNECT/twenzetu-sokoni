@@ -1,5 +1,6 @@
 export * from './lib/config/build-data-source-options';
 export * from './lib/database.module';
+export * from './lib/entity/global.entity';
 export * from './lib/entity/tenant-aware.entity';
 export * from './lib/migrations/support/rls-helper';
 export * from './lib/repository/typeorm.repository.base';
@@ -7,6 +8,7 @@ export * from './lib/seed/run-seeders';
 export * from './lib/seed/seeder-runner';
 export * from './lib/seed/seeder.interface';
 export * from './lib/seed/seeders.registry';
+export * from './lib/unit-of-work/global-unit-of-work';
 export * from './lib/unit-of-work/tenant-aware-unit-of-work';
 export * from './lib/unit-of-work/tenant-context-missing.exception';
 export * from './lib/unit-of-work/transaction-context';

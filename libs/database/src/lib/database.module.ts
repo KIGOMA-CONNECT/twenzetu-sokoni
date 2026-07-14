@@ -1,13 +1,21 @@
 import { AppConfigModule, AppConfigService } from '@abms/core-config';
-import { TenancyModule } from '@abms/tenancy';
 import { DynamicModule, Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DataSourceOptions } from 'typeorm';
 import { buildDataSourceOptions } from './config/build-data-source-options';
+import { GlobalUnitOfWork } from './unit-of-work/global-unit-of-work';
 import { TenantAwareUnitOfWork } from './unit-of-work/tenant-aware-unit-of-work';
 
 // Global, matching AppConfigModule/AppLoggerModule/TenancyModule: every future
 // business module needs DB access, so none should have to re-import this.
+//
+// Deliberately does NOT import TenancyModule: TenancyModule.forRoot() is registered
+// once by the composition root (apps/api). Importing it here too would create a
+// second, competing @Global() registration of AsyncLocalTenantContextStore — two
+// live instances of the same AsyncLocalStorage wrapper, causing TenantAwareUnitOfWork
+// to silently read from the wrong one. TenantAwareUnitOfWork only needs
+// AsyncLocalTenantContextStore to already be global from wherever the composition
+// root registers it — see ADR-0005.
 @Global()
 @Module({})
 export class DatabaseModule {
@@ -18,7 +26,6 @@ export class DatabaseModule {
       module: DatabaseModule,
       imports: [
         AppConfigModule,
-        TenancyModule,
         TypeOrmModule.forRootAsync({
           imports: [AppConfigModule],
           inject: [AppConfigService],
@@ -30,8 +37,8 @@ export class DatabaseModule {
             ),
         }),
       ],
-      providers: [TenantAwareUnitOfWork],
-      exports: [TypeOrmModule, TenantAwareUnitOfWork],
+      providers: [TenantAwareUnitOfWork, GlobalUnitOfWork],
+      exports: [TypeOrmModule, TenantAwareUnitOfWork, GlobalUnitOfWork],
     };
   }
 }
