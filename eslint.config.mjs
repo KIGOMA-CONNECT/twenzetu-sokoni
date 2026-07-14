@@ -81,6 +81,10 @@ export default [
                             onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs", "scope:organization"]
                         },
                         {
+                            sourceTag: "scope:identity",
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs", "scope:identity"]
+                        },
+                        {
                             sourceTag: "scope:api",
                             onlyDependOnLibsWithTags: ["*"]
                         }

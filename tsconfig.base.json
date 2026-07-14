@@ -45,7 +45,15 @@
       "@abms/organization-application": [
         "./libs/organization/application/src/index.ts"
       ],
-      "@abms/organization-api": ["./libs/organization/api/src/index.ts"]
+      "@abms/organization-api": ["./libs/organization/api/src/index.ts"],
+      "@abms/identity-domain": ["./libs/identity/domain/src/index.ts"],
+      "@abms/identity-infrastructure": [
+        "./libs/identity/infrastructure/src/index.ts"
+      ],
+      "@abms/identity-application": [
+        "./libs/identity/application/src/index.ts"
+      ],
+      "@abms/identity-api": ["./libs/identity/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
