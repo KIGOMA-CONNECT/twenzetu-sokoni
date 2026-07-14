@@ -25,6 +25,7 @@ export * from './lib/result/result';
 export * from './lib/value-object/address.value-object';
 export * from './lib/value-object/country-code.value-object';
 export * from './lib/value-object/currency-code.value-object';
+export * from './lib/value-object/email.value-object';
 export * from './lib/value-object/money.value-object';
 export * from './lib/value-object/tax-identifier.value-object';
 export * from './lib/value-object/tenant-id.value-object';
