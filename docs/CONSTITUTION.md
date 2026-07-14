@@ -195,32 +195,65 @@ commands and queries without touching domain or application code.
 
 ### The Enterprise Capability Map
 
-The full space of business domains ABMS is meant to eventually serve:
+The full space ABMS is meant to eventually serve, structured as a **Foundation
+Layer** (cross-cutting capability every business suite depends on) and
+**Business Suites** (the capability end users actually touch) — this is the
+reference for what a fully realized ABMS covers, and each sprint fills in one
+production-ready piece of it. Status markers below are updated as of Sprint 4:
 
 ```
-Enterprise
-├── Governance
-├── Strategy
-├── Finance
-├── Human Resources
-├── Customer
-├── Procurement
-├── Supply Chain
-├── Manufacturing
-├── Projects
-├── Assets
-├── Quality
-├── Risk
-├── Compliance
-├── Sustainability
-├── Analytics
-├── Artificial Intelligence
-└── Industry Platforms
+Foundation Layer
+├── Identity & Access Management (IAM)     ✅ built (Sprint 4)
+├── Organization Management                ✅ built (Sprint 2)
+├── Multi-Tenant                            ✅ built (Sprint 1 — shared-schema RLS)
+├── Multi-Company                           ✅ built (Sprint 3 — CompanyProfile)
+├── Multi-Branch                            ✅ built (Sprint 3 — BranchProfile)
+├── Multi-Country                           ⚠️ partial (CountryCode/Address VOs only)
+├── Workflow Engine                         ⬜ not started
+├── Notification Engine                     ⬜ not started
+├── Document Management                     ⬜ not started
+├── Audit & Compliance                      ⚠️ partial (RLS isolation only — no WORM ledger yet)
+├── Reporting Engine                        ⬜ not started
+├── Analytics Engine                        ⬜ not started
+└── AI Services                             ⬜ not started
+
+Business Suites
+├── Finance Suite                           ⬜ not started
+├── Procurement Suite                       ⬜ not started
+├── Inventory & Warehouse Suite             ⬜ not started
+├── Sales, CRM & Commerce Suite             ⬜ not started
+├── HR & Workforce Suite                    ⬜ not started (next sprint)
+├── Manufacturing Suite                     ⬜ not started
+├── Projects Suite                          ⬜ not started
+├── Planning, Budget & Performance Suite    ⬜ not started
+├── Asset & Maintenance Suite               ⬜ not started
+├── Fleet Management Suite                  ⬜ not started
+├── Supply Chain Suite                      ⬜ not started
+├── Quality Management Suite                ⬜ not started
+├── Customer Service Suite                  ⬜ not started
+├── POS Suite                               ⬜ not started
+├── eCommerce Suite                         ⬜ not started
+└── Industry Solutions                      ⬜ not started
+    (Healthcare, Government, Education, Agriculture, NGO, Construction,
+     Logistics, and others — each a thin, sector-specific extension over the
+     Foundation Layer and the relevant Business Suites, not a parallel build)
 ```
 
-This map is the reference for what a fully realized ABMS covers. Each sprint
-delivers a small, production-ready piece of it — currently the Organization
-domain, under Governance.
+Detailed module-level breakdowns for each suite (e.g. the Inventory &
+Warehouse Suite's warehouse/zone/rack/bin hierarchy, the Procurement Suite's
+source-to-pay workflow, the HR Suite's full employee-360 model, the Planning &
+Budget Suite's multi-horizon budget cycle) are scoped and written up
+immediately before the sprint that builds them — matching Chapter 9's
+"platform-shaping decisions get an explicit conversation before implementation
+begins" rule — rather than speculatively designed here in advance of need.
+
+Two Foundation Layer gaps are worth calling out explicitly rather than
+silently leaving implicit: **Workflow Engine** and **Audit & Compliance
+(WORM)** are both used by nearly every future Business Suite (approval chains
+in Procurement/Budget; an immutable ledger for Finance/Sales transactions),
+so they are strong candidates to build *before* the Business Suites that need
+them, rather than being bolted on retroactively once three suites have
+already invented their own ad hoc versions.
 
 ### The System Stack
 
@@ -339,14 +372,19 @@ ADR discipline started now is the foundation that process will sit on.
 ## Chapter 10 — The Future
 
 This Constitution describes a platform still early in its life — Sprint 1
-(Foundation) and Sprint 2 (Organization Module) are complete as of this
-writing. The distance between here and the vision in Chapter 2 is large by
-design. What follows is the map, not a commitment to a timeline.
+(Foundation), Sprint 2 (Organization Module), Sprint 3 (Company/Branch/
+Department/Cost Center/Profit Center profiles), and Sprint 4 (Identity &
+Access) are complete as of this writing. The distance between here and the
+vision in Chapter 2 is large by design. What follows is the map, not a
+commitment to a timeline — see Chapter 6's Enterprise Capability Map for the
+authoritative, status-tracked list.
 
-**Near-term (Phase 2–3 of the existing roadmap):** Company Management, Branch
-Management, Department Management, Cost Centers, Profit Centers, then Finance,
-Procurement, Inventory, CRM, HR, Payroll, Assets — filling out the Enterprise
-Capability Map one production-ready module at a time.
+**Near-term:** HR & Workforce Suite (Employee master data next, Payroll after
+— Payroll needs Employees, Employees need the Identity foundation Sprint 4
+just built), then the remaining Foundation Layer gaps flagged in Chapter 6
+(Workflow Engine, Audit/WORM), then Finance, Procurement, Inventory, Sales/
+CRM, Planning & Budget, Assets — filling out the Enterprise Capability Map one
+production-ready suite at a time.
 
 **Mid-term (Phase 4):** FinTech capability, an Investor Portal, Business
 Incubation and Startup Funding tooling, Loan Management, an AI platform,
