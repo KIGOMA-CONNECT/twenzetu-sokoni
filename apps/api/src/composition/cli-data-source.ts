@@ -16,9 +16,10 @@ export default new DataSource(
     {
       migrations: [
         'libs/database/src/lib/migrations/*.migration.ts',
+        'libs/audit/src/lib/migrations/*.migration.ts',
+        'libs/workflow/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/organization/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/identity/infrastructure/src/lib/migrations/*.migration.ts',
-        'libs/audit/src/lib/migrations/*.migration.ts',
       ],
     },
   ),

@@ -8,6 +8,8 @@ import { CurrentUserMiddleware, IDENTITY_ENTITIES, JwtTenantResolver } from '@ab
 import { OrganizationModule } from '@abms/organization-api';
 import { ORGANIZATION_ENTITIES } from '@abms/organization-infrastructure';
 import { TENANT_RESOLVER, TenancyModule, TenantMiddleware } from '@abms/tenancy';
+import { WorkflowModule } from '@abms/workflow-api';
+import { WORKFLOW_ENTITIES } from '@abms/workflow-infrastructure';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { HealthModule } from './health/health.module';
 
@@ -22,13 +24,19 @@ import { HealthModule } from './health/health.module';
     TenancyModule.forRoot({
       resolverProvider: { provide: TENANT_RESOLVER, useClass: JwtTenantResolver },
     }),
-    DatabaseModule.forRoot([...ORGANIZATION_ENTITIES, ...IDENTITY_ENTITIES, ...AUDIT_ENTITIES]),
+    DatabaseModule.forRoot([
+      ...ORGANIZATION_ENTITIES,
+      ...IDENTITY_ENTITIES,
+      ...AUDIT_ENTITIES,
+      ...WORKFLOW_ENTITIES,
+    ]),
     // Current-user + audit-logger both default correctly with no options here
     // — see CqrsModule.forRoot()'s doc comments. See ADR-0006.
     CqrsModule.forRoot(),
     HealthModule,
     IdentityModule,
     OrganizationModule,
+    WorkflowModule,
   ],
 })
 export class AppModule implements NestModule {

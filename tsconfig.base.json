@@ -39,6 +39,14 @@
       "@abms/database": ["./libs/database/src/index.ts"],
       "@abms/audit": ["./libs/audit/src/index.ts"],
       "@abms/cqrs": ["./libs/cqrs/src/index.ts"],
+      "@abms/workflow-domain": ["./libs/workflow/domain/src/index.ts"],
+      "@abms/workflow-infrastructure": [
+        "./libs/workflow/infrastructure/src/index.ts"
+      ],
+      "@abms/workflow-application": [
+        "./libs/workflow/application/src/index.ts"
+      ],
+      "@abms/workflow-api": ["./libs/workflow/api/src/index.ts"],
       "@abms/organization-domain": ["./libs/organization/domain/src/index.ts"],
       "@abms/organization-infrastructure": [
         "./libs/organization/infrastructure/src/index.ts"

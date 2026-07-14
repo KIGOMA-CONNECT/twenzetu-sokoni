@@ -1,0 +1,19 @@
+{
+  "name": "workflow-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workflow/domain/src",
+  "projectType": "library",
+  "tags": ["scope:workflow", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/workflow/domain",
+        "main": "libs/workflow/domain/src/index.ts",
+        "tsConfig": "libs/workflow/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

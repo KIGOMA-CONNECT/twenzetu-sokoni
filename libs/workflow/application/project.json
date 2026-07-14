@@ -1,0 +1,24 @@
+{
+  "name": "workflow-application",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/workflow/application/src",
+  "projectType": "library",
+  "tags": ["scope:workflow", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/workflow/application",
+        "main": "libs/workflow/application/src/index.ts",
+        "tsConfig": "libs/workflow/application/tsconfig.lib.json",
+        "assets": []
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}
