@@ -37,3 +37,4 @@ three decision tiers.
 | [0002](./0002-nx-monorepo-tooling.md) | Nx as the monorepo tool | Accepted |
 | [0003](./0003-adjacency-list-plus-closure-table-for-organization-hierarchy.md) | Adjacency list + closure table for the Organization hierarchy | Accepted |
 | [0004](./0004-org-unit-type-profiles-and-shared-financial-value-objects.md) | Org unit type profiles and shared financial value objects | Accepted |
+| [0005](./0005-non-rls-identity-tables-and-jwt-tenant-resolution.md) | Non-RLS identity tables and JWT-based tenant resolution | Accepted |
