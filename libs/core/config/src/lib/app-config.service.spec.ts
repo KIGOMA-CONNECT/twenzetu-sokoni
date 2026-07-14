@@ -15,6 +15,8 @@ function validSource(overrides: Partial<NodeJS.ProcessEnv> = {}): NodeJS.Process
     DB_RUNTIME_PASSWORD: 'runtime-secret',
     LOG_LEVEL: 'warn',
     LOG_PRETTY: 'false',
+    JWT_SECRET: 'b'.repeat(32),
+    JWT_EXPIRES_IN: '2h',
     ...overrides,
   } as NodeJS.ProcessEnv;
 }
@@ -50,6 +52,12 @@ describe('AppConfigService', () => {
     const service = new AppConfigService(validSource());
 
     expect(service.logging).toEqual({ level: 'warn', pretty: false });
+  });
+
+  it('exposes auth config', () => {
+    const service = new AppConfigService(validSource());
+
+    expect(service.auth).toEqual({ jwtSecret: 'b'.repeat(32), jwtExpiresIn: '2h' });
   });
 
   it('throws at construction time when the environment is invalid', () => {

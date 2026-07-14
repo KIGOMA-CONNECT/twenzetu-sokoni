@@ -11,6 +11,7 @@ function validSource(overrides: Partial<NodeJS.ProcessEnv> = {}): NodeJS.Process
     DB_RUNTIME_PASSWORD: 'runtime-secret',
     LOG_LEVEL: 'info',
     LOG_PRETTY: 'false',
+    JWT_SECRET: 'a'.repeat(32),
     ...overrides,
   } as NodeJS.ProcessEnv;
 }
@@ -24,6 +25,11 @@ describe('parseEnv', () => {
     expect(env.DB_PORT).toBe(5432);
     expect(env.DB_POOL_MAX).toBe(20);
     expect(env.DB_SSL).toBe(false);
+    expect(env.JWT_EXPIRES_IN).toBe('1h');
+  });
+
+  it('throws when JWT_SECRET is shorter than 32 characters', () => {
+    expect(() => parseEnv(validSource({ JWT_SECRET: 'too-short' }))).toThrow();
   });
 
   it('coerces numeric string env vars into numbers', () => {

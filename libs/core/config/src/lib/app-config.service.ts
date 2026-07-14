@@ -24,6 +24,11 @@ export interface LoggingConfig {
   readonly pretty: boolean;
 }
 
+export interface AuthConfig {
+  readonly jwtSecret: string;
+  readonly jwtExpiresIn: string;
+}
+
 @Injectable()
 export class AppConfigService {
   private readonly env: AppEnv;
@@ -58,6 +63,13 @@ export class AppConfigService {
     return {
       level: this.env.LOG_LEVEL,
       pretty: this.env.LOG_PRETTY,
+    };
+  }
+
+  public get auth(): AuthConfig {
+    return {
+      jwtSecret: this.env.JWT_SECRET,
+      jwtExpiresIn: this.env.JWT_EXPIRES_IN,
     };
   }
 }

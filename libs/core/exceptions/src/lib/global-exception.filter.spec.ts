@@ -1,8 +1,16 @@
 import { AppLoggerService } from '@abms/core-logger';
-import { NotFoundDomainException, ValidationDomainException } from '@abms/kernel';
+import { DomainException, NotFoundDomainException, ValidationDomainException } from '@abms/kernel';
 import { ArgumentsHost, BadRequestException, HttpStatus } from '@nestjs/common';
 import type { Response } from 'express';
 import { GlobalExceptionFilter } from './global-exception.filter';
+
+class FakeAuthenticationFailedException extends DomainException {
+  public readonly code = 'AUTH.UNAUTHENTICATED';
+
+  public constructor(message: string) {
+    super(message);
+  }
+}
 
 function fakeLogger(): jest.Mocked<AppLoggerService> {
   return {
@@ -46,6 +54,19 @@ describe('GlobalExceptionFilter', () => {
         success: false,
         error: expect.objectContaining({ code: 'DOMAIN.NOT_FOUND' }),
       }),
+    );
+  });
+
+  it('maps an AUTH.UNAUTHENTICATED domain exception to 401', () => {
+    const logger = fakeLogger();
+    const filter = new GlobalExceptionFilter(logger);
+    const response = fakeResponse();
+
+    filter.catch(new FakeAuthenticationFailedException('Invalid or expired access token.'), fakeHost(response));
+
+    expect(response.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({ error: expect.objectContaining({ code: 'AUTH.UNAUTHENTICATED' }) }),
     );
   });
 

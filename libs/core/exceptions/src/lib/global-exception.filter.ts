@@ -9,6 +9,10 @@ const DOMAIN_EXCEPTION_STATUS_MAP: Readonly<Record<string, HttpStatus>> = {
   'DOMAIN.NOT_FOUND': HttpStatus.NOT_FOUND,
   'DOMAIN.BUSINESS_RULE_VIOLATION': HttpStatus.UNPROCESSABLE_ENTITY,
   'DOMAIN.CONCURRENCY_CONFLICT': HttpStatus.CONFLICT,
+  // A missing/expired/invalid-signature JWT is a 401, not a malformed-request
+  // 400 (which is where TenancyResolutionException's default still lands, e.g.
+  // HeaderTenantResolver's failure mode). See ADR-0005.
+  'AUTH.UNAUTHENTICATED': HttpStatus.UNAUTHORIZED,
 };
 
 @Catch()
