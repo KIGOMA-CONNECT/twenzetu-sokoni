@@ -199,7 +199,7 @@ The full space ABMS is meant to eventually serve, structured as a **Foundation
 Layer** (cross-cutting capability every business suite depends on) and
 **Business Suites** (the capability end users actually touch) — this is the
 reference for what a fully realized ABMS covers, and each sprint fills in one
-production-ready piece of it. Status markers below are updated as of Sprint 4:
+production-ready piece of it. Status markers below are updated as of Sprint 5a:
 
 ```
 Foundation Layer
@@ -212,7 +212,7 @@ Foundation Layer
 ├── Workflow Engine                         ⬜ not started
 ├── Notification Engine                     ⬜ not started
 ├── Document Management                     ⬜ not started
-├── Audit & Compliance                      ⚠️ partial (RLS isolation only — no WORM ledger yet)
+├── Audit & Compliance                      ✅ built (Sprint 5a — WORM audit_log on every command, see ADR-0006)
 ├── Reporting Engine                        ⬜ not started
 ├── Analytics Engine                        ⬜ not started
 └── AI Services                             ⬜ not started
