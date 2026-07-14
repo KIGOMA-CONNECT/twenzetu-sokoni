@@ -92,6 +92,15 @@ export default [
                             sourceTag: "scope:identity",
                             onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs", "scope:workflow", "scope:identity"]
                         },
+                        // HR uses opaque uuid references for userId/orgUnitId (same
+                        // deferred-integrity precedent as OrgUnit.parentId) rather than
+                        // depending on scope:identity/scope:organization directly — future
+                        // HR sub-modules (Payroll, Leave, Performance) grow under scope:hr
+                        // rather than as separate bounded contexts.
+                        {
+                            sourceTag: "scope:hr",
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs", "scope:workflow", "scope:hr"]
+                        },
                         {
                             sourceTag: "scope:api",
                             onlyDependOnLibsWithTags: ["*"]

@@ -1,0 +1,19 @@
+{
+  "name": "hr-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/domain/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/domain",
+        "main": "libs/hr/domain/src/index.ts",
+        "tsConfig": "libs/hr/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

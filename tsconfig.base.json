@@ -62,7 +62,11 @@
       "@abms/identity-application": [
         "./libs/identity/application/src/index.ts"
       ],
-      "@abms/identity-api": ["./libs/identity/api/src/index.ts"]
+      "@abms/identity-api": ["./libs/identity/api/src/index.ts"],
+      "@abms/hr-domain": ["./libs/hr/domain/src/index.ts"],
+      "@abms/hr-infrastructure": ["./libs/hr/infrastructure/src/index.ts"],
+      "@abms/hr-application": ["./libs/hr/application/src/index.ts"],
+      "@abms/hr-api": ["./libs/hr/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

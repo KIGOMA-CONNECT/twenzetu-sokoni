@@ -3,6 +3,8 @@ import { AppConfigModule } from '@abms/core-config';
 import { AppLoggerModule } from '@abms/core-logger';
 import { CqrsModule } from '@abms/cqrs';
 import { DatabaseModule } from '@abms/database';
+import { HrModule } from '@abms/hr-api';
+import { HR_ENTITIES } from '@abms/hr-infrastructure';
 import { IdentityModule } from '@abms/identity-api';
 import { CurrentUserMiddleware, IDENTITY_ENTITIES, JwtTenantResolver } from '@abms/identity-infrastructure';
 import { OrganizationModule } from '@abms/organization-api';
@@ -29,6 +31,7 @@ import { HealthModule } from './health/health.module';
       ...IDENTITY_ENTITIES,
       ...AUDIT_ENTITIES,
       ...WORKFLOW_ENTITIES,
+      ...HR_ENTITIES,
     ]),
     // Current-user + audit-logger both default correctly with no options here
     // — see CqrsModule.forRoot()'s doc comments. See ADR-0006.
@@ -37,6 +40,7 @@ import { HealthModule } from './health/health.module';
     IdentityModule,
     OrganizationModule,
     WorkflowModule,
+    HrModule,
   ],
 })
 export class AppModule implements NestModule {

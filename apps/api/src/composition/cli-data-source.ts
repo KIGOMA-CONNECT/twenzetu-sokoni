@@ -20,6 +20,7 @@ export default new DataSource(
         'libs/workflow/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/organization/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/identity/infrastructure/src/lib/migrations/*.migration.ts',
+        'libs/hr/infrastructure/src/lib/migrations/*.migration.ts',
       ],
     },
   ),
