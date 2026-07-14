@@ -1,0 +1,21 @@
+{
+  "name": "@abms/identity-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "express": "^5.2.1",
+    "@abms/core-config": "0.0.1",
+    "@abms/cqrs": "0.0.1",
+    "@abms/identity-application": "0.0.1",
+    "@abms/identity-domain": "0.0.1",
+    "@abms/identity-infrastructure": "0.0.1",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "class-validator": "^0.15.1"
+  }
+}
