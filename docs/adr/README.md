@@ -39,3 +39,4 @@ three decision tiers.
 | [0004](./0004-org-unit-type-profiles-and-shared-financial-value-objects.md) | Org unit type profiles and shared financial value objects | Accepted |
 | [0005](./0005-non-rls-identity-tables-and-jwt-tenant-resolution.md) | Non-RLS identity tables and JWT-based tenant resolution | Accepted |
 | [0006](./0006-audit-worm-and-async-local-current-user-context.md) | Audit/WORM logging and AsyncLocalStorage-based current-user context | Accepted |
+| [0007](./0007-workflow-engine-v1-sequential-approval-chain.md) | Workflow Engine v1 — sequential, role-based approval chain | Accepted |
