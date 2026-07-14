@@ -199,7 +199,7 @@ The full space ABMS is meant to eventually serve, structured as a **Foundation
 Layer** (cross-cutting capability every business suite depends on) and
 **Business Suites** (the capability end users actually touch) — this is the
 reference for what a fully realized ABMS covers, and each sprint fills in one
-production-ready piece of it. Status markers below are updated as of Sprint 5b:
+production-ready piece of it. Status markers below are updated as of Sprint 6:
 
 ```
 Foundation Layer
@@ -222,7 +222,7 @@ Business Suites
 ├── Procurement Suite                       ⬜ not started
 ├── Inventory & Warehouse Suite             ⬜ not started
 ├── Sales, CRM & Commerce Suite             ⬜ not started
-├── HR & Workforce Suite                    ⬜ not started (next sprint)
+├── HR & Workforce Suite                    ⚠️ partial (Sprint 6 — Core HR: Employee master data, Positions, employment history, documents; see ADR-0008. Leave/Attendance/Performance/Payroll/Recruitment not yet built)
 ├── Manufacturing Suite                     ⬜ not started
 ├── Projects Suite                          ⬜ not started
 ├── Planning, Budget & Performance Suite    ⬜ not started
