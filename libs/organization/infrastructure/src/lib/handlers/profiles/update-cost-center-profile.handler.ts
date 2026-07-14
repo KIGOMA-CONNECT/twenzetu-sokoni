@@ -1,3 +1,5 @@
+import { AUDIT_LOGGER, IAuditLogger } from '@abms/audit';
+import { CURRENT_USER_PROVIDER, ICurrentUserProvider } from '@abms/core-security';
 import { TenantAwareUnitOfWork } from '@abms/database';
 import {
   ConcurrencyDomainException,
@@ -9,8 +11,9 @@ import {
 } from '@abms/kernel';
 import { EventBusAdapter, TransactionalCommandHandler } from '@abms/cqrs';
 import { UpdateCostCenterProfileCommand } from '@abms/organization-application';
+import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { CommandHandler } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { getEntityManager } from '../get-entity-manager';
 import { TypeOrmCostCenterProfileRepository } from '../../repositories/typeorm-cost-center-profile.repository';
 
@@ -20,8 +23,14 @@ export class UpdateCostCenterProfileHandler extends TransactionalCommandHandler<
   UpdateCostCenterProfileCommand,
   void
 > {
-  public constructor(unitOfWork: TenantAwareUnitOfWork, eventBus: EventBusAdapter) {
-    super(unitOfWork, eventBus);
+  public constructor(
+    unitOfWork: TenantAwareUnitOfWork,
+    eventBus: EventBusAdapter,
+    tenantContext: AsyncLocalTenantContextStore,
+    @Inject(CURRENT_USER_PROVIDER) currentUser: ICurrentUserProvider,
+    @Inject(AUDIT_LOGGER) auditLogger: IAuditLogger,
+  ) {
+    super(unitOfWork, eventBus, tenantContext, currentUser, auditLogger);
   }
 
   protected async handle(command: UpdateCostCenterProfileCommand, ctx: ITransactionContext): Promise<void> {

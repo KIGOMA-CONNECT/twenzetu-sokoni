@@ -1,10 +1,13 @@
+import { AUDIT_LOGGER, IAuditLogger } from '@abms/audit';
+import { CURRENT_USER_PROVIDER, ICurrentUserProvider } from '@abms/core-security';
 import { GlobalUnitOfWork } from '@abms/database';
 import { BusinessRuleViolationException, Email, ITransactionContext, TenantId } from '@abms/kernel';
 import { EventBusAdapter, TransactionalCommandHandler } from '@abms/cqrs';
 import { CreateUserCommand, CreateUserResult } from '@abms/identity-application';
 import { User, UserRole } from '@abms/identity-domain';
+import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { CommandHandler } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ArgonPasswordHasher } from '../password/argon-password-hasher';
 import { TypeOrmUserRepository } from '../repositories/typeorm-user.repository';
 import { getEntityManager } from './get-entity-manager';
@@ -16,8 +19,11 @@ export class CreateUserHandler extends TransactionalCommandHandler<CreateUserCom
     unitOfWork: GlobalUnitOfWork,
     eventBus: EventBusAdapter,
     private readonly passwordHasher: ArgonPasswordHasher,
+    tenantContext: AsyncLocalTenantContextStore,
+    @Inject(CURRENT_USER_PROVIDER) currentUser: ICurrentUserProvider,
+    @Inject(AUDIT_LOGGER) auditLogger: IAuditLogger,
   ) {
-    super(unitOfWork, eventBus);
+    super(unitOfWork, eventBus, tenantContext, currentUser, auditLogger);
   }
 
   protected async handle(command: CreateUserCommand, ctx: ITransactionContext): Promise<CreateUserResult> {

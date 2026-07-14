@@ -1,4 +1,7 @@
 import { ICommand, IDomainEvent, IEventBus, ITransactionContext, IUnitOfWork } from '@abms/kernel';
+import { AuditLogEntryInput, IAuditLogger } from '@abms/audit';
+import { ICurrentUserProvider } from '@abms/core-security';
+import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { TransactionalCommandHandler } from './transactional-command-handler.base';
 
 class TestCommand implements ICommand<string> {
@@ -15,8 +18,14 @@ class TestEvent implements IDomainEvent {
 }
 
 class TestCommandHandler extends TransactionalCommandHandler<TestCommand, string> {
-  public constructor(unitOfWork: IUnitOfWork, eventBus: IEventBus) {
-    super(unitOfWork, eventBus);
+  public constructor(
+    unitOfWork: IUnitOfWork,
+    eventBus: IEventBus,
+    tenantContext: AsyncLocalTenantContextStore,
+    currentUser: ICurrentUserProvider,
+    auditLogger: IAuditLogger,
+  ) {
+    super(unitOfWork, eventBus, tenantContext, currentUser, auditLogger);
   }
 
   protected async handle(command: TestCommand, ctx: ITransactionContext): Promise<string> {
@@ -61,12 +70,30 @@ function fakeEventBus(): jest.Mocked<IEventBus> {
   };
 }
 
+function fakeTenantContext(tenantId: string | undefined = 'tenant-a'): AsyncLocalTenantContextStore {
+  return { getTenantId: () => tenantId } as unknown as AsyncLocalTenantContextStore;
+}
+
+function fakeCurrentUser(userId: string | undefined = 'user-a'): ICurrentUserProvider {
+  return { getCurrentUserId: () => userId };
+}
+
+function fakeAuditLogger(): jest.Mocked<IAuditLogger> {
+  return { log: jest.fn().mockResolvedValue(undefined) };
+}
+
 describe('TransactionalCommandHandler', () => {
   it('runs handle() inside a unit-of-work transaction', async () => {
     const ctx = fakeTransactionContext();
     const unitOfWork = fakeUnitOfWork(ctx);
     const eventBus = fakeEventBus();
-    const handler = new TestCommandHandler(unitOfWork, eventBus);
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      eventBus,
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      fakeAuditLogger(),
+    );
 
     const result = await handler.execute(new TestCommand());
 
@@ -78,7 +105,13 @@ describe('TransactionalCommandHandler', () => {
     const ctx = fakeTransactionContext();
     const unitOfWork = fakeUnitOfWork(ctx);
     const eventBus = fakeEventBus();
-    const handler = new TestCommandHandler(unitOfWork, eventBus);
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      eventBus,
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      fakeAuditLogger(),
+    );
 
     await handler.execute(new TestCommand(true));
 
@@ -92,7 +125,13 @@ describe('TransactionalCommandHandler', () => {
     const ctx = fakeTransactionContext();
     const unitOfWork = fakeUnitOfWork(ctx);
     const eventBus = fakeEventBus();
-    const handler = new TestCommandHandler(unitOfWork, eventBus);
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      eventBus,
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      fakeAuditLogger(),
+    );
 
     await handler.execute(new TestCommand(false));
 
@@ -103,10 +142,103 @@ describe('TransactionalCommandHandler', () => {
     const ctx = fakeTransactionContext();
     const unitOfWork = fakeUnitOfWork(ctx, true);
     const eventBus = fakeEventBus();
-    const handler = new TestCommandHandler(unitOfWork, eventBus);
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      eventBus,
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      fakeAuditLogger(),
+    );
 
     await expect(handler.execute(new TestCommand(true))).rejects.toThrow('transaction failed');
 
     expect(eventBus.publishAll).not.toHaveBeenCalled();
+  });
+
+  it('logs a SUCCESS audit entry with tenantId/userId/correlationId after a successful command', async () => {
+    const ctx = fakeTransactionContext();
+    const unitOfWork = fakeUnitOfWork(ctx);
+    const auditLogger = fakeAuditLogger();
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      fakeEventBus(),
+      fakeTenantContext('tenant-a'),
+      fakeCurrentUser('user-a'),
+      auditLogger,
+    );
+
+    await handler.execute(new TestCommand());
+
+    expect(auditLogger.log).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<AuditLogEntryInput>>({
+        commandName: 'TestCommand',
+        tenantId: 'tenant-a',
+        userId: 'user-a',
+        correlationId: 'corr-1',
+        outcome: 'SUCCESS',
+      }),
+    );
+  });
+
+  it('logs a FAILURE audit entry with the error message when the transaction fails, then re-throws', async () => {
+    const ctx = fakeTransactionContext();
+    const unitOfWork = fakeUnitOfWork(ctx, true);
+    const auditLogger = fakeAuditLogger();
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      fakeEventBus(),
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      auditLogger,
+    );
+
+    await expect(handler.execute(new TestCommand())).rejects.toThrow('transaction failed');
+
+    expect(auditLogger.log).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<AuditLogEntryInput>>({
+        outcome: 'FAILURE',
+        errorMessage: 'transaction failed',
+      }),
+    );
+  });
+
+  it('logs tenantId/userId as null when no tenant/user context is active', async () => {
+    const ctx = fakeTransactionContext();
+    const unitOfWork = fakeUnitOfWork(ctx);
+    const auditLogger = fakeAuditLogger();
+    const noTenantContext = { getTenantId: () => undefined } as unknown as AsyncLocalTenantContextStore;
+    const noCurrentUser: ICurrentUserProvider = { getCurrentUserId: () => undefined };
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      fakeEventBus(),
+      noTenantContext,
+      noCurrentUser,
+      auditLogger,
+    );
+
+    await handler.execute(new TestCommand());
+
+    expect(auditLogger.log).toHaveBeenCalledWith(
+      expect.objectContaining<Partial<AuditLogEntryInput>>({ tenantId: null, userId: null }),
+    );
+  });
+
+  it('does not let an audit-logging failure mask the real command result (fail-open)', async () => {
+    const ctx = fakeTransactionContext();
+    const unitOfWork = fakeUnitOfWork(ctx);
+    const auditLogger: jest.Mocked<IAuditLogger> = {
+      log: jest.fn().mockRejectedValue(new Error('audit sink unavailable')),
+    };
+    const handler = new TestCommandHandler(
+      unitOfWork,
+      fakeEventBus(),
+      fakeTenantContext(),
+      fakeCurrentUser(),
+      auditLogger,
+    );
+
+    const result = await handler.execute(new TestCommand());
+
+    expect(result).toBe('handled');
   });
 });

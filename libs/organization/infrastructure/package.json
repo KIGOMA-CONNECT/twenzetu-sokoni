@@ -10,6 +10,8 @@
     "typeorm": "^1.0.0",
     "@abms/kernel": "0.0.1",
     "@abms/core-config": "0.0.1",
+    "@abms/core-security": "0.0.1",
+    "@abms/audit": "0.0.1",
     "@abms/database": "0.0.1",
     "@abms/organization-domain": "0.0.1",
     "@abms/organization-application": "0.0.1",

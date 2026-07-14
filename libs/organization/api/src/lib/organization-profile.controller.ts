@@ -26,7 +26,8 @@ import {
   UpdateDepartmentProfileCommand,
   UpdateProfitCenterProfileCommand,
 } from '@abms/organization-application';
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { CreateBranchProfileDto } from './dto/profiles/create-branch-profile.dto';
 import { CreateCompanyProfileDto } from './dto/profiles/create-company-profile.dto';
 import { CreateCostCenterProfileDto } from './dto/profiles/create-cost-center-profile.dto';
@@ -38,7 +39,10 @@ import { UpdateCostCenterProfileDto } from './dto/profiles/update-cost-center-pr
 import { UpdateDepartmentProfileDto } from './dto/profiles/update-department-profile.dto';
 import { UpdateProfitCenterProfileDto } from './dto/profiles/update-profit-center-profile.dto';
 
+// See OrganizationController for why AuthGuard('jwt') here doesn't create an
+// Nx scope:organization -> scope:identity dependency edge.
 @Controller('organization/units/:orgUnitId/profile')
+@UseGuards(AuthGuard('jwt'))
 export class OrganizationProfileController {
   public constructor(
     private readonly commandBus: CommandBusAdapter,

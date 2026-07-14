@@ -1,10 +1,13 @@
+import { AUDIT_LOGGER, IAuditLogger } from '@abms/audit';
+import { CURRENT_USER_PROVIDER, ICurrentUserProvider } from '@abms/core-security';
 import { GlobalUnitOfWork } from '@abms/database';
 import { Email, ITransactionContext } from '@abms/kernel';
 import { EventBusAdapter, TransactionalCommandHandler } from '@abms/cqrs';
 import { LoginCommand, LoginResult } from '@abms/identity-application';
 import { AuthenticationFailedException } from '@abms/identity-domain';
+import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { CommandHandler } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../auth/jwt-payload.interface';
 import { ArgonPasswordHasher } from '../password/argon-password-hasher';
@@ -19,8 +22,11 @@ export class LoginHandler extends TransactionalCommandHandler<LoginCommand, Logi
     eventBus: EventBusAdapter,
     private readonly passwordHasher: ArgonPasswordHasher,
     private readonly jwtService: JwtService,
+    tenantContext: AsyncLocalTenantContextStore,
+    @Inject(CURRENT_USER_PROVIDER) currentUser: ICurrentUserProvider,
+    @Inject(AUDIT_LOGGER) auditLogger: IAuditLogger,
   ) {
-    super(unitOfWork, eventBus);
+    super(unitOfWork, eventBus, tenantContext, currentUser, auditLogger);
   }
 
   protected async handle(command: LoginCommand, ctx: ITransactionContext): Promise<LoginResult> {

@@ -8,6 +8,9 @@
   "dependencies": {
     "tslib": "^2.3.0",
     "@abms/kernel": "0.0.1",
+    "@abms/audit": "0.0.1",
+    "@abms/core-security": "0.0.1",
+    "@abms/tenancy": "0.0.1",
     "@nestjs/common": "^11.0.0",
     "@nestjs/cqrs": "^11.0.3"
   }

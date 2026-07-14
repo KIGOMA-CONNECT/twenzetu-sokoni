@@ -1,3 +1,5 @@
+import { AUDIT_LOGGER, IAuditLogger } from '@abms/audit';
+import { CURRENT_USER_PROVIDER, ICurrentUserProvider } from '@abms/core-security';
 import { TenantAwareUnitOfWork } from '@abms/database';
 import {
   Address,
@@ -10,16 +12,23 @@ import {
 } from '@abms/kernel';
 import { EventBusAdapter, TransactionalCommandHandler } from '@abms/cqrs';
 import { UpdateBranchProfileCommand } from '@abms/organization-application';
+import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { CommandHandler } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { getEntityManager } from '../get-entity-manager';
 import { TypeOrmBranchProfileRepository } from '../../repositories/typeorm-branch-profile.repository';
 
 @Injectable()
 @CommandHandler(UpdateBranchProfileCommand)
 export class UpdateBranchProfileHandler extends TransactionalCommandHandler<UpdateBranchProfileCommand, void> {
-  public constructor(unitOfWork: TenantAwareUnitOfWork, eventBus: EventBusAdapter) {
-    super(unitOfWork, eventBus);
+  public constructor(
+    unitOfWork: TenantAwareUnitOfWork,
+    eventBus: EventBusAdapter,
+    tenantContext: AsyncLocalTenantContextStore,
+    @Inject(CURRENT_USER_PROVIDER) currentUser: ICurrentUserProvider,
+    @Inject(AUDIT_LOGGER) auditLogger: IAuditLogger,
+  ) {
+    super(unitOfWork, eventBus, tenantContext, currentUser, auditLogger);
   }
 
   protected async handle(command: UpdateBranchProfileCommand, ctx: ITransactionContext): Promise<void> {

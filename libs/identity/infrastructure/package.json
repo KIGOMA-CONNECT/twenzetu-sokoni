@@ -13,6 +13,7 @@
     "@abms/kernel": "0.0.1",
     "@abms/core-config": "0.0.1",
     "@abms/core-security": "0.0.1",
+    "@abms/audit": "0.0.1",
     "@abms/database": "0.0.1",
     "@abms/identity-domain": "0.0.1",
     "@abms/identity-application": "0.0.1",

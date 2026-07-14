@@ -70,19 +70,27 @@ export default [
                             onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database"]
                         },
                         {
+                            sourceTag: "scope:audit",
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit"]
+                        },
+                        {
                             sourceTag: "scope:cqrs",
-                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs"]
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs"]
+                        },
+                        {
+                            sourceTag: "scope:workflow",
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs", "scope:workflow"]
                         },
                         // Bounded-context module libraries (e.g. Organization) may depend
                         // on any foundation library plus their own sibling libs, but not
                         // on other bounded-context modules, keeping modules independent.
                         {
                             sourceTag: "scope:organization",
-                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs", "scope:organization"]
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs", "scope:workflow", "scope:organization"]
                         },
                         {
                             sourceTag: "scope:identity",
-                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:cqrs", "scope:identity"]
+                            onlyDependOnLibsWithTags: ["scope:kernel", "scope:core", "scope:tenancy", "scope:database", "scope:audit", "scope:cqrs", "scope:workflow", "scope:identity"]
                         },
                         {
                             sourceTag: "scope:api",

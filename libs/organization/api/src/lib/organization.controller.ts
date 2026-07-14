@@ -16,13 +16,21 @@ import {
   ReactivateOrgUnitCommand,
   RenameOrgUnitCommand,
 } from '@abms/organization-application';
-import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { CreateOrgUnitTypeDto } from './dto/create-org-unit-type.dto';
 import { CreateOrgUnitDto } from './dto/create-org-unit.dto';
 import { MoveOrgUnitDto } from './dto/move-org-unit.dto';
 import { RenameOrgUnitDto } from './dto/rename-org-unit.dto';
 
+// AuthGuard('jwt') looks up the 'jwt' Passport strategy by name from the process-wide
+// Passport registry — it's a generic @nestjs/passport factory, not an identity-module
+// import, so this doesn't create an Nx scope:organization -> scope:identity edge. The
+// strategy itself is registered once identity's JwtStrategy is instantiated. Without
+// this guard request.user is never populated, so ICurrentUserProvider (and therefore
+// the audit log's userId) silently stays null for every organization command.
 @Controller('organization')
+@UseGuards(AuthGuard('jwt'))
 export class OrganizationController {
   public constructor(
     private readonly commandBus: CommandBusAdapter,

@@ -1,9 +1,10 @@
+import { AUDIT_ENTITIES } from '@abms/audit';
 import { AppConfigModule } from '@abms/core-config';
 import { AppLoggerModule } from '@abms/core-logger';
 import { CqrsModule } from '@abms/cqrs';
 import { DatabaseModule } from '@abms/database';
 import { IdentityModule } from '@abms/identity-api';
-import { IDENTITY_ENTITIES, JwtTenantResolver } from '@abms/identity-infrastructure';
+import { CurrentUserMiddleware, IDENTITY_ENTITIES, JwtTenantResolver } from '@abms/identity-infrastructure';
 import { OrganizationModule } from '@abms/organization-api';
 import { ORGANIZATION_ENTITIES } from '@abms/organization-infrastructure';
 import { TENANT_RESOLVER, TenancyModule, TenantMiddleware } from '@abms/tenancy';
@@ -21,8 +22,10 @@ import { HealthModule } from './health/health.module';
     TenancyModule.forRoot({
       resolverProvider: { provide: TENANT_RESOLVER, useClass: JwtTenantResolver },
     }),
-    DatabaseModule.forRoot([...ORGANIZATION_ENTITIES, ...IDENTITY_ENTITIES]),
-    CqrsModule,
+    DatabaseModule.forRoot([...ORGANIZATION_ENTITIES, ...IDENTITY_ENTITIES, ...AUDIT_ENTITIES]),
+    // Current-user + audit-logger both default correctly with no options here
+    // — see CqrsModule.forRoot()'s doc comments. See ADR-0006.
+    CqrsModule.forRoot(),
     HealthModule,
     IdentityModule,
     OrganizationModule,
@@ -31,7 +34,7 @@ import { HealthModule } from './health/health.module';
 export class AppModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {
     consumer
-      .apply(TenantMiddleware)
+      .apply(TenantMiddleware, CurrentUserMiddleware)
       .exclude(
         { path: 'health', method: RequestMethod.ALL },
         { path: 'health/*path', method: RequestMethod.ALL },

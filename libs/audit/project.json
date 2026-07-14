@@ -1,0 +1,27 @@
+{
+  "name": "audit",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/audit/src",
+  "projectType": "library",
+  "tags": ["scope:audit", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/audit",
+        "main": "libs/audit/src/index.ts",
+        "tsConfig": "libs/audit/tsconfig.lib.json",
+        "assets": []
+      }
+    },
+    "test-integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/audit-integration"],
+      "options": {
+        "jestConfig": "libs/audit/jest.integration.config.cts",
+        "runInBand": true
+      }
+    }
+  }
+}

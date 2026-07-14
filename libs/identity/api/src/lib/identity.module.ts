@@ -1,10 +1,10 @@
 import { AppConfigModule, AppConfigService } from '@abms/core-config';
 import {
   ArgonPasswordHasher,
+  CurrentUserMiddleware,
   IDENTITY_COMMAND_HANDLERS,
   IDENTITY_QUERY_HANDLERS,
   JwtStrategy,
-  RequestCurrentUserProvider,
   RolesGuard,
 } from '@abms/identity-infrastructure';
 import { Module } from '@nestjs/common';
@@ -35,8 +35,8 @@ import { AuthController } from './auth.controller';
     JwtStrategy,
     RolesGuard,
     ArgonPasswordHasher,
-    RequestCurrentUserProvider,
+    CurrentUserMiddleware,
   ],
-  exports: [RolesGuard],
+  exports: [RolesGuard, CurrentUserMiddleware],
 })
 export class IdentityModule {}

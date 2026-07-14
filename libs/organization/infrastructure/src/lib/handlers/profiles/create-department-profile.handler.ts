@@ -1,3 +1,5 @@
+import { AUDIT_LOGGER, IAuditLogger } from '@abms/audit';
+import { CURRENT_USER_PROVIDER, ICurrentUserProvider } from '@abms/core-security';
 import { TenantAwareUnitOfWork } from '@abms/database';
 import { BusinessRuleViolationException, EntityId, ITransactionContext, NotFoundDomainException } from '@abms/kernel';
 import { EventBusAdapter, TransactionalCommandHandler } from '@abms/cqrs';
@@ -5,7 +7,7 @@ import { CreateDepartmentProfileCommand, CreateDepartmentProfileResult } from '@
 import { DepartmentProfile } from '@abms/organization-domain';
 import { AsyncLocalTenantContextStore } from '@abms/tenancy';
 import { CommandHandler } from '@nestjs/cqrs';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { currentTenantId } from '../current-tenant-id';
 import { getEntityManager } from '../get-entity-manager';
 import { TypeOrmOrgUnitTypeRepository } from '../../repositories/typeorm-org-unit-type.repository';
@@ -22,9 +24,11 @@ export class CreateDepartmentProfileHandler extends TransactionalCommandHandler<
   public constructor(
     unitOfWork: TenantAwareUnitOfWork,
     eventBus: EventBusAdapter,
-    private readonly tenantContext: AsyncLocalTenantContextStore,
+    private readonly tenantContextStore: AsyncLocalTenantContextStore,
+    @Inject(CURRENT_USER_PROVIDER) currentUser: ICurrentUserProvider,
+    @Inject(AUDIT_LOGGER) auditLogger: IAuditLogger,
   ) {
-    super(unitOfWork, eventBus);
+    super(unitOfWork, eventBus, tenantContextStore, currentUser, auditLogger);
   }
 
   protected async handle(
@@ -35,7 +39,7 @@ export class CreateDepartmentProfileHandler extends TransactionalCommandHandler<
     const orgUnitRepository = new TypeOrmOrgUnitRepository(manager);
     const typeRepository = new TypeOrmOrgUnitTypeRepository(manager);
     const departmentProfileRepository = new TypeOrmDepartmentProfileRepository(manager);
-    const tenantId = currentTenantId(this.tenantContext);
+    const tenantId = currentTenantId(this.tenantContextStore);
 
     const orgUnitId = EntityId.create(command.orgUnitId);
     const orgUnit = await orgUnitRepository.findById(orgUnitId);
