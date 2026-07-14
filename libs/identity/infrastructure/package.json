@@ -1,0 +1,30 @@
+{
+  "name": "@abms/identity-infrastructure",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "typeorm": "^1.0.0",
+    "argon2": "^0.44.0",
+    "express": "^5.2.1",
+    "@abms/kernel": "0.0.1",
+    "@abms/core-config": "0.0.1",
+    "@abms/core-security": "0.0.1",
+    "@abms/database": "0.0.1",
+    "@abms/identity-domain": "0.0.1",
+    "@abms/identity-application": "0.0.1",
+    "@abms/cqrs": "0.0.1",
+    "@abms/tenancy": "0.0.1",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/cqrs": "^11.0.3",
+    "@nestjs/jwt": "^11.0.2",
+    "@nestjs/passport": "^11.0.5",
+    "passport-jwt": "^4.0.1",
+    "dotenv": "^17.4.2",
+    "reflect-metadata": "^0.2.0"
+  }
+}
