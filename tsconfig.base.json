@@ -66,7 +66,19 @@
       "@abms/hr-domain": ["./libs/hr/domain/src/index.ts"],
       "@abms/hr-infrastructure": ["./libs/hr/infrastructure/src/index.ts"],
       "@abms/hr-application": ["./libs/hr/application/src/index.ts"],
-      "@abms/hr-api": ["./libs/hr/api/src/index.ts"]
+      "@abms/hr-api": ["./libs/hr/api/src/index.ts"],
+      "@abms/hr-leave-attendance-domain": [
+        "./libs/hr/leave-attendance/domain/src/index.ts"
+      ],
+      "@abms/hr-leave-attendance-infrastructure": [
+        "./libs/hr/leave-attendance/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-leave-attendance-application": [
+        "./libs/hr/leave-attendance/application/src/index.ts"
+      ],
+      "@abms/hr-leave-attendance-api": [
+        "./libs/hr/leave-attendance/api/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
