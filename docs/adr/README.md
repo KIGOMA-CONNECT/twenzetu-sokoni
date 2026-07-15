@@ -41,3 +41,4 @@ three decision tiers.
 | [0006](./0006-audit-worm-and-async-local-current-user-context.md) | Audit/WORM logging and AsyncLocalStorage-based current-user context | Accepted |
 | [0007](./0007-workflow-engine-v1-sequential-approval-chain.md) | Workflow Engine v1 — sequential, role-based approval chain | Accepted |
 | [0008](./0008-core-hr-employee-master-data.md) | Core HR — employee master data, positions, employment history, documents | Accepted |
+| [0009](./0009-leave-attendance-v1.md) | Leave & Attendance v1 — balances, requests, clock in/out | Accepted |
