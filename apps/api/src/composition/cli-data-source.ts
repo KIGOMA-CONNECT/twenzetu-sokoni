@@ -23,6 +23,7 @@ export default new DataSource(
         'libs/hr/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/hr/leave-attendance/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/hr/payroll/infrastructure/src/lib/migrations/*.migration.ts',
+        'libs/hr/recruitment/infrastructure/src/lib/migrations/*.migration.ts',
       ],
     },
   ),

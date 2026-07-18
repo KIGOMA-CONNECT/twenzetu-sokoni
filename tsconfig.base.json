@@ -86,7 +86,17 @@
       "@abms/hr-payroll-application": [
         "./libs/hr/payroll/application/src/index.ts"
       ],
-      "@abms/hr-payroll-api": ["./libs/hr/payroll/api/src/index.ts"]
+      "@abms/hr-payroll-api": ["./libs/hr/payroll/api/src/index.ts"],
+      "@abms/hr-recruitment-domain": [
+        "./libs/hr/recruitment/domain/src/index.ts"
+      ],
+      "@abms/hr-recruitment-infrastructure": [
+        "./libs/hr/recruitment/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-recruitment-application": [
+        "./libs/hr/recruitment/application/src/index.ts"
+      ],
+      "@abms/hr-recruitment-api": ["./libs/hr/recruitment/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
