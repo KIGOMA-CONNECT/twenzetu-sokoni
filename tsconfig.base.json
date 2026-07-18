@@ -96,7 +96,17 @@
       "@abms/hr-recruitment-application": [
         "./libs/hr/recruitment/application/src/index.ts"
       ],
-      "@abms/hr-recruitment-api": ["./libs/hr/recruitment/api/src/index.ts"]
+      "@abms/hr-recruitment-api": ["./libs/hr/recruitment/api/src/index.ts"],
+      "@abms/hr-performance-domain": [
+        "./libs/hr/performance/domain/src/index.ts"
+      ],
+      "@abms/hr-performance-infrastructure": [
+        "./libs/hr/performance/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-performance-application": [
+        "./libs/hr/performance/application/src/index.ts"
+      ],
+      "@abms/hr-performance-api": ["./libs/hr/performance/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,24 @@
+{
+  "name": "hr-performance-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/performance/application/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/performance/application",
+        "main": "libs/hr/performance/application/src/index.ts",
+        "tsConfig": "libs/hr/performance/application/tsconfig.lib.json",
+        "assets": []
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}
