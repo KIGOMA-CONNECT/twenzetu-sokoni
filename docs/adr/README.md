@@ -44,3 +44,4 @@ three decision tiers.
 | [0009](./0009-leave-attendance-v1.md) | Leave & Attendance v1 — balances, requests, clock in/out | Accepted |
 | [0010](./0010-payroll-v1-statutory-payroll-engine.md) | Payroll v1 — salary structures, payroll periods, payslips (Tanzania statutory engine) | Accepted |
 | [0011](./0011-recruitment-onboarding-v1.md) | Recruitment & Onboarding v1 — job requisitions, candidates, applications, onboarding tasks | Accepted |
+| [0012](./0012-performance-management-v1.md) | Performance Management v1 — goals, review cycles, performance reviews | Accepted |
