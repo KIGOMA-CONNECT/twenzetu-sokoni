@@ -78,7 +78,15 @@
       ],
       "@abms/hr-leave-attendance-api": [
         "./libs/hr/leave-attendance/api/src/index.ts"
-      ]
+      ],
+      "@abms/hr-payroll-domain": ["./libs/hr/payroll/domain/src/index.ts"],
+      "@abms/hr-payroll-infrastructure": [
+        "./libs/hr/payroll/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-payroll-application": [
+        "./libs/hr/payroll/application/src/index.ts"
+      ],
+      "@abms/hr-payroll-api": ["./libs/hr/payroll/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

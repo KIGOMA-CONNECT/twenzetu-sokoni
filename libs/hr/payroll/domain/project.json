@@ -1,0 +1,19 @@
+{
+  "name": "hr-payroll-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/payroll/domain/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/payroll/domain",
+        "main": "libs/hr/payroll/domain/src/index.ts",
+        "tsConfig": "libs/hr/payroll/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
