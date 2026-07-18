@@ -42,3 +42,4 @@ three decision tiers.
 | [0007](./0007-workflow-engine-v1-sequential-approval-chain.md) | Workflow Engine v1 — sequential, role-based approval chain | Accepted |
 | [0008](./0008-core-hr-employee-master-data.md) | Core HR — employee master data, positions, employment history, documents | Accepted |
 | [0009](./0009-leave-attendance-v1.md) | Leave & Attendance v1 — balances, requests, clock in/out | Accepted |
+| [0010](./0010-payroll-v1-statutory-payroll-engine.md) | Payroll v1 — salary structures, payroll periods, payslips (Tanzania statutory engine) | Accepted |
