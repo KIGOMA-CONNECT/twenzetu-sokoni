@@ -9,6 +9,8 @@ import { LeaveAttendanceModule } from '@abms/hr-leave-attendance-api';
 import { HR_LEAVE_ATTENDANCE_ENTITIES } from '@abms/hr-leave-attendance-infrastructure';
 import { PayrollModule } from '@abms/hr-payroll-api';
 import { HR_PAYROLL_ENTITIES } from '@abms/hr-payroll-infrastructure';
+import { OffboardingModule } from '@abms/hr-offboarding-api';
+import { HR_OFFBOARDING_ENTITIES } from '@abms/hr-offboarding-infrastructure';
 import { PerformanceModule } from '@abms/hr-performance-api';
 import { HR_PERFORMANCE_ENTITIES } from '@abms/hr-performance-infrastructure';
 import { RecruitmentModule } from '@abms/hr-recruitment-api';
@@ -44,6 +46,7 @@ import { HealthModule } from './health/health.module';
       ...HR_PAYROLL_ENTITIES,
       ...HR_RECRUITMENT_ENTITIES,
       ...HR_PERFORMANCE_ENTITIES,
+      ...HR_OFFBOARDING_ENTITIES,
     ]),
     // Current-user + audit-logger both default correctly with no options here
     // — see CqrsModule.forRoot()'s doc comments. See ADR-0006.
@@ -57,6 +60,7 @@ import { HealthModule } from './health/health.module';
     PayrollModule,
     RecruitmentModule,
     PerformanceModule,
+    OffboardingModule,
   ],
 })
 export class AppModule implements NestModule {

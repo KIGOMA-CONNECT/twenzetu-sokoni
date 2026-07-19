@@ -106,7 +106,17 @@
       "@abms/hr-performance-application": [
         "./libs/hr/performance/application/src/index.ts"
       ],
-      "@abms/hr-performance-api": ["./libs/hr/performance/api/src/index.ts"]
+      "@abms/hr-performance-api": ["./libs/hr/performance/api/src/index.ts"],
+      "@abms/hr-offboarding-domain": [
+        "./libs/hr/offboarding/domain/src/index.ts"
+      ],
+      "@abms/hr-offboarding-infrastructure": [
+        "./libs/hr/offboarding/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-offboarding-application": [
+        "./libs/hr/offboarding/application/src/index.ts"
+      ],
+      "@abms/hr-offboarding-api": ["./libs/hr/offboarding/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
