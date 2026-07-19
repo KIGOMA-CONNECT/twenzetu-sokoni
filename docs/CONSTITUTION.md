@@ -199,7 +199,7 @@ The full space ABMS is meant to eventually serve, structured as a **Foundation
 Layer** (cross-cutting capability every business suite depends on) and
 **Business Suites** (the capability end users actually touch) — this is the
 reference for what a fully realized ABMS covers, and each sprint fills in one
-production-ready piece of it. Status markers below are updated as of Sprint 11:
+production-ready piece of it. Status markers below are updated as of Sprint 12:
 
 ```
 Foundation Layer
@@ -222,7 +222,7 @@ Business Suites
 ├── Procurement Suite                       ⬜ not started
 ├── Inventory & Warehouse Suite             ⬜ not started
 ├── Sales, CRM & Commerce Suite             ⬜ not started
-├── HR & Workforce Suite                    ⚠️ partial (Sprint 6 — Core HR: Employee master data, Positions, employment history, documents, see ADR-0008. Sprint 7 — Leave & Attendance: leave types/balances/requests, clock in/out, see ADR-0009. Sprint 8 — Payroll: salary structures, payroll periods, payslips with Tanzania PAYE/NSSF/WCF/SDL, see ADR-0010 [statutory rates unverified, see ADR]. Sprint 9 — Recruitment & Onboarding: job requisitions, candidates, applications, onboarding tasks, see ADR-0011. Sprint 10 — Performance Management: goals, review cycles, performance reviews, see ADR-0012. Sprint 11 — Offboarding: exit cases, checklist tasks, employee termination, see ADR-0013. Learning & Development, Succession/Talent, Compensation & Benefits, Compliance & Reporting not yet built)
+├── HR & Workforce Suite                    ⚠️ partial (Sprint 6 — Core HR: Employee master data, Positions, employment history, documents, see ADR-0008. Sprint 7 — Leave & Attendance: leave types/balances/requests, clock in/out, see ADR-0009. Sprint 8 — Payroll: salary structures, payroll periods, payslips with Tanzania PAYE/NSSF/WCF/SDL, see ADR-0010 [statutory rates unverified, see ADR]. Sprint 9 — Recruitment & Onboarding: job requisitions, candidates, applications, onboarding tasks, see ADR-0011. Sprint 10 — Performance Management: goals, review cycles, performance reviews, see ADR-0012. Sprint 11 — Offboarding: exit cases, checklist tasks, employee termination, see ADR-0013. Sprint 12 — Compensation & Benefits: salary revisions (WORM), benefit plans, enrollments, see ADR-0014. Learning & Development, Succession/Talent, Compliance & Reporting not yet built)
 ├── Manufacturing Suite                     ⬜ not started
 ├── Projects Suite                          ⬜ not started
 ├── Planning, Budget & Performance Suite    ⬜ not started
