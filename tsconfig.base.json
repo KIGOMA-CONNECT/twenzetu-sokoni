@@ -116,7 +116,17 @@
       "@abms/hr-offboarding-application": [
         "./libs/hr/offboarding/application/src/index.ts"
       ],
-      "@abms/hr-offboarding-api": ["./libs/hr/offboarding/api/src/index.ts"]
+      "@abms/hr-offboarding-api": ["./libs/hr/offboarding/api/src/index.ts"],
+      "@abms/hr-compensation-domain": [
+        "./libs/hr/compensation/domain/src/index.ts"
+      ],
+      "@abms/hr-compensation-infrastructure": [
+        "./libs/hr/compensation/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-compensation-application": [
+        "./libs/hr/compensation/application/src/index.ts"
+      ],
+      "@abms/hr-compensation-api": ["./libs/hr/compensation/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
