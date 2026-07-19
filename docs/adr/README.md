@@ -47,3 +47,4 @@ three decision tiers.
 | [0012](./0012-performance-management-v1.md) | Performance Management v1 — goals, review cycles, performance reviews | Accepted |
 | [0013](./0013-offboarding-v1.md) | Offboarding v1 — exit cases, checklist tasks, employee termination | Accepted |
 | [0014](./0014-compensation-benefits-v1.md) | Compensation & Benefits v1 — salary revisions, benefit plans, enrollments | Accepted |
+| [0015](./0015-learning-development-v1.md) | Learning & Development v1 — course catalog, enrollments | Accepted |
