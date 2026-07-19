@@ -27,6 +27,7 @@ export default new DataSource(
         'libs/hr/performance/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/hr/offboarding/infrastructure/src/lib/migrations/*.migration.ts',
         'libs/hr/compensation/infrastructure/src/lib/migrations/*.migration.ts',
+        'libs/hr/learning/infrastructure/src/lib/migrations/*.migration.ts',
       ],
     },
   ),

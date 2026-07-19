@@ -1,0 +1,19 @@
+{
+  "name": "hr-learning-api",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/learning/api/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/learning/api",
+        "main": "libs/hr/learning/api/src/index.ts",
+        "tsConfig": "libs/hr/learning/api/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
