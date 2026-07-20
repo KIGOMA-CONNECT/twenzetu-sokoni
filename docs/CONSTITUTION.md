@@ -199,7 +199,7 @@ The full space ABMS is meant to eventually serve, structured as a **Foundation
 Layer** (cross-cutting capability every business suite depends on) and
 **Business Suites** (the capability end users actually touch) — this is the
 reference for what a fully realized ABMS covers, and each sprint fills in one
-production-ready piece of it. Status markers below are updated as of Sprint 14:
+production-ready piece of it. Status markers below are updated as of Sprint 15:
 
 ```
 Foundation Layer
@@ -222,7 +222,7 @@ Business Suites
 ├── Procurement Suite                       ⬜ not started
 ├── Inventory & Warehouse Suite             ⬜ not started
 ├── Sales, CRM & Commerce Suite             ⬜ not started
-├── HR & Workforce Suite                    ⚠️ partial (Sprint 6 — Core HR: Employee master data, Positions, employment history, documents, see ADR-0008. Sprint 7 — Leave & Attendance: leave types/balances/requests, clock in/out, see ADR-0009. Sprint 8 — Payroll: salary structures, payroll periods, payslips with Tanzania PAYE/NSSF/WCF/SDL, see ADR-0010 [statutory rates unverified, see ADR]. Sprint 9 — Recruitment & Onboarding: job requisitions, candidates, applications, onboarding tasks, see ADR-0011. Sprint 10 — Performance Management: goals, review cycles, performance reviews, see ADR-0012. Sprint 11 — Offboarding: exit cases, checklist tasks, employee termination, see ADR-0013. Sprint 12 — Compensation & Benefits: salary revisions (WORM), benefit plans, enrollments, see ADR-0014. Sprint 13 — Learning & Development: course catalog, enrollments, see ADR-0015. Sprint 14 — Succession & Talent Management: succession plans, candidate nominations, see ADR-0016. Compliance & Reporting not yet built)
+├── HR & Workforce Suite                    ✅ built (Sprint 6 — Core HR: Employee master data, Positions, employment history, documents, see ADR-0008. Sprint 7 — Leave & Attendance: leave types/balances/requests, clock in/out, see ADR-0009. Sprint 8 — Payroll: salary structures, payroll periods, payslips with Tanzania PAYE/NSSF/WCF/SDL, see ADR-0010 [statutory rates unverified, see ADR]. Sprint 9 — Recruitment & Onboarding: job requisitions, candidates, applications, onboarding tasks, see ADR-0011. Sprint 10 — Performance Management: goals, review cycles, performance reviews, see ADR-0012. Sprint 11 — Offboarding: exit cases, checklist tasks, employee termination, see ADR-0013. Sprint 12 — Compensation & Benefits: salary revisions (WORM), benefit plans, enrollments, see ADR-0014. Sprint 13 — Learning & Development: course catalog, enrollments, see ADR-0015. Sprint 14 — Succession & Talent Management: succession plans, candidate nominations, see ADR-0016. Sprint 15 — Compliance & Reporting: requirement catalog, employee compliance records, see ADR-0017. v1 complete across all 9 sub-modules; RBAC enforcement, cross-module joins [e.g. Learning->Compliance], and reporting dashboards remain future work)
 ├── Manufacturing Suite                     ⬜ not started
 ├── Projects Suite                          ⬜ not started
 ├── Planning, Budget & Performance Suite    ⬜ not started
@@ -379,11 +379,11 @@ vision in Chapter 2 is large by design. What follows is the map, not a
 commitment to a timeline — see Chapter 6's Enterprise Capability Map for the
 authoritative, status-tracked list.
 
-**Near-term:** HR & Workforce Suite (Employee master data next, Payroll after
-— Payroll needs Employees, Employees need the Identity foundation Sprint 4
-just built), then the remaining Foundation Layer gaps flagged in Chapter 6
-(Workflow Engine, Audit/WORM), then Finance, Procurement, Inventory, Sales/
-CRM, Planning & Budget, Assets — filling out the Enterprise Capability Map one
+**Near-term:** The HR & Workforce Suite v1 (Sprints 6-15, see Chapter 6) is
+now complete across all 9 sub-modules. Next up is the remaining Foundation
+Layer gaps flagged in Chapter 6 (Notification Engine, Document Management,
+Reporting Engine, Analytics Engine, AI Services, full Multi-Country), then
+the next Business Suite — filling out the Enterprise Capability Map one
 production-ready suite at a time.
 
 **Mid-term (Phase 4):** FinTech capability, an Investor Portal, Business

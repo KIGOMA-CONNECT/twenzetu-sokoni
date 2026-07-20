@@ -49,3 +49,4 @@ three decision tiers.
 | [0014](./0014-compensation-benefits-v1.md) | Compensation & Benefits v1 — salary revisions, benefit plans, enrollments | Accepted |
 | [0015](./0015-learning-development-v1.md) | Learning & Development v1 — course catalog, enrollments | Accepted |
 | [0016](./0016-succession-talent-management-v1.md) | Succession & Talent Management v1 — plans, candidate nominations | Accepted |
+| [0017](./0017-compliance-reporting-v1.md) | Compliance & Reporting v1 — requirement catalog, employee records | Accepted |
