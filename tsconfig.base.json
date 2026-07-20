@@ -146,7 +146,17 @@
       "@abms/hr-succession-application": [
         "./libs/hr/succession/application/src/index.ts"
       ],
-      "@abms/hr-succession-api": ["./libs/hr/succession/api/src/index.ts"]
+      "@abms/hr-succession-api": ["./libs/hr/succession/api/src/index.ts"],
+      "@abms/hr-compliance-domain": [
+        "./libs/hr/compliance/domain/src/index.ts"
+      ],
+      "@abms/hr-compliance-infrastructure": [
+        "./libs/hr/compliance/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-compliance-application": [
+        "./libs/hr/compliance/application/src/index.ts"
+      ],
+      "@abms/hr-compliance-api": ["./libs/hr/compliance/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
