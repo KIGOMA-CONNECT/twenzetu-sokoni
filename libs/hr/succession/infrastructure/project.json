@@ -1,0 +1,27 @@
+{
+  "name": "hr-succession-infrastructure",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/succession/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:infrastructure"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/succession/infrastructure",
+        "main": "libs/hr/succession/infrastructure/src/index.ts",
+        "tsConfig": "libs/hr/succession/infrastructure/tsconfig.lib.json",
+        "assets": []
+      }
+    },
+    "test-integration": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/libs/hr-succession-infrastructure-integration"],
+      "options": {
+        "jestConfig": "libs/hr/succession/infrastructure/jest.integration.config.cts",
+        "runInBand": true
+      }
+    }
+  }
+}

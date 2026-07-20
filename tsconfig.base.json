@@ -136,7 +136,17 @@
       "@abms/hr-learning-application": [
         "./libs/hr/learning/application/src/index.ts"
       ],
-      "@abms/hr-learning-api": ["./libs/hr/learning/api/src/index.ts"]
+      "@abms/hr-learning-api": ["./libs/hr/learning/api/src/index.ts"],
+      "@abms/hr-succession-domain": [
+        "./libs/hr/succession/domain/src/index.ts"
+      ],
+      "@abms/hr-succession-infrastructure": [
+        "./libs/hr/succession/infrastructure/src/index.ts"
+      ],
+      "@abms/hr-succession-application": [
+        "./libs/hr/succession/application/src/index.ts"
+      ],
+      "@abms/hr-succession-api": ["./libs/hr/succession/api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

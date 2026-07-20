@@ -1,0 +1,19 @@
+{
+  "name": "hr-succession-domain",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/succession/domain/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/succession/domain",
+        "main": "libs/hr/succession/domain/src/index.ts",
+        "tsConfig": "libs/hr/succession/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "hr-succession-api",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/succession/api/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/succession/api",
+        "main": "libs/hr/succession/api/src/index.ts",
+        "tsConfig": "libs/hr/succession/api/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}
