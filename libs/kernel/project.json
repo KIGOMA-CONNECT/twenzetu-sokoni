@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/kernel",
+  "sourceRoot": "libs/kernel/src",
+  "projectType": "library",
+  "tags": ["scope:kernel", "type:lib"],
+  "targets": {}
+}

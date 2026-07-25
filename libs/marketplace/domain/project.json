@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/marketplace-domain",
+  "sourceRoot": "libs/marketplace/domain/src",
+  "projectType": "library",
+  "tags": ["scope:marketplace", "type:domain"],
+  "targets": {}
+}

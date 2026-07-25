@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: afri-market-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_BOOTSTRAP_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_BOOTSTRAP_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-afri_market}
+      DB_OWNER_USER: ${DB_OWNER_USER:-afri_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:-afri_owner_dev_password}
+      DB_RUNTIME_USER: ${DB_RUNTIME_USER:-afri_runtime}
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}
+    ports:
+      - '${DB_PORT:-5432}:5432'
+    volumes:
+      - afri-market-postgres-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_BOOTSTRAP_USER:-postgres} -d ${DB_NAME:-afri_market}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  api:
+    build: .
+    container_name: afri-market-api
+    restart: unless-stopped
+    ports:
+      - '${APP_PORT:-3000}:3000'
+    environment:
+      APP_PORT: 3000
+      APP_NAME: afriMarket
+      APP_ENV: ${APP_ENV:-development}
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_BOOTSTRAP_USER: ${DB_BOOTSTRAP_USER:-postgres}
+      DB_BOOTSTRAP_PASSWORD: ${DB_BOOTSTRAP_PASSWORD:-postgres}
+      DB_NAME: ${DB_NAME:-afri_market}
+      DB_OWNER_USER: ${DB_OWNER_USER:-afri_owner}
+      DB_OWNER_PASSWORD: ${DB_OWNER_PASSWORD:-afri_owner_dev_password}
+      DB_RUNTIME_USER: ${DB_RUNTIME_USER:-afri_runtime}
+      DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-in-production}
+      JWT_EXPIRY: ${JWT_EXPIRY:-7d}
+      OTP_EXPIRY_MINUTES: ${OTP_EXPIRY_MINUTES:-5}
+      OTP_LENGTH: ${OTP_LENGTH:-6}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:4200
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: afri-market-redis
+    restart: unless-stopped
+    ports:
+      - '${REDIS_PORT:-6379}:6379'
+    volumes:
+      - afri-market-redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  afri-market-postgres-data:
+  afri-market-redis-data:

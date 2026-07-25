@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/tenancy",
+  "sourceRoot": "libs/tenancy/src",
+  "projectType": "library",
+  "tags": ["scope:tenancy", "type:lib"],
+  "targets": {}
+}

@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/core-security",
+  "sourceRoot": "libs/core/security/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:lib"],
+  "targets": {}
+}

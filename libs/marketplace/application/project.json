@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/marketplace-application",
+  "sourceRoot": "libs/marketplace/application/src",
+  "projectType": "library",
+  "tags": ["scope:marketplace", "type:application"],
+  "targets": {}
+}

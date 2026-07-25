@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/identity-domain",
+  "sourceRoot": "libs/identity/domain/src",
+  "projectType": "library",
+  "tags": ["scope:identity", "type:domain"],
+  "targets": {}
+}

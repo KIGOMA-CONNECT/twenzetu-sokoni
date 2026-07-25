@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/database",
+  "sourceRoot": "libs/database/src",
+  "projectType": "library",
+  "tags": ["scope:database", "type:lib"],
+  "targets": {}
+}

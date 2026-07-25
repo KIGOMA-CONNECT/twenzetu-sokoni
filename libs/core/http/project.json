@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/core-http",
+  "sourceRoot": "libs/core/http/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:lib"],
+  "targets": {}
+}
