@@ -10,7 +10,6 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx nx run api:build
-RUN npx tsc-alias -p apps/api/tsconfig.app.json
 RUN npx nx run web:build
 
 FROM nginx:alpine AS nginx-config
@@ -24,7 +23,9 @@ WORKDIR /app
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
+COPY --from=builder /app/tsconfig.json ./
+COPY --from=builder /app/tsconfig.base.json ./
 RUN npm prune --omit=dev
 USER afri-market
 EXPOSE 3000
-CMD ["node", "dist/out-tsc/apps/api/src/main.js"]
+CMD ["node", "-r", "tsconfig-paths/register", "dist/out-tsc/apps/api/src/main.js"]
