@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./dist/out-tsc",
+    "paths": {
+      "@afri-market/kernel": ["libs/kernel/src/index"],
+      "@afri-market/core-config": ["libs/core/config/src/index"],
+      "@afri-market/core-logger": ["libs/core/logger/src/index"],
+      "@afri-market/core-http": ["libs/core/http/src/index"],
+      "@afri-market/core-exceptions": ["libs/core/exceptions/src/index"],
+      "@afri-market/core-security": ["libs/core/security/src/index"],
+      "@afri-market/tenancy": ["libs/tenancy/src/index"],
+      "@afri-market/database": ["libs/database/src/index"],
+      "@afri-market/identity-domain": ["libs/identity/domain/src/index"],
+      "@afri-market/identity-infrastructure": ["libs/identity/infrastructure/src/index"],
+      "@afri-market/identity-application": ["libs/identity/application/src/index"],
+      "@afri-market/identity-api": ["libs/identity/api/src/index"],
+      "@afri-market/marketplace-domain": ["libs/marketplace/domain/src/index"],
+      "@afri-market/marketplace-infrastructure": ["libs/marketplace/infrastructure/src/index"],
+      "@afri-market/marketplace-application": ["libs/marketplace/application/src/index"],
+      "@afri-market/marketplace-api": ["libs/marketplace/api/src/index"],
+      "@afri-market/integrations": ["libs/integrations/src/index"],
+      "@afri-market/ussd": ["libs/ussd/src/index"]
+    }
+  }
+}
