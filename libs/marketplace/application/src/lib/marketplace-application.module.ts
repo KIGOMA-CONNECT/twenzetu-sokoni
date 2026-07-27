@@ -275,6 +275,6 @@ const USE_CASES = [
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}
