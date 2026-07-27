@@ -2,7 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { MainLayout } from './layouts/MainLayout';
+import HomePage from './pages/landing/HomePage';
 import LoginPage from './pages/auth/LoginPage';
+import RegisterPage from './pages/auth/RegisterPage';
 import ConsumerDashboard from './pages/consumer/ConsumerDashboard';
 import VendorList from './pages/consumer/VendorList';
 import ProductList from './pages/consumer/ProductList';
@@ -39,7 +41,9 @@ function AppRoutes() {
   const { user } = useAuth();
   return (
     <Routes>
+      <Route path="/" element={user ? <Navigate to="/dashboard" /> : <HomePage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
+      <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/vendors" element={<ProtectedRoute roles={['customer','admin']}><VendorList /></ProtectedRoute>} />
@@ -73,7 +77,7 @@ function AppRoutes() {
         <Route path="/driver/vehicle" element={<ProtectedRoute roles={['driver']}><DriverVehicle /></ProtectedRoute>} />
         <Route path="/notifications" element={<NotificationsPage />} />
       </Route>
-      <Route path="*" element={<Navigate to="/dashboard" />} />
+      <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   );
 }
