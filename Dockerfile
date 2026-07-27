@@ -26,4 +26,4 @@ COPY --from=builder /app/package.json ./
 RUN npm prune --omit=dev
 USER afri-market
 EXPOSE 3000
-CMD ["node", "dist/apps/api/main.js"]
+CMD ["node", "dist/out-tsc/src/main.js"]
