@@ -2,8 +2,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { IPaymentRepository } from '@afri-market/marketplace-domain';
 import { Inject } from '@nestjs/common';
-import { MobileMoneyService } from '@afri-market/integrations';
-import { PAYMENT_REPOSITORY } from '@afri-market/marketplace-application';
+import { IMobileMoneyService } from '@afri-market/integrations';
+import { PAYMENT_REPOSITORY, MOBILE_MONEY_SERVICE } from '@afri-market/marketplace-application';
 
 @Injectable()
 export class PaymentTimeoutService {
@@ -14,7 +14,7 @@ export class PaymentTimeoutService {
 
   constructor(
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
-    private readonly mobileMoney: MobileMoneyService,
+    @Inject(MOBILE_MONEY_SERVICE) private readonly mobileMoney: IMobileMoneyService,
   ) {}
 
   @Cron(CronExpression.EVERY_5_MINUTES)
