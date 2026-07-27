@@ -10,6 +10,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx nx run api:build
+RUN npx tsc-alias -p apps/api/tsconfig.app.json
 RUN npx nx run web:build
 
 FROM nginx:alpine AS nginx-config
