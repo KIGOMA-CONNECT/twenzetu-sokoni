@@ -8,97 +8,169 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    background: 'linear-gradient(135deg, #0f766e 0%, #134e4a 100%)',
+    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f766e 100%)',
     padding: '1.5rem',
     fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+    position: 'relative' as const,
+    overflow: 'hidden',
+  },
+  bgGrid: {
+    position: 'absolute' as const,
+    inset: 0,
+    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255,255,255,0.03) 1px, transparent 0)',
+    backgroundSize: '50px 50px',
   },
   card: {
+    position: 'relative' as const,
     background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1.5rem',
+    borderRadius: '16px',
+    padding: '2.5rem',
     width: '100%',
     maxWidth: '420px',
-    boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+    boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
   },
   brand: {
     display: 'flex',
     flexDirection: 'column' as const,
     alignItems: 'center',
-    marginBottom: '1.5rem',
+    marginBottom: '2rem',
   },
   logo: {
-    fontSize: '1.75rem',
+    fontSize: '1.5rem',
     fontWeight: 800,
-    color: '#0f766e',
+    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
     letterSpacing: '-0.5px',
   },
   tagline: {
-    fontSize: '0.85rem',
-    color: '#64748b',
-    marginTop: '0.25rem',
+    fontSize: '0.8rem',
+    color: '#94a3b8',
+    marginTop: '0.35rem',
   },
   title: {
-    fontSize: '1.25rem',
+    fontSize: '1.1rem',
     fontWeight: 600,
     color: '#0f172a',
-    marginBottom: '1rem',
+    marginBottom: '1.5rem',
     textAlign: 'center' as const,
   },
   field: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    marginBottom: '1rem',
+    marginBottom: '1.25rem',
   },
   label: {
-    fontSize: '0.85rem',
+    display: 'block',
+    fontSize: '0.8rem',
     fontWeight: 600,
-    color: '#334155',
+    color: '#475569',
     marginBottom: '0.4rem',
   },
+  inputWrap: {
+    position: 'relative' as const,
+  },
   input: {
-    padding: '0.625rem 0.75rem',
-    border: '1px solid #cbd5e1',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
+    width: '100%',
+    padding: '0.75rem 0.85rem',
+    border: '1.5px solid #e2e8f0',
+    borderRadius: '10px',
+    fontSize: '0.9rem',
     outline: 'none',
     background: '#f8fafc',
+    transition: 'border-color 0.2s, box-shadow 0.2s',
+    boxSizing: 'border-box' as const,
+  },
+  inputFocus: {
+    borderColor: '#0f766e',
+    boxShadow: '0 0 0 3px rgba(15,118,110,0.12)',
+    background: '#ffffff',
+  },
+  passwordToggle: {
+    position: 'absolute' as const,
+    right: '12px',
+    top: '50%',
+    transform: 'translateY(-50%)',
+    background: 'none',
+    border: 'none',
+    color: '#94a3b8',
+    fontSize: '1rem',
+    cursor: 'pointer',
+    padding: '4px',
+    lineHeight: 1,
+  },
+  options: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '1.25rem',
+    fontSize: '0.8rem',
+  },
+  checkbox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.4rem',
+    color: '#64748b',
+    cursor: 'pointer',
+  },
+  checkboxInput: {
+    accentColor: '#0f766e',
+    width: '15px',
+    height: '15px',
+    cursor: 'pointer',
+  },
+  forgotLink: {
+    color: '#0f766e',
+    fontWeight: 500,
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    fontSize: '0.8rem',
+    padding: 0,
   },
   button: {
     width: '100%',
-    padding: '0.7rem 1rem',
-    background: '#0f766e',
+    padding: '0.8rem 1rem',
+    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
     color: '#ffffff',
     border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    fontWeight: 600,
+    borderRadius: '10px',
+    fontSize: '0.9rem',
+    fontWeight: 700,
     cursor: 'pointer',
-    marginTop: '0.25rem',
+    transition: 'opacity 0.2s, transform 0.1s',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '0.5rem',
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+    cursor: 'not-allowed',
   },
   error: {
-    padding: '0.75rem',
+    padding: '0.7rem 0.85rem',
     background: '#fef2f2',
     border: '1px solid #fecaca',
-    borderRadius: '8px',
+    borderRadius: '10px',
     color: '#dc2626',
-    fontSize: '0.85rem',
+    fontSize: '0.8rem',
     marginBottom: '1rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
-  hint: {
-    marginTop: '1.25rem',
-    padding: '0.75rem',
-    background: '#f1f5f9',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
+  footer: {
+    marginTop: '1.5rem',
+    textAlign: 'center' as const,
     fontSize: '0.75rem',
-    color: '#475569',
-    lineHeight: 1.5,
+    color: '#94a3b8',
   },
-  hintTitle: {
-    fontWeight: 700,
-    color: '#334155',
-    marginBottom: '0.25rem',
+  spinner: {
+    width: '16px',
+    height: '16px',
+    border: '2px solid rgba(255,255,255,0.3)',
+    borderTopColor: '#ffffff',
+    borderRadius: '50%',
+    animation: 'spin 0.6s linear infinite',
   },
 };
 
@@ -109,6 +181,8 @@ function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -118,7 +192,7 @@ function LoginPage() {
       await login(phoneNumber.trim(), password);
       navigate('/dashboard', { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Login failed');
+      setError(err.response?.data?.message || err.message || 'Invalid credentials');
     } finally {
       setSubmitting(false);
     }
@@ -126,51 +200,113 @@ function LoginPage() {
 
   return (
     <div style={styles.page}>
+      <div style={styles.bgGrid} />
       <div style={styles.card}>
         <div style={styles.brand}>
           <div style={styles.logo}>afriMarket</div>
-          <div style={styles.tagline}>Your local marketplace</div>
+          <div style={styles.tagline}>Enterprise marketplace platform</div>
         </div>
-        <h1 style={styles.title}>Sign in to your account</h1>
+        <h1 style={styles.title}>Welcome back</h1>
 
-        {error && <div style={styles.error}>{error}</div>}
+        {error && (
+          <div style={styles.error}>
+            <span>&#9888;</span>
+            <span>{error}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div style={styles.field}>
             <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
-            <input
-              id="phoneNumber"
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              placeholder="+250788100001"
-              style={styles.input}
-              required
-            />
+            <div style={styles.inputWrap}>
+              <input
+                id="phoneNumber"
+                type="tel"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                placeholder="+255 754 000 000"
+                style={styles.input}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#0f766e';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = '#f8fafc';
+                }}
+                required
+              />
+            </div>
           </div>
+
           <div style={styles.field}>
             <label style={styles.label} htmlFor="password">Password</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={styles.input}
-              required
-            />
+            <div style={styles.inputWrap}>
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                style={styles.input}
+                onFocus={(e) => {
+                  e.currentTarget.style.borderColor = '#0f766e';
+                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
+                  e.currentTarget.style.background = '#ffffff';
+                }}
+                onBlur={(e) => {
+                  e.currentTarget.style.borderColor = '#e2e8f0';
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.background = '#f8fafc';
+                }}
+                required
+              />
+              <button
+                type="button"
+                style={styles.passwordToggle}
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                {showPassword ? '\u{1F441}' : '\u{1F512}'}
+              </button>
+            </div>
           </div>
-          <button type="submit" disabled={submitting} style={{ ...styles.button, opacity: submitting ? 0.7 : 1 }}>
-            {submitting ? 'Signing in...' : 'Sign in'}
+
+          <div style={styles.options}>
+            <label style={styles.checkbox}>
+              <input
+                type="checkbox"
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                style={styles.checkboxInput}
+              />
+              Remember me
+            </label>
+            <button type="button" style={styles.forgotLink}>
+              Forgot password?
+            </button>
+          </div>
+
+          <button
+            type="submit"
+            disabled={submitting}
+            style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+          >
+            {submitting ? (
+              <>
+                <span style={styles.spinner} />
+                Signing in...
+              </>
+            ) : (
+              'Sign in'
+            )}
           </button>
         </form>
 
-        <div style={styles.hint}>
-          <div style={styles.hintTitle}>Demo credentials</div>
-          Admin: +250788100001<br />
-          Vendor: +250788100002<br />
-          Customer: +250788100003<br />
-          Password: password123
+        <div style={styles.footer}>
+          &copy; {new Date().getFullYear()} afriMarket. All rights reserved.
         </div>
       </div>
     </div>
