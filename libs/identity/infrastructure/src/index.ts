@@ -15,3 +15,5 @@ export * from './lib/repositories/typeorm-otp.repository';
 export * from './lib/repositories/typeorm-tenant.repository';
 export * from './lib/repositories/typeorm-user.repository';
 export * from './lib/auth/otp-cache.service';
+export * from './lib/auth/permissions.decorator';
+export * from './lib/auth/permissions.guard';

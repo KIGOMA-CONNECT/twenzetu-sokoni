@@ -63,4 +63,16 @@ export class Address extends AggregateRoot<EntityId> {
 
   public setDefault(): void { this._isDefault = true; }
   public unsetDefault(): void { this._isDefault = false; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      userId: this._userId.value,
+      label: this._label,
+      fullAddress: this._fullAddress,
+      latitude: this._latitude,
+      longitude: this._longitude,
+      isDefault: this._isDefault,
+    };
+  }
 }

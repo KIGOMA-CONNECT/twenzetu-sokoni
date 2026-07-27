@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "afriMarket",
+    "tagline": "Agiza chakula, mboga, na zaidi"
+  },
+  "nav": {
+    "dashboard": "Dashibodi",
+    "orders": "Oda Zangu",
+    "vendors": "Wauzaji",
+    "wallet": "Mkoba",
+    "addresses": "Anwani",
+    "loyalty": "Pointi za Uaminifu",
+    "reviews": "Maoni Yangu",
+    "products": "Bidhaa",
+    "deliveries": "Usafirishaji",
+    "earnings": "Mapato",
+    "vehicle": "Gari",
+    "settings": "Mipangilio",
+    "logout": "Toka"
+  },
+  "auth": {
+    "login": "Ingia",
+    "phoneNumber": "Nambari ya Simu",
+    "password": "Nywila",
+    "loginButton": "Ingia",
+    "loggingIn": "Inaingia..."
+  },
+  "order": {
+    "title": "Historia ya Oda",
+    "subtitle": "Fuata oda zako za zamani na za sasa",
+    "status": "Hali",
+    "total": "Jumla",
+    "date": "Tarehe",
+    "vendor": "Muuzaji",
+    "noOrders": "Huna oda bado.",
+    "track": "Fuata",
+    "details": "Maelezo",
+    "tracking": "Ufuatiliaji wa Oda",
+    "pickup": "Kuchukua",
+    "delivery": "Kufikisha",
+    "distance": "Umbali",
+    "estimatedTime": "Muda uliokadiriwa",
+    "summary": "Muhtasari wa Oda",
+    "deliveryFee": "Ada ya Usafirishaji",
+    "address": "Anwani"
+  },
+  "status": {
+    "PLACED": "Oda Imewekwa",
+    "CONFIRMED": "Imethibitishwa",
+    "PREPARING": "Inaandaliwa",
+    "READY_FOR_PICKUP": "Tayari Kuchukua",
+    "OUT_FOR_DELIVERY": "Imetoka Kusafirisha",
+    "DELIVERED": "Imefikishwa",
+    "CANCELLED": "Imefutwa"
+  },
+  "common": {
+    "loading": "Inapakia...",
+    "error": "Hitilafu imetokea",
+    "back": "Nyuma",
+    "next": "Ifuatayo",
+    "prev": "Iliyotangulia",
+    "save": "Hifadhi",
+    "cancel": "Ghairi",
+    "delete": "Futa",
+    "confirm": "Thibitisha",
+    "search": "Tafuta"
+  },
+  "language": {
+    "en": "English",
+    "sw": "Kiswahili",
+    "switch": "Lugha"
+  }
+}

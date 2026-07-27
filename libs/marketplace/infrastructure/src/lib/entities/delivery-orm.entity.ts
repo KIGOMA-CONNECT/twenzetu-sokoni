@@ -2,10 +2,10 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'deliveries' })
-@Index(['order_id'])
-@Index(['driver_id'])
+@Index(['orderId'])
+@Index(['driverId'])
 @Index(['status'])
-@Index(['tenantId', 'driver_id'])
+@Index(['tenantId', 'driverId'])
 @Index(['tenantId', 'status'])
 export class DeliveryOrmEntity extends TenantAwareEntity {
   @Column({ name: 'order_id', type: 'uuid' })
@@ -49,6 +49,15 @@ export class DeliveryOrmEntity extends TenantAwareEntity {
 
   @Column({ type: 'varchar', length: 10, default: 'TZS' })
   public currency!: string;
+
+  @Column({ name: 'current_latitude', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  public currentLatitude!: number | null;
+
+  @Column({ name: 'current_longitude', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  public currentLongitude!: number | null;
+
+  @Column({ name: 'last_location_update', type: 'timestamptz', nullable: true })
+  public lastLocationUpdate!: Date | null;
 
   @Column({ type: 'integer', default: 1 })
   public version!: number;

@@ -2,8 +2,8 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'vendor_quotes' })
-@Index(['procurement_id'])
-@Index(['vendor_id'])
+@Index(['procurementId'])
+@Index(['vendorId'])
 export class VendorQuoteOrmEntity extends TenantAwareEntity {
   @Column({ name: 'procurement_id', type: 'uuid' })
   public procurementId!: string;

@@ -30,6 +30,9 @@ export interface ReconstituteDeliveryProps {
   readonly distanceKm: number | undefined;
   readonly estimatedTimeMinutes: number | undefined;
   readonly driverEarnings: Money;
+  readonly currentLatitude: number | undefined;
+  readonly currentLongitude: number | undefined;
+  readonly lastLocationUpdate: Date | undefined;
   readonly version: number;
 }
 
@@ -50,6 +53,9 @@ export class Delivery extends AggregateRoot<EntityId> {
     private _distanceKm: number | undefined,
     private _estimatedTimeMinutes: number | undefined,
     private _driverEarnings: Money,
+    private _currentLatitude: number | undefined,
+    private _currentLongitude: number | undefined,
+    private _lastLocationUpdate: Date | undefined,
     private readonly _version: number,
   ) {
     super(id);
@@ -61,7 +67,7 @@ export class Delivery extends AggregateRoot<EntityId> {
       props.vehicleType, 'PENDING', props.pickupAddress, props.deliveryAddress,
       props.pickupLatitude, props.pickupLongitude,
       props.deliveryLatitude, props.deliveryLongitude,
-      undefined, undefined, Money.create(0), 1,
+      undefined, undefined, Money.create(0), undefined, undefined, undefined, 1,
     );
   }
 
@@ -72,7 +78,8 @@ export class Delivery extends AggregateRoot<EntityId> {
       props.pickupLatitude, props.pickupLongitude,
       props.deliveryLatitude, props.deliveryLongitude,
       props.distanceKm, props.estimatedTimeMinutes,
-      props.driverEarnings, props.version,
+      props.driverEarnings, props.currentLatitude, props.currentLongitude,
+      props.lastLocationUpdate, props.version,
     );
   }
 
@@ -86,6 +93,9 @@ export class Delivery extends AggregateRoot<EntityId> {
   public get driverEarnings(): Money { return this._driverEarnings; }
   public get distanceKm(): number | undefined { return this._distanceKm; }
   public get estimatedTimeMinutes(): number | undefined { return this._estimatedTimeMinutes; }
+  public get currentLatitude(): number | undefined { return this._currentLatitude; }
+  public get currentLongitude(): number | undefined { return this._currentLongitude; }
+  public get lastLocationUpdate(): Date | undefined { return this._lastLocationUpdate; }
   public get version(): number { return this._version; }
 
   public assign(): void { this._status = 'ASSIGNED'; }
@@ -96,4 +106,34 @@ export class Delivery extends AggregateRoot<EntityId> {
     this._driverEarnings = earnings;
   }
   public fail(): void { this._status = 'FAILED'; }
+
+  public updateLocation(latitude: number, longitude: number): void {
+    this._currentLatitude = latitude;
+    this._currentLongitude = longitude;
+    this._lastLocationUpdate = new Date();
+  }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      orderId: this._orderId.value,
+      driverId: this._driverId.value,
+      vehicleType: this._vehicleType,
+      status: this._status,
+      pickupAddress: this._pickupAddress,
+      deliveryAddress: this._deliveryAddress,
+      pickupLatitude: this._pickupLatitude,
+      pickupLongitude: this._pickupLongitude,
+      deliveryLatitude: this._deliveryLatitude,
+      deliveryLongitude: this._deliveryLongitude,
+      distanceKm: this._distanceKm,
+      estimatedTimeMinutes: this._estimatedTimeMinutes,
+      driverEarnings: this._driverEarnings.amount,
+      currency: this._driverEarnings.currency,
+      currentLatitude: this._currentLatitude,
+      currentLongitude: this._currentLongitude,
+      lastLocationUpdate: this._lastLocationUpdate,
+      version: this._version,
+    };
+  }
 }

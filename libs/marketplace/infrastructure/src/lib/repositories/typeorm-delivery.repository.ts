@@ -88,6 +88,9 @@ export class TypeOrmDeliveryRepository extends TypeOrmRepository<Delivery, Deliv
       distanceKm: e.distanceKm ?? undefined,
       estimatedTimeMinutes: e.estimatedTimeMinutes ?? undefined,
       driverEarnings: Money.create(Number(e.driverEarnings), e.currency),
+      currentLatitude: e.currentLatitude ?? undefined,
+      currentLongitude: e.currentLongitude ?? undefined,
+      lastLocationUpdate: e.lastLocationUpdate ?? undefined,
       version: e.version,
     });
   }
@@ -104,6 +107,9 @@ export class TypeOrmDeliveryRepository extends TypeOrmRepository<Delivery, Deliv
       deliveryAddress: entity.deliveryAddress,
       driverEarnings: entity.driverEarnings.amount,
       currency: entity.driverEarnings.currency,
+      currentLatitude: entity.currentLatitude ?? null,
+      currentLongitude: entity.currentLongitude ?? null,
+      lastLocationUpdate: entity.lastLocationUpdate ?? null,
       version: entity.version,
     };
   }

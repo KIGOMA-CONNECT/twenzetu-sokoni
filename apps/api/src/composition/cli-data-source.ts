@@ -9,5 +9,6 @@ import { MARKETPLACE_ENTITIES } from '@afri-market/marketplace-infrastructure';
 const options = { ...buildDataSourceOptions() };
 options.entities = [...IDENTITY_ENTITIES, ...MARKETPLACE_ENTITIES];
 options.migrations = ['libs/database/src/lib/migrations/*.ts'];
+options.synchronize = false;
 
 export default new DataSource(options);

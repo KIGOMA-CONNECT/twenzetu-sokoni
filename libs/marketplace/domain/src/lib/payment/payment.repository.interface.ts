@@ -15,6 +15,7 @@ export interface PaymentRevenueFilters {
 
 export interface IPaymentRepository extends IRepository<Payment, EntityId> {
   findByOrderId(orderId: string): Promise<Payment | null>;
+  findPendingOlderThan(cutoff: Date, limit?: number): Promise<Payment[]>;
   search(tenantId: string, filters: PaymentSearchFilters): Promise<{ data: Payment[]; total: number }>;
   sumRevenue(tenantId: string, filters?: PaymentRevenueFilters): Promise<{ total: number; count: number }>;
   sumVendorNet(tenantId: string, filters?: PaymentRevenueFilters): Promise<number>;

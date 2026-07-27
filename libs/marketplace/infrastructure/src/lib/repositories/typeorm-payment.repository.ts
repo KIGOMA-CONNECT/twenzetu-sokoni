@@ -1,7 +1,7 @@
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
+import { EntityManager, LessThan } from 'typeorm';
 import { Payment, IPaymentRepository, PaymentSearchFilters, PaymentRevenueFilters, PaymentMethod, PaymentStatus } from '@afri-market/marketplace-domain';
 import { PaymentOrmEntity } from '../entities/payment-orm.entity';
 
@@ -24,6 +24,18 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
   public async findByTransactionRef(transactionRef: string): Promise<Payment | null> {
     const entity = await this.repository.findOne({ where: { transactionRef } });
     return entity ? this.toDomain(entity) : null;
+  }
+
+  public async findPendingOlderThan(cutoff: Date, limit: number = 50): Promise<Payment[]> {
+    const entities = await this.repository.find({
+      where: {
+        status: 'PENDING',
+        initiatedAt: LessThan(cutoff),
+      },
+      take: limit,
+      order: { initiatedAt: 'ASC' },
+    });
+    return entities.map((e) => this.toDomain(e));
   }
 
   public async save(entity: Payment): Promise<void> {
@@ -109,6 +121,8 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
       vendorNet: Money.create(Number(e.vendorNet), e.currency),
       driverNet: Money.create(Number(e.driverNet), e.currency),
       transactionRef: e.transactionRef ?? undefined,
+      initiatedAt: e.initiatedAt ?? undefined,
+      confirmedAt: e.confirmedAt ?? undefined,
       version: e.version,
     });
   }
@@ -118,6 +132,8 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
       id: entity.id.value,
       tenantId: entity.tenantId.value,
       orderId: entity.orderId.value,
+      customerId: entity.customerId.value,
+      vendorId: entity.vendorId.value,
       amount: entity.amount.amount,
       currency: entity.amount.currency,
       method: entity.method,
@@ -126,6 +142,8 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
       vendorNet: entity.vendorNet.amount,
       driverNet: entity.driverNet.amount,
       transactionRef: entity.transactionRef ?? null,
+      initiatedAt: entity.initiatedAt ?? null,
+      confirmedAt: entity.confirmedAt ?? null,
       version: entity.version,
     };
   }

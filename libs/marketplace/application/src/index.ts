@@ -40,6 +40,7 @@ export * from './lib/use-cases/delivery/complete-delivery.use-case';
 export * from './lib/use-cases/delivery/get-driver-deliveries.use-case';
 export * from './lib/use-cases/delivery/driver-update-delivery-status.use-case';
 export * from './lib/use-cases/delivery/get-delivery-tracking.use-case';
+export * from './lib/use-cases/delivery/update-driver-location.use-case';
 
 // Use Cases - Review
 export * from './lib/use-cases/review/create-review.use-case';
@@ -104,12 +105,14 @@ export * from './lib/use-cases/used-goods/update-used-goods.use-case';
 export * from './lib/use-cases/vehicle/register-vehicle.use-case';
 export * from './lib/use-cases/vehicle/update-vehicle-location.use-case';
 export * from './lib/use-cases/vehicle/list-driver-vehicles.use-case';
+export * from './lib/use-cases/vehicle/toggle-driver-availability.use-case';
 
 // Use Cases - Payment
 export * from './lib/use-cases/payment/release-payment.use-case';
 export * from './lib/use-cases/payment/list-payments.use-case';
 export * from './lib/use-cases/payment/get-payment-by-order.use-case';
 export * from './lib/use-cases/payment/confirm-payment.use-case';
+export * from './lib/use-cases/payment/fail-payment.use-case';
 
 // Use Cases - Admin
 export * from './lib/use-cases/admin/get-admin-dashboard.use-case';
@@ -123,6 +126,8 @@ export * from './lib/use-cases/admin/list-recent-orders-admin.use-case';
 export * from './lib/use-cases/admin/get-finance-summary-admin.use-case';
 export * from './lib/use-cases/admin/get-revenue-report.use-case';
 export * from './lib/use-cases/admin/get-dispute-metrics.use-case';
+export * from './lib/use-cases/admin/list-all-vendors-admin.use-case';
+export * from './lib/use-cases/admin/get-reconciliation-report.use-case';
 
 // Use Cases - Category
 export * from './lib/use-cases/category/create-category.use-case';
@@ -136,3 +141,11 @@ export * from './lib/use-cases/address/delete-address.use-case';
 // Use Cases - Menu
 export * from './lib/use-cases/menu/create-menu.use-case';
 export * from './lib/use-cases/menu/list-menus.use-case';
+
+// Use Cases - Promotion
+export * from './lib/use-cases/promotion/create-coupon.use-case';
+export * from './lib/use-cases/promotion/validate-coupon.use-case';
+export * from './lib/use-cases/promotion/list-coupons.use-case';
+export * from './lib/use-cases/promotion/create-flash-sale.use-case';
+export * from './lib/use-cases/promotion/list-active-flash-sales.use-case';
+export * from './lib/use-cases/promotion/list-flash-sales.use-case';

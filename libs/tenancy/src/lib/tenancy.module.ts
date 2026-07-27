@@ -2,9 +2,7 @@ import { DynamicModule, Module, Provider } from '@nestjs/common';
 import { AsyncLocalTenantContextStore } from './async-local-tenant-context.store';
 import { HeaderTenantResolver } from './header-tenant.resolver';
 import { TenantMiddleware } from './tenant.middleware';
-
-export const TENANT_RESOLVER = 'TENANT_RESOLVER';
-export const TENANT_CONTEXT_STORE = 'TENANT_CONTEXT_STORE';
+import { TENANT_RESOLVER, TENANT_CONTEXT_STORE } from './tokens';
 
 @Module({})
 export class TenancyModule {
@@ -18,6 +16,7 @@ export class TenancyModule {
 
     return {
       module: TenancyModule,
+      global: true,
       providers: [
         AsyncLocalTenantContextStore,
         resolverProvider,

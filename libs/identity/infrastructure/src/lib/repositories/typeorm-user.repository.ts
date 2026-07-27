@@ -2,7 +2,7 @@ import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { User, IUserRepository, UserRole, UserStatus } from '@afri-market/identity-domain';
+import { User, IUserRepository, UserRole, UserStatus, AdminPermission } from '@afri-market/identity-domain';
 import { UserOrmEntity } from '../entities/user-orm.entity';
 
 @Injectable()
@@ -54,6 +54,7 @@ export class TypeOrmUserRepository extends TypeOrmRepository<User, UserOrmEntity
       email: entity.email ? Email.create(entity.email) : undefined,
       status: entity.status as UserStatus,
       version: entity.version,
+      permissions: entity.permissions ? entity.permissions.split(',').filter(Boolean) as AdminPermission[] : [],
     });
   }
 
@@ -68,6 +69,7 @@ export class TypeOrmUserRepository extends TypeOrmRepository<User, UserOrmEntity
       email: entity.email?.value ?? null,
       status: entity.status,
       version: entity.version,
+      permissions: entity.permissions.length > 0 ? entity.permissions.join(',') : null,
     };
   }
 }

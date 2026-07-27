@@ -1,0 +1,51 @@
+import { Controller, Get } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { Inject } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+import { Cache } from 'cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+
+@SkipThrottle()
+@ApiTags('Metrics')
+@Controller('metrics')
+export class MetricsController {
+  constructor(
+    @InjectDataSource() private readonly dataSource: DataSource,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+  ) {}
+
+  @Get()
+  @ApiOperation({ summary: 'Prometheus metrics endpoint' })
+  public async metrics(): Promise<string> {
+    let dbUp = 0;
+    let redisUp = 0;
+
+    try {
+      await this.dataSource.query('SELECT 1');
+      dbUp = 1;
+    } catch {}
+
+    try {
+      await this.cacheManager.get('metrics-check');
+      redisUp = 1;
+    } catch {}
+
+    const lines = [
+      '# HELP afri_market_db_up Database connectivity (1=up, 0=down)',
+      '# TYPE afri_market_db_up gauge',
+      `afri_market_db_up ${dbUp}`,
+      '',
+      '# HELP afri_market_redis_up Redis connectivity (1=up, 0=down)',
+      '# TYPE afri_market_redis_up gauge',
+      `afri_market_redis_up ${redisUp}`,
+      '',
+      '# HELP afri_market_build_info Build metadata',
+      '# TYPE afri_market_build_info gauge',
+      `afri_market_build_info{version="1.0.0",service="afriMarket API"} 1`,
+    ];
+
+    return lines.join('\n');
+  }
+}

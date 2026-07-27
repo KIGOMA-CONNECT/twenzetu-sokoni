@@ -29,6 +29,7 @@ export class CreateOrderUseCase {
     command: CreateOrderCommand,
   ): Promise<{
     orderId: string;
+    status: string;
     total: number;
     commission: number;
     vendorNet: number;
@@ -72,13 +73,15 @@ export class CreateOrderUseCase {
 
     await this.orderRepo.save(order);
 
+    const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'airtel_money' | 'cash') || 'mpesa';
+
     const payment = Payment.create({
       tenantId: TenantId.create(tenantId),
       orderId: EntityId.from(order.id.value),
       customerId: EntityId.from(command.customerId),
       vendorId: EntityId.from(command.vendorId),
       amount: commissionSplit.totalPaid,
-      method: 'mpesa',
+      method: paymentMethod,
       systemCommission: commissionSplit.systemCommission,
       vendorNet: commissionSplit.vendorNet,
       driverNet: commissionSplit.deliveryFee,
@@ -104,13 +107,25 @@ export class CreateOrderUseCase {
       );
     }
 
-    if (customerPhone) {
-      this.mobileMoneyService?.initiateStkPush({
-        phoneNumber: customerPhone,
-        amount: commissionSplit.totalPaid.amount,
-        accountReference: order.id.value,
-        description: `Payment for order ${order.id.value}`,
-      });
+    if (paymentMethod === 'cash') {
+      payment.confirmEscrow();
+      await this.paymentRepo.save(payment);
+    } else if (customerPhone) {
+      try {
+        const stkResult = await this.mobileMoneyService?.initiateStkPush({
+          phoneNumber: customerPhone,
+          amount: commissionSplit.totalPaid.amount,
+          accountReference: order.id.value,
+          description: `Payment for order ${order.id.value}`,
+        });
+        if (stkResult?.checkoutRequestId) {
+          payment.setTransactionRef(stkResult.checkoutRequestId);
+          await this.paymentRepo.save(payment);
+        }
+      } catch (error) {
+        payment.fail();
+        await this.paymentRepo.save(payment);
+      }
     }
 
     this.gateway?.notifyNewOrder(command.vendorId, {
@@ -122,6 +137,7 @@ export class CreateOrderUseCase {
 
     return {
       orderId: order.id.value,
+      status: order.status,
       total: commissionSplit.totalPaid.amount,
       commission: commissionSplit.systemCommission.amount,
       vendorNet: commissionSplit.vendorNet.amount,

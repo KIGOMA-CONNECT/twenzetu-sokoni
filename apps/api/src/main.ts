@@ -1,3 +1,5 @@
+import { config as loadEnv } from 'dotenv';
+loadEnv();
 import { AppConfigService } from '@afri-market/core-config';
 import { GlobalExceptionFilter } from '@afri-market/core-exceptions';
 import { ResponseInterceptor, RequestLoggingInterceptor } from '@afri-market/core-http';
@@ -9,13 +11,19 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app/app.module';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  console.log('[Bootstrap] Creating Nest application...');
+  const app = await NestFactory.create(AppModule);
+  console.log('[Bootstrap] Nest application created');
 
   const config = app.get(AppConfigService);
+  console.log('[Bootstrap] AppConfigService retrieved');
   const logger = app.get(AppLoggerService);
+  console.log('[Bootstrap] AppLoggerService retrieved');
   app.useLogger(logger);
+  console.log('[Bootstrap] Logger set');
 
   applySecurityHardening(app, config);
+  console.log('[Bootstrap] Security hardening applied');
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
@@ -23,6 +31,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   app.useGlobalInterceptors(new RequestIdInterceptor(), new ResponseInterceptor(), new RequestLoggingInterceptor(logger));
   app.enableShutdownHooks();
+  console.log('[Bootstrap] Pipes, filters, interceptors configured');
 
   const swaggerConfig = new DocumentBuilder()
     .setTitle('afriMarket API')
@@ -53,13 +62,18 @@ async function bootstrap(): Promise<void> {
     .addTag('Auth', 'Authentication, OTP, and JWT')
     .addTag('Admin', 'Platform administration and moderation')
     .build();
+  console.log('[Bootstrap] Swagger config built');
 
   const document = SwaggerModule.createDocument(app, swaggerConfig);
+  console.log('[Bootstrap] Swagger document created');
   SwaggerModule.setup('docs', app, document);
+  console.log('[Bootstrap] Swagger UI setup done');
 
+  console.log('[Bootstrap] Starting to listen on port', config.app.port);
   await app.listen(config.app.port);
-  logger.log(`Application listening on port ${config.app.port}`, 'Bootstrap');
-  logger.log(`Swagger docs at http://localhost:${config.app.port}/docs`, 'Bootstrap');
+  console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
+  console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
+  console.log(`[Bootstrap] Swagger docs at http://localhost:${config.app.port}/docs`);
 }
 
-bootstrap();
+bootstrap().catch(err => { console.error('[Bootstrap FATAL]', err); process.exit(1); });

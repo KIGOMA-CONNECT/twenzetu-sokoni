@@ -2,7 +2,7 @@ import { GlobalEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'otps' })
-@Index(['phone_number', 'code'])
+@Index(['phoneNumber', 'code'])
 export class OtpOrmEntity extends GlobalEntity {
   @Column({ name: 'phone_number', type: 'varchar', length: 15 })
   public phoneNumber!: string;

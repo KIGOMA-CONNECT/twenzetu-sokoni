@@ -1,14 +1,15 @@
-import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Inject, Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
 import { AsyncLocalTenantContextStore } from './async-local-tenant-context.store';
 import { ITenantResolver } from './tenant-resolver.interface';
 import { TenantResolutionException } from './tenant-resolution.exception';
+import { TENANT_RESOLVER } from './tokens';
 
 @Injectable()
 export class TenantMiddleware implements NestMiddleware {
   constructor(
     private readonly store: AsyncLocalTenantContextStore,
-    private readonly resolver: ITenantResolver,
+    @Inject(TENANT_RESOLVER) private readonly resolver: ITenantResolver,
   ) {}
 
   public async use(req: Request, _res: Response, next: NextFunction): Promise<void> {

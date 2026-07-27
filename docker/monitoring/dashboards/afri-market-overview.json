@@ -1,0 +1,80 @@
+{
+  "title": "afriMarket Overview",
+  "uid": "afri-market-overview",
+  "version": 1,
+  "timezone": "browser",
+  "editable": true,
+  "panels": [
+    {
+      "title": "API Uptime",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "up{job=\"api\"}",
+          "legendFormat": "API"
+        }
+      ],
+      "description": "API service availability"
+    },
+    {
+      "title": "Postgres Uptime",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 4, "y": 0 },
+      "targets": [
+        {
+          "expr": "pg_stat_database_datname{datname=~\"afri_market|postgres\"}",
+          "legendFormat": "{{datname}}"
+        }
+      ],
+      "description": "PostgreSQL database availability"
+    },
+    {
+      "title": "Node CPU Usage",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 8, "y": 0 },
+      "targets": [
+        {
+          "expr": "100 - (avg by(instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[1m])) * 100)"
+        }
+      ],
+      "unit": "percent",
+      "max": 100
+    },
+    {
+      "title": "Node Memory Usage",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "(1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100"
+        }
+      ],
+      "unit": "percent",
+      "max": 100
+    },
+    {
+      "title": "Postgres Connections",
+      "type": "stat",
+      "gridPos": { "h": 8, "w": 4, "x": 16, "y": 0 },
+      "targets": [
+        {
+          "expr": "pg_stat_database_numbackends{datname=~\"afri_market\"}"
+        }
+      ]
+    },
+    {
+      "title": "Disk Usage",
+      "type": "gauge",
+      "gridPos": { "h": 8, "w": 4, "x": 20, "y": 0 },
+      "targets": [
+        {
+          "expr": "1 - (node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"})"
+        }
+      ],
+      "unit": "percent",
+      "max": 100
+    }
+  ],
+  "schemaVersion": 36
+}

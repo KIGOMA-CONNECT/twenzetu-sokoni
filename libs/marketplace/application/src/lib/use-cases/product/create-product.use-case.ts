@@ -20,16 +20,14 @@ export class CreateProductUseCase {
     tenantId: string,
     command: CreateProductCommand,
   ): Promise<{ productId: string }> {
-    const vendor = await this.vendorRepo.findById(
-      EntityId.from(command.vendorId),
-    );
+    const vendor = await this.vendorRepo.findByUserId(command.vendorId);
     if (!vendor) {
       throw new Error('Vendor not found');
     }
 
     const product = Product.create({
       tenantId: TenantId.create(tenantId),
-      vendorId: EntityId.from(command.vendorId),
+      vendorId: vendor.id,
       name: command.name,
       description: command.description,
       price: Money.create(command.price, command.currency),

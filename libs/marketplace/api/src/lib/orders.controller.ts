@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { EntityManager } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
@@ -9,6 +10,7 @@ import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
+import { NotificationsService } from './notifications.service';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -19,6 +21,8 @@ export class OrdersController {
     private readonly updateStatus: UpdateOrderStatusUseCase,
     private readonly findOrders: FindOrdersUseCase,
     private readonly cancelOrder: CancelOrderUseCase,
+    private readonly entityManager: EntityManager,
+    private readonly notifService: NotificationsService,
   ) {}
 
   @Post()
@@ -42,11 +46,22 @@ export class OrdersController {
         quantity: i.quantity,
         unitPrice: i.unitPrice,
       })),
+      dto.paymentMethod || 'mpesa',
       dto.deliveryLatitude,
       dto.deliveryLongitude,
       dto.specialInstructions,
     );
-    return this.createOrder.execute(user.tenantId, command);
+    const result = await this.createOrder.execute(user.tenantId, command);
+    this.notifService.create({
+      tenantId: user.tenantId,
+      userId: user.sub,
+      title: 'Order Placed',
+      message: `Your order of TZS ${(result as any)?.totalAmount || ''} has been placed successfully.`,
+      type: 'order_placed',
+      referenceId: (result as any)?.id,
+      referenceType: 'order',
+    }).catch(() => {});
+    return result;
   }
 
   @Get()
@@ -69,7 +84,21 @@ export class OrdersController {
     if (status) {
       filtered = orders.filter((o) => o.status === status);
     }
-    return paginatedResult(filtered.slice(offset, offset + limit), filtered.length, limit, offset);
+    return paginatedResult(filtered.slice(offset, offset + limit).map(o => o.toDto()), filtered.length, limit, offset);
+  }
+
+  @Get(':id/items')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Order ID' })
+  @ApiOperation({ summary: 'Get order items' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async findOrderItems(@Param('id', ParseUUIDPipe) id: string) {
+    const items = await this.entityManager.query(
+      'SELECT product_name as "productName", quantity, unit_price as "unitPrice", total_price as "totalPrice", currency FROM order_items WHERE order_id = $1',
+      [id],
+    );
+    return { data: items };
   }
 
   @Get(':id')
@@ -80,7 +109,7 @@ export class OrdersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const order = await this.findOrders.findById(id);
-    return { data: order };
+    return { data: order?.toDto() ?? null };
   }
 
   @Patch(':id/cancel')

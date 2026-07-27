@@ -1,4 +1,8 @@
 export * from './lib/entities/address-orm.entity';
+export * from './lib/entities/notification-orm.entity';
+export * from './lib/entities/audit-log-orm.entity';
+export * from './lib/entities/coupon-orm.entity';
+export * from './lib/entities/flash-sale-orm.entity';
 export * from './lib/entities/category-orm.entity';
 export * from './lib/entities/custom-procurement-orm.entity';
 export * from './lib/entities/delivery-orm.entity';
@@ -53,3 +57,5 @@ export * from './lib/repositories/typeorm-admin-user.repository';
 export * from './lib/repositories/typeorm-category.repository';
 export * from './lib/repositories/typeorm-address.repository';
 export * from './lib/repositories/typeorm-menu.repository';
+export * from './lib/repositories/typeorm-coupon.repository';
+export * from './lib/repositories/typeorm-flash-sale.repository';

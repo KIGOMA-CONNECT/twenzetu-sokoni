@@ -98,6 +98,28 @@ export class Order extends AggregateRoot<EntityId> {
   public get version(): number { return this._version; }
   public get createdAt(): Date { return this._createdAt; }
 
+  public toDto() {
+    return {
+      id: this.id.value,
+      customerId: this._customerId.value,
+      vendorId: this._vendorId.value,
+      driverId: this._driverId?.value ?? null,
+      type: this._type,
+      status: this._status,
+      subtotal: this._subtotal.amount,
+      deliveryFee: this._deliveryFee.amount,
+      systemCommission: this._systemCommission.amount,
+      totalAmount: this._totalAmount.amount,
+      currency: this._subtotal.currency,
+      deliveryAddress: this._deliveryAddress,
+      deliveryLatitude: this._deliveryLatitude,
+      deliveryLongitude: this._deliveryLongitude,
+      specialInstructions: this._specialInstructions,
+      otpVerified: this._otpVerified,
+      createdAt: this._createdAt,
+    };
+  }
+
   public calculateTotals(subtotal: Money, deliveryFee: Money, commissionRate: number): void {
     this._subtotal = subtotal;
     this._deliveryFee = deliveryFee;

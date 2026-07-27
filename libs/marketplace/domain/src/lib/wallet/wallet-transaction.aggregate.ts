@@ -70,4 +70,20 @@ export class WalletTransaction extends AggregateRoot<EntityId> {
   public get description(): string { return this._description; }
   public get referenceId(): string | undefined { return this._referenceId; }
   public get referenceType(): string | undefined { return this._referenceType; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      ownerId: this._ownerId.value,
+      ownerType: this._ownerType,
+      type: this._type,
+      amount: this._amount.amount,
+      currency: this._amount.currency,
+      balanceBefore: this._balanceBefore,
+      balanceAfter: this._balanceAfter,
+      description: this._description,
+      referenceId: this._referenceId,
+      referenceType: this._referenceType,
+    };
+  }
 }

@@ -1,0 +1,73 @@
+{
+  "app": {
+    "name": "afriMarket",
+    "tagline": "Order food, groceries, and more"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "orders": "My Orders",
+    "vendors": "Vendors",
+    "wallet": "Wallet",
+    "addresses": "Addresses",
+    "loyalty": "Loyalty Points",
+    "reviews": "My Reviews",
+    "products": "Products",
+    "deliveries": "Deliveries",
+    "earnings": "Earnings",
+    "vehicle": "Vehicle",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "auth": {
+    "login": "Login",
+    "phoneNumber": "Phone Number",
+    "password": "Password",
+    "loginButton": "Sign In",
+    "loggingIn": "Signing in..."
+  },
+  "order": {
+    "title": "Order History",
+    "subtitle": "Track your past and current orders",
+    "status": "Status",
+    "total": "Total",
+    "date": "Date",
+    "vendor": "Vendor",
+    "noOrders": "You have no orders yet.",
+    "track": "Track",
+    "details": "Details",
+    "tracking": "Order Tracking",
+    "pickup": "Pickup",
+    "delivery": "Delivery",
+    "distance": "Distance",
+    "estimatedTime": "Estimated Time",
+    "summary": "Order Summary",
+    "deliveryFee": "Delivery Fee",
+    "address": "Address"
+  },
+  "status": {
+    "PLACED": "Order Placed",
+    "CONFIRMED": "Confirmed",
+    "PREPARING": "Preparing",
+    "READY_FOR_PICKUP": "Ready for Pickup",
+    "OUT_FOR_DELIVERY": "Out for Delivery",
+    "DELIVERED": "Delivered",
+    "CANCELLED": "Cancelled"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "back": "Back",
+    "next": "Next",
+    "prev": "Previous",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "search": "Search"
+  },
+  "language": {
+    "en": "English",
+    "sw": "Kiswahili",
+    "switch": "Language"
+  }
+}

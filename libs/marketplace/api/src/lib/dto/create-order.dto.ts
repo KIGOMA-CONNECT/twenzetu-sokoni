@@ -41,6 +41,10 @@ export class CreateOrderDto {
   @IsString()
   specialInstructions?: string;
 
+  @IsOptional()
+  @IsEnum(['mpesa', 'tigo_money', 'airtel_money', 'cash'])
+  paymentMethod?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => OrderItemDto)

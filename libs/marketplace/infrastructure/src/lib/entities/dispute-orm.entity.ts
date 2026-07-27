@@ -2,8 +2,8 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'disputes' })
-@Index(['order_id'])
-@Index(['customer_id'])
+@Index(['orderId'])
+@Index(['customerId'])
 @Index(['status'])
 @Index(['tenantId', 'status'])
 export class DisputeOrmEntity extends TenantAwareEntity {

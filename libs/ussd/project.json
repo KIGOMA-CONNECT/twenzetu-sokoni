@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/ussd",
+  "sourceRoot": "libs/ussd/src",
+  "projectType": "library",
+  "tags": ["scope:ussd", "type:api"],
+  "targets": {}
+}

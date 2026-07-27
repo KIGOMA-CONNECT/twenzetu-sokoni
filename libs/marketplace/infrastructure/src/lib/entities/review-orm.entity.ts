@@ -2,9 +2,9 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'reviews' })
-@Index(['customer_id'])
-@Index(['vendor_id'])
-@Index(['order_id'], { unique: true })
+@Index(['customerId'])
+@Index(['vendorId'])
+@Index(['orderId'], { unique: true })
 export class ReviewOrmEntity extends TenantAwareEntity {
   @Column({ name: 'customer_id', type: 'uuid' })
   public customerId!: string;

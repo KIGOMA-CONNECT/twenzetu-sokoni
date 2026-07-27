@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'wallets' })
-@Index(['owner_id'], { unique: true })
+@Index(['ownerId'], { unique: true })
 export class WalletOrmEntity extends TenantAwareEntity {
   @Column({ name: 'owner_id', type: 'uuid' })
   public ownerId!: string;

@@ -26,6 +26,8 @@ export interface ReconstitutePaymentProps {
   readonly vendorNet: Money;
   readonly driverNet: Money;
   readonly transactionRef: string | undefined;
+  readonly initiatedAt: Date | undefined;
+  readonly confirmedAt: Date | undefined;
   readonly version: number;
 }
 
@@ -43,16 +45,22 @@ export class Payment extends AggregateRoot<EntityId> {
     private _vendorNet: Money,
     private _driverNet: Money,
     private _transactionRef: string | undefined,
+    private _initiatedAt: Date | undefined,
+    private _confirmedAt: Date | undefined,
     private readonly _version: number,
   ) {
     super(id);
   }
 
   public static create(props: CreatePaymentProps): Payment {
+    const initialStatus = props.method === 'cash' ? 'ESCROW_HELD' : 'PENDING';
+    const now = new Date();
     return new Payment(
       EntityId.create(), props.tenantId, props.orderId, props.customerId,
-      props.vendorId, props.amount, props.method, 'ESCROW_HELD',
+      props.vendorId, props.amount, props.method, initialStatus,
       props.systemCommission, props.vendorNet, props.driverNet,
+      undefined,
+      props.method === 'cash' ? undefined : now,
       undefined, 1,
     );
   }
@@ -62,7 +70,7 @@ export class Payment extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.orderId, props.customerId,
       props.vendorId, props.amount, props.method, props.status,
       props.systemCommission, props.vendorNet, props.driverNet,
-      props.transactionRef, props.version,
+      props.transactionRef, props.initiatedAt, props.confirmedAt, props.version,
     );
   }
 
@@ -77,13 +85,47 @@ export class Payment extends AggregateRoot<EntityId> {
   public get vendorNet(): Money { return this._vendorNet; }
   public get driverNet(): Money { return this._driverNet; }
   public get transactionRef(): string | undefined { return this._transactionRef; }
+  public get initiatedAt(): Date | undefined { return this._initiatedAt; }
+  public get confirmedAt(): Date | undefined { return this._confirmedAt; }
   public get version(): number { return this._version; }
 
   public release(transactionRef: string): void {
     this._status = 'RELEASED';
     this._transactionRef = transactionRef;
+    this._confirmedAt = new Date();
+  }
+
+  public setTransactionRef(transactionRef: string): void {
+    this._transactionRef = transactionRef;
+  }
+
+  public confirmEscrow(): void {
+    if (this._status === 'PENDING') {
+      this._status = 'ESCROW_HELD';
+      this._confirmedAt = new Date();
+    }
   }
 
   public refund(): void { this._status = 'REFUNDED'; }
   public fail(): void { this._status = 'FAILED'; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      orderId: this._orderId.value,
+      customerId: this._customerId.value,
+      vendorId: this._vendorId.value,
+      amount: this._amount.amount,
+      currency: this._amount.currency,
+      method: this._method,
+      status: this._status,
+      systemCommission: this._systemCommission.amount,
+      vendorNet: this._vendorNet.amount,
+      driverNet: this._driverNet.amount,
+      transactionRef: this._transactionRef,
+      initiatedAt: this._initiatedAt,
+      confirmedAt: this._confirmedAt,
+      version: this._version,
+    };
+  }
 }

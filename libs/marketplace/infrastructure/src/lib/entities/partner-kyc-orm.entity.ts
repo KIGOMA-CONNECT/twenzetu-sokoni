@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'partner_kycs' })
-@Index(['partner_id'])
+@Index(['partnerId'])
 export class PartnerKycOrmEntity extends TenantAwareEntity {
   @Column({ name: 'partner_id', type: 'uuid' }) public partnerId!: string;
   @Column({ name: 'partner_type', type: 'varchar', length: 20 }) public partnerType!: string;

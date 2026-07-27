@@ -16,6 +16,11 @@ export class TypeOrmVehicleRepository extends TypeOrmRepository<Vehicle, Vehicle
     return entity ? this.toDomain(entity) : null;
   }
 
+  public async findByIdAndTenant(id: string, tenantId: string): Promise<Vehicle | null> {
+    const entity = await this.repository.findOne({ where: { id, tenantId } });
+    return entity ? this.toDomain(entity) : null;
+  }
+
   public async findByDriverId(driverId: string): Promise<Vehicle[]> {
     const entities = await this.repository.find({ where: { driverId } });
     return entities.map((e) => this.toDomain(e));
@@ -54,6 +59,10 @@ export class TypeOrmVehicleRepository extends TypeOrmRepository<Vehicle, Vehicle
       plateNumber: e.plateNumber,
       capacityKg: Number(e.capacityKg),
       isAvailable: e.isAvailable,
+      isOnline: e.isOnline,
+      verifiedAt: e.verifiedAt ?? null,
+      licensePhotoUrl: e.licensePhotoUrl ?? null,
+      insurancePhotoUrl: e.insurancePhotoUrl ?? null,
       currentLatitude: e.currentLatitude ?? undefined,
       currentLongitude: e.currentLongitude ?? undefined,
       version: e.version,
@@ -69,6 +78,10 @@ export class TypeOrmVehicleRepository extends TypeOrmRepository<Vehicle, Vehicle
       plateNumber: entity.plateNumber,
       capacityKg: entity.capacityKg,
       isAvailable: entity.isAvailable,
+      isOnline: entity.isOnline,
+      verifiedAt: entity.verifiedAt,
+      licensePhotoUrl: entity.licensePhotoUrl,
+      insurancePhotoUrl: entity.insurancePhotoUrl,
     };
   }
 }

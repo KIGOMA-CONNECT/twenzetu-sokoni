@@ -10,8 +10,12 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx nx run api:build
+RUN npx nx run web:build
 
-FROM base AS runner
+FROM nginx:alpine AS nginx-config
+COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf
+
+FROM node:20-alpine AS runner
 ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 afri-market && \
     adduser --system --uid 1001 afri-market

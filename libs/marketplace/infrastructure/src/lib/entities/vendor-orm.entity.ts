@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'vendors' })
-@Index(['user_id'], { unique: true })
+@Index(['userId'], { unique: true })
 @Index(['tenantId', 'status'])
 @Index(['tenantId', 'category'])
 export class VendorOrmEntity extends TenantAwareEntity {

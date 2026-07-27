@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'credit_scores' })
-@Index(['user_id'], { unique: true })
+@Index(['userId'], { unique: true })
 export class CreditScoreOrmEntity extends TenantAwareEntity {
   @Column({ name: 'user_id', type: 'uuid' }) public userId!: string;
   @Column({ type: 'int', default: 0 }) public score!: number;

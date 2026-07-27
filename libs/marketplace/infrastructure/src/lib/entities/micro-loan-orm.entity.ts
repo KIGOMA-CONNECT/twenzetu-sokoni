@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'micro_loans' })
-@Index(['borrower_id'])
+@Index(['borrowerId'])
 export class MicroLoanOrmEntity extends TenantAwareEntity {
   @Column({ name: 'borrower_id', type: 'uuid' }) public borrowerId!: string;
   @Column({ name: 'borrower_type', type: 'varchar', length: 10 }) public borrowerType!: string;

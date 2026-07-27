@@ -32,6 +32,10 @@ export const MARKETPLACE_GATEWAY = 'MARKETPLACE_GATEWAY';
 export const ADMIN_USER_REPOSITORY = 'IAdminUserRepository';
 export type { IAdminUserRepository } from '@afri-market/marketplace-domain';
 
+// Promotion
+export const COUPON_REPOSITORY = 'ICouponRepository';
+export const FLASH_SALE_REPOSITORY = 'IFlashSaleRepository';
+
 // Services
 export const SMS_SERVICE = 'ISmsService';
 export const MOBILE_MONEY_SERVICE = 'IMobileMoneyService';

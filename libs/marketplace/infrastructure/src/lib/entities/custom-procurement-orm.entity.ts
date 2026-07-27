@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'custom_procurements' })
-@Index(['customer_id'])
+@Index(['customerId'])
 @Index(['status'])
 export class CustomProcurementOrmEntity extends TenantAwareEntity {
   @Column({ name: 'customer_id', type: 'uuid' })

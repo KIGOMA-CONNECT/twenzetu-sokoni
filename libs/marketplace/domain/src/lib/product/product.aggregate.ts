@@ -89,4 +89,21 @@ export class Product extends AggregateRoot<EntityId> {
   public markOutOfStock(): void { this._status = 'OUT_OF_STOCK'; }
   public activate(): void { this._status = 'ACTIVE'; }
   public deactivate(): void { this._status = 'INACTIVE'; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      vendorId: this._vendorId.value,
+      name: this._name,
+      description: this._description,
+      price: this._price.amount,
+      currency: this._price.currency,
+      type: this._type,
+      categoryId: this._categoryId.value,
+      imageUrl: this._imageUrl,
+      stockQuantity: this._stockQuantity,
+      unit: this._unit,
+      status: this._status,
+    };
+  }
 }

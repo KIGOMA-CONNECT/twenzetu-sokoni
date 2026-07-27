@@ -1,18 +1,19 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MarketplaceApplicationModule } from '@afri-market/marketplace-application';
 import { UserOrmEntity } from '@afri-market/identity-infrastructure';
-import { MarketplaceApplicationModule, ADMIN_USER_REPOSITORY } from '@afri-market/marketplace-application';
-import { TypeOrmAdminUserRepository } from '@afri-market/marketplace-infrastructure';
+import { AuditLogOrmEntity } from '@afri-market/marketplace-infrastructure';
 import { AdminController } from './admin.controller';
+import { AdminUsersController } from './admin-users.controller';
+import { AuditLogService } from '../audit-log.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserOrmEntity]),
     MarketplaceApplicationModule,
+    TypeOrmModule.forFeature([UserOrmEntity, AuditLogOrmEntity]),
   ],
-  controllers: [AdminController],
-  providers: [
-    { provide: ADMIN_USER_REPOSITORY, useClass: TypeOrmAdminUserRepository },
-  ],
+  controllers: [AdminController, AdminUsersController],
+  providers: [AuditLogService],
+  exports: [AuditLogService],
 })
 export class AdminModule {}

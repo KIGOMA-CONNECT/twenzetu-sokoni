@@ -2,12 +2,12 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'payments' })
-@Index(['order_id'])
-@Index(['customer_id'])
-@Index(['vendor_id'])
+@Index(['orderId'])
+@Index(['customerId'])
+@Index(['vendorId'])
 @Index(['status'])
 @Index(['tenantId', 'status'])
-@Index(['tenantId', 'vendor_id'])
+@Index(['tenantId', 'vendorId'])
 export class PaymentOrmEntity extends TenantAwareEntity {
   @Column({ name: 'order_id', type: 'uuid' })
   public orderId!: string;
@@ -41,6 +41,12 @@ export class PaymentOrmEntity extends TenantAwareEntity {
 
   @Column({ name: 'transaction_ref', type: 'varchar', length: 100, nullable: true })
   public transactionRef!: string | null;
+
+  @Column({ name: 'initiated_at', type: 'timestamptz', nullable: true })
+  public initiatedAt!: Date | null;
+
+  @Column({ name: 'confirmed_at', type: 'timestamptz', nullable: true })
+  public confirmedAt!: Date | null;
 
   @Column({ type: 'integer', default: 1 })
   public version!: number;

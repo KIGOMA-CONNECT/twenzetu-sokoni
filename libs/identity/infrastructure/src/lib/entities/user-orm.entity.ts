@@ -2,7 +2,7 @@ import { GlobalEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'users' })
-@Index(['phone_number'], { unique: true })
+@Index(['phoneNumber'], { unique: true })
 export class UserOrmEntity extends GlobalEntity {
   @Column({ name: 'tenant_id', type: 'uuid' })
   public tenantId!: string;
@@ -27,4 +27,7 @@ export class UserOrmEntity extends GlobalEntity {
 
   @Column({ type: 'integer', default: 1 })
   public version!: number;
+
+  @Column({ type: 'text', nullable: true })
+  public permissions!: string | null;
 }

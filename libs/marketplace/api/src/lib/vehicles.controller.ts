@@ -59,6 +59,6 @@ export class VehiclesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getMyVehicles(@CurrentUser() user: JwtPayload) {
     const vehicles = await this.listDriverVehicles.execute(user.sub);
-    return { data: vehicles };
+    return { data: vehicles.map(v => v.toDto()) };
   }
 }

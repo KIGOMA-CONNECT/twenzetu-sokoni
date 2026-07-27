@@ -5,3 +5,4 @@ export * from './lib/tenant-resolution.exception';
 export * from './lib/tenant-resolver.interface';
 export * from './lib/tenant.middleware';
 export * from './lib/redis-cache.module';
+export * from './lib/tokens';

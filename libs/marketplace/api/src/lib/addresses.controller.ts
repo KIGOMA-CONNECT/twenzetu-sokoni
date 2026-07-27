@@ -22,7 +22,7 @@ export class AddressesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async findMyAddresses(@CurrentUser() user: JwtPayload) {
     const data = await this.listAddresses.execute(user.sub);
-    return { data };
+    return { data: data.map(a => a.toDto()) };
   }
 
   @Post()

@@ -26,6 +26,10 @@ import { BulkOrderOrmEntity } from './entities/bulk-order-orm.entity';
 import { FieldAgentOrmEntity } from './entities/field-agent-orm.entity';
 import { CountryConfigOrmEntity } from './entities/country-config-orm.entity';
 import { UsedGoodsOrmEntity } from './entities/used-goods-orm.entity';
+import { CouponOrmEntity } from './entities/coupon-orm.entity';
+import { FlashSaleOrmEntity } from './entities/flash-sale-orm.entity';
+import { NotificationOrmEntity } from './entities/notification-orm.entity';
+import { AuditLogOrmEntity } from './entities/audit-log-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -56,4 +60,8 @@ export const MARKETPLACE_ENTITIES = [
   FieldAgentOrmEntity,
   CountryConfigOrmEntity,
   UsedGoodsOrmEntity,
+  CouponOrmEntity,
+  FlashSaleOrmEntity,
+  NotificationOrmEntity,
+  AuditLogOrmEntity,
 ];

@@ -12,6 +12,7 @@ export class CreateOrderCommand extends CommandBase {
       quantity: number;
       unitPrice: number;
     }>,
+    public readonly paymentMethod: string = 'mpesa',
     public readonly deliveryLatitude?: number,
     public readonly deliveryLongitude?: number,
     public readonly specialInstructions?: string,

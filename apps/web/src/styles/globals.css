@@ -1,0 +1,15 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #1e293b; }
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; font-family: inherit; }
+input, select, textarea { font-family: inherit; }
+
+@media (max-width: 768px) {
+  .responsive-grid-2col { grid-template-columns: 1fr !important; }
+  .responsive-sidebar { position: static !important; width: 100% !important; }
+  .responsive-hide { display: none !important; }
+  table { display: block; overflow-x: auto; }
+}
+@media (max-width: 480px) {
+  .responsive-card-grid { grid-template-columns: 1fr !important; }
+}

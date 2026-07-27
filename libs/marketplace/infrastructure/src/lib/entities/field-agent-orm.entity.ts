@@ -2,7 +2,7 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'field_agents' })
-@Index(['user_id'])
+@Index(['userId'])
 export class FieldAgentOrmEntity extends TenantAwareEntity {
   @Column({ name: 'user_id', type: 'uuid' }) public userId!: string;
   @Column({ name: 'agent_type', type: 'varchar', length: 20 }) public agentType!: string;

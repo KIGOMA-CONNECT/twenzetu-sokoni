@@ -12,6 +12,7 @@ import {
   VendorUpdateOrderStatusUseCase,
   GetVendorStatsUseCase,
   SearchVendorsUseCase,
+  FindProductsUseCase,
   CreateVendorCommand,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from './gateway';
@@ -30,6 +31,7 @@ export class VendorsController {
     private readonly updateOrderStatus: VendorUpdateOrderStatusUseCase,
     private readonly getVendorStats: GetVendorStatsUseCase,
     private readonly searchVendors: SearchVendorsUseCase,
+    private readonly findProducts: FindProductsUseCase,
     private readonly gateway: MarketplaceGateway,
   ) {}
 
@@ -77,7 +79,7 @@ export class VendorsController {
       limit: parsedLimit,
       offset: parsedOffset,
     });
-    return paginatedResult(result.data, result.total, parsedLimit, parsedOffset);
+    return paginatedResult(result.data.map(v => v.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
   @Get('me/orders')
@@ -102,7 +104,7 @@ export class VendorsController {
       limit: parsedLimit,
       offset: parsedOffset,
     });
-    return paginatedResult(result.data, result.total, parsedLimit, parsedOffset);
+    return paginatedResult(result.data.map(o => o.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
   @Get('me/stats')
@@ -114,6 +116,18 @@ export class VendorsController {
       return { error: 'Vendor profile not found' };
     }
     return this.getVendorStats.execute(user.tenantId, vendor.id.value);
+  }
+
+  @Get('me/products')
+  @ApiOperation({ summary: 'Get products for the current vendor' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  public async getMyProducts(@CurrentUser() user: JwtPayload) {
+    const vendor = await this.findVendors.findByUserId(user.sub);
+    if (!vendor) {
+      return { data: [] };
+    }
+    const products = await this.findProducts.findByVendor(vendor.id.value);
+    return { data: products.map(p => p.toDto()) };
   }
 
   @Patch('me/orders/:orderId/status')
@@ -146,6 +160,6 @@ export class VendorsController {
   @ApiResponse({ status: 200, description: 'Success' })
   public async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const vendor = await this.findVendors.findById(id);
-    return { data: vendor };
+    return { data: vendor?.toDto() ?? null };
   }
 }

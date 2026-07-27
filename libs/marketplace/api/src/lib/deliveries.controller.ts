@@ -5,6 +5,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { DriverUpdateDeliveryStatusDto } from './dto/driver-update-delivery-status.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
+import { UpdateDriverLocationDto } from './dto/update-driver-location.dto';
 import {
   CreateDeliveryUseCase,
   FindDeliveriesUseCase,
@@ -12,6 +13,7 @@ import {
   GetDriverDeliveriesUseCase,
   DriverUpdateDeliveryStatusUseCase,
   GetDeliveryTrackingUseCase,
+  UpdateDriverLocationUseCase,
   CreateDeliveryCommand,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from './gateway';
@@ -30,6 +32,7 @@ export class DeliveriesController {
     private readonly getDriverDeliveries: GetDriverDeliveriesUseCase,
     private readonly driverUpdateStatus: DriverUpdateDeliveryStatusUseCase,
     private readonly getDeliveryTracking: GetDeliveryTrackingUseCase,
+    private readonly updateDriverLocation: UpdateDriverLocationUseCase,
     private readonly gateway: MarketplaceGateway,
   ) {}
 
@@ -61,7 +64,7 @@ export class DeliveriesController {
   @ApiResponse({ status: 200, description: 'Success' })
   public async findByDriver(@Param('driverId', ParseUUIDPipe) driverId: string) {
     const deliveries = await this.findDeliveries.findByDriver(driverId);
-    return { data: deliveries };
+    return { data: deliveries.map(d => d.toDto()) };
   }
 
   @Get('me')
@@ -82,7 +85,7 @@ export class DeliveriesController {
       limit: parsedLimit,
       offset: parsedOffset,
     });
-    return paginatedResult(result.data, result.total, parsedLimit, parsedOffset);
+    return paginatedResult(result.data.map(d => d.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
   @Patch(':id/status')
@@ -98,14 +101,40 @@ export class DeliveriesController {
     @Body() body: DriverUpdateDeliveryStatusDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    const result = await this.driverUpdateStatus.execute(
+    return this.driverUpdateStatus.execute(
       user.tenantId,
       id,
       user.sub,
       body.status,
       body.driverEarnings,
     );
-    this.gateway.notifyOrderUpdate(result.deliveryId, { deliveryStatus: body.status, driverId: user.sub });
+  }
+
+  @Patch(':id/location')
+  @ApiParam({ name: 'id', description: 'Delivery ID' })
+  @ApiOperation({ summary: 'Driver updates GPS location' })
+  @ApiBody({ type: UpdateDriverLocationDto })
+  @ApiResponse({ status: 200, description: 'Location updated' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async updateLocation(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() body: UpdateDriverLocationDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const result = await this.updateDriverLocation.execute(
+      user.tenantId,
+      id,
+      user.sub,
+      body.latitude,
+      body.longitude,
+    );
+    this.gateway.notifyOrderUpdate(result.deliveryId, {
+      type: 'driver-location',
+      latitude: body.latitude,
+      longitude: body.longitude,
+      timestamp: result.lastLocationUpdate.toISOString(),
+    });
     return result;
   }
 

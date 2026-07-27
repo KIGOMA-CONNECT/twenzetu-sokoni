@@ -1,0 +1,17 @@
+{
+  "name": "afriMarket",
+  "short_name": "afriMarket",
+  "description": "African e-commerce marketplace - order food, groceries, and more",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

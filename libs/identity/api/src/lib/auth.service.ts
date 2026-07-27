@@ -6,14 +6,14 @@ import { IUserRepository } from '@afri-market/identity-domain';
 import { ITenantRepository } from '@afri-market/identity-domain';
 import { AppConfigService } from '@afri-market/core-config';
 import { IPasswordHasher } from '@afri-market/identity-infrastructure';
-import { TypeOrmOtpRepository } from '@afri-market/identity-infrastructure';
+import { TypeOrmOtpRepository, USER_REPOSITORY, TENANT_REPOSITORY } from '@afri-market/identity-infrastructure';
 import { SmsService, EmailService } from '@afri-market/integrations';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userRepo: IUserRepository,
-    private readonly tenantRepo: ITenantRepository,
+    @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
+    @Inject(TENANT_REPOSITORY) private readonly tenantRepo: ITenantRepository,
     private readonly otpRepo: TypeOrmOtpRepository,
     private readonly jwtService: JwtService,
     private readonly config: AppConfigService,
@@ -63,21 +63,25 @@ export class AuthService {
     if (!valid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+    const permissionsStr = user.permissions.length > 0 ? user.permissions.join(',') : '';
     const payload = {
       sub: user.id.value,
       tenantId: user.tenantId.value,
       role: user.role,
       phoneNumber: user.phoneNumber.value,
+      permissions: permissionsStr,
     };
     const accessToken = this.jwtService.sign(payload);
     return {
       accessToken,
       user: {
         id: user.id.value,
+        tenantId: user.tenantId.value,
         phoneNumber: user.phoneNumber.value,
         fullName: user.fullName,
         role: user.role,
         status: user.status,
+        permissions: user.permissions,
       },
     };
   }
@@ -94,6 +98,7 @@ export class AuthService {
       role: user.role,
       status: user.status,
       email: user.email?.value ?? null,
+      permissions: user.permissions,
     };
   }
 

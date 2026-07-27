@@ -1,8 +1,7 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Inject, Optional } from '@nestjs/common';
 import { Money } from '@afri-market/kernel';
-import { IDeliveryRepository } from '@afri-market/marketplace-domain';
-import { DELIVERY_REPOSITORY } from '../../tokens';
+import { IDeliveryRepository, IOrderRepository } from '@afri-market/marketplace-domain';
+import { DELIVERY_REPOSITORY, ORDER_REPOSITORY, MARKETPLACE_GATEWAY } from '../../tokens';
 
 const DELIVERY_VALID_TRANSITIONS: Record<string, string[]> = {
   PENDING: ['ASSIGNED', 'FAILED'],
@@ -13,10 +12,22 @@ const DELIVERY_VALID_TRANSITIONS: Record<string, string[]> = {
   FAILED: [],
 };
 
+const DELIVERY_TO_ORDER_STATUS: Record<string, string> = {
+  ASSIGNED: 'OUT_FOR_DELIVERY',
+  PICKED_UP: 'OUT_FOR_DELIVERY',
+  IN_TRANSIT: 'OUT_FOR_DELIVERY',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'PLACED',
+};
+
 @Injectable()
 export class DriverUpdateDeliveryStatusUseCase {
   constructor(
     @Inject(DELIVERY_REPOSITORY) private readonly deliveryRepo: IDeliveryRepository,
+    @Optional() @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository | undefined,
+    @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: {
+      notifyOrderUpdate(orderId: string, update: Record<string, unknown>): void;
+    } | undefined,
   ) {}
 
   public async execute(
@@ -25,7 +36,7 @@ export class DriverUpdateDeliveryStatusUseCase {
     driverId: string,
     newStatus: string,
     driverEarnings?: number,
-  ): Promise<{ deliveryId: string; status: string }> {
+  ): Promise<{ deliveryId: string; orderId: string; status: string }> {
     const delivery = await this.deliveryRepo.findByIdAndTenant(deliveryId, tenantId);
     if (!delivery) {
       throw new NotFoundException(`Delivery ${deliveryId} not found`);
@@ -54,6 +65,29 @@ export class DriverUpdateDeliveryStatusUseCase {
 
     await this.deliveryRepo.save(delivery);
 
-    return { deliveryId: delivery.id.value, status: delivery.status };
+    const orderId = delivery.orderId.value;
+
+    if (this.orderRepo) {
+      const order = await this.orderRepo.findById(delivery.orderId);
+      if (order) {
+        const orderStatus = DELIVERY_TO_ORDER_STATUS[newStatus];
+        if (orderStatus) {
+          order.updateStatus(orderStatus as any);
+          await this.orderRepo.save(order);
+        }
+      }
+    }
+
+    if (this.gateway) {
+      this.gateway.notifyOrderUpdate(orderId, {
+        deliveryId,
+        deliveryStatus: delivery.status,
+        orderStatus: DELIVERY_TO_ORDER_STATUS[newStatus],
+        driverId,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    return { deliveryId: delivery.id.value, orderId, status: delivery.status };
   }
 }

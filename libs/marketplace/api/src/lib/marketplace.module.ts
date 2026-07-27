@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { MarketplaceApplicationModule, MARKETPLACE_GATEWAY } from '@afri-market/marketplace-application';
+import { FileUploadService, MobileMoneyService } from '@afri-market/integrations';
+import { NotificationOrmEntity } from '@afri-market/marketplace-infrastructure';
 import { MarketplaceGatewayModule, MarketplaceGateway } from './gateway';
 import { AdminModule } from './admin';
 import { VendorsController } from './vendors.controller';
@@ -25,9 +28,14 @@ import { CategoriesController } from './categories.controller';
 import { AddressesController } from './addresses.controller';
 import { MenusController } from './menus.controller';
 import { VehiclesController } from './vehicles.controller';
+import { CouponsController } from './coupons.controller';
+import { FlashSalesController } from './flash-sales.controller';
+import { DriverFleetController } from './driver-fleet.controller';
+import { NotificationsController } from './notifications.controller';
+import { NotificationsService } from './notifications.service';
 
 @Module({
-  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule],
+  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity])],
   controllers: [
     VendorsController,
     ProductsController,
@@ -52,9 +60,17 @@ import { VehiclesController } from './vehicles.controller';
     AddressesController,
     MenusController,
     VehiclesController,
+    CouponsController,
+    FlashSalesController,
+    DriverFleetController,
+    NotificationsController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },
+    FileUploadService,
+    MobileMoneyService,
+    NotificationsService,
   ],
+  exports: [NotificationsService],
 })
 export class MarketplaceModule {}

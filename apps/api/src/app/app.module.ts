@@ -12,18 +12,21 @@ import { MarketplaceModule } from '@afri-market/marketplace-api';
 import { MARKETPLACE_ENTITIES } from '@afri-market/marketplace-infrastructure';
 import { CurrentUserMiddleware } from '@afri-market/identity-infrastructure';
 import { TenantMiddleware } from '@afri-market/tenancy';
+import { UssdModule, UssdSessionEntity } from '@afri-market/ussd';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot([
-      { name: 'auth', ttl: 60000, limit: 5 },
-      { name: 'write', ttl: 60000, limit: 30 },
-      { name: 'read', ttl: 60000, limit: 120 },
-      { name: 'admin', ttl: 60000, limit: 60 },
+      { name: 'auth', ttl: 60000, limit: 10 },
+      { name: 'write', ttl: 60000, limit: 60 },
+      { name: 'read', ttl: 60000, limit: 300 },
+      { name: 'admin', ttl: 60000, limit: 120 },
+      { name: 'ussd', ttl: 60000, limit: 600 },
     ]),
     RedisCacheModule,
     AppConfigModule,
@@ -35,11 +38,14 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     DatabaseModule.forRoot([
       ...IDENTITY_ENTITIES,
       ...MARKETPLACE_ENTITIES,
+      UssdSessionEntity,
     ]),
     HealthModule,
+    MetricsModule,
     IdentityModule,
     MarketplaceModule,
     SchedulerModule,
+    UssdModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
@@ -52,10 +58,13 @@ export class AppModule implements NestModule {
       .exclude(
         { path: 'health', method: RequestMethod.ALL },
         { path: 'health/*path', method: RequestMethod.ALL },
-        { path: 'api/auth/register-tenant', method: RequestMethod.ALL },
-        { path: 'api/auth/login', method: RequestMethod.ALL },
-        { path: 'api/auth/send-otp', method: RequestMethod.ALL },
-        { path: 'api/auth/verify-otp', method: RequestMethod.ALL },
+        { path: 'metrics', method: RequestMethod.ALL },
+        { path: 'auth/register-tenant', method: RequestMethod.ALL },
+        { path: 'auth/register', method: RequestMethod.ALL },
+        { path: 'auth/login', method: RequestMethod.ALL },
+        { path: 'auth/send-otp', method: RequestMethod.ALL },
+        { path: 'auth/verify-otp', method: RequestMethod.ALL },
+        { path: 'ussd/*path', method: RequestMethod.ALL },
       )
       .forRoutes('*path');
   }

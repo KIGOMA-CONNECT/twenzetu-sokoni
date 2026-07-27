@@ -3,4 +3,5 @@ export interface JwtPayload {
   tenantId: string;
   role: string;
   phoneNumber: string;
+  permissions?: string;
 }

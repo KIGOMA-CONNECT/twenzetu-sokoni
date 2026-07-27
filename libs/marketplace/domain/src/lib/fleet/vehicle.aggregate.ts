@@ -17,6 +17,10 @@ export interface ReconstituteVehicleProps {
   readonly plateNumber: string;
   readonly capacityKg: number;
   readonly isAvailable: boolean;
+  readonly isOnline: boolean;
+  readonly verifiedAt: Date | null;
+  readonly licensePhotoUrl: string | null;
+  readonly insurancePhotoUrl: string | null;
   readonly currentLatitude: number | undefined;
   readonly currentLongitude: number | undefined;
   readonly version: number;
@@ -31,6 +35,10 @@ export class Vehicle extends AggregateRoot<EntityId> {
     private _plateNumber: string,
     private _capacityKg: number,
     private _isAvailable: boolean,
+    private _isOnline: boolean,
+    private _verifiedAt: Date | null,
+    private _licensePhotoUrl: string | null,
+    private _insurancePhotoUrl: string | null,
     private _currentLatitude: number | undefined,
     private _currentLongitude: number | undefined,
     private readonly _version: number,
@@ -41,7 +49,7 @@ export class Vehicle extends AggregateRoot<EntityId> {
   public static create(props: CreateVehicleProps): Vehicle {
     return new Vehicle(
       EntityId.create(), props.tenantId, props.driverId, props.vehicleType,
-      props.plateNumber, props.capacityKg, true, undefined, undefined, 1,
+      props.plateNumber, props.capacityKg, true, false, null, null, null, undefined, undefined, 1,
     );
   }
 
@@ -49,6 +57,7 @@ export class Vehicle extends AggregateRoot<EntityId> {
     return new Vehicle(
       props.id, props.tenantId, props.driverId, props.vehicleType,
       props.plateNumber, props.capacityKg, props.isAvailable,
+      props.isOnline, props.verifiedAt, props.licensePhotoUrl, props.insurancePhotoUrl,
       props.currentLatitude, props.currentLongitude, props.version,
     );
   }
@@ -59,6 +68,14 @@ export class Vehicle extends AggregateRoot<EntityId> {
   public get plateNumber(): string { return this._plateNumber; }
   public get capacityKg(): number { return this._capacityKg; }
   public get isAvailable(): boolean { return this._isAvailable; }
+  public get isOnline(): boolean { return this._isOnline; }
+  public get verifiedAt(): Date | null { return this._verifiedAt; }
+  public get licensePhotoUrl(): string | null { return this._licensePhotoUrl; }
+  public get insurancePhotoUrl(): string | null { return this._insurancePhotoUrl; }
+
+  public goOnline(): void { this._isOnline = true; }
+  public goOffline(): void { this._isOnline = false; }
+  public verify(): void { this._verifiedAt = new Date(); }
 
   public updateLocation(lat: number, lng: number): void {
     this._currentLatitude = lat;
@@ -66,4 +83,20 @@ export class Vehicle extends AggregateRoot<EntityId> {
   }
   public markAvailable(): void { this._isAvailable = true; }
   public markUnavailable(): void { this._isAvailable = false; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      driverId: this._driverId.value,
+      vehicleType: this._vehicleType,
+      plateNumber: this._plateNumber,
+      capacityKg: this._capacityKg,
+      isAvailable: this._isAvailable,
+      isOnline: this._isOnline,
+      verifiedAt: this._verifiedAt,
+      licensePhotoUrl: this._licensePhotoUrl,
+      insurancePhotoUrl: this._insurancePhotoUrl,
+      status: this._isAvailable ? 'AVAILABLE' : 'IN_USE',
+    };
+  }
 }

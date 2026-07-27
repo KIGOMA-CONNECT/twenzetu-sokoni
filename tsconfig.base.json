@@ -47,7 +47,8 @@
       "@afri-market/marketplace-infrastructure": ["./libs/marketplace/infrastructure/src/index.ts"],
       "@afri-market/marketplace-application": ["./libs/marketplace/application/src/index.ts"],
       "@afri-market/marketplace-api": ["./libs/marketplace/api/src/index.ts"],
-      "@afri-market/integrations": ["./libs/integrations/src/index.ts"]
+      "@afri-market/integrations": ["./libs/integrations/src/index.ts"],
+      "@afri-market/ussd": ["./libs/ussd/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp", "**/__tests__/**", "**/*.spec.ts"]

@@ -7,7 +7,7 @@ export class InitialSchema1700000000000 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
     // ── Identity Tables (Global) ──────────────────────────────────
     await queryRunner.query(`
-      CREATE TABLE "tenants" (
+      CREATE TABLE IF NOT EXISTS "tenants" (
         "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
         "name" VARCHAR(200) NOT NULL,
         "status" VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',

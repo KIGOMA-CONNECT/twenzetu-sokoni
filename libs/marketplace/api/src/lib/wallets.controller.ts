@@ -53,7 +53,7 @@ export class WalletsController {
   ) {
     const { limit: parsedLimit, offset: parsedOffset } = parsePagination({ limit, offset });
     const result = await this.listTransactions.execute(user.tenantId, user.sub, { limit: parsedLimit, offset: parsedOffset });
-    return paginatedResult(result.data, result.total, parsedLimit, parsedOffset);
+    return paginatedResult(result.data.map(t => t.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
   @Post('credit')

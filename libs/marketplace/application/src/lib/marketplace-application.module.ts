@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MARKETPLACE_ENTITIES } from '@afri-market/marketplace-infrastructure';
+import { IDENTITY_ENTITIES } from '@afri-market/identity-infrastructure';
 import {
   TypeOrmVendorRepository,
   TypeOrmOrderRepository,
@@ -27,6 +28,9 @@ import {
   TypeOrmCategoryRepository,
   TypeOrmAddressRepository,
   TypeOrmMenuRepository,
+  TypeOrmAdminUserRepository,
+  TypeOrmCouponRepository,
+  TypeOrmFlashSaleRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
@@ -40,6 +44,8 @@ import {
   SMS_SERVICE, MOBILE_MONEY_SERVICE, EMAIL_SERVICE, COUNTRY_CONFIG_REPOSITORY, MARKETPLACE_GATEWAY,
   VEHICLE_REPOSITORY,
   PRODUCT_CATEGORY_REPOSITORY, ADDRESS_REPOSITORY, MENU_REPOSITORY,
+  ADMIN_USER_REPOSITORY,
+  COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
@@ -87,6 +93,7 @@ import { ReleasePaymentUseCase } from './use-cases/payment/release-payment.use-c
 import { ListPaymentsUseCase } from './use-cases/payment/list-payments.use-case';
 import { GetPaymentByOrderUseCase } from './use-cases/payment/get-payment-by-order.use-case';
 import { ConfirmPaymentUseCase } from './use-cases/payment/confirm-payment.use-case';
+import { FailPaymentUseCase } from './use-cases/payment/fail-payment.use-case';
 import { CancelOrderUseCase } from './use-cases/order/cancel-order.use-case';
 import { FindMyDisputesUseCase, GetDisputeDetailUseCase } from './use-cases/dispute/find-disputes.use-case';
 import { FindReviewsByVendorUseCase } from './use-cases/review/find-reviews-by-vendor.use-case';
@@ -108,11 +115,15 @@ import { ListRecentOrdersAdminUseCase } from './use-cases/admin/list-recent-orde
 import { GetFinanceSummaryAdminUseCase } from './use-cases/admin/get-finance-summary-admin.use-case';
 import { GetRevenueReportUseCase } from './use-cases/admin/get-revenue-report.use-case';
 import { GetDisputeMetricsUseCase } from './use-cases/admin/get-dispute-metrics.use-case';
+import { ListAllVendorsAdminUseCase } from './use-cases/admin/list-all-vendors-admin.use-case';
+import { GetReconciliationReportUseCase } from './use-cases/admin/get-reconciliation-report.use-case';
 import { RegisterVehicleUseCase } from './use-cases/vehicle/register-vehicle.use-case';
 import { UpdateVehicleLocationUseCase } from './use-cases/vehicle/update-vehicle-location.use-case';
 import { ListDriverVehiclesUseCase } from './use-cases/vehicle/list-driver-vehicles.use-case';
+import { ToggleDriverAvailabilityUseCase } from './use-cases/vehicle/toggle-driver-availability.use-case';
 import { UpdateUsedGoodsUseCase } from './use-cases/used-goods/update-used-goods.use-case';
 import { GetDeliveryTrackingUseCase } from './use-cases/delivery/get-delivery-tracking.use-case';
+import { UpdateDriverLocationUseCase } from './use-cases/delivery/update-driver-location.use-case';
 import { CreateCategoryUseCase } from './use-cases/category/create-category.use-case';
 import { ListCategoriesUseCase } from './use-cases/category/list-categories.use-case';
 import { CreateAddressUseCase } from './use-cases/address/create-address.use-case';
@@ -120,6 +131,12 @@ import { ListAddressesUseCase } from './use-cases/address/list-addresses.use-cas
 import { DeleteAddressUseCase } from './use-cases/address/delete-address.use-case';
 import { CreateMenuUseCase } from './use-cases/menu/create-menu.use-case';
 import { ListMenusUseCase } from './use-cases/menu/list-menus.use-case';
+import { CreateCouponUseCase } from './use-cases/promotion/create-coupon.use-case';
+import { ValidateCouponUseCase } from './use-cases/promotion/validate-coupon.use-case';
+import { ListCouponsUseCase } from './use-cases/promotion/list-coupons.use-case';
+import { CreateFlashSaleUseCase } from './use-cases/promotion/create-flash-sale.use-case';
+import { ListActiveFlashSalesUseCase } from './use-cases/promotion/list-active-flash-sales.use-case';
+import { ListFlashSalesUseCase } from './use-cases/promotion/list-flash-sales.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -147,6 +164,9 @@ const REPOSITORIES = [
   { provide: PRODUCT_CATEGORY_REPOSITORY, useClass: TypeOrmCategoryRepository },
   { provide: ADDRESS_REPOSITORY, useClass: TypeOrmAddressRepository },
   { provide: MENU_REPOSITORY, useClass: TypeOrmMenuRepository },
+  { provide: ADMIN_USER_REPOSITORY, useClass: TypeOrmAdminUserRepository },
+  { provide: COUPON_REPOSITORY, useClass: TypeOrmCouponRepository },
+  { provide: FLASH_SALE_REPOSITORY, useClass: TypeOrmFlashSaleRepository },
 ];
 
 const SERVICES = [
@@ -203,6 +223,7 @@ const USE_CASES = [
   ListPaymentsUseCase,
   GetPaymentByOrderUseCase,
   ConfirmPaymentUseCase,
+  FailPaymentUseCase,
   CancelOrderUseCase,
   FindMyDisputesUseCase,
   GetDisputeDetailUseCase,
@@ -227,10 +248,14 @@ const USE_CASES = [
   GetFinanceSummaryAdminUseCase,
   GetRevenueReportUseCase,
   GetDisputeMetricsUseCase,
+  ListAllVendorsAdminUseCase,
+  GetReconciliationReportUseCase,
   RegisterVehicleUseCase,
   UpdateVehicleLocationUseCase,
   ListDriverVehiclesUseCase,
+  ToggleDriverAvailabilityUseCase,
   UpdateUsedGoodsUseCase,
+  UpdateDriverLocationUseCase,
   GetDeliveryTrackingUseCase,
   CreateCategoryUseCase,
   ListCategoriesUseCase,
@@ -239,11 +264,17 @@ const USE_CASES = [
   DeleteAddressUseCase,
   CreateMenuUseCase,
   ListMenusUseCase,
+  CreateCouponUseCase,
+  ValidateCouponUseCase,
+  ListCouponsUseCase,
+  CreateFlashSaleUseCase,
+  ListActiveFlashSalesUseCase,
+  ListFlashSalesUseCase,
 ];
 
 @Module({
-  imports: [TypeOrmModule.forFeature(MARKETPLACE_ENTITIES)],
+  imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}

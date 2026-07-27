@@ -2,13 +2,13 @@ import { TenantAwareEntity } from '@afri-market/database';
 import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'orders' })
-@Index(['customer_id'])
-@Index(['vendor_id'])
-@Index(['driver_id'])
+@Index(['customerId'])
+@Index(['vendorId'])
+@Index(['driverId'])
 @Index(['status'])
-@Index(['tenantId', 'vendor_id'])
+@Index(['tenantId', 'vendorId'])
 @Index(['tenantId', 'status'])
-@Index(['tenantId', 'customer_id'])
+@Index(['tenantId', 'customerId'])
 export class OrderOrmEntity extends TenantAwareEntity {
   @Column({ name: 'customer_id', type: 'uuid' })
   public customerId!: string;

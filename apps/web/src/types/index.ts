@@ -1,0 +1,197 @@
+export type UserRole = 'super_admin' | 'admin' | 'vendor' | 'customer' | 'driver';
+export type UserStatus = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED';
+
+export interface User {
+  id: string;
+  tenantId: string;
+  phoneNumber: string;
+  fullName: string;
+  role: UserRole;
+  status: UserStatus;
+  email?: string;
+  permissions?: string[];
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  user: User;
+}
+
+export interface Vendor {
+  id: string;
+  shopName: string;
+  description: string;
+  category: string;
+  commissionRate: number;
+  status: string;
+  averageRating: number;
+  totalOrders: number;
+}
+
+export interface Product {
+  id: string;
+  vendorId: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  type: string;
+  stockQuantity: number;
+  unit: string;
+  status: string;
+}
+
+export interface OrderItem {
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+}
+
+export interface Order {
+  id: string;
+  customerId: string;
+  vendorId: string;
+  driverId: string | null;
+  type: string;
+  status: string;
+  subtotal: number;
+  deliveryFee: number;
+  systemCommission: number;
+  totalAmount: number;
+  currency: string;
+  deliveryAddress: string;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
+  specialInstructions?: string;
+  otpVerified: boolean;
+  createdAt: string;
+}
+
+export interface Payment {
+  id: string;
+  orderId: string;
+  amount: number;
+  currency: string;
+  method: string;
+  status: string;
+  systemCommission: number;
+  vendorNet: number;
+  driverNet: number;
+}
+
+export interface Dispute {
+  id: string;
+  orderId: string;
+  reason: string;
+  description: string;
+  claimAmount: number;
+  status: string;
+  severity: string;
+}
+
+export interface Wallet {
+  id: string;
+  ownerId: string;
+  ownerType: string;
+  balance: number;
+  pendingBalance: number;
+  currency: string;
+}
+
+export interface DashboardStats {
+  totalVendors: number;
+  totalOrders: number;
+  totalRevenue: number;
+  pendingVendors: number;
+  activeDisputes: number;
+  totalCustomers: number;
+}
+
+export interface RevenueReport {
+  totalRevenue: number;
+  totalCommission: number;
+  orderCount: number;
+  avgOrderValue: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface Delivery {
+  id: string;
+  orderId: string;
+  driverId: string;
+  vehicleType: string;
+  status: string;
+  pickupAddress: string;
+  deliveryAddress: string;
+  pickupLatitude?: number;
+  pickupLongitude?: number;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
+  distanceKm?: number;
+  estimatedTimeMinutes?: number;
+  driverEarnings: number;
+  currency: string;
+  currentLatitude?: number;
+  currentLongitude?: number;
+  lastLocationUpdate?: string;
+}
+
+export interface TrackingInfo {
+  deliveryId: string;
+  status: string;
+  driverId: string;
+  pickupAddress: string;
+  deliveryAddress: string;
+  estimatedTimeMinutes: number | null;
+  distanceKm: number | null;
+}
+
+export interface Vehicle {
+  id: string;
+  driverId: string;
+  vehicleType: string;
+  plateNumber: string;
+  capacityKg: number;
+  isAvailable: boolean;
+  status: string;
+}
+
+export interface Address {
+  id: string;
+  userId: string;
+  label: string;
+  fullAddress: string;
+  latitude: number;
+  longitude: number;
+  isDefault: boolean;
+}
+
+export interface LoyaltyPoint {
+  id: string;
+  userId: string;
+  points: number;
+  tier: string;
+  totalEarned: number;
+  totalRedeemed: number;
+}
+
+export interface WalletTransaction {
+  id: string;
+  ownerId: string;
+  ownerType: string;
+  type: string;
+  amount: number;
+  currency: string;
+  balanceBefore: number;
+  balanceAfter: number;
+  description: string;
+  referenceId?: string;
+  referenceType?: string;
+}

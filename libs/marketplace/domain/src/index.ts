@@ -80,3 +80,8 @@ export * from './lib/used-goods/used-goods.aggregate';
 export * from './lib/used-goods/used-goods.repository.interface';
 // Admin cross-context
 export * from './lib/admin/admin-user.repository.interface';
+// Promotion
+export * from './lib/promotion/coupon.aggregate';
+export * from './lib/promotion/coupon.repository.interface';
+export * from './lib/promotion/flash-sale.aggregate';
+export * from './lib/promotion/flash-sale.repository.interface';

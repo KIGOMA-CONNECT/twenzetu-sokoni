@@ -71,6 +71,19 @@ export class Vendor extends AggregateRoot<EntityId> {
   public get totalOrders(): number { return this._totalOrders; }
   public get version(): number { return this._version; }
 
+  public toDto() {
+    return {
+      id: this.id.value,
+      shopName: this._shopName,
+      description: this._description,
+      category: this._category,
+      commissionRate: this._commissionRate,
+      status: this._status,
+      averageRating: this._averageRating,
+      totalOrders: this._totalOrders,
+    };
+  }
+
   public approve(): void { this._status = 'ACTIVE'; }
   public suspend(): void { this._status = 'SUSPENDED'; }
   public close(): void { this._status = 'CLOSED'; }

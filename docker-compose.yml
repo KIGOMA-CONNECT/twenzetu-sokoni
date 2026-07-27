@@ -12,7 +12,7 @@ services:
       DB_RUNTIME_USER: ${DB_RUNTIME_USER:-afri_runtime}
       DB_RUNTIME_PASSWORD: ${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}
     ports:
-      - '${DB_PORT:-5432}:5432'
+      - '${DB_PORT:-5434}:5432'
     volumes:
       - afri-market-postgres-data:/var/lib/postgresql/data
       - ./docker/postgres/init-db.sh:/docker-entrypoint-initdb.d/10-init-db.sh:ro

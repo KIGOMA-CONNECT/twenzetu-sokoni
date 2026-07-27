@@ -23,7 +23,7 @@ export class UsedGoodsOrmEntity extends TenantAwareEntity {
   @Column({ type: 'varchar', length: 100 })
   public category!: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'asking_price', type: 'decimal', precision: 12, scale: 2 })
   public askingPrice!: number;
 
   @Column({ type: 'varchar', length: 10, default: 'RWF' })

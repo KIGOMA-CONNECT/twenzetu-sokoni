@@ -1,6 +1,6 @@
 import { AggregateRoot, Email, EntityId, Guard, TenantId } from '@afri-market/kernel';
 import { PhoneNumber } from '@afri-market/kernel';
-import { UserRole } from './user-role';
+import { UserRole, AdminPermission } from './user-role';
 import { UserStatus } from './user-status';
 
 export interface CreateUserProps {
@@ -10,6 +10,7 @@ export interface CreateUserProps {
   readonly role: UserRole;
   readonly passwordHash: string;
   readonly email?: Email;
+  readonly permissions?: AdminPermission[];
 }
 
 export interface ReconstituteUserProps {
@@ -22,6 +23,7 @@ export interface ReconstituteUserProps {
   readonly email?: Email;
   readonly status: UserStatus;
   readonly version: number;
+  readonly permissions?: AdminPermission[];
 }
 
 export class User extends AggregateRoot<EntityId> {
@@ -35,6 +37,7 @@ export class User extends AggregateRoot<EntityId> {
     private _email: Email | undefined,
     private _status: UserStatus,
     private readonly _version: number,
+    private _permissions: AdminPermission[] = [],
   ) {
     super(id);
   }
@@ -52,6 +55,7 @@ export class User extends AggregateRoot<EntityId> {
       props.email,
       'PENDING_VERIFICATION',
       1,
+      props.permissions ?? [],
     );
   }
 
@@ -59,6 +63,7 @@ export class User extends AggregateRoot<EntityId> {
     return new User(
       props.id, props.tenantId, props.phoneNumber, props.fullName,
       props.role, props.passwordHash, props.email, props.status, props.version,
+      props.permissions ?? [],
     );
   }
 
@@ -70,6 +75,7 @@ export class User extends AggregateRoot<EntityId> {
   public get email(): Email | undefined { return this._email; }
   public get status(): UserStatus { return this._status; }
   public get version(): number { return this._version; }
+  public get permissions(): AdminPermission[] { return this._permissions; }
 
   public changePasswordHash(newHash: string): void {
     Guard.assert(Guard.againstEmptyString(newHash, 'passwordHash'));
@@ -82,4 +88,5 @@ export class User extends AggregateRoot<EntityId> {
   public verify(): void { this._status = 'ACTIVE'; }
   public updateFullName(newName: string): void { this._fullName = newName; }
   public updateEmail(newEmail: Email | undefined): void { this._email = newEmail; }
+  public setPermissions(permissions: AdminPermission[]): void { this._permissions = permissions; }
 }
