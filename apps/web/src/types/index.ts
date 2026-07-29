@@ -36,6 +36,8 @@ export interface Product {
   price: number;
   currency: string;
   type: string;
+  categoryId?: string;
+  imageUrl?: string;
   stockQuantity: number;
   unit: string;
   status: string;
@@ -194,4 +196,5 @@ export interface WalletTransaction {
   description: string;
   referenceId?: string;
   referenceType?: string;
+  createdAt?: string;
 }

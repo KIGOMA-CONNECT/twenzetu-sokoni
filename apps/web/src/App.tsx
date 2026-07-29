@@ -36,6 +36,8 @@ import NotificationsPage from './pages/NotificationsPage';
 import LegalPage from './pages/LegalPage';
 import VendorOnboarding from './pages/vendor/VendorOnboarding';
 import CustomerKyc from './pages/consumer/CustomerKyc';
+import ReferralPage from './pages/consumer/ReferralPage';
+import SubscriptionPage from './pages/consumer/SubscriptionPage';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -55,6 +57,8 @@ function AppRoutes() {
         <Route path="/loyalty" element={<ProtectedRoute roles={['customer']}><LoyaltyPage /></ProtectedRoute>} />
         <Route path="/reviews" element={<ProtectedRoute roles={['customer']}><ReviewList /></ProtectedRoute>} />
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
+        <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
+        <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />
         <Route path="/vendor/products" element={<ProtectedRoute roles={['vendor']}><VendorProducts /></ProtectedRoute>} />
         <Route path="/vendor/orders" element={<ProtectedRoute roles={['vendor']}><VendorOrders /></ProtectedRoute>} />

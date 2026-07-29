@@ -1,7 +1,17 @@
 {
   "app": {
     "name": "afriMarket",
-    "tagline": "Order food, groceries, and more"
+    "tagline": "Order food, groceries, and more",
+    "welcome": "Hello",
+    "welcomeBack": "Welcome back to afriMarket",
+    "quickLinks": "Quick Links",
+    "browseVendors": "Browse Vendors",
+    "activeOrders": "Active Orders",
+    "totalSpent": "Total Spent",
+    "loyaltyPoints": "Loyalty Points",
+    "featured": "Featured Products",
+    "recommended": "Recommended for You",
+    "trending": "Trending Now"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -16,14 +26,38 @@
     "earnings": "Earnings",
     "vehicle": "Vehicle",
     "settings": "Settings",
-    "logout": "Logout"
+    "logout": "Logout",
+    "kyc": "Verify Identity",
+    "notifications": "Notifications",
+    "vendorPanel": "Vendor Panel",
+    "myProducts": "My Products",
+    "vendorOrders": "Vendor Orders",
+    "adminPanel": "Admin Panel",
+    "manageVendors": "Manage Vendors",
+    "disputes": "Disputes",
+    "analytics": "Analytics",
+    "promotions": "Promotions",
+    "drivers": "Drivers",
+    "ussd": "USSD Simulator",
+    "reconciliation": "Reconciliation",
+    "auditLog": "Audit Log",
+    "driverPanel": "Driver Panel",
+    "earnings": "Earnings",
+    "vehicle": "My Vehicle",
+    "becomeVendor": "Become a Vendor",
+    "manageAdmins": "Manage Admins",
+    "referrals": "Refer a Friend",
+    "subscriptions": "Subscriptions"
   },
   "auth": {
     "login": "Login",
     "phoneNumber": "Phone Number",
     "password": "Password",
     "loginButton": "Sign In",
-    "loggingIn": "Signing in..."
+    "loggingIn": "Signing in...",
+    "register": "Register",
+    "fullName": "Full Name",
+    "registerButton": "Create Account"
   },
   "order": {
     "title": "Order History",
@@ -42,7 +76,13 @@
     "estimatedTime": "Estimated Time",
     "summary": "Order Summary",
     "deliveryFee": "Delivery Fee",
-    "address": "Address"
+    "address": "Address",
+    "items": "Order Items",
+    "page": "Page",
+    "of": "of",
+    "hide": "hide",
+    "selectAddress": "Select address",
+    "noAddresses": "No addresses saved"
   },
   "status": {
     "PLACED": "Order Placed",
@@ -51,7 +91,61 @@
     "READY_FOR_PICKUP": "Ready for Pickup",
     "OUT_FOR_DELIVERY": "Out for Delivery",
     "DELIVERED": "Delivered",
-    "CANCELLED": "Cancelled"
+    "CANCELLED": "Cancelled",
+    "REFUNDED": "Refunded",
+    "ACTIVE": "Active",
+    "INACTIVE": "Inactive",
+    "OUT_OF_STOCK": "Out of Stock"
+  },
+  "product": {
+    "title": "Products",
+    "subtitle": "Browse and place an order from this vendor",
+    "inStock": "In stock",
+    "outOfStock": "Out of stock",
+    "unavailable": "Unavailable",
+    "placeOrder": "Place Order",
+    "noProducts": "No products available from this vendor.",
+    "cart": "Cart",
+    "emptyCart": "Your cart is empty",
+    "checkout": "Checkout",
+    "placingOrder": "Placing order...",
+    "orderSuccess": "Order placed successfully!",
+    "remove": "Remove",
+    "paymentMethod": "Payment Method",
+    "deliveryAddress": "Delivery Address"
+  },
+  "chat": {
+    "title": "Chat with Driver",
+    "noMessages": "No messages yet",
+    "placeholder": "Type a message...",
+    "send": "Send"
+  },
+  "wallet": {
+    "title": "My Wallet",
+    "balance": "Balance",
+    "pending": "Pending",
+    "topUp": "Top Up",
+    "topUpTitle": "Top Up Wallet",
+    "amount": "Amount",
+    "phoneNumber": "Phone Number",
+    "submit": "Submit",
+    "transactions": "Transactions",
+    "noTransactions": "No transactions yet"
+  },
+  "vendor": {
+    "title": "Browse Vendors",
+    "subtitle": "Discover local shops and products",
+    "searchPlaceholder": "Search vendors or products...",
+    "noVendors": "No vendors found.",
+    "orders": "orders",
+    "rating": "Rating"
+  },
+  "tracking": {
+    "shareLocation": "Share Location",
+    "sharingLocation": "Sharing location...",
+    "driver": "Driver",
+    "deliveryPoint": "Delivery Point",
+    "driverLocation": "Driver Location"
   },
   "common": {
     "loading": "Loading...",
@@ -63,7 +157,44 @@
     "cancel": "Cancel",
     "delete": "Delete",
     "confirm": "Confirm",
-    "search": "Search"
+    "search": "Search",
+    "noData": "No data available"
+  },
+  "referral": {
+    "title": "Refer a Friend",
+    "subtitle": "Invite friends to join afriMarket and earn wallet credits when they place their first order",
+    "getCode": "Get Your Referral Code",
+    "customCode": "Custom Code (optional, 6-20 characters)",
+    "generate": "Generate Referral Code",
+    "yourCode": "Your Referral Code",
+    "copyLink": "Copy Link",
+    "copied": "Copied!",
+    "shareLink": "Share link",
+    "totalReferrals": "Total Referrals",
+    "completed": "Completed",
+    "earned": "Earned",
+    "pendingRewards": "Pending Rewards",
+    "yourReferrals": "Your Referrals",
+    "noReferrals": "No referrals yet. Share your code to start earning!",
+    "phone": "Phone",
+    "status": "Status",
+    "reward": "Reward",
+    "date": "Date",
+    "claim": "Claim",
+    "claimed": "Claimed"
+  },
+  "subscription": {
+    "title": "My Subscriptions",
+    "subtitle": "Manage your recurring orders for groceries and essentials",
+    "noSubscriptions": "No subscriptions yet. Browse vendors and set up a recurring order!",
+    "quantity": "Quantity",
+    "frequency": "Frequency",
+    "nextOrder": "Next Order",
+    "pause": "Pause",
+    "resume": "Resume",
+    "cancel": "Cancel",
+    "product": "Product",
+    "vendor": "Vendor"
   },
   "language": {
     "en": "English",

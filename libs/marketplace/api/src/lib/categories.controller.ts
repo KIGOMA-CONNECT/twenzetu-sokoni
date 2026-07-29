@@ -14,6 +14,8 @@ export class CategoriesController {
   ) {}
 
   @Get()
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'List active categories for a tenant' })
   @ApiResponse({ status: 200, description: 'Success' })
   public async findAll(@CurrentUser() user: JwtPayload) {

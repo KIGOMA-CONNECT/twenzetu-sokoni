@@ -1,8 +1,11 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useApi } from '../../hooks/useApi';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { Recommendations } from '../../components/Recommendations';
 import type { Order } from '../../types';
 
 const styles = {
@@ -83,6 +86,8 @@ const styles = {
 function ConsumerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { formatCurrency } = useCurrency();
   const { data: orders, loading, error } = useApi<Order[]>('/orders', []);
 
   const activeOrders = (orders || []).filter((o) =>
@@ -97,8 +102,8 @@ function ConsumerDashboard() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <h1 style={styles.greeting}>Hello, {user?.fullName?.split(' ')[0] || 'there'}</h1>
-        <div style={styles.subtext}>Welcome back to afriMarket</div>
+        <h1 style={styles.greeting}>{t('app.welcome')}, {user?.fullName?.split(' ')[0] || 'there'}</h1>
+        <div style={styles.subtext}>{t('app.welcomeBack')}</div>
       </div>
 
       {loading && <LoadingSpinner />}
@@ -108,27 +113,27 @@ function ConsumerDashboard() {
         <>
           <div style={styles.stats}>
             <div style={styles.card}>
-              <div style={styles.statLabel}>Active Orders</div>
-              <div style={styles.statValue}>{activeOrders}</div>
+            <div style={styles.statLabel}>{t('app.activeOrders')}</div>
+            <div style={styles.statValue}>{activeOrders}</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.statLabel}>Total Spent</div>
-              <div style={styles.statValue}>{totalSpent.toLocaleString()} RWF</div>
+              <div style={styles.statLabel}>{t('app.totalSpent')}</div>
+              <div style={styles.statValue}>{formatCurrency(totalSpent)}</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.statLabel}>Loyalty Points</div>
+              <div style={styles.statLabel}>{t('app.loyaltyPoints')}</div>
               <div style={styles.statValue}>{loyaltyPoints}</div>
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={styles.sectionTitle}>Quick Links</div>
+            <div style={styles.sectionTitle}>{t('app.quickLinks')}</div>
             <div style={styles.quickLinks}>
               <button
                 style={{ ...styles.button, ...styles.primaryBtn }}
                 onClick={() => navigate('/vendors')}
               >
-                Browse Vendors
+                {t('app.browseVendors')}
               </button>
               <button
                 style={{ ...styles.button, ...styles.secondaryBtn }}
@@ -136,8 +141,23 @@ function ConsumerDashboard() {
               >
                 Order History
               </button>
+              <button
+                style={{ ...styles.button, ...styles.primaryBtn }}
+                onClick={() => navigate('/referrals')}
+              >
+                Refer a Friend
+              </button>
+              <button
+                style={{ ...styles.button, ...styles.secondaryBtn }}
+                onClick={() => navigate('/subscriptions')}
+              >
+                Subscriptions
+              </button>
             </div>
           </div>
+
+          <Recommendations title={t('app.featured')} endpoint="/recommendations/featured" />
+          <Recommendations title={t('app.recommended')} endpoint="/recommendations/for-you" />
         </>
       )}
     </div>

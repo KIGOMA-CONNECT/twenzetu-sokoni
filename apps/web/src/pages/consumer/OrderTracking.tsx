@@ -1,8 +1,13 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
+import { useAuth } from '../../context/AuthContext';
+import api from '../../api/client';
 import type { Order, TrackingInfo } from '../../types';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const STATUS_STEPS = [
   'PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED',
@@ -26,6 +31,7 @@ function getActiveStep(status: string): number {
 export default function OrderTracking() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { data: orderData, loading } = useApi<Order>(orderId ? `/orders/${orderId}` : null);
   const { data: trackingData, refetch: refetchTracking } = useApi<TrackingInfo>(
     orderId ? `/deliveries/order/${orderId}/tracking` : null,
@@ -35,6 +41,13 @@ export default function OrderTracking() {
   const [driverLng, setDriverLng] = useState<number | undefined>();
   const [orderStatus, setOrderStatus] = useState<string>('');
   const [lastUpdate, setLastUpdate] = useState<string>('');
+  const mapRef = useRef<HTMLDivElement>(null);
+  const leafletMapRef = useRef<L.Map | null>(null);
+  const driverMarkerRef = useRef<L.Marker | null>(null);
+  const deliveryMarkerRef = useRef<L.Marker | null>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [chatInput, setChatInput] = useState('');
+  const chatRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (orderData?.status) {
@@ -56,6 +69,14 @@ export default function OrderTracking() {
   }, [orderId]);
 
   useEffect(() => {
+    if (!orderId) return;
+    api.get(`/messages/${orderId}`).then(res => {
+      const payload = res.data;
+      setMessages(payload?.data || []);
+    }).catch(() => {});
+  }, [orderId]);
+
+  useEffect(() => {
     const unsub1 = subscribe('order-update', (data: any) => {
       if (data.orderStatus) {
         setOrderStatus(data.orderStatus);
@@ -65,6 +86,10 @@ export default function OrderTracking() {
         setDriverLat(data.latitude);
         setDriverLng(data.longitude);
         setLastUpdate(new Date().toLocaleTimeString());
+      }
+      if (data.type === 'chat-message') {
+        setMessages(prev => [...prev, data]);
+        setTimeout(() => chatRef.current?.scrollTo(0, chatRef.current.scrollHeight), 50);
       }
     });
 
@@ -77,6 +102,65 @@ export default function OrderTracking() {
 
     return () => { unsub1(); unsub2(); };
   }, [orderId, subscribe]);
+
+  const sendChat = useCallback(async () => {
+    if (!chatInput.trim() || !orderId) return;
+    try {
+      const res = await api.post('/messages', { orderId, message: chatInput.trim() });
+      const sent = res.data?.data || res.data;
+      setMessages(prev => [...prev, Array.isArray(sent) ? sent[0] : sent]);
+      setChatInput('');
+      setTimeout(() => chatRef.current?.scrollTo(0, chatRef.current.scrollHeight), 50);
+    } catch {}
+  }, [chatInput, orderId]);
+
+  useEffect(() => {
+    if (!mapRef.current || leafletMapRef.current) return;
+    leafletMapRef.current = L.map(mapRef.current, {
+      zoomControl: true,
+      attributionControl: false,
+    }).setView([-6.8, 39.2], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(leafletMapRef.current);
+    setTimeout(() => leafletMapRef.current?.invalidateSize(), 200);
+  }, [trackingData?.deliveryId]);
+
+  useEffect(() => {
+    const map = leafletMapRef.current;
+    if (!map) return;
+
+    const dlng = driverLng ?? trackingData?.currentLongitude;
+    const dlat = driverLat ?? trackingData?.currentLatitude;
+    const delLng = trackingData?.deliveryLongitude;
+    const delLat = trackingData?.deliveryLatitude;
+
+    if (dlat && dlng) {
+      if (driverMarkerRef.current) {
+        driverMarkerRef.current.setLatLng([dlat, dlng]);
+      } else {
+        driverMarkerRef.current = L.marker([dlat, dlng], {
+          icon: L.divIcon({ className: '', html: '🛵', iconSize: [24, 24], iconAnchor: [12, 12] }),
+        }).addTo(map).bindPopup('Driver');
+      }
+      map.setView([dlat, dlng], map.getZoom());
+    }
+
+    if (delLat && delLng) {
+      if (deliveryMarkerRef.current) {
+        deliveryMarkerRef.current.setLatLng([delLat, delLng]);
+      } else {
+        deliveryMarkerRef.current = L.marker([delLat, delLng], {
+          icon: L.divIcon({ className: '', html: '📍', iconSize: [24, 24], iconAnchor: [12, 24] }),
+        }).addTo(map).bindPopup('Delivery point');
+      }
+    }
+
+    if (dlat && dlng && delLat && delLng) {
+      const bounds = L.latLngBounds([dlat, dlng], [delLat, delLng]);
+      map.fitBounds(bounds, { padding: [50, 50] });
+    }
+  }, [driverLat, driverLng, trackingData?.currentLatitude, trackingData?.currentLongitude, trackingData?.deliveryLatitude, trackingData?.deliveryLongitude]);
 
   const currentLat = driverLat ?? trackingData?.deliveryLatitude;
   const currentLng = driverLng ?? trackingData?.deliveryLongitude;
@@ -205,18 +289,13 @@ export default function OrderTracking() {
               <h3 style={{ margin: '0 0 12px 0', fontSize: 14, color: '#666' }}>
                 {isDelivered ? 'Delivery Location' : 'Driver Location'}
               </h3>
-              <a
-                href={`https://www.openstreetmap.org/?mlat=${currentLat}&mlon=${currentLng}#map=15/${currentLat}/${currentLng}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ textDecoration: 'none' }}
-              >
-                <div style={styles.mapPlaceholder}>
-                  <span style={{ fontSize: 32 }}>📍</span>
-                  <span>{currentLat.toFixed(6)}, {currentLng.toFixed(6)}</span>
-                  <span style={{ fontSize: 12, color: '#2563eb' }}>Click to open in OpenStreetMap →</span>
-                </div>
-              </a>
+              <div ref={mapRef} style={{ width: '100%', height: 260, borderRadius: 10, overflow: 'hidden' }} />
+              <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: '#64748b' }}>
+                <span>🛵 Driver</span>
+                <span>📍 Drop-off</span>
+                {trackingData?.distanceKm != null && <span>📏 {trackingData.distanceKm.toFixed(1)} km</span>}
+                {trackingData?.estimatedTimeMinutes != null && <span>⏱ {trackingData.estimatedTimeMinutes} min ETA</span>}
+              </div>
             </div>
           ) : (
             trackingData && !isDelivered && (
@@ -280,6 +359,33 @@ export default function OrderTracking() {
               <span style={{ ...styles.infoValue, maxWidth: 300, textAlign: 'right' as const }}>
                 {orderData.deliveryAddress}
               </span>
+            </div>
+          </div>
+
+          {/* Chat */}
+          <div style={styles.card}>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>{t('chat.title')}</h3>
+            <div ref={chatRef} style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {messages.length === 0 && <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 12 }}>{t('chat.noMessages')}</div>}
+              {messages.map((m: any) => (
+                <div key={m.id} style={{ padding: '6px 10px', borderRadius: 8, maxWidth: '80%', fontSize: 13, background: m.senderRole === 'customer' ? '#2563eb' : '#f1f5f9', color: m.senderRole === 'customer' ? '#fff' : '#1e293b', alignSelf: m.senderRole === 'customer' ? 'flex-end' : 'flex-start' }}>
+                  <div style={{ fontWeight: 600, fontSize: 11, marginBottom: 2, opacity: 0.8 }}>{m.sender_role || m.senderRole}</div>
+                  <div>{m.message}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input
+                style={{ flex: 1, padding: '7px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13, outline: 'none' }}
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && sendChat()}
+                placeholder={t('chat.placeholder')}
+              />
+              <button
+                style={{ padding: '7px 14px', border: 'none', borderRadius: 6, background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                onClick={sendChat}
+              >{t('chat.send')}</button>
             </div>
           </div>
         </>

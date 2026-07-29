@@ -1,9 +1,13 @@
-import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors, Logger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
+import { WalletTopupDto } from './dto/wallet-topup.dto';
+import { MobileMoneyService } from '@afri-market/integrations';
 import {
   GetWalletUseCase,
   CreditWalletUseCase,
@@ -17,11 +21,15 @@ import { parsePagination, paginatedResult } from './pagination';
 @Controller('wallets')
 @ApiBearerAuth()
 export class WalletsController {
+  private readonly logger = new Logger(WalletsController.name);
+
   constructor(
     private readonly getWallet: GetWalletUseCase,
     private readonly creditWallet: CreditWalletUseCase,
     private readonly debitWallet: DebitWalletUseCase,
     private readonly listTransactions: ListWalletTransactionsUseCase,
+    private readonly mobileMoney: MobileMoneyService,
+    @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
   @Get('me')
@@ -103,6 +111,46 @@ export class WalletsController {
       walletId: wallet.walletId,
       balance: wallet.balance,
       message: `Debited ${body.amount}`,
+    };
+  }
+
+  @Post('top-up')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Top-up wallet via M-Pesa' })
+  @ApiBody({ type: WalletTopupDto })
+  @ApiResponse({ status: 201, description: 'STK Push sent' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async topUp(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: WalletTopupDto,
+  ) {
+    const accountReference = `topup_${user.tenantId}_${user.sub}`;
+
+    const stkResult = await this.mobileMoney.initiateStkPush({
+      phoneNumber: body.phoneNumber,
+      amount: body.amount,
+      accountReference,
+      description: `Wallet top-up: ${body.amount} TZS`,
+    });
+
+    if (stkResult.responseCode !== '0') {
+      return {
+        success: false,
+        message: stkResult.responseDescription || 'Failed to initiate payment',
+      };
+    }
+
+    await this.ds.query(
+      `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, status)
+       VALUES ($1, $2, $3, $4, $5, 'PENDING')`,
+      [user.tenantId, user.sub, body.amount, body.phoneNumber, stkResult.checkoutRequestId],
+    );
+
+    return {
+      success: true,
+      checkoutRequestId: stkResult.checkoutRequestId,
+      message: 'M-Pesa prompt sent to your phone. Confirm to complete top-up.',
     };
   }
 }

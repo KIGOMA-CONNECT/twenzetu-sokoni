@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { NotificationBell } from '../components/NotificationBell';
@@ -6,6 +6,7 @@ import { NotificationBell } from '../components/NotificationBell';
 export function MainLayout() {
   const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = () => { logout(); navigate('/login'); };
 
@@ -46,9 +47,12 @@ export function MainLayout() {
       <aside style={{ width: '240px', background: '#1e293b', color: '#e2e8f0', padding: '1.5rem 0', flexShrink: 0 }}>
         <div style={{ padding: '0 1.5rem 1.5rem', fontSize: '1.25rem', fontWeight: 700, borderBottom: '1px solid #334155' }}>afriMarket</div>
         <nav style={{ marginTop: '1rem' }}>
-          {menuItems.filter(m => m.show).map(item => (
-            <button key={item.path} onClick={() => navigate(item.path)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.6rem 1.5rem', background: 'transparent', border: 'none', color: '#cbd5e1', fontSize: '0.9rem' }} onMouseEnter={e => (e.currentTarget.style.background = '#334155')} onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}>{item.label}</button>
-          ))}
+          {menuItems.filter(m => m.show).map(item => {
+            const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
+            return (
+              <button key={item.path} onClick={() => navigate(item.path)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.6rem 1.5rem', background: isActive ? '#334155' : 'transparent', border: 'none', color: isActive ? '#ffffff' : '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer', borderLeft: isActive ? '3px solid #0f766e' : '3px solid transparent' }} onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = '#334155'; }} onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}>{item.label}</button>
+            );
+          })}
         </nav>
         <div style={{ position: 'absolute', bottom: 0, width: '240px', padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>

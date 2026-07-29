@@ -1,7 +1,17 @@
 {
   "app": {
     "name": "afriMarket",
-    "tagline": "Agiza chakula, mboga, na zaidi"
+    "tagline": "Agiza chakula, mboga, na zaidi",
+    "welcome": "Habari",
+    "welcomeBack": "Karibu tena kwenye afriMarket",
+    "quickLinks": "Viungo vya Haraka",
+    "browseVendors": "Vinjali Wauzaji",
+    "activeOrders": "Oda Zinazoendelea",
+    "totalSpent": "Jumla Iliyotumika",
+    "loyaltyPoints": "Pointi za Uaminifu",
+    "featured": "Bidhaa Zilizojitokeza",
+    "recommended": "Mapendekezo Kwako",
+    "trending": "Zinazovuma Sasa"
   },
   "nav": {
     "dashboard": "Dashibodi",
@@ -16,14 +26,38 @@
     "earnings": "Mapato",
     "vehicle": "Gari",
     "settings": "Mipangilio",
-    "logout": "Toka"
+    "logout": "Toka",
+    "kyc": "Thibitisha Utambulisho",
+    "notifications": "Arifa",
+    "vendorPanel": "Jopo la Muuzaji",
+    "myProducts": "Bidhaa Zangu",
+    "vendorOrders": "Oda za Muuzaji",
+    "adminPanel": "Jopo la Msimamizi",
+    "manageVendors": "Simamia Wauzaji",
+    "disputes": "Migogoro",
+    "analytics": "Takwimu",
+    "promotions": "Matangazo",
+    "drivers": "Madereva",
+    "ussd": "Kiganishi cha USSD",
+    "reconciliation": "Upatanisho",
+    "auditLog": "Kumbukumbu",
+    "driverPanel": "Jopo la Dereva",
+    "earnings": "Mapato",
+    "vehicle": "Gari Langu",
+    "becomeVendor": "Kuwa Muuzaji",
+    "manageAdmins": "Simamia Wasimamizi",
+    "referrals": "Mwalike Rafiki",
+    "subscriptions": "Usajili"
   },
   "auth": {
     "login": "Ingia",
     "phoneNumber": "Nambari ya Simu",
     "password": "Nywila",
     "loginButton": "Ingia",
-    "loggingIn": "Inaingia..."
+    "loggingIn": "Inaingia...",
+    "register": "Jisajili",
+    "fullName": "Jina Kamili",
+    "registerButton": "Tengeneza Akaunti"
   },
   "order": {
     "title": "Historia ya Oda",
@@ -42,7 +76,13 @@
     "estimatedTime": "Muda uliokadiriwa",
     "summary": "Muhtasari wa Oda",
     "deliveryFee": "Ada ya Usafirishaji",
-    "address": "Anwani"
+    "address": "Anwani",
+    "items": "Bidhaa za Oda",
+    "page": "Ukurasa",
+    "of": "kati ya",
+    "hide": "ficha",
+    "selectAddress": "Chagua anwani",
+    "noAddresses": "Hakuna anwani zilizohifadhiwa"
   },
   "status": {
     "PLACED": "Oda Imewekwa",
@@ -51,7 +91,61 @@
     "READY_FOR_PICKUP": "Tayari Kuchukua",
     "OUT_FOR_DELIVERY": "Imetoka Kusafirisha",
     "DELIVERED": "Imefikishwa",
-    "CANCELLED": "Imefutwa"
+    "CANCELLED": "Imefutwa",
+    "REFUNDED": "Imerejeshwa",
+    "ACTIVE": "Inafanya kazi",
+    "INACTIVE": "Haifanyi kazi",
+    "OUT_OF_STOCK": "Imeisha"
+  },
+  "product": {
+    "title": "Bidhaa",
+    "subtitle": "Vinjali na weka oda kutoka kwa muuzaji huyu",
+    "inStock": "Ipo",
+    "outOfStock": "Imeisha",
+    "unavailable": "Haipatikani",
+    "placeOrder": "Weka Oda",
+    "noProducts": "Hakuna bidhaa kutoka kwa muuzaji huyu.",
+    "cart": "Rukwama",
+    "emptyCart": "Rukwama yako haina kitu",
+    "checkout": "Maliza",
+    "placingOrder": "Inaweka oda...",
+    "orderSuccess": "Oda imewekwa kwa mafanikio!",
+    "remove": "Ondoa",
+    "paymentMethod": "Njia ya Malipo",
+    "deliveryAddress": "Anwani ya Kufikishia"
+  },
+  "chat": {
+    "title": "Zungumza na Dereva",
+    "noMessages": "Hakuna ujumbe bado",
+    "placeholder": "Andika ujumbe...",
+    "send": "Tuma"
+  },
+  "wallet": {
+    "title": "Mkoba Wangu",
+    "balance": "Salio",
+    "pending": "Inasubiri",
+    "topUp": "Jaza Mkoba",
+    "topUpTitle": "Jaza Mkoba",
+    "amount": "Kiasi",
+    "phoneNumber": "Nambari ya Simu",
+    "submit": "Wasilisha",
+    "transactions": "Miamala",
+    "noTransactions": "Hakuna miamala bado"
+  },
+  "vendor": {
+    "title": "Vinjali Wauzaji",
+    "subtitle": "Gundua maduka na bidhaa za karibu",
+    "searchPlaceholder": "Tafuta wauzaji au bidhaa...",
+    "noVendors": "Hakuna wauzaji walioPatikana.",
+    "orders": "oda",
+    "rating": "Ukadiriaji"
+  },
+  "tracking": {
+    "shareLocation": "Shiriki Eneo",
+    "sharingLocation": "Inashiriki eneo...",
+    "driver": "Dereva",
+    "deliveryPoint": "Mahali pa Kufikishia",
+    "driverLocation": "Eneo la Dereva"
   },
   "common": {
     "loading": "Inapakia...",
@@ -63,7 +157,44 @@
     "cancel": "Ghairi",
     "delete": "Futa",
     "confirm": "Thibitisha",
-    "search": "Tafuta"
+    "search": "Tafuta",
+    "noData": "Hakuna data inayopatikana"
+  },
+  "referral": {
+    "title": "Mwalike Rafiki",
+    "subtitle": "Alika marafiki kujiunga na afriMarket na upate mkopo wa mkoba wanapoweka oda yao ya kwanza",
+    "getCode": "Pata Msimbo Wako wa Kualika",
+    "customCode": "Msimbo wa Kibinafsi (si lazima, herufi 6-20)",
+    "generate": "Tengeneza Msimbo wa Kualika",
+    "yourCode": "Msimbo Wako wa Kualika",
+    "copyLink": "Nakili Kiungo",
+    "copied": "Imenakiliwa!",
+    "shareLink": "Shiriki kiungo",
+    "totalReferrals": "Jumla ya Walioalikwa",
+    "completed": "Wamekamilika",
+    "earned": "Ulipata",
+    "pendingRewards": "Zawadi Zinazosubiri",
+    "yourReferrals": "Walioalikwa na Wewe",
+    "noReferrals": "Hujamwalika mtu bado. Shiriki msimbo wako kuanza kupata!",
+    "phone": "Simu",
+    "status": "Hali",
+    "reward": "Zawadi",
+    "date": "Tarehe",
+    "claim": "Dai",
+    "claimed": "Imetwaliwa"
+  },
+  "subscription": {
+    "title": "Usajili Wangu",
+    "subtitle": "Simamia oda zako za mara kwa mara za mboga na vitu muhimu",
+    "noSubscriptions": "Hujajiandikisha bado. Vinjali wauzaji na weka usajili!",
+    "quantity": "Kiasi",
+    "frequency": "Mara kwa mara",
+    "nextOrder": "Oda Inayofuata",
+    "pause": "Simamisha",
+    "resume": "Anza tena",
+    "cancel": "Ghairi",
+    "product": "Bidhaa",
+    "vendor": "Muuzaji"
   },
   "language": {
     "en": "English",

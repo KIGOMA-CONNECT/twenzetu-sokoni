@@ -4,7 +4,7 @@ const STATIC_ASSETS = [
   '/manifest.json',
 ];
 
-self.addEventListener('install', (event: ExtendableEvent) => {
+self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_ASSETS);
@@ -13,7 +13,7 @@ self.addEventListener('install', (event: ExtendableEvent) => {
   self.skipWaiting();
 });
 
-self.addEventListener('activate', (event: ExtendableEvent) => {
+self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
@@ -24,7 +24,7 @@ self.addEventListener('activate', (event: ExtendableEvent) => {
   self.clients.claim();
 });
 
-self.addEventListener('fetch', (event: FetchEvent) => {
+self.addEventListener('fetch', (event) => {
   const { request } = event;
 
   if (request.url.includes('/api/')) {

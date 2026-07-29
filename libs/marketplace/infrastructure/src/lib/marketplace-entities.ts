@@ -30,6 +30,8 @@ import { CouponOrmEntity } from './entities/coupon-orm.entity';
 import { FlashSaleOrmEntity } from './entities/flash-sale-orm.entity';
 import { NotificationOrmEntity } from './entities/notification-orm.entity';
 import { AuditLogOrmEntity } from './entities/audit-log-orm.entity';
+import { ReferralOrmEntity } from './entities/referral-orm.entity';
+import { SubscriptionOrmEntity } from './entities/subscription-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -64,4 +66,6 @@ export const MARKETPLACE_ENTITIES = [
   FlashSaleOrmEntity,
   NotificationOrmEntity,
   AuditLogOrmEntity,
+  ReferralOrmEntity,
+  SubscriptionOrmEntity,
 ];

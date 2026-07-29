@@ -8,7 +8,13 @@ import { applySecurityHardening, RequestIdInterceptor } from '@afri-market/core-
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { Request, Response, NextFunction } from 'express';
+import { join } from 'path';
+import { readFileSync, existsSync, statSync } from 'fs';
 import { AppModule } from './app/app.module';
+
+const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
+const webIndex = readFileSync(join(webDir, 'index.html'), 'utf-8');
 
 async function bootstrap(): Promise<void> {
   console.log('[Bootstrap] Creating Nest application...');
@@ -24,6 +30,27 @@ async function bootstrap(): Promise<void> {
 
   applySecurityHardening(app, config);
   console.log('[Bootstrap] Security hardening applied');
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/docs') || req.path.startsWith('/swagger')) {
+      return next();
+    }
+    const assetPath = join(webDir, req.path === '/' ? 'index.html' : req.path);
+    if (existsSync(assetPath) && statSync(assetPath).isFile()) {
+      const ext = assetPath.split('.').pop()?.toLowerCase() || '';
+      const mime: Record<string, string> = {
+        js: 'application/javascript', css: 'text/css', html: 'text/html',
+        svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg',
+        jpeg: 'image/jpeg', gif: 'image/gif', ico: 'image/x-icon',
+        json: 'application/json', webp: 'image/webp', txt: 'text/plain',
+        wasm: 'application/wasm', map: 'application/json',
+      };
+      res.type(mime[ext] || 'application/octet-stream').send(readFileSync(assetPath));
+      return;
+    }
+    res.type('html').send(webIndex);
+  });
+
   app.setGlobalPrefix('api');
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),

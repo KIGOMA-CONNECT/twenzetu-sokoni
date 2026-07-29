@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Logger, HttpCode } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeController } from '@nestjs/swagger';
-import { ConfirmPaymentUseCase, FailPaymentUseCase } from '@afri-market/marketplace-application';
+import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
 
 @ApiTags('Webhooks')
@@ -12,7 +14,9 @@ export class WebhooksController {
   constructor(
     private readonly confirmPayment: ConfirmPaymentUseCase,
     private readonly failPayment: FailPaymentUseCase,
+    private readonly creditWallet: CreditWalletUseCase,
     private readonly mobileMoney: MobileMoneyService,
+    @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
   @Post('mpesa')
@@ -34,14 +38,24 @@ export class WebhooksController {
 
     if (resultCode !== 0) {
       this.logger.warn(`M-Pesa callback with non-zero result: ${resultCode} - ${stkCallback.ResultDesc}`);
-      await this.failPayment.execute({ transactionRef: checkoutRequestId, reason: String(stkCallback.ResultDesc) });
+      const topup = await this.ds.query(`SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1`, [checkoutRequestId]);
+      if (topup.length > 0) {
+        await this.ds.query(`UPDATE wallet_topup_requests SET status = 'FAILED', updated_at = NOW() WHERE checkout_request_id = $1`, [checkoutRequestId]);
+      } else {
+        await this.failPayment.execute({ transactionRef: checkoutRequestId, reason: String(stkCallback.ResultDesc) });
+      }
       return { ResultCode: 0, ResultDesc: 'Processed failure' };
     }
 
     const queryResult = await this.mobileMoney.checkPaymentStatus(checkoutRequestId);
     if (queryResult.status !== 'SUCCESS') {
       this.logger.warn(`M-Pesa query status mismatch for ${checkoutRequestId}: ${queryResult.status}`);
-      await this.failPayment.execute({ transactionRef: checkoutRequestId, reason: `Status query returned ${queryResult.status}` });
+      const topup = await this.ds.query(`SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1`, [checkoutRequestId]);
+      if (topup.length > 0) {
+        await this.ds.query(`UPDATE wallet_topup_requests SET status = 'FAILED', updated_at = NOW() WHERE checkout_request_id = $1`, [checkoutRequestId]);
+      } else {
+        await this.failPayment.execute({ transactionRef: checkoutRequestId, reason: `Status query returned ${queryResult.status}` });
+      }
       return { ResultCode: 0, ResultDesc: 'Processed' };
     }
 
@@ -57,10 +71,25 @@ export class WebhooksController {
       }
     }
 
-    await this.confirmPayment.execute({
-      transactionRef: checkoutRequestId,
-      receiptNumber: receiptNumber || queryResult.receiptNumber,
-    });
+    const topup = await this.ds.query(`SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1 AND status = 'PENDING'`, [checkoutRequestId]);
+    if (topup.length > 0) {
+      const req = topup[0];
+      await this.ds.query(
+        `UPDATE wallet_topup_requests SET status = 'COMPLETED', receipt_number = $1, updated_at = NOW() WHERE checkout_request_id = $2`,
+        [receiptNumber || queryResult.receiptNumber, checkoutRequestId],
+      );
+      await this.creditWallet.execute(
+        req.tenant_id, req.user_id, Number(req.amount),
+        `M-Pesa top-up: ${receiptNumber || queryResult.receiptNumber}`,
+        receiptNumber || queryResult.receiptNumber, 'mpesa_topup',
+      );
+      this.logger.log(`Wallet top-up completed: user=${req.user_id} amount=${req.amount}`);
+    } else {
+      await this.confirmPayment.execute({
+        transactionRef: checkoutRequestId,
+        receiptNumber: receiptNumber || queryResult.receiptNumber,
+      });
+    }
 
     return { ResultCode: 0, ResultDesc: 'Success' };
   }

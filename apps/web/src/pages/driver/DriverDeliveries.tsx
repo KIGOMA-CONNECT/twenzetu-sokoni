@@ -36,9 +36,9 @@ const styles: Record<string, React.CSSProperties> = {
   empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
   actionWrap: { display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' },
   transitBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#d97706', color: '#fff', cursor: 'pointer', fontWeight: 600 },
-  transitBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#d97706', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   pickupBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#1e40af', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   completeBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  locationBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#7c3aed', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
 };
 
@@ -53,6 +53,29 @@ export default function DriverDeliveries() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const filtered = (deliveries || []).filter((d) => filter === 'ALL' || d.status === filter);
+
+  const handleShareLocation = async (id: string) => {
+    if (!navigator.geolocation) {
+      setActionError('Geolocation not supported by your browser.');
+      return;
+    }
+    setBusyId(id);
+    setActionError(null);
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
+      );
+      await api.patch(`/deliveries/${id}/location`, {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+    } catch (err: any) {
+      if (err.code === 1) setActionError('Location permission denied. Please enable GPS.');
+      else setActionError(err.response?.data?.message || err.message || 'Failed to share location.');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const handlePickUp = async (id: string) => {
     setBusyId(id);
@@ -181,6 +204,13 @@ export default function DriverDeliveries() {
                         )}
                         {d.status === 'IN_TRANSIT' && (
                           <div style={styles.actionWrap}>
+                            <button
+                              style={{ ...styles.locationBtn, ...(busy ? styles.disabledBtn : {}) }}
+                              disabled={busy}
+                              onClick={() => handleShareLocation(d.id)}
+                            >
+                              📍 Share Location
+                            </button>
                             <button
                               style={{ ...styles.completeBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}

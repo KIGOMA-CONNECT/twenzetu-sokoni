@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
-import type { Product, Address } from '../../types';
+import type { Product, Address, Vendor } from '../../types';
 
 interface CartItem extends Product {
   quantity: number;
@@ -50,6 +51,26 @@ const styles = {
     display: 'flex',
     flexDirection: 'column' as const,
     gap: '0.5rem',
+    transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+  },
+  imageBox: {
+    width: '100%',
+    height: 140,
+    borderRadius: '6px',
+    background: '#f1f5f9',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden' as const,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover' as const,
+  },
+  imagePlaceholder: {
+    color: '#94a3b8',
+    fontSize: '0.8rem',
   },
   name: {
     fontSize: '1.05rem',
@@ -153,12 +174,24 @@ const styles = {
 function ProductList() {
   const { vendorId } = useParams<{ vendorId: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: products, loading, error } = useApi<Product[]>(
     `/products?vendorId=${vendorId}`,
     [vendorId]
   );
   const { data: addresses } = useApi<Address[]>('/addresses/me');
+  const { data: vendors } = useApi<Vendor[]>('/vendors');
+  const [similarProducts, setSimilarProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    const firstId = products[0].id;
+    api.get(`/products/${firstId}/similar?limit=4`).then(res => {
+      const data = res.data?.data || [];
+      setSimilarProducts(Array.isArray(data) ? data : []);
+    }).catch(() => setSimilarProducts([]));
+  }, [products]);
 
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
@@ -167,6 +200,7 @@ function ProductList() {
     } catch { return []; }
   });
   const [selectedAddressId, setSelectedAddressId] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState('mpesa');
   const [submitting, setSubmitting] = useState(false);
   const [cartError, setCartError] = useState<string | null>(null);
   const [cartSuccess, setCartSuccess] = useState<string | null>(null);
@@ -226,6 +260,7 @@ function ProductList() {
           unitPrice: i.price,
         })),
         deliveryAddress: selectedAddr.fullAddress,
+        paymentMethod,
       });
       setCart([]);
       localStorage.removeItem(`cart-${vendorId}`);
@@ -241,8 +276,8 @@ function ProductList() {
   return (
     <div style={styles.page}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Products</h1>
-        <div style={styles.subtext}>Browse and place an order from this vendor</div>
+        <h1 style={styles.title}>{t('product.title')}</h1>
+        <div style={styles.subtext}>{t('product.subtitle')}</div>
       </div>
 
       <div style={styles.layout} className="responsive-grid-2col">
@@ -253,12 +288,24 @@ function ProductList() {
             <>
               {products && products.length === 0 ? (
                 <div style={{ color: '#64748b', padding: '2rem 0' }}>
-                  No products available from this vendor.
+                  {t('product.noProducts')}
                 </div>
               ) : (
                 <div style={styles.grid}>
                   {products?.map((p) => (
-                    <div key={p.id} style={styles.card}>
+                    <div
+                      key={p.id}
+                      style={styles.card}
+                      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                    >
+                      <div style={styles.imageBox}>
+                        {p.imageUrl ? (
+                          <img src={p.imageUrl} alt={p.name} style={styles.image} />
+                        ) : (
+                          <span style={styles.imagePlaceholder}>{p.name?.charAt(0)?.toUpperCase() || '📦'}</span>
+                        )}
+                      </div>
                       <h3 style={styles.name}>{p.name}</h3>
                       <div style={styles.description}>{p.description}</div>
                       <div style={styles.price}>
@@ -266,8 +313,8 @@ function ProductList() {
                       </div>
                       <div style={styles.stock}>
                         {p.stockQuantity > 0
-                          ? `In stock: ${p.stockQuantity} ${p.unit}`
-                          : 'Out of stock'}
+                          ? `${t('product.inStock')}: ${p.stockQuantity} ${p.unit}`
+                          : t('product.outOfStock')}
                       </div>
                       <StatusBadge status={p.status} />
                       <button
@@ -278,7 +325,7 @@ function ProductList() {
                         disabled={p.stockQuantity <= 0}
                         onClick={() => addToCart(p)}
                       >
-                        {p.stockQuantity <= 0 ? 'Unavailable' : 'Place Order'}
+                        {p.stockQuantity <= 0 ? t('product.unavailable') : t('product.placeOrder')}
                       </button>
                     </div>
                   ))}
@@ -289,7 +336,7 @@ function ProductList() {
         </div>
 
         <div style={styles.cart}>
-          <h2 style={styles.cartTitle}>Cart ({cart.length})</h2>
+          <h2 style={styles.cartTitle}>{t('product.cart')} ({cart.length})</h2>
 
           {cartError && (
             <div style={{ ...styles.notice, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
@@ -303,7 +350,7 @@ function ProductList() {
           )}
 
           {cart.length === 0 ? (
-            <div style={styles.emptyCart}>Your cart is empty</div>
+            <div style={styles.emptyCart}>{t('product.emptyCart')}</div>
           ) : (
             <>
               {cart.map((item) => (
@@ -329,7 +376,7 @@ function ProductList() {
                       +
                     </button>
                     <button style={styles.removeBtn} onClick={() => removeFromCart(item.id)}>
-                      Remove
+                      {t('product.remove')}
                     </button>
                   </div>
                 </div>
@@ -342,7 +389,7 @@ function ProductList() {
               </div>
               <div style={{ marginTop: '0.75rem' }}>
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' }}>
-                  Delivery Address *
+                  {t('product.deliveryAddress')} *
                 </label>
                 {addresses && addresses.length > 0 ? (
                   <select
@@ -350,16 +397,31 @@ function ProductList() {
                     value={selectedAddressId}
                     onChange={(e) => setSelectedAddressId(e.target.value)}
                   >
-                    <option value="">Select address...</option>
+                    <option value="">{t('order.selectAddress')}...</option>
                     {addresses.map((addr) => (
                       <option key={addr.id} value={addr.id}>{addr.label} — {addr.fullAddress}</option>
                     ))}
                   </select>
                 ) : (
                   <div style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                    No addresses saved. <a href="/addresses" style={{ color: '#1e40af' }}>Add one</a> before checkout.
+                    {t('order.noAddresses')}. <a href="/addresses" style={{ color: '#1e40af' }}>Add one</a> before checkout.
                   </div>
                 )}
+              </div>
+              <div style={{ marginTop: '0.75rem' }}>
+                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' }}>
+                  {t('product.paymentMethod')}
+                </label>
+                <select
+                  style={{ width: '100%', padding: '0.5rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.85rem' }}
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                >
+                  <option value="mpesa">M-Pesa</option>
+                  <option value="tigo_money">Tigo Pesa</option>
+                  <option value="airtel_money">Airtel Money</option>
+                  <option value="cash">Cash on Delivery</option>
+                </select>
               </div>
               <button
                 style={{
@@ -369,12 +431,43 @@ function ProductList() {
                 disabled={submitting}
                 onClick={checkout}
               >
-                {submitting ? 'Placing order...' : 'Checkout'}
+                {submitting ? t('product.placingOrder') : t('product.checkout')}
               </button>
             </>
           )}
         </div>
       </div>
+
+      {/* Similar products */}
+      {similarProducts.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '0.75rem' }}>{t('app.recommended')}</h3>
+          <div style={styles.grid}>
+            {similarProducts.map((sp: any) => (
+              <div
+                key={sp.id}
+                style={{ ...styles.card, cursor: 'pointer' }}
+                onClick={() => {
+                  const v = vendors?.find((v: any) => v.id === sp.vendor_id);
+                  navigate(`/vendors/${sp.vendor_id}/products`);
+                }}
+                onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+              >
+                <div style={styles.imageBox}>
+                  {sp.image_url ? (
+                    <img src={sp.image_url} alt={sp.name} style={styles.image} />
+                  ) : (
+                    <span style={styles.imagePlaceholder}>{sp.name?.charAt(0)?.toUpperCase() || '📦'}</span>
+                  )}
+                </div>
+                <h3 style={styles.name}>{sp.name}</h3>
+                <div style={styles.price}>{formatCurrency(Number(sp.price))}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

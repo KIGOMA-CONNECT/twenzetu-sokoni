@@ -33,6 +33,10 @@ import { FlashSalesController } from './flash-sales.controller';
 import { DriverFleetController } from './driver-fleet.controller';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
+import { ChatController } from './chat.controller';
+import { RecommendationsController } from './recommendations.controller';
+import { ReferralsController } from './referrals.controller';
+import { SubscriptionsController } from './subscriptions.controller';
 
 @Module({
   imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity])],
@@ -64,6 +68,10 @@ import { NotificationsService } from './notifications.service';
     FlashSalesController,
     DriverFleetController,
     NotificationsController,
+    ChatController,
+    RecommendationsController,
+    ReferralsController,
+    SubscriptionsController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },
