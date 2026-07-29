@@ -24,6 +24,7 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./
 COPY --from=builder /app/tsconfig.runner.json ./tsconfig.json
+COPY --from=builder /app/tsconfig.cli.json ./tsconfig.cli.json
 RUN npm prune --omit=dev
 USER afri-market
 EXPOSE 3000
