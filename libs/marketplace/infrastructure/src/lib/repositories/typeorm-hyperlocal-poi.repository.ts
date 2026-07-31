@@ -19,12 +19,12 @@ export class TypeOrmHyperlocalPoiRepository extends TypeOrmRepository<Hyperlocal
   public async findByProximity(latitude: number, longitude: number, radiusKm: number): Promise<HyperlocalPoi[]> {
     const entities = await this.repository.createQueryBuilder('poi')
       .where(
-        `ST_DWithin(
-          ST_SetSRID(ST_MakePoint(poi.longitude, poi.latitude), 4326)::geography,
-          ST_SetSRID(ST_MakePoint(:lng, :lat), 4326)::geography,
-          :radius
-        )`,
-        { lat: latitude, lng: longitude, radius: radiusKm * 1000 },
+        `(6371 * acos(
+          LEAST(1, COS(RADIANS(:lat)) * COS(RADIANS(poi.latitude)) *
+                COS(RADIANS(poi.longitude) - RADIANS(:lng)) +
+                SIN(RADIANS(:lat)) * SIN(RADIANS(poi.latitude)))
+        )) <= :radiusKm`,
+        { lat: latitude, lng: longitude, radiusKm },
       )
       .andWhere('poi.is_active = :active', { active: true })
       .getMany();
