@@ -61,4 +61,16 @@ export class Menu extends AggregateRoot<EntityId> {
 
   public deactivate(): void { this._isActive = false; }
   public activate(): void { this._isActive = true; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      vendorId: this._vendorId.value,
+      name: this._name,
+      description: this._description ?? null,
+      availableFrom: this._availableFrom ?? null,
+      availableUntil: this._availableUntil ?? null,
+      isActive: this._isActive,
+    };
+  }
 }

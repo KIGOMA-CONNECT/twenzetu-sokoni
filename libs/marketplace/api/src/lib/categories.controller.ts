@@ -20,7 +20,7 @@ export class CategoriesController {
   @ApiResponse({ status: 200, description: 'Success' })
   public async findAll(@CurrentUser() user: JwtPayload) {
     const data = await this.listCategories.execute(user.tenantId);
-    return { data };
+    return { data: data.map(c => c.toDto()) };
   }
 
   @Post()

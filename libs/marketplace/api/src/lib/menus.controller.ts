@@ -19,7 +19,7 @@ export class MenusController {
   @ApiResponse({ status: 200, description: 'Success' })
   public async findByVendor(@Param('vendorId', ParseUUIDPipe) vendorId: string) {
     const data = await this.listMenus.execute(vendorId);
-    return { data };
+    return { data: data.map(m => m.toDto()) };
   }
 
   @Post()

@@ -111,4 +111,25 @@ export class UsedGoods extends AggregateRoot<EntityId> {
   public updateTitle(title: string): void { (this as unknown as { _title: string })._title = title; }
   public updateDescription(description: string): void { (this as unknown as { _description: string | undefined })._description = description; }
   public updateAskingPrice(price: Money): void { this._askingPrice = price; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      sellerId: this._sellerId.value,
+      sellerName: this._sellerName,
+      sellerPhone: this._sellerPhone,
+      title: this._title,
+      description: this._description ?? null,
+      category: this._category,
+      askingPrice: this._askingPrice.amount,
+      currency: this._askingPrice.currency,
+      status: this._status,
+      photoUrls: this._photoUrls ?? [],
+      location: this._location,
+      latitude: this._latitude ?? null,
+      longitude: this._longitude ?? null,
+      condition: this._condition,
+      views: this._views,
+    };
+  }
 }

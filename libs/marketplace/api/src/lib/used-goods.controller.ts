@@ -67,7 +67,7 @@ export class UsedGoodsController {
       limit: parsedLimit,
       offset: parsedOffset,
     });
-    return paginatedResult(result.data, result.total, parsedLimit, parsedOffset);
+    return paginatedResult(result.data.map(l => l.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
   @Get(':id')

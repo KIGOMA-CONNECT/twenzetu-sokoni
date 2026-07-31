@@ -55,4 +55,15 @@ export class ProductCategory extends AggregateRoot<EntityId> {
 
   public deactivate(): void { this._isActive = false; }
   public activate(): void { this._isActive = true; }
+
+  public toDto() {
+    return {
+      id: this.id.value,
+      name: this._name,
+      type: this._type,
+      parentId: this._parentId?.value ?? null,
+      imageUrl: this._imageUrl ?? null,
+      isActive: this._isActive,
+    };
+  }
 }
