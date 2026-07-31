@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, ExecutionContext } from '@nestjs/common';
 import * as request from 'supertest';
-import { AdminController } from '@afri-market/marketplace-api';
+import { AdminController, AuditLogService } from '@afri-market/marketplace-api';
 import { AuthGuard } from '@nestjs/passport';
-import { RolesGuard } from '@afri-market/identity-infrastructure';
+import { RolesGuard, PermissionsGuard } from '@afri-market/identity-infrastructure';
 import {
   GetAdminDashboardUseCase,
   GetAdminAnalyticsUseCase,
@@ -12,11 +12,13 @@ import {
   ListAdminDisputesUseCase,
   ResolveDisputeAdminUseCase,
   ListPendingVendorsAdminUseCase,
+  ListAllVendorsAdminUseCase,
   ListRecentOrdersAdminUseCase,
   GetFinanceSummaryAdminUseCase,
   GetRevenueReportUseCase,
   GetDisputeMetricsUseCase,
   VerifyKycUseCase,
+  GetReconciliationReportUseCase,
 } from '@afri-market/marketplace-application';
 
 describe('Admin E2E', () => {
@@ -34,6 +36,8 @@ describe('Admin E2E', () => {
     const revenueReportUC = { execute: jest.fn().mockResolvedValue({ data: { period: '7d', totalRevenue: 12000, commissionRevenue: 1200, orderCount: 5 } }) };
     const disputeMetricsUC = { execute: jest.fn().mockResolvedValue({ data: { total: 0, open: 0, resolved: 0, refunded: 0 } }) };
     const verifyKycUC = { execute: jest.fn().mockResolvedValue({ kycId: 'k1', status: 'VERIFIED' }) };
+    const listAllVendorsUC = { execute: jest.fn().mockResolvedValue({ data: [], total: 0 }) };
+    const reconciliationUC = { execute: jest.fn().mockResolvedValue({ data: { period: '7d', totalTransactions: 0, discrepancies: 0, reconciled: 0 } }) };
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AdminController],
@@ -50,6 +54,9 @@ describe('Admin E2E', () => {
         { provide: GetRevenueReportUseCase, useValue: revenueReportUC },
         { provide: GetDisputeMetricsUseCase, useValue: disputeMetricsUC },
         { provide: VerifyKycUseCase, useValue: verifyKycUC },
+        { provide: ListAllVendorsAdminUseCase, useValue: listAllVendorsUC },
+        { provide: GetReconciliationReportUseCase, useValue: reconciliationUC },
+        { provide: AuditLogService, useValue: { log: jest.fn() } },
       ],
     })
       .overrideGuard(AuthGuard('jwt'))
@@ -58,6 +65,8 @@ describe('Admin E2E', () => {
         return true;
       } })
       .overrideGuard(RolesGuard)
+      .useValue({ canActivate: () => true })
+      .overrideGuard(PermissionsGuard)
       .useValue({ canActivate: () => true })
       .compile();
 

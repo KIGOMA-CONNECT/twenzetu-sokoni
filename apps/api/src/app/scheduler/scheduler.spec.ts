@@ -226,24 +226,33 @@ describe('LoanReminderService', () => {
 
 describe('PayoutSettlementService', () => {
   let service: PayoutSettlementService;
-  let mockRepo: ReturnType<typeof createMockRepo>;
+  let qb: { select: jest.Mock; from: jest.Mock; where: jest.Mock; getRawMany: jest.Mock };
+  let dataSource: { createQueryBuilder: jest.Mock; query: jest.Mock };
   let logSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRepo = createMockRepo();
-    service = new PayoutSettlementService(createMockDataSource(mockRepo));
+    qb = {
+      select: jest.fn().mockReturnThis(),
+      from: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue([]),
+    };
+    dataSource = {
+      createQueryBuilder: jest.fn().mockReturnValue(qb),
+      query: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
+    } as unknown as { createQueryBuilder: jest.Mock; query: jest.Mock };
+    service = new PayoutSettlementService(dataSource as unknown as DataSource);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
   });
 
   afterEach(() => logSpy.mockRestore());
 
   it('should log wallets with positive balance', async () => {
-    const wallets = [
-      { ownerType: 'vendor', ownerId: 'v1', balance: 15000, currency: 'TZS' },
-      { ownerType: 'vendor', ownerId: 'v2', balance: 7500, currency: 'TZS' },
-    ];
-    mockRepo.find.mockResolvedValue(wallets);
+    qb.getRawMany.mockResolvedValue([
+      { owner_type: 'vendor', owner_id: 'v1', balance: 15000, tenant_id: 't1' },
+      { owner_type: 'vendor', owner_id: 'v2', balance: 7500, tenant_id: 't1' },
+    ]);
 
     await service.handlePayoutSettlement();
 
@@ -258,21 +267,17 @@ describe('PayoutSettlementService', () => {
     );
   });
 
-  it('should not log when no wallets with positive balance', async () => {
-    mockRepo.find.mockResolvedValue([]);
-
+  it('should not log settlement lines when no wallets with positive balance', async () => {
     await service.handlePayoutSettlement();
 
-    expect(logSpy).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Settled'));
   });
 
   it('should query wallets with balance > 0', async () => {
-    mockRepo.find.mockResolvedValue([]);
-
     await service.handlePayoutSettlement();
 
-    expect(mockRepo.find).toHaveBeenCalledWith({
-      where: expect.objectContaining({ balance: expect.anything() }),
-    });
+    expect(dataSource.createQueryBuilder).toHaveBeenCalled();
+    expect(qb.from).toHaveBeenCalledWith('wallets', 'w');
+    expect(qb.where).toHaveBeenCalledWith('w.balance > 0');
   });
 });

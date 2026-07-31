@@ -30,6 +30,7 @@ export * from './lib/menus.controller';
 export * from './lib/admin/admin.controller';
 export * from './lib/admin/admin-users.controller';
 export * from './lib/admin/admin.dto';
+export * from './lib/audit-log.service';
 export * from './lib/notifications.controller';
 export * from './lib/notifications.service';
 export * from './lib/gateway';

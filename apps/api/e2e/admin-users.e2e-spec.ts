@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+﻿import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, ExecutionContext } from '@nestjs/common';
 import * as request from 'supertest';
 import { AuthGuard } from '@nestjs/passport';
@@ -58,8 +58,8 @@ describe('Admin Users E2E', () => {
   describe('GET /api/admin/users', () => {
     it('should list admin users', async () => {
       mockUserRepo.find.mockResolvedValue([
-        { id: 'u1', fullName: 'Super Admin', phoneNumber: '+255754100000', role: 'super_admin', status: 'ACTIVE', email: null, permissions: null, createdAt: new Date() },
-        { id: 'u2', fullName: 'Admin User', phoneNumber: '+255754100001', role: 'admin', status: 'ACTIVE', email: null, permissions: 'manage_vendors,manage_disputes', createdAt: new Date() },
+        { id: 'b0000000-0000-0000-0000-000000000011', fullName: 'Super Admin', phoneNumber: '+255754100000', role: 'super_admin', status: 'ACTIVE', email: null, permissions: null, createdAt: new Date() },
+        { id: 'b0000000-0000-0000-0000-000000000010', fullName: 'Admin User', phoneNumber: '+255754100001', role: 'admin', status: 'ACTIVE', email: null, permissions: 'manage_vendors,manage_disputes', createdAt: new Date() },
       ]);
 
       const res = await request(app.getHttpServer()).get('/api/admin/users').expect(200);
@@ -72,7 +72,7 @@ describe('Admin Users E2E', () => {
 
     it('should filter non-admin roles', async () => {
       mockUserRepo.find.mockResolvedValue([
-        { id: 'u3', fullName: 'A Vendor', phoneNumber: '+255754100002', role: 'vendor', status: 'ACTIVE', email: null, permissions: null, createdAt: new Date() },
+        { id: 'b0000000-0000-0000-0000-000000000012', fullName: 'A Vendor', phoneNumber: '+255754100002', role: 'vendor', status: 'ACTIVE', email: null, permissions: null, createdAt: new Date() },
       ]);
 
       const res = await request(app.getHttpServer()).get('/api/admin/users').expect(200);
@@ -113,12 +113,12 @@ describe('Admin Users E2E', () => {
       mockUserRepo.update.mockResolvedValue({ affected: 1 });
 
       const res = await request(app.getHttpServer())
-        .patch('/api/admin/users/u2/role')
+        .patch('/api/admin/users/b0000000-0000-0000-0000-000000000010/role')
         .send({ role: 'super_admin' })
         .expect(200);
 
       expect(res.body.success).toBe(true);
-      expect(mockUserRepo.update).toHaveBeenCalledWith('u2', { role: 'super_admin' });
+      expect(mockUserRepo.update).toHaveBeenCalledWith('b0000000-0000-0000-0000-000000000010', { role: 'super_admin' });
     });
 
     it('should reject changing own role', async () => {
@@ -134,10 +134,10 @@ describe('Admin Users E2E', () => {
 
   describe('PATCH /api/admin/users/:id/permissions', () => {
     it('should update admin permissions', async () => {
-      mockUserRepo.findOne.mockResolvedValue({ id: 'u2', role: 'admin', permissions: '' });
+      mockUserRepo.findOne.mockResolvedValue({ id: 'b0000000-0000-0000-0000-000000000010', role: 'admin', permissions: '' });
 
       const res = await request(app.getHttpServer())
-        .patch('/api/admin/users/u2/permissions')
+        .patch('/api/admin/users/b0000000-0000-0000-0000-000000000010/permissions')
         .send({ permissions: ['manage_vendors', 'view_analytics'] })
         .expect(200);
 
@@ -146,10 +146,10 @@ describe('Admin Users E2E', () => {
     });
 
     it('should reject updating super_admin permissions', async () => {
-      mockUserRepo.findOne.mockResolvedValue({ id: 'u1', role: 'super_admin' });
+      mockUserRepo.findOne.mockResolvedValue({ id: 'b0000000-0000-0000-0000-000000000011', role: 'super_admin' });
 
       const res = await request(app.getHttpServer())
-        .patch('/api/admin/users/u1/permissions')
+        .patch('/api/admin/users/b0000000-0000-0000-0000-000000000011/permissions')
         .send({ permissions: ['manage_vendors'] })
         .expect(200);
 
@@ -163,7 +163,7 @@ describe('Admin Users E2E', () => {
       mockUserRepo.delete.mockResolvedValue({ affected: 1 });
 
       const res = await request(app.getHttpServer())
-        .delete('/api/admin/users/u2')
+        .delete('/api/admin/users/b0000000-0000-0000-0000-000000000010')
         .expect(200);
 
       expect(res.body.success).toBe(true);
@@ -179,3 +179,4 @@ describe('Admin Users E2E', () => {
     });
   });
 });
+

@@ -10,6 +10,7 @@ import {
   VendorUpdateOrderStatusUseCase,
   GetVendorStatsUseCase,
   SearchVendorsUseCase,
+  FindProductsUseCase,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from '@afri-market/marketplace-api';
 import { MOCK_VENDOR_JWT_PAYLOAD } from './test-helper';
@@ -22,13 +23,14 @@ describe('Vendors E2E', () => {
 
   const mockCreateVendor = { execute: jest.fn().mockResolvedValue({ vendorId: 'v-1', shopName: 'Fresh Market', status: 'PENDING' }) };
   const mockFindVendors = {
-    findById: jest.fn().mockResolvedValue({ id: { value: 'v-1' }, shopName: 'Fresh Market', status: 'ACTIVE', category: 'food', commissionRate: 10, averageRating: 4.5, totalOrders: 10 }),
-    findByUserId: jest.fn().mockResolvedValue({ id: { value: 'v-1' }, shopName: 'Fresh Market', status: 'ACTIVE' }),
+    findById: jest.fn().mockResolvedValue({ id: { value: 'v-1' }, shopName: 'Fresh Market', status: 'ACTIVE', category: 'food', commissionRate: 10, averageRating: 4.5, totalOrders: 10, toDto: () => ({ id: 'v-1', shopName: 'Fresh Market', status: 'ACTIVE' }) }),
+    findByUserId: jest.fn().mockResolvedValue({ id: { value: 'v-1' }, shopName: 'Fresh Market', status: 'ACTIVE', toDto: () => ({ id: 'v-1', shopName: 'Fresh Market', status: 'ACTIVE' }) }),
   };
-  const mockGetVendorOrders = { execute: jest.fn().mockResolvedValue({ data: [{ id: 'o-1', status: 'DELIVERED' }], total: 1 }) };
+  const mockGetVendorOrders = { execute: jest.fn().mockResolvedValue({ data: [{ id: 'o-1', status: 'DELIVERED', toDto: () => ({ id: 'o-1', status: 'DELIVERED' }) }], total: 1 }) };
   const mockUpdateOrderStatus = { execute: jest.fn().mockResolvedValue({ orderId: 'o-1', status: 'CONFIRMED' }) };
   const mockGetVendorStats = { execute: jest.fn().mockResolvedValue({ data: { totalOrders: 10, totalRevenue: 50000, averageRating: 4.5 } }) };
-  const mockSearchVendors = { execute: jest.fn().mockResolvedValue({ data: [{ id: 'v-1', shopName: 'Fresh Market' }], total: 1 }) };
+  const mockSearchVendors = { execute: jest.fn().mockResolvedValue({ data: [{ id: 'v-1', shopName: 'Fresh Market', toDto: () => ({ id: 'v-1', shopName: 'Fresh Market' }) }], total: 1 }) };
+  const mockFindProducts = { findByVendor: jest.fn().mockResolvedValue([]) };
 
   beforeAll(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -40,6 +42,7 @@ describe('Vendors E2E', () => {
         { provide: VendorUpdateOrderStatusUseCase, useValue: mockUpdateOrderStatus },
         { provide: GetVendorStatsUseCase, useValue: mockGetVendorStats },
         { provide: SearchVendorsUseCase, useValue: mockSearchVendors },
+        { provide: FindProductsUseCase, useValue: mockFindProducts },
         { provide: MarketplaceGateway, useValue: mockGateway },
         { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn() } },
       ],

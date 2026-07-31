@@ -1,7 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, ExecutionContext } from '@nestjs/common';
 import * as request from 'supertest';
-import { OrdersController } from '@afri-market/marketplace-api';
+import { EntityManager } from 'typeorm';
+import { OrdersController, NotificationsService } from '@afri-market/marketplace-api';
 import { AuthGuard } from '@nestjs/passport';
 import {
   CreateOrderUseCase,
@@ -17,7 +18,7 @@ describe('Orders E2E', () => {
 
   const mockCreateOrder = {
     execute: jest.fn().mockResolvedValue({
-      orderId: 'o-1', status: 'PLACED', totalAmount: 7500, currency: 'RWF',
+      orderId: 'o-1', status: 'PLACED', totalAmount: 7500, currency: 'TZS',
     }),
   };
   const mockUpdateStatus = {
@@ -25,10 +26,10 @@ describe('Orders E2E', () => {
   };
   const mockFindOrders = {
     findByCustomer: jest.fn().mockResolvedValue([
-      { id: 'o-1', status: 'PLACED', totalAmount: { amount: 7500, currency: 'RWF' }, vendorId: { value: 'v-1' } },
+      { id: 'o-1', status: 'PLACED', totalAmount: { amount: 7500, currency: 'TZS' }, vendorId: { value: 'v-1' }, toDto: () => ({ id: 'o-1', status: 'PLACED', totalAmount: 7500, currency: 'TZS' }) },
     ]),
     findById: jest.fn().mockResolvedValue({
-      id: 'o-1', status: 'PLACED', totalAmount: { amount: 7500, currency: 'RWF' },
+      id: 'o-1', status: 'PLACED', totalAmount: { amount: 7500, currency: 'TZS' }, toDto: () => ({ id: 'o-1', status: 'PLACED', totalAmount: 7500, currency: 'TZS' }),
     }),
   };
   const mockCancelOrder = {
@@ -44,6 +45,8 @@ describe('Orders E2E', () => {
         { provide: UpdateOrderStatusUseCase, useValue: mockUpdateStatus },
         { provide: FindOrdersUseCase, useValue: mockFindOrders },
         { provide: CancelOrderUseCase, useValue: mockCancelOrder },
+        { provide: EntityManager, useValue: { query: jest.fn().mockResolvedValue([]) } },
+        { provide: NotificationsService, useValue: { create: jest.fn().mockResolvedValue(undefined) } },
       ],
     })
       .overrideGuard(AuthGuard('jwt'))

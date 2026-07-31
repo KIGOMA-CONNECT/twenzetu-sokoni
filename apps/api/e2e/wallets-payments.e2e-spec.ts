@@ -1,7 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe, ExecutionContext } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { DataSource } from 'typeorm';
 import { AuditLoggerService } from '@afri-market/core-security';
+import { MobileMoneyService } from '@afri-market/integrations';
 import * as request from 'supertest';
 import { WalletsController, PaymentsController } from '@afri-market/marketplace-api';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,7 +26,7 @@ describe('Wallets E2E', () => {
       id: 'w-1',
       balance: 4950,
       pendingBalance: 0,
-      currency: 'RWF',
+      currency: 'TZS',
     }),
   };
   const mockCreditWallet = {
@@ -34,7 +36,7 @@ describe('Wallets E2E', () => {
     execute: jest.fn().mockResolvedValue({ walletId: 'w-1', amount: 1000, balance: 3950, message: 'Wallet debited' }),
   };
   const mockListTx = {
-    execute: jest.fn().mockResolvedValue({ data: [{ type: 'CREDIT', amount: 4950, description: 'Payment release' }], total: 1 }),
+    execute: jest.fn().mockResolvedValue({ data: [{ type: 'CREDIT', amount: 4950, description: 'Payment release', toDto: () => ({ type: 'CREDIT', amount: 4950, description: 'Payment release' }) }], total: 1 }),
   };
 
   beforeAll(async () => {
@@ -45,6 +47,8 @@ describe('Wallets E2E', () => {
         { provide: CreditWalletUseCase, useValue: mockCreditWallet },
         { provide: DebitWalletUseCase, useValue: mockDebitWallet },
         { provide: ListWalletTransactionsUseCase, useValue: mockListTx },
+        { provide: MobileMoneyService, useValue: { initiateStkPush: jest.fn().mockResolvedValue({ success: true }) } },
+        { provide: DataSource, useValue: { query: jest.fn().mockResolvedValue([]) } },
         { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn(), reset: jest.fn() } },
         { provide: AuditLoggerService, useValue: { log: jest.fn() } },
       ],
@@ -68,7 +72,7 @@ describe('Wallets E2E', () => {
     it('should return wallet info', async () => {
       const res = await request(app.getHttpServer()).get('/api/wallets/me').expect(200);
       expect(res.body.balance).toBe(4950);
-      expect(res.body.currency).toBe('RWF');
+      expect(res.body.currency).toBe('TZS');
     });
   });
 

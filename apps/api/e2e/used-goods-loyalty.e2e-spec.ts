@@ -24,7 +24,7 @@ describe('Used Goods E2E', () => {
   };
   const mockList = {
     execute: jest.fn().mockResolvedValue({
-      data: [{ id: 'ug-1', title: 'Used Phone', askingPrice: 20000, status: 'AVAILABLE' }],
+      data: [{ id: 'ug-1', title: 'Used Phone', askingPrice: 20000, status: 'AVAILABLE', toDto: () => ({ id: 'ug-1', title: 'Used Phone', askingPrice: 20000, status: 'AVAILABLE' }) }],
       total: 1,
     }),
   };

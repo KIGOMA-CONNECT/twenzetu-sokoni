@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { HealthController } from '../src/app/health/health.controller';
 import { DataSource } from 'typeorm';
 
@@ -16,6 +17,7 @@ describe('Health E2E', () => {
       controllers: [HealthController],
       providers: [
         { provide: DataSource, useValue: mockDataSource },
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn().mockResolvedValue(undefined), set: jest.fn(), del: jest.fn(), reset: jest.fn() } },
       ],
     }).compile();
 
@@ -46,6 +48,7 @@ describe('Health E2E', () => {
       controllers: [HealthController],
       providers: [
         { provide: DataSource, useValue: mockFailingDataSource },
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn().mockResolvedValue(undefined), set: jest.fn(), del: jest.fn(), reset: jest.fn() } },
       ],
     }).compile();
 
