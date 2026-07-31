@@ -27,6 +27,8 @@ export * from './lib/webhooks.controller';
 export * from './lib/categories.controller';
 export * from './lib/addresses.controller';
 export * from './lib/menus.controller';
+export * from './lib/catalog.controller';
+export * from './lib/dto/match-catalog.dto';
 export * from './lib/admin/admin.controller';
 export * from './lib/admin/admin-users.controller';
 export * from './lib/admin/admin.dto';
