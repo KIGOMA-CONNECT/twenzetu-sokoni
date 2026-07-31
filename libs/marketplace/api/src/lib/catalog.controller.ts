@@ -82,12 +82,10 @@ export class CatalogController {
     }
 
     return {
-      data: {
-        results,
-        totalItems: items.length,
-        matchedItems: results.filter((r) => r.matches.length > 0).length,
-        unmatched,
-      },
+      results,
+      totalItems: items.length,
+      matchedItems: results.filter((r) => r.matches.length > 0).length,
+      unmatched,
     };
   }
 
@@ -100,7 +98,7 @@ export class CatalogController {
     const limitIndex = terms.length + 3;
 
     const rows = await this.entityManager.query(
-      `SELECT p.id, p.name, p.description, p.price, p.currency, p.unit, p.image_url,
+      `SELECT p.id, p.name, p.description, p.price, p.currency, p.unit, p.image_url AS "imageUrl",
               p.category_id AS "categoryId",
               v.id AS "vendorId", v.shop_name AS "vendorName", v.average_rating AS "vendorRating"
        FROM products p
