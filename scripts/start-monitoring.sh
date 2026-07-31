@@ -10,12 +10,16 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$SCRIPT_DIR"
 
-if [ ! -f ".env.production" ]; then
-  echo "ERROR: .env.production not found. Run from the project root or copy it first."
+ENV_FILE=".env.production"
+if [ ! -f "$ENV_FILE" ]; then
+  ENV_FILE=".env"
+fi
+if [ ! -f "$ENV_FILE" ]; then
+  echo "ERROR: no .env.production or .env found. Run from the project root or copy it first."
   exit 1
 fi
 
-set -a; source ".env.production"; set +a
+set -a; source "$ENV_FILE"; set +a
 
 echo "========================================="
 echo "  afriMarket Monitoring Stack"

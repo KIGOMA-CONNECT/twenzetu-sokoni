@@ -2,6 +2,9 @@
 set -e
 
 ENV_FILE="${ENV_FILE:-.env.production}"
+if [ ! -f "$ENV_FILE" ]; then
+  ENV_FILE=".env"
+fi
 DOMAIN="${1:-}"
 
 echo "========================================="
@@ -9,7 +12,7 @@ echo "  afriMarket Production Deployment"
 echo "========================================="
 
 if [ ! -f "$ENV_FILE" ]; then
-  echo "ERROR: $ENV_FILE not found!"
+  echo "ERROR: no .env.production or .env found!"
   echo "Copy .env.production.example to .env.production and fill in values."
   exit 1
 fi
