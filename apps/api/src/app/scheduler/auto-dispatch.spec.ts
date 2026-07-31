@@ -57,7 +57,7 @@ describe('AutoDispatchService', () => {
 
     expect(dataSource.query).toHaveBeenCalledTimes(1);
     expect(dataSource.query).toHaveBeenCalledWith(
-      expect.stringContaining('LEFT JOIN deliveries'),
+      expect.stringContaining('NOT EXISTS'),
     );
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('eligible for dispatch'));
   });

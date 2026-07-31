@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
+import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -8,7 +9,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Delivery } from '../../types';
 
-type FilterStatus = 'ALL' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED';
+type FilterStatus = 'ALL' | 'PENDING' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
@@ -37,6 +38,8 @@ const styles: Record<string, React.CSSProperties> = {
   actionWrap: { display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' },
   transitBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#d97706', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   pickupBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#1e40af', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  acceptBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  declineBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   completeBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   locationBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#7c3aed', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
@@ -48,9 +51,16 @@ export default function DriverDeliveries() {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: deliveries, loading, error, refetch } = useApi<Delivery[]>('/deliveries/me');
+  const { subscribe } = useSocket();
   const [filter, setFilter] = useState<FilterStatus>('ALL');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  useEffect(() => {
+    return subscribe('delivery-update', () => {
+      refetch();
+    });
+  }, [subscribe, refetch]);
 
   const filtered = (deliveries || []).filter((d) => filter === 'ALL' || d.status === filter);
 
@@ -72,6 +82,33 @@ export default function DriverDeliveries() {
     } catch (err: any) {
       if (err.code === 1) setActionError('Location permission denied. Please enable GPS.');
       else setActionError(err.response?.data?.message || err.message || 'Failed to share location.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleAccept = async (id: string) => {
+    setBusyId(id);
+    setActionError(null);
+    try {
+      await api.patch(`/deliveries/${id}/status`, { status: 'ASSIGNED' });
+      await refetch();
+    } catch (err: any) {
+      setActionError(err.response?.data?.message || err.message || 'Failed to accept delivery.');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDecline = async (id: string) => {
+    if (!window.confirm('Decline this delivery? It will be reassigned to another driver.')) return;
+    setBusyId(id);
+    setActionError(null);
+    try {
+      await api.patch(`/deliveries/${id}/status`, { status: 'FAILED' });
+      await refetch();
+    } catch (err: any) {
+      setActionError(err.response?.data?.message || err.message || 'Failed to decline delivery.');
     } finally {
       setBusyId(null);
     }
@@ -129,6 +166,7 @@ export default function DriverDeliveries() {
             onChange={(e) => setFilter(e.target.value as FilterStatus)}
           >
             <option value="ALL">All</option>
+            <option value="PENDING">New</option>
             <option value="ASSIGNED">Assigned</option>
             <option value="PICKED_UP">Picked Up</option>
             <option value="IN_TRANSIT">In Transit</option>
@@ -169,6 +207,24 @@ export default function DriverDeliveries() {
                       <td style={styles.td}><StatusBadge status={d.status} /></td>
                       <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
                       <td style={styles.td}>
+                        {d.status === 'PENDING' && (
+                          <div style={styles.actionWrap}>
+                            <button
+                              style={{ ...styles.acceptBtn, ...(busy ? styles.disabledBtn : {}) }}
+                              disabled={busy}
+                              onClick={() => handleAccept(d.id)}
+                            >
+                              Accept
+                            </button>
+                            <button
+                              style={{ ...styles.declineBtn, ...(busy ? styles.disabledBtn : {}) }}
+                              disabled={busy}
+                              onClick={() => handleDecline(d.id)}
+                            >
+                              Decline
+                            </button>
+                          </div>
+                        )}
                         {d.status === 'ASSIGNED' && (
                           <div style={styles.actionWrap}>
                             <button
@@ -177,17 +233,6 @@ export default function DriverDeliveries() {
                               onClick={() => handlePickUp(d.id)}
                             >
                               Pick Up
-                            </button>
-                          </div>
-                        )}
-                        {d.status === 'PICKED_UP' && (
-                          <div style={styles.actionWrap}>
-                            <button
-                              style={{ ...styles.transitBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleInTransit(d.id)}
-                            >
-                              In Transit
                             </button>
                           </div>
                         )}

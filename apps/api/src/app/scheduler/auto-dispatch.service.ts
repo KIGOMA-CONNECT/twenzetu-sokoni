@@ -61,8 +61,10 @@ export class AutoDispatchService {
               v.shop_name AS "vendorName"
        FROM orders o
        JOIN vendors v ON v.id = o.vendor_id
-       LEFT JOIN deliveries d ON d.order_id = o.id
-       WHERE d.id IS NULL
+       WHERE NOT EXISTS (
+         SELECT 1 FROM deliveries d
+         WHERE d.order_id = o.id AND d.status <> 'FAILED'
+       )
          AND o.status IN ('PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP')
          AND o.created_at <= NOW() - INTERVAL '15 minutes'
          AND EXISTS (

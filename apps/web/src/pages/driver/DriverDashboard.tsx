@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
+import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -43,6 +44,28 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
   sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  toast: {
+    background: '#16a34a',
+    color: '#fff',
+    padding: '0.75rem 1.25rem',
+    borderRadius: '10px',
+    marginBottom: '1rem',
+    fontWeight: 600,
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
+  },
+  toastBtn: {
+    background: '#fff',
+    color: '#16a34a',
+    border: 'none',
+    borderRadius: '6px',
+    padding: '0.35rem 0.9rem',
+    fontWeight: 700,
+    fontSize: '0.8rem',
+    cursor: 'pointer',
+  },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600 },
   td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
@@ -54,9 +77,20 @@ const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…`
 export default function DriverDashboard() {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
-  const { data: deliveries, loading, error } = useApi<Delivery[]>('/deliveries/me');
+  const { data: deliveries, loading, error, refetch } = useApi<Delivery[]>('/deliveries/me');
   const { data: vehicles, refetch: refetchVehicles } = useApi<any[]>('/fleet/vehicles/me');
+  const { subscribe } = useSocket();
   const [toggling, setToggling] = useState(false);
+  const [newDelivery, setNewDelivery] = useState<{ orderId: string } | null>(null);
+
+  useEffect(() => {
+    return subscribe('delivery-update', (data: any) => {
+      refetch();
+      if (data?.status === 'PENDING' && data?.orderId) {
+        setNewDelivery({ orderId: data.orderId });
+      }
+    });
+  }, [subscribe, refetch]);
 
   const myVehicle = vehicles && vehicles.length > 0 ? vehicles[0] : null;
 
@@ -73,7 +107,7 @@ export default function DriverDashboard() {
   };
 
   const all = deliveries || [];
-  const active = all.filter((d) => ['ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'].includes(d.status));
+  const active = all.filter((d) => ['PENDING', 'ASSIGNED', 'PICKED_UP', 'IN_TRANSIT'].includes(d.status));
   const completed = all.filter((d) => d.status === 'DELIVERED');
   const totalEarnings = completed.reduce((sum, d) => sum + (d.driverEarnings || 0), 0);
   const today = new Date().toISOString().slice(0, 10);
@@ -116,6 +150,12 @@ export default function DriverDashboard() {
         <ErrorMessage message={error} />
       ) : (
         <>
+          {newDelivery && (
+            <div style={styles.toast}>
+              <span>🔔 New delivery assigned for order {truncateId(newDelivery.orderId)}</span>
+              <button style={styles.toastBtn} onClick={() => setNewDelivery(null)}>OK</button>
+            </div>
+          )}
           <div style={styles.cardGrid}>
             <div style={styles.statCard}>
               <div style={styles.statLabel}>Active Deliveries</div>
