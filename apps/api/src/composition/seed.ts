@@ -15,11 +15,15 @@ const USERS = [
   { id: 'b0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, phone: '+255754100003', name: 'Hassan Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, phone: '+255754100004', name: 'Juma Driver', role: 'driver', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, phone: '+255754100005', name: 'Bakari Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, phone: '+255754100006', name: 'Rehema Cleaning', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, phone: '+255754100007', name: 'Saada Fashion', role: 'vendor', status: 'ACTIVE' },
 ];
 
 const VENDORS = [
   { id: 'c0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000011', shopName: 'Dar Fresh Market', description: 'Fresh produce from local farms', category: 'food', commissionRate: 10 },
   { id: 'c0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000014', shopName: 'Kariakoo Electronics', description: 'Phones, laptops, and accessories', category: 'electronics', commissionRate: 8 },
+  { id: 'c0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000015', shopName: 'Mama Rehema Cleaning', description: 'Usafi wa nyumbani, sabuni na huduma za kusafisha', category: 'cleaning', commissionRate: 10 },
+  { id: 'c0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000016', shopName: 'Saada Fashion Tailors', description: 'Ushonaji na ufuaji wa nguo', category: 'tailoring', commissionRate: 10 },
 ];
 
 const CATEGORIES = [
@@ -41,6 +45,15 @@ const PRODUCTS = [
   { id: 'e0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Mchicha (Spinach Bundle)', price: 1000, categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 150 },
   { id: 'e0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000011', name: 'Samsung Galaxy A15', price: 450000, categoryId: 'd0000000-0000-0000-0000-000000000011', stock: 20 },
   { id: 'e0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000011', name: 'Phone Charger USB-C', price: 8000, categoryId: 'd0000000-0000-0000-0000-000000000011', stock: 200 },
+  { id: 'e0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Nyanya (Tomatoes 1kg)', price: 1500, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Sukuma Wiki (Bundle)', price: 800, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 150 },
+  { id: 'e0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Mayai (Tray ya 30)', price: 7000, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 40 },
+  { id: 'e0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Mchele Pumba (1kg)', price: 3000, categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 200 },
+  { id: 'e0000000-0000-0000-0000-000000000019', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Maharage Mbili (1kg)', price: 3500, categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000012', name: 'Sabuni ya Kufulia', price: 2000, categoryId: 'd0000000-0000-0000-0000-000000000016', stock: 120 },
+  { id: 'e0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000012', name: 'Usafi wa Nyumbani (kwa Saa)', price: 8000, categoryId: 'd0000000-0000-0000-0000-000000000016', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Ushonaji Nguo', price: 10000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Kufua na Kubandika Nguo', price: 6000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
 ];
 
 const ORDERS = [
