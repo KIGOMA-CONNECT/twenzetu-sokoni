@@ -6,7 +6,33 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
-import type { Order } from '../../types';
+import type { Order, Category } from '../../types';
+
+const TYPE_ICONS: Record<string, string> = {
+  food: '🍲',
+  grocery: '🍚',
+  electronics: '📱',
+  general: '🧵',
+  secondhand: '♻️',
+  laundry: '🧺',
+};
+
+const CATEGORY_ICONS: Record<string, string> = {
+  'Chakula Kilicho Tayari': '🍽️',
+  'Mboga na Matunda': '🥬',
+  'Mchele na Maharage': '🍚',
+  'Ufuaji na Usafishaji Nguo': '🧵',
+  'Usafi Nyumbani na Bustani': '🧹',
+  'Kupikiwa Nyumbani (Wapishi)': '👩‍🍳',
+  'Vitu vya Used': '♻️',
+  'Electronics na Bidhaa Nyingine': '📱',
+  'Fresh Produce': '🥕',
+  'Electronics': '📱',
+};
+
+function categoryIcon(category: Category): string {
+  return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
+}
 
 const styles = {
   page: {
@@ -81,6 +107,33 @@ const styles = {
     color: '#0f766e',
     border: '1px solid #0f766e',
   },
+  categoryGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+    gap: '0.75rem',
+    marginBottom: '1.5rem',
+  },
+  categoryCard: {
+    background: '#ffffff',
+    border: '1px solid #e2e8f0',
+    borderRadius: '8px',
+    padding: '1rem',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    gap: '0.5rem',
+    cursor: 'pointer',
+    transition: 'box-shadow 0.15s ease, transform 0.15s ease',
+  },
+  categoryIcon: {
+    fontSize: '1.75rem',
+  },
+  categoryName: {
+    fontSize: '0.85rem',
+    fontWeight: 600,
+    textAlign: 'center' as const,
+    color: '#0f172a',
+  },
 };
 
 function ConsumerDashboard() {
@@ -89,6 +142,7 @@ function ConsumerDashboard() {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: orders, loading, error } = useApi<Order[]>('/orders', []);
+  const { data: categories } = useApi<Category[]>('/categories', []);
 
   const activeOrders = (orders || []).filter((o) =>
     ['PLACED', 'CONFIRMED', 'ESCROW_HELD'].includes(o.status)
@@ -127,10 +181,34 @@ function ConsumerDashboard() {
           </div>
 
           <div style={styles.card}>
+            <div style={styles.sectionTitle}>{t('app.categories')}</div>
+            <div style={styles.categoryGrid}>
+              {(categories ?? []).map((category) => (
+                <div
+                  key={category.id}
+                  style={styles.categoryCard}
+                  onClick={() => navigate('/catalog')}
+                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
+                >
+                  <span style={styles.categoryIcon}>{categoryIcon(category)}</span>
+                  <span style={styles.categoryName}>{category.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div style={styles.card}>
             <div style={styles.sectionTitle}>{t('app.quickLinks')}</div>
             <div style={styles.quickLinks}>
               <button
                 style={{ ...styles.button, ...styles.primaryBtn }}
+                onClick={() => navigate('/catalog')}
+              >
+                🛒 {t('catalog.title')}
+              </button>
+              <button
+                style={{ ...styles.button, ...styles.secondaryBtn }}
                 onClick={() => navigate('/vendors')}
               >
                 {t('app.browseVendors')}

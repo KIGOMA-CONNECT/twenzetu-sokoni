@@ -37,6 +37,7 @@ import { ChatController } from './chat.controller';
 import { RecommendationsController } from './recommendations.controller';
 import { ReferralsController } from './referrals.controller';
 import { SubscriptionsController } from './subscriptions.controller';
+import { CatalogController } from './catalog.controller';
 
 @Module({
   imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity])],
@@ -72,6 +73,7 @@ import { SubscriptionsController } from './subscriptions.controller';
     RecommendationsController,
     ReferralsController,
     SubscriptionsController,
+    CatalogController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },

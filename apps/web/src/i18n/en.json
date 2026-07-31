@@ -11,7 +11,25 @@
     "loyaltyPoints": "Loyalty Points",
     "featured": "Featured Products",
     "recommended": "Recommended for You",
-    "trending": "Trending Now"
+    "trending": "Trending Now",
+    "categories": "Shop by Category"
+  },
+  "catalog": {
+    "title": "Smart Shopping List",
+    "subtitle": "Type everything you want and we'll find the vendors and prices for you",
+    "placeholder": "Type the items you want (one per line)...\ne.g.\nWali wa nazi\nNyanya\nSabuni\nShati la shule",
+    "findPrices": "Find Prices",
+    "results": "Matches",
+    "noMatches": "No vendors found for this item yet",
+    "vendor": "Vendor",
+    "choose": "Select",
+    "total": "Total",
+    "placeOrder": "Place Order",
+    "orderPlaced": "Orders placed successfully!",
+    "selectAddressFirst": "Please select a delivery address before ordering.",
+    "unmatched": "No matches found for:",
+    "itemsToOrder": "items ready to order",
+    "noSelection": "Type your shopping list and find prices first"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -82,7 +100,8 @@
     "of": "of",
     "hide": "hide",
     "selectAddress": "Select address",
-    "noAddresses": "No addresses saved"
+    "noAddresses": "No addresses saved",
+  "addOne": "Add one"
   },
   "status": {
     "PLACED": "Order Placed",

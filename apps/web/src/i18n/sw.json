@@ -11,7 +11,25 @@
     "loyaltyPoints": "Pointi za Uaminifu",
     "featured": "Bidhaa Zilizojitokeza",
     "recommended": "Mapendekezo Kwako",
-    "trending": "Zinazovuma Sasa"
+    "trending": "Zinazovuma Sasa",
+    "categories": "Nunua kwa Kategoria"
+  },
+  "catalog": {
+    "title": "Orodha ya Ununuzi Mahiri",
+    "subtitle": "Andika vitu vyote unavyotaka na tutakupatia wauzaji na bei",
+    "placeholder": "Andika vitu unavyotaka (kimoja kwa mstari)...\nMfano:\nWali wa nazi\nNyanya\nSabuni\nShati la shule",
+    "findPrices": "Tafuta Bei",
+    "results": "Matokeo",
+    "noMatches": "Hakuna wauzaji wa kitu hiki bado",
+    "vendor": "Muuza",
+    "choose": "Chagua",
+    "total": "Jumla",
+    "placeOrder": "Weka Oda",
+    "orderPlaced": "Oda zimewekwa kwa mafanikio!",
+    "selectAddressFirst": "Tafadhali chagua anwani ya kufikishia kabla ya kuagiza.",
+    "unmatched": "Hakuna matokeo kwa:",
+    "itemsToOrder": "vitu viko tayari kuagizwa",
+    "noSelection": "Andika orodha yako ya ununuzi na utafute bei kwanza"
   },
   "nav": {
     "dashboard": "Dashibodi",
@@ -82,7 +100,8 @@
     "of": "kati ya",
     "hide": "ficha",
     "selectAddress": "Chagua anwani",
-    "noAddresses": "Hakuna anwani zilizohifadhiwa"
+    "noAddresses": "Hakuna anwani zilizohifadhiwa",
+  "addOne": "Ongeza moja"
   },
   "status": {
     "PLACED": "Oda Imewekwa",

@@ -175,6 +175,29 @@ export interface Address {
   isDefault: boolean;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  type: string;
+  parentId: string | null;
+  imageUrl: string | null;
+  isActive: boolean;
+}
+
+export interface CatalogMatch {
+  id: string;
+  name: string;
+  description: string | null;
+  price: string;
+  currency: string;
+  unit: string | null;
+  imageUrl: string | null;
+  categoryId: string | null;
+  vendorId: string;
+  vendorName: string;
+  vendorRating: string | null;
+}
+
 export interface LoyaltyPoint {
   id: string;
   userId: string;

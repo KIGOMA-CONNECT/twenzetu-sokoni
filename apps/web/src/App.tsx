@@ -38,6 +38,7 @@ import VendorOnboarding from './pages/vendor/VendorOnboarding';
 import CustomerKyc from './pages/consumer/CustomerKyc';
 import ReferralPage from './pages/consumer/ReferralPage';
 import SubscriptionPage from './pages/consumer/SubscriptionPage';
+import SmartCatalog from './pages/consumer/SmartCatalog';
 
 function AppRoutes() {
   const { user } = useAuth();
@@ -59,6 +60,7 @@ function AppRoutes() {
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
+        <Route path="/catalog" element={<ProtectedRoute roles={['customer','admin']}><SmartCatalog /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />
         <Route path="/vendor/products" element={<ProtectedRoute roles={['vendor']}><VendorProducts /></ProtectedRoute>} />
         <Route path="/vendor/orders" element={<ProtectedRoute roles={['vendor']}><VendorOrders /></ProtectedRoute>} />
