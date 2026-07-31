@@ -9,8 +9,7 @@ RUN npm ci --ignore-scripts
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx nx run api:build
-RUN npx nx run web:build
+RUN cd apps/api && npx tsc --project tsconfig.app.json
 
 FROM nginx:alpine AS nginx-config
 COPY docker/nginx/nginx.conf /etc/nginx/conf.d/default.conf

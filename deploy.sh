@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ENV_FILE=".env.production"
+ENV_FILE="${ENV_FILE:-.env.production}"
 DOMAIN="${1:-}"
 
 echo "========================================="
@@ -44,15 +44,26 @@ docker compose -f docker-compose.prod.yml build
 
 echo ""
 echo "3. Running database migrations..."
-docker compose -f docker-compose.prod.yml run --rm api npm run migration:run
+docker compose -f docker-compose.prod.yml run --rm api npm run migration:run:prod
 
 echo ""
 echo "4. Starting services..."
 docker compose -f docker-compose.prod.yml up -d
 
 echo ""
-echo "5. Waiting for health checks..."
-sleep 15
+echo "5. Waiting for API health..."
+for i in $(seq 1 24); do
+  if docker compose -f docker-compose.prod.yml exec -T api wget -q -O- http://localhost:3000/api/health >/dev/null 2>&1; then
+    echo "  API is healthy."
+    break
+  fi
+  if [ "$i" -eq 24 ]; then
+    echo "  WARNING: API health check did not pass within 2 minutes."
+  else
+    echo "  waiting... (${i}/24)"
+    sleep 5
+  fi
+done
 
 echo ""
 echo "6. Checking service status..."

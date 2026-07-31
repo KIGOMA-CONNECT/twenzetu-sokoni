@@ -1,15 +1,14 @@
-FROM node:20-alpine AS base
-RUN apk add --no-cache libc6-compat
+FROM node:20-bookworm-slim AS base
 WORKDIR /app
 
 FROM base AS deps
 COPY package.json package-lock.json* ./
-RUN npm ci --ignore-scripts
+RUN npm ci
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx nx run web:build
+RUN cd apps/web && npx vite build
 
 FROM nginx:alpine AS runner
 COPY --from=builder /app/dist/apps/web /usr/share/nginx/html

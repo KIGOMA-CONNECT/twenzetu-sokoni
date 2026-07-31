@@ -2,9 +2,9 @@ name: CI/CD
 
 on:
   push:
-    branches: [main, develop]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 env:
   NODE_VERSION: 20
@@ -91,7 +91,7 @@ jobs:
 
   deploy:
     name: Deploy
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
     needs: [lint-and-typecheck, test, build]
     runs-on: ubuntu-latest
     steps:
@@ -104,5 +104,5 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           script: |
             cd /opt/afri-market
-            git pull origin main
+            git pull origin master
             ./deploy.sh ${{ secrets.DOMAIN }}

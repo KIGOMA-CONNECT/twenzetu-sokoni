@@ -4,7 +4,7 @@ services:
     container_name: afri-market-prometheus
     restart: unless-stopped
     ports:
-      - '9090:9090'
+      - '127.0.0.1:9090:9090'
     volumes:
       - ./docker/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - afri-market-prometheus-data:/prometheus
@@ -25,7 +25,7 @@ services:
     container_name: afri-market-grafana
     restart: unless-stopped
     ports:
-      - '3001:3000'
+      - '127.0.0.1:3001:3000'
     volumes:
       - ./docker/monitoring/grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
       - ./docker/monitoring/grafana-dashboards.yml:/etc/grafana/provisioning/dashboards/dashboards.yml
@@ -44,7 +44,7 @@ services:
     container_name: afri-market-node-exporter
     restart: unless-stopped
     ports:
-      - '9100:9100'
+      - '127.0.0.1:9100:9100'
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro
@@ -60,7 +60,7 @@ services:
     container_name: afri-market-postgres-exporter
     restart: unless-stopped
     ports:
-      - '9187:9187'
+      - '127.0.0.1:9187:9187'
     environment:
       DATA_SOURCE_NAME: 'postgresql://${DB_RUNTIME_USER:-afri_runtime}:${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}@postgres:5432/${DB_NAME:-afri_market}?sslmode=disable'
     depends_on:
@@ -70,3 +70,8 @@ services:
 volumes:
   afri-market-prometheus-data:
   afri-market-grafana-data:
+
+networks:
+  default:
+    name: afri-market_default
+    external: true
