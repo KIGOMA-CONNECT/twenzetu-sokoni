@@ -22,7 +22,7 @@ export class CreateUsedGoodsDto {
   @Min(0)
   askingPrice!: number;
 
-  @ApiPropertyOptional({ description: 'Currency', default: 'RWF' })
+  @ApiPropertyOptional({ description: 'Currency', default: 'TZS' })
   @IsOptional()
   @IsString()
   currency?: string;

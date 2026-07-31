@@ -36,7 +36,7 @@ export class CreateUsedGoodsUseCase {
       title: dto.title,
       description: dto.description,
       category: dto.category,
-      askingPrice: Money.create(dto.askingPrice, dto.currency ?? 'RWF'),
+      askingPrice: Money.create(dto.askingPrice, dto.currency ?? 'TZS'),
       location: dto.location,
       latitude: dto.latitude,
       longitude: dto.longitude,

@@ -5,13 +5,13 @@ export class SubmitKycDto {
   @IsNotEmpty()
   partnerType!: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  nidaPhotoUrl!: string;
+  nidaPhotoUrl?: string;
 
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  selfiePhotoUrl!: string;
+  selfiePhotoUrl?: string;
 
   @IsOptional()
   @IsString()

@@ -57,8 +57,8 @@ const DELIVERIES = [
 ];
 
 const SURGE_RULES = [
-  { id: 'f0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, name: 'Morning Rush', trigger: 'time_based', multiplier: 1.5, startHour: 7, endHour: 9 },
-  { id: 'f0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, name: 'Evening Rush', trigger: 'time_based', multiplier: 1.3, startHour: 17, endHour: 19 },
+  { id: 'f0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, name: 'Morning Rush', trigger: 'NIGHT_TIME', multiplier: 1.5, startHour: 7, endHour: 9 },
+  { id: 'f0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, name: 'Evening Rush', trigger: 'NIGHT_TIME', multiplier: 1.3, startHour: 17, endHour: 19 },
 ];
 
 async function seed(): Promise<void> {

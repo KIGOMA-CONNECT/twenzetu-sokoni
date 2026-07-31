@@ -44,7 +44,7 @@ export class ProcurementController {
       dto.procurementId,
       user.sub,
       dto.price,
-      dto.currency ?? 'RWF',
+      dto.currency ?? 'TZS',
       dto.itemCondition,
       dto.warrantyPeriodDays ?? 0,
     );

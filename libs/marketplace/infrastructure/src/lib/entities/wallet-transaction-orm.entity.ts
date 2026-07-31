@@ -17,7 +17,7 @@ export class WalletTransactionOrmEntity extends TenantAwareEntity {
   @Column({ type: 'decimal', precision: 12, scale: 2 })
   public amount!: number;
 
-  @Column({ type: 'varchar', length: 10, default: 'RWF' })
+  @Column({ type: 'varchar', length: 10, default: 'TZS' })
   public currency!: string;
 
   @Column({ name: 'balance_before', type: 'decimal', precision: 12, scale: 2, default: 0 })

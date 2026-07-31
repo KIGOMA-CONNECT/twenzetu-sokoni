@@ -34,9 +34,9 @@ export class ProductsController {
     const command = new CreateProductCommand(
       user.sub,
       dto.name,
-      dto.description,
+      dto.description ?? '',
       dto.price,
-      dto.currency ?? 'RWF',
+      dto.currency ?? 'TZS',
       dto.type,
       dto.categoryId,
       dto.imageUrl,

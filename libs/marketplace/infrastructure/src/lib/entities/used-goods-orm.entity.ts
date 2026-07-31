@@ -26,7 +26,7 @@ export class UsedGoodsOrmEntity extends TenantAwareEntity {
   @Column({ name: 'asking_price', type: 'decimal', precision: 12, scale: 2 })
   public askingPrice!: number;
 
-  @Column({ type: 'varchar', length: 10, default: 'RWF' })
+  @Column({ type: 'varchar', length: 10, default: 'TZS' })
   public currency!: string;
 
   @Column({ type: 'varchar', length: 50, default: 'AVAILABLE' })
