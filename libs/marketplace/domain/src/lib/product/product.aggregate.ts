@@ -23,7 +23,7 @@ export interface ReconstituteProductProps {
   readonly description: string;
   readonly price: Money;
   readonly type: ProductType;
-  readonly categoryId: EntityId;
+  readonly categoryId: EntityId | undefined;
   readonly imageUrl: string | undefined;
   readonly stockQuantity: number;
   readonly unit: string;
@@ -40,7 +40,7 @@ export class Product extends AggregateRoot<EntityId> {
     private _description: string,
     private _price: Money,
     private _type: ProductType,
-    private readonly _categoryId: EntityId,
+    private readonly _categoryId: EntityId | undefined,
     private _imageUrl: string | undefined,
     private _stockQuantity: number,
     private _unit: string,
@@ -74,7 +74,7 @@ export class Product extends AggregateRoot<EntityId> {
   public get description(): string { return this._description; }
   public get price(): Money { return this._price; }
   public get type(): ProductType { return this._type; }
-  public get categoryId(): EntityId { return this._categoryId; }
+  public get categoryId(): EntityId | undefined { return this._categoryId; }
   public get imageUrl(): string | undefined { return this._imageUrl; }
   public get stockQuantity(): number { return this._stockQuantity; }
   public get unit(): string { return this._unit; }
@@ -99,7 +99,7 @@ export class Product extends AggregateRoot<EntityId> {
       price: this._price.amount,
       currency: this._price.currency,
       type: this._type,
-      categoryId: this._categoryId.value,
+      categoryId: this._categoryId?.value ?? null,
       imageUrl: this._imageUrl,
       stockQuantity: this._stockQuantity,
       unit: this._unit,
