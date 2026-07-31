@@ -17,7 +17,8 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function LoyaltyPage() {
-  const { data: loyalty, loading, error } = useApi<{ totalPoints: number; redeemablePoints: number; tier: string }>('/loyalty/me');
+  const { data, loading, error } = useApi<any>('/loyalty/me');
+  const loyalty = data?.data ?? data;
 
   if (loading) return <div style={styles.container}><LoadingSpinner /></div>;
   if (error) return <div style={styles.container}><ErrorMessage message={error} /></div>;

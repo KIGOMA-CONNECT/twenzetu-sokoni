@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApi } from '../../hooks/useApi';
+import api from '../../api/client';
 
 const STEPS = ['Shop Info', 'Contact & Location', 'KYC Documents', 'Review'];
 
@@ -9,7 +9,6 @@ export default function VendorOnboarding() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { post } = useApi();
 
   const [form, setForm] = useState({
     shopName: '',
@@ -43,7 +42,7 @@ export default function VendorOnboarding() {
     setSubmitting(true);
     setError('');
     try {
-      await post('/vendors', {
+      await api.post('/vendors', {
         shopName: form.shopName,
         description: form.description,
         category: form.category,
@@ -53,7 +52,7 @@ export default function VendorOnboarding() {
       });
 
       if (kyc.nidaNumber) {
-        await post('/kyc/submit', {
+        await api.post('/kyc/submit', {
           partnerType: 'RESTAURANT',
           nidaNumber: kyc.nidaNumber,
           tinNumber: kyc.tinNumber || undefined,

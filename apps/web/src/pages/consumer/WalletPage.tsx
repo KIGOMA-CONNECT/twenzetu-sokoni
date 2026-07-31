@@ -81,7 +81,7 @@ export default function WalletPage() {
     setTopupError('');
     try {
       const res = await api.post('/wallets/top-up', { amount: topupAmount, phoneNumber });
-      if (res.data?.success || res.data?.data?.success) {
+      if (res.data?.data?.success) {
         setTopupSuccess('M-Pesa prompt sent to your phone. Confirm to complete top-up.');
         setTimeout(() => {
           setShowTopup(false);

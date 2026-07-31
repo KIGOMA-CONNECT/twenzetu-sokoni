@@ -188,7 +188,7 @@ function ProductList() {
     if (!products || products.length === 0) return;
     const firstId = products[0].id;
     api.get(`/products/${firstId}/similar?limit=4`).then(res => {
-      const data = res.data?.data || [];
+      const data = res.data?.data?.data || res.data?.data || [];
       setSimilarProducts(Array.isArray(data) ? data : []);
     }).catch(() => setSimilarProducts([]));
   }, [products]);

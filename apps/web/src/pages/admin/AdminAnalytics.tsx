@@ -33,16 +33,16 @@ export default function AdminAnalytics() {
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
 
-  const totalDisputes = disputeMetrics?.data?.total ?? disputeMetrics?.totalDisputes ?? 0;
-  const openDisputes = disputeMetrics?.data?.open ?? disputeMetrics?.openDisputes ?? 0;
-  const resolvedDisputes = disputeMetrics?.data?.resolved ?? disputeMetrics?.resolvedDisputes ?? 0;
+  const totalDisputes = disputeMetrics?.total ?? 0;
+  const openDisputes = disputeMetrics?.open ?? 0;
+  const resolvedDisputes = disputeMetrics?.resolved ?? 0;
   const resolvedRate = totalDisputes > 0 ? Math.round((resolvedDisputes / totalDisputes) * 100) : 0;
 
   const revenueCards = [
     { label: 'Total Revenue', value: `RWF ${(revenue?.totalRevenue ?? 0).toLocaleString()}` },
     { label: 'Total Commission', value: `RWF ${(revenue?.totalCommission ?? 0).toLocaleString()}` },
-    { label: 'Order Count', value: revenue?.orderCount ?? 0 },
-    { label: 'Avg Order Value', value: `RWF ${(revenue?.avgOrderValue ?? 0).toLocaleString()}` },
+    { label: 'Order Count', value: revenue?.ordersCount ?? 0 },
+    { label: 'Avg Order Value', value: `RWF ${(revenue?.averageOrderValue ?? 0).toLocaleString()}` },
   ];
 
   const disputeCards = [

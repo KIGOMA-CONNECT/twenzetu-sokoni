@@ -8,7 +8,7 @@ import type { Order, Wallet } from '../../types';
 
 interface VendorStats {
   totalOrders: number;
-  averageRating: number;
+  totalRevenue: number;
   walletBalance: number;
   pendingBalance: number;
   todayOrders?: number;
@@ -69,7 +69,7 @@ export default function VendorDashboard() {
   const { data: orders, loading: ordersLoading, error: ordersError } = useApi<Order[]>('/vendors/me/orders');
 
   const totalOrders = stats?.totalOrders ?? 0;
-  const averageRating = stats?.averageRating ?? 0;
+  const totalRevenue = stats?.totalRevenue ?? 0;
   const walletBalance = wallet?.balance ?? stats?.walletBalance ?? 0;
   const pendingBalance = wallet?.pendingBalance ?? stats?.pendingBalance ?? 0;
   const todayOrders = stats?.todayOrders ?? 0;
@@ -103,8 +103,8 @@ export default function VendorDashboard() {
               <div style={styles.statValue}>{totalOrders}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Average Rating</div>
-              <div style={styles.statValue}>{averageRating.toFixed(1)} ★</div>
+              <div style={styles.statLabel}>Total Revenue</div>
+              <div style={styles.statValue}>{formatCurrency(totalRevenue)}</div>
             </div>
             <div style={styles.statCard}>
               <div style={styles.statLabel}>Wallet Balance</div>

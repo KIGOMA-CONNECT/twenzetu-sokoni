@@ -103,18 +103,18 @@ export interface Wallet {
 
 export interface DashboardStats {
   totalVendors: number;
-  totalOrders: number;
+  activeOrders: number;
   totalRevenue: number;
   pendingVendors: number;
-  activeDisputes: number;
-  totalCustomers: number;
+  openDisputes: number;
+  totalUsers: number;
 }
 
 export interface RevenueReport {
   totalRevenue: number;
   totalCommission: number;
-  orderCount: number;
-  avgOrderValue: number;
+  ordersCount: number;
+  averageOrderValue: number;
 }
 
 export interface PaginatedResponse<T> {

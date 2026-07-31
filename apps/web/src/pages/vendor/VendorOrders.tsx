@@ -81,7 +81,7 @@ export default function VendorOrders() {
     setItemsLoading(true);
     try {
       const res = await api.get(`/orders/${order.id}/items`);
-      const payload = res.data?.data || res.data;
+      const payload = res.data?.data?.data || res.data?.data || res.data;
       setOrderItems(Array.isArray(payload) ? payload : []);
     } catch {
       setOrderItems([]);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useApi } from '../../hooks/useApi';
+import api from '../../api/client';
 
 interface AuditEntry {
   id: string;
@@ -18,13 +18,16 @@ export default function AdminAuditLog() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { get } = useApi();
   const limit = 50;
 
   useEffect(() => {
     setLoading(true);
-    get<{ rows: AuditEntry[]; total: number }>(`/admin/audit-logs?limit=${limit}&offset=${page * limit}`)
-      .then(data => { setLogs(data.rows); setTotal(data.total); })
+    api.get(`/admin/audit-logs?limit=${limit}&offset=${page * limit}`)
+      .then(res => {
+        const d = res.data?.data ?? res.data;
+        setLogs(d?.rows ?? []);
+        setTotal(d?.total ?? 0);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [page]);

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useApi } from '../../hooks/useApi';
+import api from '../../api/client';
 
 interface KycStatus {
   status: string;
@@ -13,11 +13,14 @@ export default function CustomerKyc() {
   const [nidaNumber, setNidaNumber] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const { get, post } = useApi();
 
   useEffect(() => {
-    get<KycStatus>('/kyc/me')
-      .then(data => { setKyc(data); if (data.nidaNumber) setNidaNumber(data.nidaNumber); })
+    api.get('/kyc/me')
+      .then(res => {
+        const data = res.data?.data?.data ?? res.data?.data ?? null;
+        setKyc(data);
+        if (data?.nidaNumber) setNidaNumber(data.nidaNumber);
+      })
       .catch(() => setKyc(null))
       .finally(() => setLoading(false));
   }, []);
@@ -27,11 +30,11 @@ export default function CustomerKyc() {
     setSubmitting(true);
     setError('');
     try {
-      const result = await post('/kyc/submit', {
+      const result = await api.post('/kyc/submit', {
         partnerType: 'MARKET_CAPTAIN',
         nidaNumber,
       });
-      setKyc(result);
+      setKyc(result.data?.data ?? result.data);
     } catch (err) {
       setError((err as Error).message || 'Submission failed');
     } finally {

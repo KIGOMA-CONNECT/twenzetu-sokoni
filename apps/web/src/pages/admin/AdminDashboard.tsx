@@ -49,10 +49,10 @@ export default function AdminDashboard() {
 
   const statCards = [
     { label: 'Total Vendors', value: stats?.totalVendors ?? 0 },
-    { label: 'Total Orders', value: stats?.totalOrders ?? 0 },
+    { label: 'Active Orders', value: stats?.activeOrders ?? 0 },
     { label: 'Total Revenue', value: `RWF ${(stats?.totalRevenue ?? 0).toLocaleString()}` },
     { label: 'Pending Vendors', value: stats?.pendingVendors ?? 0 },
-    { label: 'Active Disputes', value: stats?.activeDisputes ?? 0 },
+    { label: 'Open Disputes', value: stats?.openDisputes ?? 0 },
     { label: 'Total Customers', value: stats?.totalUsers ?? 0 },
   ];
 

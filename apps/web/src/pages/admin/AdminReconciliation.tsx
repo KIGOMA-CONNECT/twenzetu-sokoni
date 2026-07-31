@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useApi } from '../../hooks/useApi';
+import api from '../../api/client';
 
 interface ReconciliationReport {
   period: string;
@@ -33,12 +33,11 @@ export default function AdminReconciliation() {
   const [period, setPeriod] = useState<'today' | '7d' | '30d' | '90d'>('30d');
   const [report, setReport] = useState<ReconciliationReport | null>(null);
   const [loading, setLoading] = useState(true);
-  const { get } = useApi();
 
   useEffect(() => {
     setLoading(true);
-    get<ReconciliationReport>(`/admin/finance/reconciliation?period=${period}`)
-      .then(setReport)
+    api.get(`/admin/finance/reconciliation?period=${period}`)
+      .then(res => setReport(res.data?.data ?? res.data))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [period]);

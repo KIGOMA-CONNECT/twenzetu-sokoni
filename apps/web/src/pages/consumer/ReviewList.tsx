@@ -73,8 +73,8 @@ export default function ReviewList() {
       api.get(`/reviews/vendor/${selectedVendorId}`)
       .then((res) => {
         if (!cancelled) {
-          const payload = res.data;
-          setReviews(Array.isArray(payload) ? payload : Array.isArray(payload?.data) ? payload.data : []);
+          const payload = res.data?.data?.data ?? res.data?.data ?? res.data;
+          setReviews(Array.isArray(payload) ? payload : []);
         }
       })
       .catch((err: any) => {
