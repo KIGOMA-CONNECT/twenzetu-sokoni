@@ -63,9 +63,6 @@ services:
       - '127.0.0.1:9187:9187'
     environment:
       DATA_SOURCE_NAME: 'postgresql://${DB_RUNTIME_USER:-afri_runtime}:${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}@postgres:5432/${DB_NAME:-afri_market}?sslmode=disable'
-    depends_on:
-      postgres:
-        condition: service_healthy
 
 volumes:
   afri-market-prometheus-data:
