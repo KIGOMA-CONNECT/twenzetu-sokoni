@@ -14,7 +14,12 @@ import { readFileSync, existsSync, statSync } from 'fs';
 import { AppModule } from './app/app.module';
 
 const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
-const webIndex = readFileSync(join(webDir, 'index.html'), 'utf-8');
+let webIndex: string | null = null;
+try {
+  webIndex = readFileSync(join(webDir, 'index.html'), 'utf-8');
+} catch {
+  webIndex = null;
+}
 
 async function bootstrap(): Promise<void> {
   console.log('[Bootstrap] Creating Nest application...');
@@ -34,6 +39,9 @@ async function bootstrap(): Promise<void> {
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/docs') || req.path.startsWith('/swagger')) {
       return next();
+    }
+    if (webIndex === null) {
+      return res.status(404).send('Not found');
     }
     const assetPath = join(webDir, req.path === '/' ? 'index.html' : req.path);
     if (existsSync(assetPath) && statSync(assetPath).isFile()) {
