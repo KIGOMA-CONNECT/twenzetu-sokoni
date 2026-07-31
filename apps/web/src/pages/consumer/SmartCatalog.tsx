@@ -211,7 +211,17 @@ function SmartCatalog() {
     byVendor.set(item.vendorId, list);
   }
 
-  const total = selectedItems.reduce((sum, m) => sum + Number(m.price), 0);
+  const vendorSubtotals: { vendorId: string; vendorName: string; items: CatalogMatch[]; total: number }[] = [];
+  for (const [vendorId, items] of byVendor.entries()) {
+    vendorSubtotals.push({
+      vendorId,
+      vendorName: items[0].vendorName,
+      items,
+      total: items.reduce((sum, m) => sum + Number(m.price), 0),
+    });
+  }
+
+  const grandTotal = selectedItems.reduce((sum, m) => sum + Number(m.price), 0);
 
   const placeOrder = async () => {
     const selectedAddr = addresses?.find((a) => a.id === selectedAddressId);
@@ -329,13 +339,39 @@ function SmartCatalog() {
             <div style={styles.summary}>
               <div>
                 <div style={styles.totalText}>
-                  {t('catalog.total')}: {formatCurrency(total)}
+                  {t('catalog.total')}: {formatCurrency(grandTotal)}
                 </div>
                 <div style={styles.subtext}>
                   {byVendor.size} {t('catalog.vendor')}(s) • {selectedItems.length} {t('catalog.itemsToOrder')}
                 </div>
               </div>
             </div>
+
+            {vendorSubtotals.length > 1 && (
+              <div style={{ marginTop: '0.75rem' }}>
+                <div style={styles.subtext}><strong>{t('catalog.perVendor')}</strong></div>
+                <div style={{ marginTop: '0.4rem' }}>
+                  {vendorSubtotals.map((vs) => (
+                    <div
+                      key={vs.vendorId}
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        padding: '0.35rem 0',
+                        borderBottom: '1px dashed #e2e8f0',
+                        fontSize: '0.875rem',
+                      }}
+                    >
+                      <span>{vs.vendorName} ({vs.items.length} item{vs.items.length === 1 ? '' : 's'})</span>
+                      <span style={{ fontWeight: 700 }}>{formatCurrency(vs.total)}</span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ ...styles.subtext, marginTop: '0.5rem' }}>
+                  {byVendor.size} separate order{byVendor.size === 1 ? '' : 's'} will be placed (one per vendor), each with its own delivery.
+                </div>
+              </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }} className="responsive-grid-2col">
               <div>
@@ -379,7 +415,7 @@ function SmartCatalog() {
               onClick={placeOrder}
               disabled={submitting || selectedItems.length === 0}
             >
-              {submitting ? '...' : `${t('catalog.placeOrder')} (${formatCurrency(total)})`}
+              {submitting ? '...' : `${t('catalog.placeOrder')} (${formatCurrency(grandTotal)})`}
             </button>
           </div>
         </>

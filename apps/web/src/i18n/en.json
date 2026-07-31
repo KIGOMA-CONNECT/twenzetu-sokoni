@@ -25,6 +25,7 @@
     "choose": "Select",
     "total": "Total",
     "placeOrder": "Place Order",
+    "perVendor": "Per Vendor",
     "orderPlaced": "Orders placed successfully!",
     "selectAddressFirst": "Please select a delivery address before ordering.",
     "unmatched": "No matches found for:",
