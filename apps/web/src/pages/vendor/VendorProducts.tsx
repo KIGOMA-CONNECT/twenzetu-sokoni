@@ -15,25 +15,51 @@ interface NewProduct {
   stock: number;
   type: string;
   categoryId: string;
+  unit: string;
 }
 
-const PRODUCT_TYPES = ['food', 'grocery', 'secondhand', 'general', 'laundry'];
+const PRODUCT_TYPES = ['food', 'grocery', 'secondhand', 'general', 'laundry', 'service'];
+
+const PRODUCT_UNITS = ['pcs', 'kg', 'bundle', 'hour', 'day', 'person'];
 
 const CATEGORIES: Record<string, { id: string; label: string }[]> = {
   food: [
     { id: 'd0000000-0000-0000-0000-000000000001', label: 'Fresh Produce' },
     { id: 'd0000000-0000-0000-0000-000000000003', label: 'Food & Groceries' },
+    { id: 'd0000000-0000-0000-0000-000000000012', label: 'Chakula Kilicho Tayari' },
+    { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
   ],
   grocery: [
     { id: 'd0000000-0000-0000-0000-000000000003', label: 'Food & Groceries' },
+    { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
   ],
   general: [
     { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
   ],
   secondhand: [
     { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
+    { id: 'd0000000-0000-0000-0000-000000000018', label: 'Vitu vya Used' },
   ],
-  laundry: [],
+  laundry: [
+    { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
+  ],
+  service: [
+    { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
+    { id: 'd0000000-0000-0000-0000-000000000016', label: 'Usafi Nyumbani na Bustani' },
+    { id: 'd0000000-0000-0000-0000-000000000017', label: 'Kupikiwa Nyumbani (Wapishi)' },
+    { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
+    { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
+  ],
+};
+
+const emptyForm: NewProduct = {
+  name: '',
+  description: '',
+  price: 0,
+  stock: 0,
+  type: '',
+  categoryId: '',
+  unit: 'pcs',
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -125,6 +151,7 @@ export default function VendorProducts() {
         stockQuantity: Number(form.stock),
         type: form.type,
         categoryId: form.categoryId,
+        unit: form.unit,
       });
       setModalOpen(false);
       await refetch();
@@ -211,6 +238,18 @@ export default function VendorProducts() {
             <div style={styles.field}>
               <label style={styles.label}>Stock</label>
               <input type="number" min={0} style={styles.input} value={form.stock} onChange={(e) => updateField('stock', parseInt(e.target.value, 10) || 0)} />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Unit</label>
+              <select
+                style={styles.input}
+                value={form.unit}
+                onChange={(e) => updateField('unit', e.target.value)}
+              >
+                {PRODUCT_UNITS.map((u) => (
+                  <option key={u} value={u}>{u}</option>
+                ))}
+              </select>
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Type</label>

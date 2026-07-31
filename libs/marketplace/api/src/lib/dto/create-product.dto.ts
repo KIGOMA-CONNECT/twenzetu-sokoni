@@ -17,7 +17,7 @@ export class CreateProductDto {
   @IsString()
   currency?: string;
 
-  @IsEnum(['food', 'grocery', 'secondhand', 'general', 'laundry'])
+  @IsEnum(['food', 'grocery', 'secondhand', 'general', 'laundry', 'service'])
   type!: string;
 
   @IsString()

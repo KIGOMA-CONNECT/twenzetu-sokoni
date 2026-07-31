@@ -22,7 +22,7 @@ export class CreateOrderDto {
   @IsNotEmpty()
   vendorId!: string;
 
-  @IsEnum(['food', 'grocery', 'laundry', 'secondhand', 'procurement', 'general'])
+  @IsEnum(['food', 'grocery', 'laundry', 'secondhand', 'procurement', 'general', 'service'])
   type!: string;
 
   @IsString()
