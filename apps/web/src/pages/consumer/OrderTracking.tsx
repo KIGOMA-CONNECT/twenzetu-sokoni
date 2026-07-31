@@ -71,9 +71,10 @@ export default function OrderTracking() {
   useEffect(() => {
     if (!orderId) return;
     api.get(`/messages/${orderId}`).then(res => {
-      const payload = res.data;
-      setMessages(payload?.data || []);
-    }).catch(() => {});
+      const payload = res.data?.data ?? res.data ?? [];
+      const list = Array.isArray(payload) ? payload : payload?.data;
+      setMessages(Array.isArray(list) ? list : []);
+    }).catch(() => setMessages([]));
   }, [orderId]);
 
   useEffect(() => {

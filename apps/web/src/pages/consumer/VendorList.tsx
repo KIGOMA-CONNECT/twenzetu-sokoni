@@ -151,7 +151,9 @@ function VendorList() {
       setSearching(true);
       try {
         const res = await api.get(`/search/suggestions?q=${encodeURIComponent(value)}&limit=5`);
-        setSuggestions(res.data?.data || []);
+        const payload = res.data?.data ?? res.data ?? [];
+        const list = Array.isArray(payload) ? payload : payload?.data;
+        setSuggestions(Array.isArray(list) ? list : []);
         setShowSuggestions(true);
       } catch { setSuggestions([]); }
       setSearching(false);

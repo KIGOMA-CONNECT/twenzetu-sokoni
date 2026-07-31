@@ -62,7 +62,11 @@ export function Recommendations({ title = 'Recommended', endpoint, vendorMap = {
   useEffect(() => {
     setLoading(true);
     api.get(endpoint)
-      .then((res) => setItems(res.data?.data || res.data || []))
+      .then((res) => {
+        const payload = res.data?.data ?? res.data ?? [];
+        const list = Array.isArray(payload) ? payload : payload?.data;
+        setItems(Array.isArray(list) ? list : []);
+      })
       .catch(() => setItems([]))
       .finally(() => setLoading(false));
   }, [endpoint]);
