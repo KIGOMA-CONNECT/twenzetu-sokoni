@@ -53,7 +53,8 @@ export default function AdminPromotions() {
     setLoading(true); setError('');
     try {
       const res = await api.get('/coupons');
-      setCoupons(res.data.data || []);
+      const list = res.data.data;
+      setCoupons(Array.isArray(list) ? list : (Array.isArray(list?.data) ? list.data : []));
     } catch (err: any) { setError(err.response?.data?.message || err.message); }
     finally { setLoading(false); }
   };
@@ -62,7 +63,8 @@ export default function AdminPromotions() {
     setLoading(true); setError('');
     try {
       const res = await api.get('/flash-sales');
-      setFlashSales(res.data.data || []);
+      const list = res.data.data;
+      setFlashSales(Array.isArray(list) ? list : (Array.isArray(list?.data) ? list.data : []));
     } catch (err: any) { setError(err.response?.data?.message || err.message); }
     finally { setLoading(false); }
   };

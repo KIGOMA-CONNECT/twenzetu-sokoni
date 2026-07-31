@@ -35,7 +35,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         api.get('/notifications?limit=20'),
         api.get('/notifications/unread-count'),
       ]);
-      setNotifications(listRes.data.data || listRes.data || []);
+      let list = listRes.data.data !== undefined ? listRes.data.data : listRes.data;
+      if (!Array.isArray(list) && Array.isArray(list?.data)) list = list.data;
+      setNotifications(Array.isArray(list) ? list : []);
       setUnreadCount(countRes.data.count ?? 0);
     } catch {
       // silently fail
