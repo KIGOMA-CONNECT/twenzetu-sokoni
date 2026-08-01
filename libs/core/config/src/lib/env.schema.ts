@@ -15,8 +15,10 @@ export const envSchema = z.object({
   DB_RUNTIME_PASSWORD: z.string().default('afri_runtime_dev_password'),
   JWT_SECRET: z.string().default('dev-jwt-secret'),
   JWT_EXPIRY: z.string().default('7d'),
+  JWT_REFRESH_EXPIRY: z.string().default('30d'),
   OTP_EXPIRY_MINUTES: z.coerce.number().default(5),
   OTP_LENGTH: z.coerce.number().default(6),
+  SMS_DEFAULT_COUNTRY: z.string().default('TZ'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
 });
 

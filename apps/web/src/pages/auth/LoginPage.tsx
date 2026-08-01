@@ -55,6 +55,30 @@ const styles = {
     marginBottom: '1.5rem',
     textAlign: 'center' as const,
   },
+  tabs: {
+    display: 'flex',
+    background: '#f1f5f9',
+    borderRadius: '10px',
+    padding: '0.25rem',
+    marginBottom: '1.25rem',
+  },
+  tab: {
+    flex: 1,
+    padding: '0.55rem',
+    border: 'none',
+    borderRadius: '8px',
+    background: 'transparent',
+    color: '#64748b',
+    fontWeight: 600,
+    fontSize: '0.85rem',
+    cursor: 'pointer',
+    transition: 'background 0.2s, color 0.2s',
+  },
+  tabActive: {
+    background: '#ffffff',
+    color: '#0f172a',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  },
   field: {
     marginBottom: '1.25rem',
   },
@@ -174,25 +198,71 @@ const styles = {
   },
 };
 
+function getErrorMessage(err: unknown, fallback: string): string {
+  if (err && typeof err === 'object' && 'response' in err) {
+    const res = (err as { response?: { data?: { message?: string } } }).response;
+    if (res?.data?.message) return res.data.message;
+  }
+  if (err instanceof Error && err.message) return err.message;
+  return fallback;
+}
+
 function LoginPage() {
-  const { login } = useAuth();
+  const { login, sendOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
+  const [mode, setMode] = useState<'password' | 'otp'>('password');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [codeSent, setCodeSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
       await login(phoneNumber.trim(), password);
       navigate('/dashboard', { replace: true });
-    } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Invalid credentials');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Invalid credentials'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleSendCode = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      await sendOtp(phoneNumber.trim());
+      setCodeSent(true);
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Could not send code'));
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleVerifyCode = async (e: FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSubmitting(true);
+    try {
+      const { registered } = await verifyOtp(phoneNumber.trim(), code.trim());
+      if (registered) {
+        navigate('/dashboard', { replace: true });
+      } else {
+        setCodeSent(false);
+        setCode('');
+        setError('Account not found. Please register with this number.');
+      }
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Invalid code'));
     } finally {
       setSubmitting(false);
     }
@@ -215,95 +285,192 @@ function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          <div style={styles.field}>
-            <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
-            <div style={styles.inputWrap}>
-              <input
-                id="phoneNumber"
-                type="tel"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+255 754 000 000"
-                style={styles.input}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#0f766e';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-                  e.currentTarget.style.background = '#ffffff';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = '#e2e8f0';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.background = '#f8fafc';
-                }}
-                required
-              />
-            </div>
-          </div>
-
-          <div style={styles.field}>
-            <label style={styles.label} htmlFor="password">Password</label>
-            <div style={styles.inputWrap}>
-              <input
-                id="password"
-                type={showPassword ? 'text' : 'password'}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                style={styles.input}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = '#0f766e';
-                  e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-                  e.currentTarget.style.background = '#ffffff';
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = '#e2e8f0';
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.background = '#f8fafc';
-                }}
-                required
-              />
-              <button
-                type="button"
-                style={styles.passwordToggle}
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? '\u{1F441}' : '\u{1F512}'}
-              </button>
-            </div>
-          </div>
-
-          <div style={styles.options}>
-            <label style={styles.checkbox}>
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                style={styles.checkboxInput}
-              />
-              Remember me
-            </label>
-            <button type="button" style={styles.forgotLink}>
-              Forgot password?
-            </button>
-          </div>
-
+        <div style={styles.tabs}>
           <button
-            type="submit"
-            disabled={submitting}
-            style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+            type="button"
+            style={{ ...styles.tab, ...(mode === 'password' ? styles.tabActive : {}) }}
+            onClick={() => { setMode('password'); setError(null); }}
           >
-            {submitting ? (
-              <>
-                <span style={styles.spinner} />
-                Signing in...
-              </>
-            ) : (
-              'Sign in'
-            )}
+            Password
           </button>
-        </form>
+          <button
+            type="button"
+            style={{ ...styles.tab, ...(mode === 'otp' ? styles.tabActive : {}) }}
+            onClick={() => { setMode('otp'); setError(null); setCodeSent(false); }}
+          >
+            SMS Code
+          </button>
+        </div>
+
+        {mode === 'password' ? (
+          <form onSubmit={handlePasswordSubmit}>
+            <div style={styles.field}>
+              <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
+              <div style={styles.inputWrap}>
+                <input
+                  id="phoneNumber"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+255 754 000 000"
+                  style={styles.input}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#0f766e';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
+                    e.currentTarget.style.background = '#ffffff';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.background = '#f8fafc';
+                  }}
+                  required
+                />
+              </div>
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label} htmlFor="password">Password</label>
+              <div style={styles.inputWrap}>
+                <input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your password"
+                  style={styles.input}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#0f766e';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
+                    e.currentTarget.style.background = '#ffffff';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.background = '#f8fafc';
+                  }}
+                  required
+                />
+                <button
+                  type="button"
+                  style={styles.passwordToggle}
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? '\u{1F441}' : '\u{1F512}'}
+                </button>
+              </div>
+            </div>
+
+            <div style={styles.options}>
+              <label style={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                  style={styles.checkboxInput}
+                />
+                Remember me
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+            >
+              {submitting ? (
+                <>
+                  <span style={styles.spinner} />
+                  Signing in...
+                </>
+              ) : (
+                'Sign in'
+              )}
+            </button>
+          </form>
+        ) : codeSent ? (
+          <form onSubmit={handleVerifyCode}>
+            <div style={styles.field}>
+              <label style={styles.label} htmlFor="otpCode">Verification code</label>
+              <div style={styles.inputWrap}>
+                <input
+                  id="otpCode"
+                  type="text"
+                  inputMode="numeric"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value)}
+                  placeholder="4-digit code"
+                  style={{ ...styles.input, textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700 }}
+                  maxLength={4}
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+            >
+              {submitting ? (
+                <>
+                  <span style={styles.spinner} />
+                  Verifying...
+                </>
+              ) : (
+                'Verify code'
+              )}
+            </button>
+            <button
+              type="button"
+              style={{ ...styles.forgotLink, width: '100%', marginTop: '0.9rem', textAlign: 'center' }}
+              onClick={() => setCodeSent(false)}
+            >
+              Resend code
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleSendCode}>
+            <div style={styles.field}>
+              <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
+              <div style={styles.inputWrap}>
+                <input
+                  id="phoneNumber"
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+255 754 000 000"
+                  style={styles.input}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#0f766e';
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
+                    e.currentTarget.style.background = '#ffffff';
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = '#e2e8f0';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.background = '#f8fafc';
+                  }}
+                  required
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
+            >
+              {submitting ? (
+                <>
+                  <span style={styles.spinner} />
+                  Sending...
+                </>
+              ) : (
+                'Send code'
+              )}
+            </button>
+          </form>
+        )}
 
         <div style={styles.footer}>
           &copy; {new Date().getFullYear()} afriMarket. All rights reserved.

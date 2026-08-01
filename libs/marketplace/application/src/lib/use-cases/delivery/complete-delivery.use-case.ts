@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
 import {
   Delivery,
@@ -42,6 +42,7 @@ export class CompleteDeliveryUseCase {
   public async execute(tenantId: string, params: {
     deliveryId: string;
     driverEarnings: number;
+    deliveryOtp?: string;
   }): Promise<{
     deliveryId: string;
     orderId: string;
@@ -51,12 +52,20 @@ export class CompleteDeliveryUseCase {
     paymentReleased: boolean;
     vendorAmountCredited: number;
     driverAmountCredited: number;
+    otpVerified: boolean;
   }> {
     const delivery = await this.deliveryRepo.findById(EntityId.from(params.deliveryId));
     if (!delivery) throw new Error('Delivery not found');
 
     const order = await this.orderRepo.findById(delivery.orderId);
     if (!order) throw new Error('Order not found');
+
+    if (order.otpCode && !order.otpVerified) {
+      if (!params.deliveryOtp || params.deliveryOtp.trim() !== order.otpCode) {
+        throw new BadRequestException('Invalid delivery confirmation code. Delivery cannot be completed and payment will not be released.');
+      }
+      order.verifyOTP();
+    }
 
     const driverEarnings = Money.create(params.driverEarnings);
     delivery.complete(driverEarnings);
@@ -172,6 +181,7 @@ export class CompleteDeliveryUseCase {
       paymentReleased,
       vendorAmountCredited,
       driverAmountCredited,
+      otpVerified: order.otpVerified,
     };
   }
 }

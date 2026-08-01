@@ -1,12 +1,14 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import api from '../api/client';
-import type { User, AuthResponse } from '../types';
+import api, { clearSession } from '../api/client';
+import type { User, AuthResponse, VerifyOtpResponse } from '../types';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   login: (phoneNumber: string, password: string) => Promise<void>;
-  logout: () => void;
+  sendOtp: (phoneNumber: string) => Promise<void>;
+  verifyOtp: (phoneNumber: string, code: string) => Promise<{ registered: boolean }>;
+  logout: () => Promise<void>;
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isVendor: boolean;
@@ -15,6 +17,13 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+function persistTokens(payload: AuthResponse) {
+  localStorage.setItem('accessToken', payload.accessToken);
+  localStorage.setItem('refreshToken', payload.refreshToken);
+  localStorage.setItem('user', JSON.stringify(payload.user));
+  localStorage.setItem('tenantId', 'a0000000-0000-0000-0000-000000000002');
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -29,12 +38,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (parsed && parsed.id) {
           setUser(parsed);
         } else {
-          localStorage.removeItem('user');
-          localStorage.removeItem('accessToken');
+          clearSession();
         }
       } catch {
-        localStorage.removeItem('user');
-        localStorage.removeItem('accessToken');
+        clearSession();
       }
     }
     setLoading(false);
@@ -42,18 +49,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (phoneNumber: string, password: string) => {
     const res = await api.post('/auth/login', { phoneNumber, password });
-    const payload = res.data.data || res.data;
-    const { accessToken, user } = payload;
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('user', JSON.stringify(user));
-    localStorage.setItem('tenantId', 'a0000000-0000-0000-0000-000000000002');
-    setUser(user);
+    const payload = (res.data.data || res.data) as AuthResponse;
+    persistTokens(payload);
+    setUser(payload.user);
   };
 
-  const logout = () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('user');
-    localStorage.removeItem('tenantId');
+  const sendOtp = async (phoneNumber: string) => {
+    await api.post('/auth/send-otp', { phoneNumber });
+  };
+
+  const verifyOtp = async (phoneNumber: string, code: string) => {
+    const res = await api.post('/auth/verify-otp', { phoneNumber, code });
+    const payload = (res.data.data || res.data) as VerifyOtpResponse;
+    if (payload.verified && payload.registered) {
+      persistTokens(payload);
+      setUser(payload.user);
+    }
+    return { registered: payload.verified ? payload.registered : false };
+  };
+
+  const logout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    try {
+      if (refreshToken) {
+        await api.post('/auth/logout', { refreshToken });
+      }
+    } catch {
+      // Best-effort: always clear the local session.
+    }
+    clearSession();
     setUser(null);
   };
 
@@ -61,6 +85,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     user,
     loading,
     login,
+    sendOtp,
+    verifyOtp,
     logout,
     isAdmin: user?.role === 'admin' || user?.role === 'super_admin',
     isSuperAdmin: user?.role === 'super_admin',

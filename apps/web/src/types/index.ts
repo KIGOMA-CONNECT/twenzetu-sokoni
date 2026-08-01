@@ -14,8 +14,18 @@ export interface User {
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken: string;
   user: User;
 }
+
+export interface OtpSendResponse {
+  message: string;
+}
+
+export type VerifyOtpResponse =
+  | { verified: true; registered: true; accessToken: string; refreshToken: string; user: User }
+  | { verified: true; registered: false }
+  | { verified: false; registered: false };
 
 export interface Vendor {
   id: string;

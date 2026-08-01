@@ -1,4 +1,5 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { randomInt } from 'crypto';
 import { EntityId, Guard, TenantId } from '@afri-market/kernel';
 import {
   Order,
@@ -36,6 +37,7 @@ export class CreateOrderUseCase {
     deliveryFee: number;
     paymentId: string;
     paymentStatus: string;
+    otpCode: string;
   }> {
     Guard.assert(command.items.length > 0, 'Order must have at least one item');
 
@@ -71,6 +73,9 @@ export class CreateOrderUseCase {
       vendor!.commissionRate,
     );
 
+    const otpCode = randomInt(0, 10000).toString().padStart(4, '0');
+    order.setOTP(otpCode);
+
     await this.orderRepo.save(order);
 
     const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'airtel_money' | 'cash') || 'mpesa';
@@ -93,10 +98,7 @@ export class CreateOrderUseCase {
     const customerEmail = command.customerEmail;
 
     if (customerPhone) {
-      this.smsService?.send({
-        to: customerPhone,
-        message: `Order ${order.id.value} confirmed. Total: ${commissionSplit.totalPaid.amount} ${commissionSplit.totalPaid.currency}`,
-      });
+      this.smsService?.sendDeliveryOtp(customerPhone, otpCode, order.id.value);
     }
 
     if (customerEmail) {
@@ -122,7 +124,7 @@ export class CreateOrderUseCase {
           payment.setTransactionRef(stkResult.checkoutRequestId);
           await this.paymentRepo.save(payment);
         }
-      } catch (error) {
+      } catch {
         payment.fail();
         await this.paymentRepo.save(payment);
       }
@@ -144,6 +146,7 @@ export class CreateOrderUseCase {
       deliveryFee: commissionSplit.deliveryFee.amount,
       paymentId: payment.id.value,
       paymentStatus: payment.status,
+      otpCode,
     };
   }
 }

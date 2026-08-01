@@ -233,8 +233,9 @@ function SmartCatalog() {
     setSuccess(null);
     setSubmitting(true);
     try {
+      const otpCodes: string[] = [];
       for (const [vendorId, items] of byVendor.entries()) {
-        await api.post('/orders', {
+        const res = await api.post<{ success: boolean; data: { otpCode?: string } }>('/orders', {
           vendorId,
           type: 'general',
           items: items.map((m) => ({
@@ -246,12 +247,18 @@ function SmartCatalog() {
           deliveryAddress: selectedAddr.fullAddress,
           paymentMethod,
         });
+        const otpCode = res.data.data.otpCode;
+        if (otpCode) otpCodes.push(otpCode);
       }
       setText('');
       setResult(null);
       setSelections({});
-      setSuccess(t('catalog.orderPlaced'));
-      setTimeout(() => navigate('/orders'), 1500);
+      setSuccess(
+        otpCodes.length
+          ? `${t('catalog.orderPlaced')} Delivery code${otpCodes.length > 1 ? 's' : ''}: ${otpCodes.join(', ')}. Share with your driver at delivery.`
+          : t('catalog.orderPlaced'),
+      );
+      setTimeout(() => navigate('/orders'), 5000);
     } catch (err: any) {
       setError(err.response?.data?.message || err.message || 'Order failed');
     } finally {

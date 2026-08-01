@@ -35,6 +35,13 @@ export class AppConfigService {
     return {
       secret: this.config.JWT_SECRET,
       expiry: this.config.JWT_EXPIRY,
+      refreshExpiry: this.config.JWT_REFRESH_EXPIRY,
+    };
+  }
+
+  public get sms() {
+    return {
+      defaultCountry: this.config.SMS_DEFAULT_COUNTRY,
     };
   }
 

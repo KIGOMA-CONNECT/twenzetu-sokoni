@@ -154,6 +154,7 @@ export class DeliveriesController {
     return this.completeDelivery.execute(user.tenantId, {
       deliveryId: id,
       driverEarnings: body.driverEarnings ?? 0,
+      deliveryOtp: body.deliveryOtp,
     });
   }
 

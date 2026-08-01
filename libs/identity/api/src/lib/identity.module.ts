@@ -9,6 +9,7 @@ import { IDENTITY_REPOSITORIES } from '@afri-market/identity-infrastructure';
 import { JwtStrategy } from '@afri-market/identity-infrastructure';
 import { ArgonPasswordHasher } from '@afri-market/identity-infrastructure';
 import { OtpCacheService } from '@afri-market/identity-infrastructure';
+import { SessionService } from '@afri-market/identity-infrastructure';
 import { AppConfigService } from '@afri-market/core-config';
 import { SmsService, EmailService } from '@afri-market/integrations';
 import { AppLoggerService } from '@afri-market/core-logger';
@@ -30,12 +31,13 @@ import { AppLoggerService } from '@afri-market/core-logger';
     AuthService,
     JwtStrategy,
     OtpCacheService,
+    SessionService,
     { provide: 'IPasswordHasher', useClass: ArgonPasswordHasher },
     ...IDENTITY_REPOSITORIES,
     SmsService,
     EmailService,
     AppLoggerService,
   ],
-  exports: [AuthService, OtpCacheService, JwtModule, ...IDENTITY_REPOSITORIES],
+  exports: [AuthService, SessionService, OtpCacheService, JwtModule, ...IDENTITY_REPOSITORIES],
 })
 export class IdentityModule {}

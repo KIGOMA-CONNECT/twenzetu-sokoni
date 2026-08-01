@@ -23,6 +23,8 @@ export const MOCK_JWT_PAYLOAD = {
   tenantId: 'a0000000-0000-0000-0000-000000000001',
   role: 'customer',
   phoneNumber: '+250788100003',
+  sid: 'c0000000-0000-0000-0000-000000000003',
+  tokenType: 'access',
 };
 
 export const MOCK_ADMIN_JWT_PAYLOAD = {
@@ -30,6 +32,8 @@ export const MOCK_ADMIN_JWT_PAYLOAD = {
   tenantId: 'a0000000-0000-0000-0000-000000000001',
   role: 'admin',
   phoneNumber: '+250788100001',
+  sid: 'c0000000-0000-0000-0000-000000000001',
+  tokenType: 'access',
 };
 
 export const MOCK_VENDOR_JWT_PAYLOAD = {
@@ -37,6 +41,8 @@ export const MOCK_VENDOR_JWT_PAYLOAD = {
   tenantId: 'a0000000-0000-0000-0000-000000000001',
   role: 'vendor',
   phoneNumber: '+250788100002',
+  sid: 'c0000000-0000-0000-0000-000000000002',
+  tokenType: 'access',
 };
 
 export const MOCK_DRIVER_JWT_PAYLOAD = {
@@ -44,6 +50,8 @@ export const MOCK_DRIVER_JWT_PAYLOAD = {
   tenantId: 'a0000000-0000-0000-0000-000000000001',
   role: 'driver',
   phoneNumber: '+250788100004',
+  sid: 'c0000000-0000-0000-0000-000000000004',
+  tokenType: 'access',
 };
 
 export class MockAuthGuard {

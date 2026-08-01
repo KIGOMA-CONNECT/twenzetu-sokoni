@@ -250,7 +250,7 @@ function ProductList() {
     setCartSuccess(null);
     setSubmitting(true);
     try {
-      await api.post('/orders', {
+      const res = await api.post<{ success: boolean; data: { otpCode?: string } }>('/orders', {
         vendorId,
         type: 'general',
         items: cart.map((i) => ({
@@ -262,10 +262,15 @@ function ProductList() {
         deliveryAddress: selectedAddr.fullAddress,
         paymentMethod,
       });
+      const otpCode = res.data.data.otpCode;
       setCart([]);
       localStorage.removeItem(`cart-${vendorId}`);
-      setCartSuccess('Order placed successfully!');
-      setTimeout(() => navigate('/orders'), 1200);
+      setCartSuccess(
+        otpCode
+          ? `Order placed! Your delivery confirmation code is ${otpCode}. Share it with your driver at delivery.`
+          : 'Order placed successfully!',
+      );
+      setTimeout(() => navigate('/orders'), 5000);
     } catch (err: any) {
       setCartError(err.response?.data?.message || err.message || 'Checkout failed');
     } finally {

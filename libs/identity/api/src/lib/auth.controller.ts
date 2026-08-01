@@ -1,14 +1,17 @@
-import { Body, Controller, Get, Patch, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Req, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
-import { ApiOperation, ApiTags, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { ApiOperation, ApiTags, ApiBearerAuth, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
+import type { Request } from 'express';
+import { CurrentUser, JwtPayload, Roles, RolesGuard, SessionMetadata } from '@afri-market/identity-infrastructure';
 import { AuthService } from './auth.service';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginDto } from './dto/login.dto';
 import { RegisterTenantDto } from './dto/register-tenant.dto';
 import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LogoutDto } from './dto/logout.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -48,8 +51,8 @@ export class AuthController {
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 201, description: 'Login successful' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
-  public async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto.phoneNumber, dto.password);
+  public async login(@Body() dto: LoginDto, @Req() req: Request) {
+    return this.authService.login(dto.phoneNumber, dto.password, this.extractMetadata(req));
   }
 
   @Get('me')
@@ -79,7 +82,7 @@ export class AuthController {
 
   @Post('send-otp')
   @Throttle({ auth: { limit: 2, ttl: 60000 } })
-  @ApiOperation({ summary: 'Send OTP to phone number' })
+  @ApiOperation({ summary: 'Send OTP to phone number (SMS routed per country)' })
   @ApiBody({ type: SendOtpDto })
   @ApiResponse({ status: 201, description: 'OTP sent successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
@@ -89,11 +92,64 @@ export class AuthController {
 
   @Post('verify-otp')
   @Throttle({ auth: { limit: 5, ttl: 60000 } })
-  @ApiOperation({ summary: 'Verify OTP code' })
+  @ApiOperation({ summary: 'Verify OTP code and receive tokens (OTP login)' })
   @ApiBody({ type: VerifyOtpDto })
   @ApiResponse({ status: 201, description: 'OTP verified successfully' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
-  public async verifyOtp(@Body() dto: VerifyOtpDto) {
-    return this.authService.verifyOtp(dto.phoneNumber, dto.code);
+  public async verifyOtp(@Body() dto: VerifyOtpDto, @Req() req: Request) {
+    return this.authService.verifyOtp(dto.phoneNumber, dto.code, this.extractMetadata(req));
+  }
+
+  @Post('refresh')
+  @Throttle({ auth: { limit: 20, ttl: 60000 } })
+  @ApiOperation({ summary: 'Rotate refresh token and issue a new access token pair' })
+  @ApiBody({ type: RefreshTokenDto })
+  @ApiResponse({ status: 201, description: 'New token pair issued' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired refresh token' })
+  public async refresh(@Body() dto: RefreshTokenDto, @Req() req: Request) {
+    return this.authService.refresh(dto.refreshToken, this.extractMetadata(req));
+  }
+
+  @Post('logout')
+  @Throttle({ auth: { limit: 20, ttl: 60000 } })
+  @ApiOperation({ summary: 'Revoke the current refresh token (log out)' })
+  @ApiBody({ type: LogoutDto })
+  @ApiResponse({ status: 201, description: 'Logged out' })
+  public async logout(@Body() dto: LogoutDto) {
+    return this.authService.logout(dto.refreshToken);
+  }
+
+  @Post('admin/users/:id/suspend')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiOperation({ summary: 'Suspend a user and force-logout all their sessions' })
+  @ApiResponse({ status: 201, description: 'User suspended and sessions revoked' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async suspendUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.suspend(id);
+  }
+
+  @Post('admin/users/:id/unsuspend')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiOperation({ summary: 'Re-activate a suspended user' })
+  @ApiResponse({ status: 201, description: 'User re-activated' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async unsuspendUser(@Param('id', ParseUUIDPipe) id: string) {
+    return this.authService.unsuspend(id);
+  }
+
+  private extractMetadata(req: Request): SessionMetadata {
+    const userAgent = req.headers['user-agent'];
+    const deviceName = (req.headers['x-device-name'] as string) ?? undefined;
+    return {
+      deviceName: deviceName ?? (userAgent ? userAgent.substring(0, 80) : undefined),
+      ipAddress: req.ip || req.socket?.remoteAddress || undefined,
+      userAgent: userAgent || undefined,
+    };
   }
 }

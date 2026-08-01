@@ -28,6 +28,10 @@ describe('CompleteDeliveryUseCase', () => {
     delete: jest.Mock;
     exists: jest.Mock;
   };
+  let mockPaymentRepo: {
+    findByOrderId: jest.Mock;
+    save: jest.Mock;
+  };
 
   const TENANT_ID = 'test-tenant';
   const DELIVERY_ID = 'delivery-1';
@@ -56,7 +60,7 @@ describe('CompleteDeliveryUseCase', () => {
       version: 1,
     });
 
-  const createTestOrder = (totalAmount: number = 500000) =>
+  const createTestOrder = (totalAmount: number = 500000, otpCode?: string) =>
     Order.reconstitute({
       id: EntityId.from(ORDER_ID),
       tenantId: TenantId.create(TENANT_ID),
@@ -73,7 +77,7 @@ describe('CompleteDeliveryUseCase', () => {
       deliveryLatitude: -6.8229,
       deliveryLongitude: 39.2703,
       specialInstructions: 'Ring the bell',
-      OTPCode: undefined,
+      OTPCode: otpCode,
       OTPVerified: false,
       version: 1,
     });
@@ -108,10 +112,16 @@ describe('CompleteDeliveryUseCase', () => {
       exists: jest.fn(),
     };
 
+    mockPaymentRepo = {
+      findByOrderId: jest.fn().mockResolvedValue(null),
+      save: jest.fn(),
+    };
+
     useCase = new CompleteDeliveryUseCase(
       mockDeliveryRepo,
       mockOrderRepo,
       mockPointsRepo,
+      mockPaymentRepo,
     );
   });
 
@@ -255,6 +265,108 @@ describe('CompleteDeliveryUseCase', () => {
       status: 'DELIVERED',
       driverEarnings: 3000,
       loyaltyPointsEarned: 1000,
+      paymentReleased: false,
+      vendorAmountCredited: 0,
+      driverAmountCredited: 0,
+      otpVerified: false,
     });
+  });
+
+  it('should reject completion with wrong delivery OTP without releasing escrow', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+
+    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+    mockPaymentRepo.findByOrderId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        deliveryId: DELIVERY_ID,
+        driverEarnings: 2500,
+        deliveryOtp: '9999',
+      }),
+    ).rejects.toThrow('Invalid delivery confirmation code');
+
+    expect(delivery.status).toBe('IN_TRANSIT');
+    expect(order.status).toBe('OUT_FOR_DELIVERY');
+    expect(order.otpVerified).toBe(false);
+    expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+    expect(mockPaymentRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should reject completion when delivery OTP is required but missing', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+
+    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        deliveryId: DELIVERY_ID,
+        driverEarnings: 2500,
+      }),
+    ).rejects.toThrow('Invalid delivery confirmation code');
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should complete delivery and verify OTP when correct code is provided', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+
+    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+    mockPaymentRepo.findByOrderId.mockResolvedValue(null);
+
+    const result = await useCase.execute(TENANT_ID, {
+      deliveryId: DELIVERY_ID,
+      driverEarnings: 2500,
+      deliveryOtp: '1234',
+    });
+
+    expect(result.status).toBe('DELIVERED');
+    expect(result.otpVerified).toBe(true);
+    expect(order.otpVerified).toBe(true);
+    expect(delivery.status).toBe('DELIVERED');
+    expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should release escrow only after valid delivery OTP is provided', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+
+    const { Payment } = jest.requireActual('@afri-market/marketplace-domain');
+    const payment = Payment.create({
+      tenantId: TenantId.create(TENANT_ID),
+      orderId: EntityId.from(ORDER_ID),
+      customerId: EntityId.from(CUSTOMER_ID),
+      vendorId: EntityId.from(VENDOR_ID),
+      amount: Money.create(500000),
+      method: 'mpesa',
+      systemCommission: Money.create(50000),
+      vendorNet: Money.create(400000),
+      driverNet: Money.create(2000),
+    });
+    payment.confirmEscrow();
+
+    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+    mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
+
+    const result = await useCase.execute(TENANT_ID, {
+      deliveryId: DELIVERY_ID,
+      driverEarnings: 2500,
+      deliveryOtp: '1234',
+    });
+
+    expect(result.otpVerified).toBe(true);
+    expect(payment.status).toBe('RELEASED');
+    expect(mockPaymentRepo.save).toHaveBeenCalledTimes(1);
   });
 });

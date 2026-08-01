@@ -35,6 +35,11 @@ describe('CreateOrderUseCase', () => {
     save: jest.Mock;
     findByOrderId: jest.Mock;
   };
+  let mockSmsService: {
+    send: jest.Mock;
+    sendOtp: jest.Mock;
+    sendDeliveryOtp: jest.Mock;
+  };
 
   const TENANT_ID = 'test-tenant';
   const VENDOR_ID = 'vendor-123';
@@ -69,7 +74,13 @@ describe('CreateOrderUseCase', () => {
       findByOrderId: jest.fn().mockResolvedValue(null),
     };
 
-    useCase = new CreateOrderUseCase(mockOrderRepo, mockVendorRepo, mockPaymentRepo);
+    mockSmsService = {
+      send: jest.fn().mockResolvedValue({ success: true }),
+      sendOtp: jest.fn().mockResolvedValue({ success: true }),
+      sendDeliveryOtp: jest.fn().mockResolvedValue({ success: true }),
+    };
+
+    useCase = new CreateOrderUseCase(mockOrderRepo, mockVendorRepo, mockPaymentRepo, undefined, mockSmsService);
   });
 
   const createActiveVendor = () =>
@@ -97,6 +108,7 @@ describe('CreateOrderUseCase', () => {
         { productId: 'p1', productName: 'Pizza', quantity: 2, unitPrice: 500 },
         { productId: 'p2', productName: 'Soda', quantity: 3, unitPrice: 200 },
       ],
+      'cash',
     );
 
   it('should create an order with correct totals using CommissionEngine', async () => {
@@ -122,8 +134,12 @@ describe('CreateOrderUseCase', () => {
     expect(result.deliveryFee).toBe(0);
     expect(result.paymentId).toBeDefined();
     expect(result.paymentStatus).toBe('ESCROW_HELD');
+    expect(result.otpCode).toMatch(/^\d{4}$/);
     expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
-    expect(mockPaymentRepo.save).toHaveBeenCalledTimes(1);
+    expect(mockPaymentRepo.save).toHaveBeenCalledTimes(2);
+
+    const savedOrder = mockOrderRepo.save.mock.calls[0][0];
+    expect(savedOrder.otpCode).toMatch(/^\d{4}$/);
 
     expect(CommissionEngine.calculate).toHaveBeenCalledWith({
       items: [
@@ -209,5 +225,41 @@ describe('CreateOrderUseCase', () => {
     expect(savedOrder.status).toBe('PLACED');
     expect(savedOrder.customerId.value).toBe(CUSTOMER_ID);
     expect(savedOrder.vendorId.value).toBe(VENDOR_ID);
+  });
+
+  it('should send the delivery OTP via SMS when a customer phone is provided', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+
+    (CommissionEngine.calculate as jest.Mock).mockReturnValue({
+      itemsSubtotal: Money.create(1600),
+      systemCommission: Money.create(160),
+      vendorNet: Money.create(1440),
+      deliveryFee: Money.create(0),
+      driverNet: Money.create(0),
+      totalPaid: Money.create(1600),
+    });
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'p1', productName: 'Pizza', quantity: 1, unitPrice: 500 }],
+      'cash',
+      undefined,
+      undefined,
+      undefined,
+      '+255754100003',
+    );
+
+    const result = await useCase.execute(TENANT_ID, command);
+
+    expect(mockSmsService.sendDeliveryOtp).toHaveBeenCalledTimes(1);
+    expect(mockSmsService.sendDeliveryOtp).toHaveBeenCalledWith(
+      '+255754100003',
+      result.otpCode,
+      result.orderId,
+    );
   });
 });
