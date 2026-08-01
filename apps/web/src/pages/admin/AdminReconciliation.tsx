@@ -26,7 +26,7 @@ interface ReconciliationReport {
   pendingPayouts: Array<{
     ownerId: string;
     ownerType: string;
-    balance: number;
+    balance: number | null;
   }>;
 }
 
@@ -113,9 +113,9 @@ export default function AdminReconciliation() {
                 <tbody>
                   {report.pendingPayouts.map((p, i) => (
                     <tr key={p.ownerId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>{p.ownerId.slice(0, 12)}...</td>
+                      <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>{(p.ownerId || '').slice(0, 12)}...</td>
                       <td style={{ padding: '0.5rem' }}>{p.ownerType}</td>
-                      <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600 }}>{p.balance.toLocaleString()}</td>
+                      <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600 }}>{(p.balance ?? 0).toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
