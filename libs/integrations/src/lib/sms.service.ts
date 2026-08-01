@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Optional } from '@nestjs/common';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { CountrySmsRouterService } from './sms/country-sms.router';
 import { SendSmsResult } from './sms/sms-provider.interface';
@@ -26,7 +26,7 @@ export class SmsService implements ISmsService {
 
   constructor(
     private readonly logger: AppLoggerService,
-    router?: CountrySmsRouterService,
+    @Optional() router?: CountrySmsRouterService,
   ) {
     this.router = router ?? new CountrySmsRouterService(logger);
   }
