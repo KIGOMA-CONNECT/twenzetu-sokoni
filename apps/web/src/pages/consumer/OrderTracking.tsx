@@ -42,9 +42,9 @@ export default function OrderTracking() {
   const [orderStatus, setOrderStatus] = useState<string>('');
   const [lastUpdate, setLastUpdate] = useState<string>('');
   const mapRef = useRef<HTMLDivElement>(null);
-  const leafletMapRef = useRef<L.Map | null>(null);
-  const driverMarkerRef = useRef<L.Marker | null>(null);
-  const deliveryMarkerRef = useRef<L.Marker | null>(null);
+  const leafletMapRef = useRef<any | null>(null);
+  const driverMarkerRef = useRef<any | null>(null);
+  const deliveryMarkerRef = useRef<any | null>(null);
   const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
@@ -169,7 +169,7 @@ export default function OrderTracking() {
   const isDelivered = orderStatus === 'DELIVERED';
   const isCancelled = orderStatus === 'CANCELLED';
 
-  const styles: Record<string, React.CSSProperties> = {
+  const styles = {
     container: {
       maxWidth: 800, margin: '0 auto', padding: 24,
     },
@@ -188,10 +188,10 @@ export default function OrderTracking() {
     subtitle: { color: '#666', fontSize: 14, margin: 0 },
     progressContainer: {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      position: 'relative', padding: '16px 0',
+      position: 'relative' as const, padding: '16px 0',
     },
     step: {
-      display: 'flex', flexDirection: 'column', alignItems: 'center',
+      display: 'flex', flexDirection: 'column' as const, alignItems: 'center',
       gap: 4, zIndex: 1,
     },
     stepDot: (active: boolean) => ({
@@ -206,17 +206,17 @@ export default function OrderTracking() {
       fontWeight: active ? 600 : 400, textAlign: 'center' as const,
     }),
     line: {
-      position: 'absolute', top: 32, left: '5%', right: '5%',
+      position: 'absolute' as const, top: 32, left: '5%', right: '5%',
       height: 3, backgroundColor: '#e5e7eb', zIndex: 0,
     },
     lineFill: (pct: number) => ({
-      position: 'absolute', top: 0, left: 0,
+      position: 'absolute' as const, top: 0, left: 0,
       width: `${pct}%`, height: '100%',
       backgroundColor: '#2563eb', transition: 'width 0.5s',
     }),
     mapPlaceholder: {
       width: '100%', height: 220, backgroundColor: '#f3f4f6',
-      borderRadius: 12, display: 'flex', flexDirection: 'column',
+      borderRadius: 12, display: 'flex', flexDirection: 'column' as const,
       alignItems: 'center', justifyContent: 'center', gap: 8,
       color: '#666', fontSize: 14,
     },

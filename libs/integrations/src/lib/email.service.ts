@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { AppLoggerService } from '@afri-market/core-logger';
+import { defaultCurrency } from './currencies';
 
 export interface SendEmailParams {
   to: string;
@@ -11,7 +12,7 @@ export interface SendEmailParams {
 export interface IEmailService {
   send(params: SendEmailParams): Promise<{ success: boolean }>;
   sendWelcome(to: string, name: string): Promise<{ success: boolean }>;
-  sendOrderConfirmation(to: string, orderId: string, total: number): Promise<{ success: boolean }>;
+  sendOrderConfirmation(to: string, orderId: string, total: number, currency?: string): Promise<{ success: boolean }>;
   sendPasswordReset(to: string, resetLink: string): Promise<{ success: boolean }>;
 }
 
@@ -121,8 +122,8 @@ export class EmailService implements IEmailService {
     return this.send({ to, subject: `Welcome to afriMarket, ${name}!`, html });
   }
 
-  public async sendOrderConfirmation(to: string, orderId: string, total: number): Promise<{ success: boolean }> {
-    const html = ORDER_CONFIRMATION_TEMPLATE(orderId, total, 'TZS').replace(/\{\{APP_URL\}\}/g, this.appUrl);
+  public async sendOrderConfirmation(to: string, orderId: string, total: number, currency: string = defaultCurrency()): Promise<{ success: boolean }> {
+    const html = ORDER_CONFIRMATION_TEMPLATE(orderId, total, currency).replace(/\{\{APP_URL\}\}/g, this.appUrl);
     return this.send({ to, subject: `Order #${orderId.slice(0, 8)} confirmed`, html });
   }
 

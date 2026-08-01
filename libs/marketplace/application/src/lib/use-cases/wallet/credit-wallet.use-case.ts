@@ -23,6 +23,7 @@ export class CreditWalletUseCase {
     description: string,
     referenceId?: string,
     referenceType?: string,
+    currency?: string,
   ): Promise<{ walletId: string; balance: number }> {
     if (amount <= 0) {
       throw new BadRequestException('Amount must be positive');
@@ -36,10 +37,11 @@ export class CreditWalletUseCase {
         tenantId: TenantId.create(tenantId),
         ownerId: EntityId.from(ownerId),
         ownerType: 'vendor',
+        currency,
       });
     }
 
-    wallet.credit(Money.create(amount));
+    wallet.credit(Money.create(amount, wallet.balance.currency));
     await this.walletRepo.save(wallet);
 
     const tx = WalletTransaction.create({
@@ -47,7 +49,7 @@ export class CreditWalletUseCase {
       ownerId: EntityId.from(ownerId),
       ownerType: wallet.ownerType,
       type: 'CREDIT',
-      amount: Money.create(amount),
+      amount: Money.create(amount, wallet.balance.currency),
       balanceBefore,
       balanceAfter: wallet.balance.amount,
       description,

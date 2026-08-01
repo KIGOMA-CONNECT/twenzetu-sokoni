@@ -4,6 +4,7 @@ export interface CreateWalletProps {
   readonly tenantId: TenantId;
   readonly ownerId: EntityId;
   readonly ownerType: 'vendor' | 'driver';
+  readonly currency?: string;
 }
 
 export interface ReconstituteWalletProps {
@@ -32,7 +33,7 @@ export class Wallet extends AggregateRoot<EntityId> {
   public static create(props: CreateWalletProps): Wallet {
     return new Wallet(
       EntityId.create(), props.tenantId, props.ownerId, props.ownerType,
-      Money.create(0), Money.create(0), 1,
+      Money.create(0, props.currency), Money.create(0, props.currency), 1,
     );
   }
 

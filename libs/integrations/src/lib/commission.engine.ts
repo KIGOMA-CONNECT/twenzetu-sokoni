@@ -1,4 +1,5 @@
 import { Money } from '@afri-market/kernel';
+import { defaultCurrency } from './currencies';
 
 export interface CommissionSplit {
   itemsSubtotal: Money;
@@ -16,7 +17,7 @@ export class CommissionEngine {
     deliveryFee: number;
     currency?: string;
   }): CommissionSplit {
-    const currency = params.currency ?? 'TZS';
+    const currency = params.currency ?? defaultCurrency();
     const itemsSubtotal = Money.create(
       params.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0),
       currency,

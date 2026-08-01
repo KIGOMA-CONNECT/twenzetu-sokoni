@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type { RevenueReport } from '../../types';
@@ -26,6 +27,7 @@ type Period = typeof PERIODS[number];
 
 export default function AdminAnalytics() {
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<Period>('30d');
   const { data: revenue, loading, error, refetch } = useApi<RevenueReport>(`/admin/analytics/revenue?period=${period}`, [period]);
   const { data: disputeMetrics } = useApi<any>('/admin/analytics/disputes');
@@ -39,10 +41,10 @@ export default function AdminAnalytics() {
   const resolvedRate = totalDisputes > 0 ? Math.round((resolvedDisputes / totalDisputes) * 100) : 0;
 
   const revenueCards = [
-    { label: 'Total Revenue', value: `RWF ${(revenue?.totalRevenue ?? 0).toLocaleString()}` },
-    { label: 'Total Commission', value: `RWF ${(revenue?.totalCommission ?? 0).toLocaleString()}` },
+    { label: 'Total Revenue', value: formatCurrency(revenue?.totalRevenue ?? 0) },
+    { label: 'Total Commission', value: formatCurrency(revenue?.totalCommission ?? 0) },
     { label: 'Order Count', value: revenue?.ordersCount ?? 0 },
-    { label: 'Avg Order Value', value: `RWF ${(revenue?.averageOrderValue ?? 0).toLocaleString()}` },
+    { label: 'Avg Order Value', value: formatCurrency(revenue?.averageOrderValue ?? 0) },
   ];
 
   const disputeCards = [

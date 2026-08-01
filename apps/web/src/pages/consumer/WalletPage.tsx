@@ -166,7 +166,7 @@ export default function WalletPage() {
                   </td>
                   <td style={styles.td}>{tx.description}</td>
                   <td style={styles.td}>{formatCurrency(tx.balanceAfter)}</td>
-                  <td style={styles.td}>{formatDate(tx.createdAt)}</td>
+                  <td style={styles.td}>{formatDate(tx.createdAt ?? '')}</td>
                 </tr>
               ))}
             </tbody>

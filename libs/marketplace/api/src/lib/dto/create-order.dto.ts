@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 class OrderItemDto {
   @IsString()
@@ -44,6 +44,14 @@ export class CreateOrderDto {
   @IsOptional()
   @IsEnum(['mpesa', 'tigo_money', 'airtel_money', 'cash'])
   paymentMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @IsOptional()
+  @IsEmail()
+  customerEmail?: string;
 
   @IsArray()
   @ValidateNested({ each: true })

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -34,6 +35,7 @@ type Filter = 'ALL' | 'OPEN' | 'RESOLVED';
 
 export default function AdminDisputes() {
   const { user } = useAuth();
+  const { formatCurrency, currency } = useCurrency();
   const { data: disputes, loading, error, refetch } = useApi<any[]>('/admin/disputes');
   const [filter, setFilter] = useState<Filter>('ALL');
   const [resolveTarget, setResolveTarget] = useState<Dispute | null>(null);
@@ -117,7 +119,7 @@ export default function AdminDisputes() {
                   <td style={{ ...styles.td, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={d.description}>
                     {d.description}
                   </td>
-                  <td style={styles.td}>RWF {d.claimAmount.toLocaleString()}</td>
+                  <td style={styles.td}>{formatCurrency(d.claimAmount)}</td>
                   <td style={styles.td}><StatusBadge status={d.status} /></td>
                   <td style={styles.td}>{d.severity}</td>
                   <td style={styles.td}>
@@ -153,7 +155,7 @@ export default function AdminDisputes() {
               </select>
             </div>
             <div>
-              <div style={styles.label}>Resolved Amount (RWF)</div>
+              <div style={styles.label}>Resolved Amount ({currency.code})</div>
               <input
                 type="number"
                 style={styles.input}

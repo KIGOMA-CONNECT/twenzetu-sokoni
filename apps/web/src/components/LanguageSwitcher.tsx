@@ -1,20 +1,27 @@
 import { useTranslation } from 'react-i18next';
 
-const styles: Record<string, React.CSSProperties> = {
+const LANGS = [
+  { code: 'en', labelKey: 'language.en' },
+  { code: 'sw', labelKey: 'language.sw' },
+  { code: 'fr', labelKey: 'language.fr' },
+  { code: 'pt', labelKey: 'language.pt' },
+];
+
+const styles = {
   container: {
-    display: 'flex', alignItems: 'center', gap: 4,
+    display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' as const,
   },
   btn: (active: boolean) => ({
     background: active ? '#2563eb' : 'transparent',
     color: active ? '#fff' : '#64748b',
     border: active ? '1px solid #2563eb' : '1px solid #cbd5e1',
-    borderRadius: 6, padding: '4px 10px', fontSize: 12, fontWeight: 600,
+    borderRadius: 6, padding: '4px 8px', fontSize: 12, fontWeight: 600,
     cursor: 'pointer', transition: 'all 0.15s',
   }),
 };
 
 export function LanguageSwitcher() {
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   const switchLang = (lang: string) => {
     i18n.changeLanguage(lang);
@@ -23,12 +30,16 @@ export function LanguageSwitcher() {
 
   return (
     <div style={styles.container}>
-      <button style={styles.btn(i18n.language === 'en')} onClick={() => switchLang('en')}>
-        EN
-      </button>
-      <button style={styles.btn(i18n.language === 'sw')} onClick={() => switchLang('sw')}>
-        SW
-      </button>
+      {LANGS.map((l) => (
+        <button
+          key={l.code}
+          style={styles.btn(i18n.language?.startsWith(l.code) ?? false)}
+          onClick={() => switchLang(l.code)}
+          title={t(l.labelKey)}
+        >
+          {l.code.toUpperCase()}
+        </button>
+      ))}
     </div>
   );
 }

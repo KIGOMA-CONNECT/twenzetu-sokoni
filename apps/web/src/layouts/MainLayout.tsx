@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
+import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
 
 export function MainLayout() {
@@ -60,6 +61,7 @@ export function MainLayout() {
             <NotificationBell />
           </div>
           <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher /></div>
+          <div style={{ marginBottom: '0.5rem' }}><CurrencySwitcher /></div>
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', justifyContent: 'center' }}>
             <button onClick={() => navigate('/terms')} style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}>Terms</button>
             <button onClick={() => navigate('/privacy')} style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}>Privacy</button>

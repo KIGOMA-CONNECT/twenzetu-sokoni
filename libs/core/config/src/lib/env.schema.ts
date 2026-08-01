@@ -19,6 +19,7 @@ export const envSchema = z.object({
   OTP_EXPIRY_MINUTES: z.coerce.number().default(5),
   OTP_LENGTH: z.coerce.number().default(6),
   SMS_DEFAULT_COUNTRY: z.string().default('TZ'),
+  DEFAULT_CURRENCY: z.string().default('TZS'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
 });
 

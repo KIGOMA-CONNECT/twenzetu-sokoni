@@ -45,6 +45,12 @@ export class AppConfigService {
     };
   }
 
+  public get currency() {
+    return {
+      defaultCurrency: this.config.DEFAULT_CURRENCY,
+    };
+  }
+
   public get otp() {
     return {
       expiryMinutes: this.config.OTP_EXPIRY_MINUTES,

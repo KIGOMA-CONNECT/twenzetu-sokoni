@@ -54,6 +54,7 @@ export interface Product {
 }
 
 export interface OrderItem {
+  id?: string;
   productId: string;
   productName: string;
   quantity: number;
@@ -153,6 +154,7 @@ export interface Delivery {
   currentLatitude?: number;
   currentLongitude?: number;
   lastLocationUpdate?: string;
+  updatedAt?: string;
 }
 
 export interface TrackingInfo {
@@ -163,6 +165,10 @@ export interface TrackingInfo {
   deliveryAddress: string;
   estimatedTimeMinutes: number | null;
   distanceKm: number | null;
+  currentLatitude?: number;
+  currentLongitude?: number;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
 }
 
 export interface Vehicle {

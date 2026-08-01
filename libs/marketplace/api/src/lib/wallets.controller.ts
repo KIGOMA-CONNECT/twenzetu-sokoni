@@ -7,7 +7,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
-import { MobileMoneyService } from '@afri-market/integrations';
+import { MobileMoneyService, defaultCurrency, getCurrencyForPhone } from '@afri-market/integrations';
 import {
   GetWalletUseCase,
   CreditWalletUseCase,
@@ -38,7 +38,7 @@ export class WalletsController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getMyWallet(@CurrentUser() user: JwtPayload) {
-    const wallet = await this.getWallet.execute(user.tenantId, user.sub);
+    const wallet = await this.getWallet.execute(user.tenantId, user.sub, getCurrencyForPhone(user.phoneNumber));
     return {
       id: wallet.id,
       balance: wallet.balance,
@@ -81,6 +81,7 @@ export class WalletsController {
       body.description ?? 'Wallet top-up',
       body.referenceId,
       body.referenceType,
+      getCurrencyForPhone(user.phoneNumber),
     );
     return {
       walletId: wallet.walletId,
@@ -131,7 +132,7 @@ export class WalletsController {
       phoneNumber: body.phoneNumber,
       amount: body.amount,
       accountReference,
-      description: `Wallet top-up: ${body.amount} TZS`,
+      description: `Wallet top-up: ${body.amount} ${defaultCurrency()}`,
     });
 
     if (stkResult.responseCode !== '0') {

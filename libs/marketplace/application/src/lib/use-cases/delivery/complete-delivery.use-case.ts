@@ -105,6 +105,7 @@ export class CompleteDeliveryUseCase {
             tenantId: TenantId.create(tenantId),
             ownerId: payment.vendorId,
             ownerType: 'vendor',
+            currency: payment.amount.currency,
           });
           vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
         } else {
@@ -136,6 +137,7 @@ export class CompleteDeliveryUseCase {
               tenantId: TenantId.create(tenantId),
               ownerId: delivery.driverId,
               ownerType: 'vendor',
+              currency: payment.amount.currency,
             });
           }
           driverWallet.credit(Money.create(driverNet, payment.amount.currency));

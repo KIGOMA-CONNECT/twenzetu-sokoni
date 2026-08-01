@@ -8,6 +8,7 @@ jest.mock('@afri-market/integrations', () => ({
   CommissionEngine: {
     calculate: jest.fn(),
   },
+  getCurrencyForPhone: jest.fn(() => 'TZS'),
 }));
 
 describe('CreateOrderUseCase', () => {
@@ -148,6 +149,7 @@ describe('CreateOrderUseCase', () => {
       ],
       vendorCommissionRate: 10,
       deliveryFee: 0,
+      currency: 'TZS',
     });
   });
 

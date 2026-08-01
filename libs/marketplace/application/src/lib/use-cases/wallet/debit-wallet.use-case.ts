@@ -33,7 +33,7 @@ export class DebitWalletUseCase {
     }
 
     const balanceBefore = wallet.balance.amount;
-    wallet.debit(Money.create(amount));
+    wallet.debit(Money.create(amount, wallet.balance.currency));
     await this.walletRepo.save(wallet);
 
     const tx = WalletTransaction.create({
@@ -41,7 +41,7 @@ export class DebitWalletUseCase {
       ownerId: EntityId.from(ownerId),
       ownerType: wallet.ownerType,
       type: 'DEBIT',
-      amount: Money.create(amount),
+      amount: Money.create(amount, wallet.balance.currency),
       balanceBefore,
       balanceAfter: wallet.balance.amount,
       description,

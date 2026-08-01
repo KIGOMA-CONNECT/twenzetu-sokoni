@@ -1,5 +1,6 @@
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -40,6 +41,7 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function AdminDashboard() {
   const { user } = useAuth();
+  const { formatCurrency } = useCurrency();
   const { data: stats, loading, error } = useApi<any>('/admin/dashboard');
   const { data: recentOrders } = useApi<Order[]>('/admin/orders/recent');
   const { data: pendingVendors } = useApi<Vendor[]>('/admin/vendors/pending');
@@ -50,7 +52,7 @@ export default function AdminDashboard() {
   const statCards = [
     { label: 'Total Vendors', value: stats?.totalVendors ?? 0 },
     { label: 'Active Orders', value: stats?.activeOrders ?? 0 },
-    { label: 'Total Revenue', value: `RWF ${(stats?.totalRevenue ?? 0).toLocaleString()}` },
+    { label: 'Total Revenue', value: formatCurrency(stats?.totalRevenue ?? 0) },
     { label: 'Pending Vendors', value: stats?.pendingVendors ?? 0 },
     { label: 'Open Disputes', value: stats?.openDisputes ?? 0 },
     { label: 'Total Customers', value: stats?.totalUsers ?? 0 },
@@ -88,7 +90,7 @@ export default function AdminDashboard() {
                 {recentOrders.slice(0, 5).map((o) => (
                   <tr key={o.id}>
                     <td style={styles.td}>{o.id.slice(0, 8)}…</td>
-                    <td style={styles.td}>RWF {o.totalAmount.toLocaleString()}</td>
+                    <td style={styles.td}>{formatCurrency(o.totalAmount)}</td>
                     <td style={styles.td}><StatusBadge status={o.status} /></td>
                   </tr>
                 ))}

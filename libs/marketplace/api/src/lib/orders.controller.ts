@@ -8,6 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
 import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand } from '@afri-market/marketplace-application';
+import { getCurrencyForPhone } from '@afri-market/integrations';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 import { NotificationsService } from './notifications.service';
@@ -35,6 +36,7 @@ export class OrdersController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async create(@Body() dto: CreateOrderDto, @CurrentUser() user: JwtPayload) {
+    const currency = dto.currency ?? getCurrencyForPhone(user.phoneNumber);
     const command = new CreateOrderCommand(
       user.sub,
       dto.vendorId,
@@ -50,15 +52,18 @@ export class OrdersController {
       dto.deliveryLatitude,
       dto.deliveryLongitude,
       dto.specialInstructions,
+      user.phoneNumber,
+      dto.customerEmail,
+      currency,
     );
     const result = await this.createOrder.execute(user.tenantId, command);
     this.notifService.create({
       tenantId: user.tenantId,
       userId: user.sub,
       title: 'Order Placed',
-      message: `Your order of TZS ${(result as any)?.totalAmount || ''} has been placed successfully.`,
+      message: `Your order of ${currency} ${result.total || ''} has been placed successfully.`,
       type: 'order_placed',
-      referenceId: (result as any)?.id,
+      referenceId: result.orderId,
       referenceType: 'order',
     }).catch(() => {});
     return result;

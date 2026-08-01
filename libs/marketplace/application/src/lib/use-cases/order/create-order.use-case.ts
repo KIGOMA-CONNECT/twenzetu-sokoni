@@ -9,7 +9,7 @@ import {
   IPaymentRepository,
   OrderType,
 } from '@afri-market/marketplace-domain';
-import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService } from '@afri-market/integrations';
+import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, getCurrencyForPhone } from '@afri-market/integrations';
 import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
 import { CreateOrderCommand } from '../../commands/create-order.command';
 
@@ -47,6 +47,8 @@ export class CreateOrderUseCase {
     Guard.assert(vendor, 'Vendor not found');
     Guard.assert(vendor!.status === 'ACTIVE', 'Vendor is not active');
 
+    const currency = command.currency ?? getCurrencyForPhone(command.customerPhone ?? '');
+
     const commissionSplit = CommissionEngine.calculate({
       items: command.items.map((i) => ({
         unitPrice: i.unitPrice,
@@ -54,6 +56,7 @@ export class CreateOrderUseCase {
       })),
       vendorCommissionRate: vendor!.commissionRate,
       deliveryFee: 0,
+      currency,
     });
 
     const order = Order.create({
@@ -106,6 +109,7 @@ export class CreateOrderUseCase {
         customerEmail,
         order.id.value,
         commissionSplit.totalPaid.amount,
+        currency,
       );
     }
 

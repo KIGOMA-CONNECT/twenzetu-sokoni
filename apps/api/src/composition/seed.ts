@@ -17,6 +17,16 @@ const USERS = [
   { id: 'b0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, phone: '+255754100005', name: 'Bakari Vendor', role: 'vendor', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, phone: '+255754100006', name: 'Rehema Cleaning', role: 'vendor', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, phone: '+255754100007', name: 'Saada Fashion', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, phone: '+254712345678', name: 'Wanjiku Customer', role: 'customer', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, phone: '+2348034567890', name: 'Chidi Customer', role: 'customer', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000019', tenantId: TENANT_DAR, phone: '+233201234567', name: 'Ama Customer', role: 'customer', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, phone: '+250788123456', name: 'Uwase Customer', role: 'customer', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, phone: '+27821234567', name: 'Thabo Customer', role: 'customer', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, phone: '+254711234567', name: 'Njeri Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, phone: '+2348098765432', name: 'Emeka Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, phone: '+233244567890', name: 'Kwame Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, phone: '+250789654321', name: 'Jean Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, phone: '+27719876543', name: 'Naledi Vendor', role: 'vendor', status: 'ACTIVE' },
 ];
 
 const VENDORS = [
@@ -24,6 +34,11 @@ const VENDORS = [
   { id: 'c0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000014', shopName: 'Kariakoo Electronics', description: 'Phones, laptops, and accessories', category: 'electronics', commissionRate: 8 },
   { id: 'c0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000015', shopName: 'Mama Rehema Cleaning', description: 'Usafi wa nyumbani, sabuni na huduma za kusafisha', category: 'cleaning', commissionRate: 10 },
   { id: 'c0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000016', shopName: 'Saada Fashion Tailors', description: 'Ushonaji na ufuaji wa nguo', category: 'tailoring', commissionRate: 10 },
+  { id: 'c0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000022', shopName: 'Nairobi Fresh Market', description: 'Kenyan fresh produce and groceries', category: 'food', commissionRate: 10 },
+  { id: 'c0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000023', shopName: 'Lagos Groceries Hub', description: 'Nigerian staples and daily goods', category: 'grocery', commissionRate: 8 },
+  { id: 'c0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000024', shopName: 'Accra Marketplace', description: 'Ghanaian food and household essentials', category: 'food', commissionRate: 10 },
+  { id: 'c0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000025', shopName: 'Kigali Farm Produce', description: 'Rwandan farm-fresh produce', category: 'food', commissionRate: 10 },
+  { id: 'c0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000026', shopName: "Jo'burg Wholesale", description: 'South African groceries in bulk', category: 'grocery', commissionRate: 8 },
 ];
 
 const CATEGORIES = [
@@ -37,6 +52,7 @@ const CATEGORIES = [
   { id: 'd0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, name: 'Kupikiwa Nyumbani (Wapishi)', type: 'general' },
   { id: 'd0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, name: 'Vitu vya Used', type: 'secondhand' },
   { id: 'd0000000-0000-0000-0000-000000000019', tenantId: TENANT_DAR, name: 'Electronics na Bidhaa Nyingine', type: 'electronics' },
+  { id: 'd0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, name: 'Groceries', type: 'grocery' },
 ];
 
 const PRODUCTS = [
@@ -54,6 +70,18 @@ const PRODUCTS = [
   { id: 'e0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000012', name: 'Usafi wa Nyumbani (kwa Saa)', price: 8000, categoryId: 'd0000000-0000-0000-0000-000000000016', stock: 100 },
   { id: 'e0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Ushonaji Nguo', price: 10000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
   { id: 'e0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Kufua na Kubandika Nguo', price: 6000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Kale (1kg)', price: 60, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 200 },
+  { id: 'e0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Beef (1kg)', price: 550, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 50 },
+  { id: 'e0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Avocado (each)', price: 40, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 300 },
+  { id: 'e0000000-0000-0000-0000-000000000027', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Rice (1kg)', price: 1500, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 250 },
+  { id: 'e0000000-0000-0000-0000-000000000028', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Tomatoes (1kg)', price: 1200, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 120 },
+  { id: 'e0000000-0000-0000-0000-000000000029', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Plantain (bunch)', price: 800, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 90 },
+  { id: 'e0000000-0000-0000-0000-000000000030', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Yam (1kg)', price: 15, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 150 },
+  { id: 'e0000000-0000-0000-0000-000000000031', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Kenkey (piece)', price: 8, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000032', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Irish Potatoes (1kg)', price: 900, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 180 },
+  { id: 'e0000000-0000-0000-0000-000000000033', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Cabbage (head)', price: 1200, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 120 },
+  { id: 'e0000000-0000-0000-0000-000000000034', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000024', name: 'Whole Wheat Bread (loaf)', price: 25, currency: 'ZAR', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000035', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000024', name: 'Milk (1L)', price: 22, currency: 'ZAR', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 140 },
 ];
 
 const ORDERS = [
@@ -106,8 +134,8 @@ async function seed(): Promise<void> {
     // Tenant
     await ds.query(
       `INSERT INTO tenants (id, name, status, created_at, updated_at)
-       VALUES ($1, $2, 'ACTIVE', NOW(), NOW()) ON CONFLICT DO NOTHING`,
-      [TENANT_DAR, 'Dar es Salaam Hub'],
+       VALUES ($1, $2, 'ACTIVE', NOW(), NOW()) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
+      [TENANT_DAR, 'afriMarket Global Hub'],
     );
     console.log('  Tenant seeded');
 
@@ -145,8 +173,8 @@ async function seed(): Promise<void> {
     for (const p of PRODUCTS) {
       await ds.query(
         `INSERT INTO products (id, tenant_id, vendor_id, name, description, price, currency, type, category_id, stock_quantity, unit, status, version, created_at, updated_at)
-         VALUES ($1, $2, $3, $4::varchar, $4::text, $5, 'TZS', 'PHYSICAL', $6, $7, 'pcs', 'ACTIVE', 1, NOW(), NOW()) ON CONFLICT DO NOTHING`,
-        [p.id, p.tenantId, p.vendorId, p.name, p.price, p.categoryId, p.stock],
+         VALUES ($1, $2, $3, $4::varchar, $4::text, $5, $8, 'PHYSICAL', $6, $7, 'pcs', 'ACTIVE', 1, NOW(), NOW()) ON CONFLICT DO NOTHING`,
+        [p.id, p.tenantId, p.vendorId, p.name, p.price, p.categoryId, p.stock, p.currency ?? 'TZS'],
       );
     }
     console.log('  Products seeded');
@@ -264,17 +292,26 @@ async function seed(): Promise<void> {
     console.log('  Vehicles seeded');
 
     console.log('\n========================================');
-    console.log('Seed complete! (Tanzania / TZS)');
+    console.log('Seed complete! (Pan-African / multi-currency)');
     console.log('========================================');
     console.log(`\nLogin password for ALL users: "${DEFAULT_PASSWORD}"\n`);
     console.log('Demo accounts:');
     console.log('  Super Admin: +255754100000');
     console.log('  Admin:       +255754100001');
-    console.log('  Vendor:      +255754100002 (Dar Fresh Market)');
-    console.log('  Customer:    +255754100003 (Hassan)');
-    console.log('  Driver:      +255754100004 (Juma)');
-    console.log('  Vendor:      +255754100005 (Kariakoo Electronics)');
-    console.log('\nAll data in Dar es Salaam tenant (TZS)');
+    console.log('  Vendor:      +255754100002 (Dar Fresh Market, TZS)');
+    console.log('  Customer:    +255754100003 (Hassan, TZS)');
+    console.log('  Driver:      +255754100004 (Juma, TZS)');
+    console.log('  Customer:    +254712345678 (Wanjiku, KES)');
+    console.log('  Customer:    +2348034567890 (Chidi, NGN)');
+    console.log('  Customer:    +233201234567 (Ama, GHS)');
+    console.log('  Customer:    +250788123456 (Uwase, RWF)');
+    console.log('  Customer:    +27821234567 (Thabo, ZAR)');
+    console.log('  Vendor:      +254711234567 (Nairobi Fresh Market, KES)');
+    console.log('  Vendor:      +2348098765432 (Lagos Groceries Hub, NGN)');
+    console.log('  Vendor:      +233244567890 (Accra Marketplace, GHS)');
+    console.log('  Vendor:      +250789654321 (Kigali Farm Produce, RWF)');
+    console.log('  Vendor:      +27719876543 (Jo\'burg Wholesale, ZAR)');
+    console.log('\nAll data in single "afriMarket Global Hub" tenant (currency per phone country)');
   } catch (error) {
     console.error('Seed failed:', error);
     process.exit(1);

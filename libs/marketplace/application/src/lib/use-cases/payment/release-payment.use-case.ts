@@ -49,6 +49,7 @@ export class ReleasePaymentUseCase {
         tenantId: TenantId.create(tenantId),
         ownerId: payment.vendorId,
         ownerType: 'vendor',
+        currency: payment.amount.currency,
       });
       vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
     } else {

@@ -2,6 +2,7 @@ import { Injectable, Optional } from '@nestjs/common';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { CountrySmsRouterService } from './sms/country-sms.router';
 import { SendSmsResult } from './sms/sms-provider.interface';
+import { defaultCurrency } from './currencies';
 
 export interface SendSmsParams {
   to: string;
@@ -50,7 +51,7 @@ export class SmsService implements ISmsService {
     phone: string,
     orderId: string,
     total: number,
-    currency: string = 'TZS',
+    currency: string = defaultCurrency(),
   ): Promise<SendSmsResult> {
     const message = `Order confirmed! Order #${orderId.substring(0, 8)}... Total: ${currency} ${total.toLocaleString()}. You will receive an update when your order is on the way.`;
     return this.send({ to: phone, message });
@@ -79,8 +80,9 @@ export class SmsService implements ISmsService {
     phone: string,
     orderId: string,
     total: number,
+    currency: string = defaultCurrency(),
   ): Promise<SendSmsResult> {
-    const message = `New order received! Order #${orderId.substring(0, 8)}... Total: TZS ${total.toLocaleString()}. Open your vendor panel to view details.`;
+    const message = `New order received! Order #${orderId.substring(0, 8)}... Total: ${currency} ${total.toLocaleString()}. Open your vendor panel to view details.`;
     return this.send({ to: phone, message });
   }
 

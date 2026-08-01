@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/client';
+import { useCurrency } from '../../context/CurrencyContext';
 
 interface ReconciliationReport {
   period: string;
@@ -33,6 +34,7 @@ export default function AdminReconciliation() {
   const [period, setPeriod] = useState<'today' | '7d' | '30d' | '90d'>('30d');
   const [report, setReport] = useState<ReconciliationReport | null>(null);
   const [loading, setLoading] = useState(true);
+  const { formatCurrency, currency } = useCurrency();
 
   useEffect(() => {
     setLoading(true);
@@ -80,9 +82,9 @@ export default function AdminReconciliation() {
       {report && (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
-            {card('Commission Earned', `TZS ${report.commissions.totalCommission.toLocaleString()}`, `${report.commissions.paymentCount} payments`)}
-            {card('Vendor Net', `TZS ${report.commissions.totalVendorNet.toLocaleString()}`)}
-            {card('Driver Net', `TZS ${report.commissions.totalDriverNet.toLocaleString()}`)}
+            {card('Commission Earned', formatCurrency(report.commissions.totalCommission), `${report.commissions.paymentCount} payments`)}
+            {card('Vendor Net', formatCurrency(report.commissions.totalVendorNet))}
+            {card('Driver Net', formatCurrency(report.commissions.totalDriverNet))}
             {card('Settled Payments', `${report.commissions.settledCount} / ${report.commissions.paymentCount}`, `${report.commissions.paymentCount - report.commissions.settledCount} pending`)}
           </div>
 
@@ -90,11 +92,11 @@ export default function AdminReconciliation() {
             {report.wallets.map(w => (
               card(
                 `${w.ownerType.charAt(0).toUpperCase() + w.ownerType.slice(1)} Wallets`,
-                `TZS ${w.totalBalance.toLocaleString()}`,
-                `${w.walletCount} wallets, ${w.totalPending.toLocaleString()} pending`
+                formatCurrency(w.totalBalance),
+                `${w.walletCount} wallets, ${formatCurrency(w.totalPending)} pending`
               )
             ))}
-            {card('Transaction Volume', `TZS ${report.transactions.totalCredits.toLocaleString()}`, `${report.transactions.txCount} transactions`)}
+            {card('Transaction Volume', formatCurrency(report.transactions.totalCredits), `${report.transactions.txCount} transactions`)}
           </div>
 
           {report.pendingPayouts.length > 0 && (
@@ -105,7 +107,7 @@ export default function AdminReconciliation() {
                   <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
                     <th style={{ padding: '0.5rem' }}>Owner</th>
                     <th style={{ padding: '0.5rem' }}>Type</th>
-                    <th style={{ padding: '0.5rem', textAlign: 'right' }}>Balance (TZS)</th>
+                    <th style={{ padding: '0.5rem', textAlign: 'right' }}>Balance ({currency.code})</th>
                   </tr>
                 </thead>
                 <tbody>

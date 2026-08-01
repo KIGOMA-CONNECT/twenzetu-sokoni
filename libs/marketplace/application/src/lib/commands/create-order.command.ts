@@ -18,6 +18,7 @@ export class CreateOrderCommand extends CommandBase {
     public readonly specialInstructions?: string,
     public readonly customerPhone?: string,
     public readonly customerEmail?: string,
+    public readonly currency?: string,
   ) {
     super();
   }
