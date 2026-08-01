@@ -19,7 +19,7 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register-tenant')
-  @Throttle({ auth: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new tenant (merchant/city)' })
   @ApiBody({ type: RegisterTenantDto })
   @ApiResponse({ status: 201, description: 'Tenant registered successfully' })
@@ -29,7 +29,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @Throttle({ auth: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new user within a tenant' })
   @ApiBody({ type: RegisterUserDto })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
@@ -46,7 +46,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ auth: { limit: 20, ttl: 60000 } })
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Login with phone number and password' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 201, description: 'Login successful' })
@@ -81,7 +81,7 @@ export class AuthController {
   }
 
   @Post('send-otp')
-  @Throttle({ auth: { limit: 2, ttl: 60000 } })
+  @Throttle({ default: { limit: 2, ttl: 60000 } })
   @ApiOperation({ summary: 'Send OTP to phone number (SMS routed per country)' })
   @ApiBody({ type: SendOtpDto })
   @ApiResponse({ status: 201, description: 'OTP sent successfully' })
@@ -91,7 +91,7 @@ export class AuthController {
   }
 
   @Post('verify-otp')
-  @Throttle({ auth: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiOperation({ summary: 'Verify OTP code and receive tokens (OTP login)' })
   @ApiBody({ type: VerifyOtpDto })
   @ApiResponse({ status: 201, description: 'OTP verified successfully' })
@@ -101,7 +101,7 @@ export class AuthController {
   }
 
   @Post('refresh')
-  @Throttle({ auth: { limit: 20, ttl: 60000 } })
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Rotate refresh token and issue a new access token pair' })
   @ApiBody({ type: RefreshTokenDto })
   @ApiResponse({ status: 201, description: 'New token pair issued' })
@@ -111,7 +111,7 @@ export class AuthController {
   }
 
   @Post('logout')
-  @Throttle({ auth: { limit: 20, ttl: 60000 } })
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @ApiOperation({ summary: 'Revoke the current refresh token (log out)' })
   @ApiBody({ type: LogoutDto })
   @ApiResponse({ status: 201, description: 'Logged out' })

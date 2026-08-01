@@ -15,7 +15,7 @@ export function useSocket() {
 
     const token = localStorage.getItem('accessToken');
 
-    const socket = io('/', {
+    const socket = io('/marketplace', {
       path: '/api/socket.io',
       transports: ['websocket', 'polling'],
       reconnection: true,

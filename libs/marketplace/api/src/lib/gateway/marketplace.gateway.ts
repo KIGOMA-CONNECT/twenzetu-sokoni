@@ -13,6 +13,7 @@ import { Injectable, Logger } from '@nestjs/common';
 @WebSocketGateway({
   cors: { origin: '*' },
   namespace: '/marketplace',
+  path: '/api/socket.io',
 })
 @Injectable()
 export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconnect {

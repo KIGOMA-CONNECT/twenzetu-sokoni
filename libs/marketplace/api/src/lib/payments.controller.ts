@@ -33,7 +33,7 @@ export class PaymentsController {
 
   @Post(':orderId/release')
   @UseInterceptors(CacheInvalidationInterceptor)
-  @Throttle({ write: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @ApiParam({ name: 'orderId', description: 'Order ID' })
   @ApiOperation({ summary: 'Release escrowed payment to vendor wallet' })
   @ApiResponse({ status: 201, description: 'Payment released' })

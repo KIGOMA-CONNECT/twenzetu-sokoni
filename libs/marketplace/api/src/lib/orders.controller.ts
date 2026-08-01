@@ -27,7 +27,7 @@ export class OrdersController {
   ) {}
 
   @Post()
-  @Throttle({ write: { limit: 10, ttl: 60000 } })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(CacheInvalidationInterceptor)
   @ApiOperation({ summary: 'Create a new order' })

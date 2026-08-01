@@ -173,7 +173,7 @@ export default function HomePage() {
       </nav>
 
       <section style={s.hero}>
-        <div style={s.heroBadge}>Now serving Dar es Salaam</div>
+        <div style={s.heroBadge}>Now serving across Africa</div>
         <h1 style={s.heroTitle}>
           Your local marketplace,<br /><span style={s.heroGradient}>reimagined for Africa</span>
         </h1>

@@ -19,10 +19,13 @@ export class PermissionsGuard implements CanActivate {
     if (user?.role === 'super_admin') {
       return true;
     }
-    if (!user?.permissions) {
-      return false;
-    }
-    const userPerms: string[] = user.permissions.split(',').filter(Boolean);
+    const raw = user?.permissions;
+    const userPerms: string[] =
+      typeof raw === 'string'
+        ? raw.split(',').filter(Boolean)
+        : Array.isArray(raw)
+          ? (raw as string[])
+          : [];
     return requiredPerms.some(p => userPerms.includes(p));
   }
 }

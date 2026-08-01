@@ -9,8 +9,8 @@ const DEFAULT_PASSWORD = 'password123';
 const TENANT_DAR = 'a0000000-0000-0000-0000-000000000002';
 
 const USERS = [
-  { id: 'b0000000-0000-0000-0000-000000000009', tenantId: TENANT_DAR, phone: '+255754100000', name: 'Super Admin', role: 'super_admin', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, phone: '+255754100001', name: 'Admin User', role: 'admin', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000009', tenantId: TENANT_DAR, phone: '+255754100000', name: 'Super Admin', role: 'super_admin', status: 'ACTIVE', permissions: 'manage_admins,manage_vendors,manage_disputes,manage_drivers,manage_promotions,view_analytics,manage_orders,manage_finance,manage_settings' },
+  { id: 'b0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, phone: '+255754100001', name: 'Admin User', role: 'admin', status: 'ACTIVE', permissions: 'manage_vendors,manage_disputes,manage_drivers,manage_promotions,view_analytics,manage_orders,manage_finance,manage_settings' },
   { id: 'b0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, phone: '+255754100002', name: 'Amina Vendor', role: 'vendor', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, phone: '+255754100003', name: 'Hassan Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, phone: '+255754100004', name: 'Juma Driver', role: 'driver', status: 'ACTIVE' },
@@ -142,9 +142,10 @@ async function seed(): Promise<void> {
     // Users
     for (const u of USERS) {
       await ds.query(
-        `INSERT INTO users (id, tenant_id, phone_number, full_name, role, password_hash, status, version, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 1, NOW(), NOW()) ON CONFLICT DO NOTHING`,
-        [u.id, u.tenantId, u.phone, u.name, u.role, passwordHash, u.status],
+        `INSERT INTO users (id, tenant_id, phone_number, full_name, role, password_hash, status, permissions, version, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET permissions = EXCLUDED.permissions`,
+        [u.id, u.tenantId, u.phone, u.name, u.role, passwordHash, u.status, u.permissions ?? null],
       );
     }
     console.log('  Users seeded');

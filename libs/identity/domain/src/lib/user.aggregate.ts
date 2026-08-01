@@ -1,6 +1,6 @@
 import { AggregateRoot, Email, EntityId, Guard, TenantId } from '@afri-market/kernel';
 import { PhoneNumber } from '@afri-market/kernel';
-import { UserRole, AdminPermission } from './user-role';
+import { UserRole, AdminPermission, defaultPermissionsForRole } from './user-role';
 import { UserStatus } from './user-status';
 
 export interface CreateUserProps {
@@ -45,6 +45,9 @@ export class User extends AggregateRoot<EntityId> {
   public static create(props: CreateUserProps): User {
     Guard.assert(Guard.againstEmptyString(props.fullName, 'fullName'));
     Guard.assert(Guard.againstEmptyString(props.passwordHash, 'passwordHash'));
+    // Admin/super_admin roles get their permission set automatically so the
+    // admin console is usable on first login instead of returning 403.
+    const permissions = props.permissions ?? defaultPermissionsForRole(props.role);
     return new User(
       EntityId.create(),
       props.tenantId,
@@ -55,7 +58,7 @@ export class User extends AggregateRoot<EntityId> {
       props.email,
       'PENDING_VERIFICATION',
       1,
-      props.permissions ?? [],
+      permissions,
     );
   }
 

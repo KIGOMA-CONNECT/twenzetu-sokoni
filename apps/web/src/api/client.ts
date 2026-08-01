@@ -50,6 +50,10 @@ api.interceptors.response.use(
     const original = error.config as RetryableRequest | undefined;
     const onLoginPage = window.location.pathname.startsWith('/login');
     if (error.response?.status === 401 && original && !original._retry && !onLoginPage) {
+      const hadSession = Boolean(localStorage.getItem('accessToken') || localStorage.getItem('refreshToken'));
+      if (!hadSession) {
+        return Promise.reject(error);
+      }
       original._retry = true;
       refreshPromise = refreshPromise ?? refreshAccessToken();
       try {

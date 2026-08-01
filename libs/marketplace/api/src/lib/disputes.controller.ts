@@ -21,7 +21,7 @@ export class DisputesController {
   ) {}
 
   @Post()
-  @Throttle({ write: { limit: 5, ttl: 60000 } })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
   @UseGuards(AuthGuard('jwt'))
   @UseInterceptors(CacheInvalidationInterceptor)
   @ApiOperation({ summary: 'Create a new dispute' })

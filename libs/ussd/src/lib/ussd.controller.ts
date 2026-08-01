@@ -10,7 +10,7 @@ import { UserOrmEntity } from '@afri-market/identity-infrastructure';
 import { TENANT_DAR } from './ussd.constants';
 
 @ApiTags('USSD')
-@Throttle({ ussd: { limit: 600, ttl: 60000 } })
+@Throttle({ default: { limit: 600, ttl: 60000 } })
 @Controller('ussd')
 export class UssdController {
   private readonly logger = new Logger(UssdController.name);

@@ -28,7 +28,7 @@ import { ResolveDisputeAdminDto, AnalyticsQueryDto, VerifyKycAdminDto, ListDispu
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'), RolesGuard, PermissionsGuard)
 @Roles('admin')
-@Throttle({ admin: { limit: 30, ttl: 60000 } })
+@Throttle({ default: { limit: 30, ttl: 60000 } })
 @Controller('admin')
 export class AdminController {
   constructor(

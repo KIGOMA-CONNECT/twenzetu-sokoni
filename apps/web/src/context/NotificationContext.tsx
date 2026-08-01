@@ -29,6 +29,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false);
 
   const refetch = useCallback(async () => {
+    if (!localStorage.getItem('accessToken')) {
+      setNotifications([]);
+      setUnreadCount(0);
+      return;
+    }
     setLoading(true);
     try {
       const [listRes, countRes] = await Promise.all([

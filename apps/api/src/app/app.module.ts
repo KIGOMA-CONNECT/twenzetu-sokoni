@@ -21,13 +21,14 @@ import { SchedulerModule } from './scheduler/scheduler.module';
 
 @Module({
   imports: [
-    ThrottlerModule.forRoot([
-      { name: 'auth', ttl: 60000, limit: 10 },
-      { name: 'write', ttl: 60000, limit: 60 },
-      { name: 'read', ttl: 60000, limit: 300 },
-      { name: 'admin', ttl: 60000, limit: 120 },
-      { name: 'ussd', ttl: 60000, limit: 600 },
-    ]),
+    // NOTE: @nestjs/throttler v6 applies EVERY throttler in the array to every
+    // request and a request fails if it exceeds ANY of them. Multiple named
+    // throttlers therefore collapse to the lowest limit (10/min) globally,
+    // which rate-limited every route. A single 'default' throttler is used and
+    // route groups tighten it via @Throttle({ default: { ... } }).
+    ThrottlerModule.forRoot({
+      throttlers: [{ name: 'default', ttl: 60000, limit: 300 }],
+    }),
     RedisCacheModule,
     AppConfigModule,
     AppLoggerModule,
