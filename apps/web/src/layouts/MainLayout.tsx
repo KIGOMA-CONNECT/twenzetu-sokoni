@@ -105,7 +105,7 @@ export function MainLayout() {
         {menuOpen && (
           <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }} aria-hidden="true" />
         )}
-        <aside style={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: '280px', maxWidth: '85vw', background: '#1e293b', color: '#e2e8f0', zIndex: 70, display: 'flex', flexDirection: 'column', transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.25s ease', boxShadow: '2px 0 8px rgba(0,0,0,0.3)' }}>
+        <aside aria-hidden={!menuOpen} style={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: '280px', maxWidth: '85vw', background: '#1e293b', color: '#e2e8f0', zIndex: 70, display: 'flex', flexDirection: 'column', transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.25s ease, visibility 0.25s ease', visibility: menuOpen ? 'visible' : 'hidden', pointerEvents: menuOpen ? 'auto' : 'none', boxShadow: '2px 0 8px rgba(0,0,0,0.3)' }}>
           <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.75rem' }}>
             <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
           </div>
