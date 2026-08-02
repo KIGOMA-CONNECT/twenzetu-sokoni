@@ -64,6 +64,7 @@ export * from './lib/use-cases/service/submit-service-quote.use-case';
 export * from './lib/use-cases/service/accept-service-quote.use-case';
 export * from './lib/use-cases/service/send-service-message.use-case';
 export * from './lib/use-cases/service/list-service-messages.use-case';
+export * from './lib/use-cases/service/delete-service-listing.use-case';
 
 // Use Cases - Dispute
 export * from './lib/use-cases/dispute/create-dispute.use-case';

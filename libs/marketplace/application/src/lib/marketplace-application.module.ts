@@ -149,6 +149,7 @@ import { SubmitServiceQuoteUseCase } from './use-cases/service/submit-service-qu
 import { AcceptServiceQuoteUseCase } from './use-cases/service/accept-service-quote.use-case';
 import { SendServiceMessageUseCase } from './use-cases/service/send-service-message.use-case';
 import { ListServiceMessagesUseCase } from './use-cases/service/list-service-messages.use-case';
+import { DeleteServiceListingUseCase } from './use-cases/service/delete-service-listing.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -293,6 +294,7 @@ const USE_CASES = [
   AcceptServiceQuoteUseCase,
   SendServiceMessageUseCase,
   ListServiceMessagesUseCase,
+  DeleteServiceListingUseCase,
 ];
 
 @Module({

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Inject } from '@nestjs/common';
@@ -15,6 +15,7 @@ import {
   AcceptServiceQuoteUseCase,
   SendServiceMessageUseCase,
   ListServiceMessagesUseCase,
+  DeleteServiceListingUseCase,
   CreateServiceListingCommand,
   CreateServiceRequestCommand,
   SubmitServiceQuoteCommand,
@@ -39,6 +40,7 @@ export class ServicesController {
     private readonly acceptQuote: AcceptServiceQuoteUseCase,
     private readonly sendMessage: SendServiceMessageUseCase,
     private readonly listMessages: ListServiceMessagesUseCase,
+    private readonly deleteListing: DeleteServiceListingUseCase,
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
     @Inject(SERVICE_LISTING_REPOSITORY) private readonly listingRepo: IServiceListingRepository,
   ) {}
@@ -106,6 +108,19 @@ export class ServicesController {
   public async getListingEndpoint(@Param('id', ParseUUIDPipe) id: string) {
     const listing = await this.listingRepo.findById(EntityId.from(id));
     return { data: listing?.toDto() ?? null };
+  }
+
+  @Delete('listings/:id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Listing ID' })
+  @ApiOperation({ summary: 'Delete a service listing (vendor, only if no active requests)' })
+  @ApiResponse({ status: 200, description: 'Listing deleted' })
+  public async deleteListingEndpoint(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    const vendor = await this.vendorRepo.findByUserId(user.sub);
+    if (!vendor) {
+      return { success: false, error: 'Vendor profile not found' };
+    }
+    return this.deleteListing.execute(user.tenantId, id, vendor.id.value);
   }
 
   // ── Requests ────────────────────────────────────────────────
