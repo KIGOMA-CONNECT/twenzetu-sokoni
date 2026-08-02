@@ -214,13 +214,13 @@ export function MainLayout() {
 
       {/* Mobile drawer */}
       {isMobile && menuOpen && (
-        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }} aria-hidden="true" />
+        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 90 }} aria-hidden="true" />
       )}
       <aside
         aria-hidden={!menuOpen}
         style={{
           position: 'fixed', top: 0, bottom: 0, left: 0, width: '280px', maxWidth: '85vw',
-          background: '#1e293b', color: '#e2e8f0', zIndex: 70, display: 'flex', flexDirection: 'column',
+          background: '#1e293b', color: '#e2e8f0', zIndex: 100, display: 'flex', flexDirection: 'column',
           transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
           transition: 'transform 0.25s ease, visibility 0.25s ease',
           visibility: menuOpen ? 'visible' : 'hidden',
