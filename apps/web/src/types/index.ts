@@ -186,9 +186,17 @@ export interface Address {
   userId: string;
   label: string;
   fullAddress: string;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   isDefault: boolean;
+  country?: string;
+  region?: string;
+  city?: string;
+  district?: string;
+  street?: string;
+  landmark?: string;
+  postalCode?: string;
+  notes?: string;
 }
 
 export interface Category {

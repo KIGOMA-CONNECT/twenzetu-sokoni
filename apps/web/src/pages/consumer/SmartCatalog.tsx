@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
@@ -35,6 +35,13 @@ function SmartCatalog() {
   const [paymentMethod, setPaymentMethod] = useState('mpesa');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (addresses && addresses.length > 0) {
+      const def = addresses.find((a) => a.isDefault);
+      setSelectedAddressId((prev) => prev || (def?.id ?? addresses[0].id));
+    }
+  }, [addresses]);
 
   const parseItems = (): string[] => {
     return Array.from(
@@ -248,15 +255,16 @@ function SmartCatalog() {
             <div className="grid grid-2 mt-2 responsive-grid-2col" style={{ gridTemplateColumns: '1fr 1fr' }}>
               <div>
                 <label className="field-label">{t('order.deliveryAddress')} *</label>
-                <select className="select" value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)}>
-                  <option value="">{t('order.selectAddress')}...</option>
-                  {addresses?.map((addr) => (
-                    <option key={addr.id} value={addr.id}>
-                      {addr.label} — {addr.fullAddress}
-                    </option>
-                  ))}
-                </select>
-                {addresses && addresses.length === 0 && (
+                {addresses && addresses.length > 0 ? (
+                  <select className="select" value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)}>
+                    <option value="">{t('order.selectAddress')}...</option>
+                    {addresses?.map((addr) => (
+                      <option key={addr.id} value={addr.id}>
+                        {addr.label} — {addr.fullAddress}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
                   <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.4rem' }}>
                     {t('order.noAddresses')}.{' '}
                     <a href="/addresses" style={{ color: 'var(--brand)', fontWeight: 700 }}>{t('order.addOne')}</a>.
@@ -267,8 +275,11 @@ function SmartCatalog() {
                 <label className="field-label">Payment</label>
                 <select className="select" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                   <option value="mpesa">M-Pesa</option>
-                  <option value="tigo_money">Tigo Pesa</option>
+                  <option value="tigo_money">Mixx by Yas (Tigo)</option>
                   <option value="airtel_money">Airtel Money</option>
+                  <option value="halotel">Halotel</option>
+                  <option value="card">Card / Virtual Card</option>
+                  <option value="bank">Bank Transfer</option>
                   <option value="cash">Cash on Delivery</option>
                 </select>
               </div>

@@ -15,9 +15,17 @@ export class CreateAddressUseCase {
       userId: string;
       label: string;
       fullAddress: string;
-      latitude: number;
-      longitude: number;
+      latitude?: number;
+      longitude?: number;
       isDefault?: boolean;
+      country?: string;
+      region?: string;
+      city?: string;
+      district?: string;
+      street?: string;
+      landmark?: string;
+      postalCode?: string;
+      notes?: string;
     },
   ): Promise<{ addressId: string }> {
     if (dto.isDefault) {
@@ -32,6 +40,14 @@ export class CreateAddressUseCase {
       latitude: dto.latitude,
       longitude: dto.longitude,
       isDefault: dto.isDefault,
+      country: dto.country,
+      region: dto.region,
+      city: dto.city,
+      district: dto.district,
+      street: dto.street,
+      landmark: dto.landmark,
+      postalCode: dto.postalCode,
+      notes: dto.notes,
     });
 
     await this.addressRepo.save(address);

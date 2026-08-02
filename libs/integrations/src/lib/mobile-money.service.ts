@@ -9,6 +9,7 @@ export interface InitiateStkPushParams {
   accountReference: string;
   description: string;
   tenantId?: string;
+  provider?: 'mpesa' | 'mixx_by_yas' | 'airtel_money' | 'halotel';
 }
 
 export interface PaymentStatusResponse {
@@ -126,7 +127,7 @@ export class MobileMoneyService implements IMobileMoneyService {
 
   public async initiateStkPush(params: InitiateStkPushParams): Promise<StkPushResult> {
     this.logger.log(
-      `STK Push for ${params.phoneNumber}: ${params.amount} ${params.accountReference}`,
+      `STK Push for ${params.phoneNumber}: ${params.amount} ${params.accountReference} via ${params.provider ?? 'mpesa'}`,
       'MobileMoneyService',
     );
 

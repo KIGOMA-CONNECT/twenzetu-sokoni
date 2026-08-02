@@ -49,6 +49,13 @@ function ProductList() {
   const [cartSuccess, setCartSuccess] = useState<string | null>(null);
 
   useEffect(() => {
+    if (addresses && addresses.length > 0) {
+      const def = addresses.find((a) => a.isDefault);
+      setSelectedAddressId((prev) => prev || (def?.id ?? addresses[0].id));
+    }
+  }, [addresses]);
+
+  useEffect(() => {
     localStorage.setItem(`cart-${vendorId}`, JSON.stringify(cart));
   }, [cart, vendorId]);
 
@@ -204,7 +211,8 @@ function ProductList() {
                   </select>
                 ) : (
                   <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                    {t('order.noAddresses')}. <a href="/addresses" style={{ color: 'var(--brand)', fontWeight: 700 }}>Add one</a> before checkout.
+                    {t('order.noAddresses')}.{' '}
+                    <a href="/addresses" style={{ color: 'var(--brand)', fontWeight: 700 }}>{t('order.addOne')}</a> before checkout.
                   </div>
                 )}
               </div>
@@ -212,8 +220,11 @@ function ProductList() {
                 <label className="field-label">{t('product.paymentMethod')}</label>
                 <select className="select" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                   <option value="mpesa">M-Pesa</option>
-                  <option value="tigo_money">Tigo Pesa</option>
+                  <option value="tigo_money">Mixx by Yas (Tigo)</option>
                   <option value="airtel_money">Airtel Money</option>
+                  <option value="halotel">Halotel</option>
+                  <option value="card">Card / Virtual Card</option>
+                  <option value="bank">Bank Transfer</option>
                   <option value="cash">Cash on Delivery</option>
                 </select>
               </div>

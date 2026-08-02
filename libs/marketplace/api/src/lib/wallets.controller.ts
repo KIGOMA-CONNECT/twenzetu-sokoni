@@ -117,22 +117,52 @@ export class WalletsController {
 
   @Post('top-up')
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Top-up wallet via M-Pesa' })
+  @ApiOperation({ summary: 'Top-up wallet via mobile money, card or bank' })
   @ApiBody({ type: WalletTopupDto })
-  @ApiResponse({ status: 201, description: 'STK Push sent' })
+  @ApiResponse({ status: 201, description: 'Payment prompt sent' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async topUp(
     @CurrentUser() user: JwtPayload,
     @Body() body: WalletTopupDto,
   ) {
+    const provider = body.provider ?? 'mpesa';
     const accountReference = `topup_${user.tenantId}_${user.sub}`;
+
+    if (provider === 'card') {
+      const cardRef = `card_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      await this.ds.query(
+        `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, provider, card_reference, status)
+         VALUES ($1, $2, $3, $4, $5, 'card', $6, 'PENDING')`,
+        [user.tenantId, user.sub, body.amount, body.phoneNumber, cardRef, cardRef],
+      );
+      return {
+        success: true,
+        checkoutRequestId: cardRef,
+        message: 'Card payment initiated. Complete the payment to confirm your top-up.',
+      };
+    }
+
+    if (provider === 'bank') {
+      const bankRef = `bank_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      await this.ds.query(
+        `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, provider, card_reference, status)
+         VALUES ($1, $2, $3, $4, $5, 'bank', $6, 'PENDING')`,
+        [user.tenantId, user.sub, body.amount, body.phoneNumber, bankRef, bankRef],
+      );
+      return {
+        success: true,
+        checkoutRequestId: bankRef,
+        message: 'Bank transfer instructions sent. Complete the transfer to confirm your top-up.',
+      };
+    }
 
     const stkResult = await this.mobileMoney.initiateStkPush({
       phoneNumber: body.phoneNumber,
       amount: body.amount,
       accountReference,
-      description: `Wallet top-up: ${body.amount} ${defaultCurrency()}`,
+      description: `Wallet top-up: ${body.amount} ${defaultCurrency()} (${provider})`,
+      provider,
     });
 
     if (stkResult.responseCode !== '0') {
@@ -143,15 +173,22 @@ export class WalletsController {
     }
 
     await this.ds.query(
-      `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, status)
-       VALUES ($1, $2, $3, $4, $5, 'PENDING')`,
-      [user.tenantId, user.sub, body.amount, body.phoneNumber, stkResult.checkoutRequestId],
+      `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, provider, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'PENDING')`,
+      [user.tenantId, user.sub, body.amount, body.phoneNumber, stkResult.checkoutRequestId, provider],
     );
+
+    const providerLabel: Record<string, string> = {
+      mpesa: 'M-Pesa',
+      mixx_by_yas: 'Mixx by Yas',
+      airtel_money: 'Airtel Money',
+      halotel: 'Halotel',
+    };
 
     return {
       success: true,
       checkoutRequestId: stkResult.checkoutRequestId,
-      message: 'M-Pesa prompt sent to your phone. Confirm to complete top-up.',
+      message: `${providerLabel[provider] || provider} prompt sent to your phone. Confirm to complete top-up.`,
     };
   }
 }

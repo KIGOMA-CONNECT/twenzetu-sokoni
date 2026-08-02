@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
 import api from '../../api/client';
+import { useAuth } from '../../context/AuthContext';
 import type { Wallet, WalletTransaction } from '../../types';
 
 const formatDate = (iso: string) => {
@@ -16,10 +17,15 @@ const formatDate = (iso: string) => {
   }
 };
 
-const paymentMethods = [
-  { id: 'mpesa', icon: '📱', name: 'M-Pesa', desc: 'Vodacom Tanzania' },
-  { id: 'tigo_pesa', icon: '📱', name: 'Tigo Pesa', desc: 'Tigo Tanzania' },
-  { id: 'airtel_money', icon: '📱', name: 'Airtel Money', desc: 'Airtel Tanzania' },
+type ProviderId = 'mpesa' | 'mixx_by_yas' | 'airtel_money' | 'halotel' | 'card' | 'bank';
+
+const paymentMethods: Array<{ id: ProviderId; icon: string; name: string; desc: string; group: string }> = [
+  { id: 'mpesa', icon: '📱', name: 'M-Pesa', desc: 'Vodacom Tanzania', group: 'Mobile Money' },
+  { id: 'mixx_by_yas', icon: '📱', name: 'Mixx by Yas', desc: 'Yas (Tigo) Tanzania', group: 'Mobile Money' },
+  { id: 'airtel_money', icon: '📱', name: 'Airtel Money', desc: 'Airtel Tanzania', group: 'Mobile Money' },
+  { id: 'halotel', icon: '📱', name: 'Halotel', desc: 'Halotel Money', group: 'Mobile Money' },
+  { id: 'card', icon: '💳', name: 'Card / Virtual Card', desc: 'Visa, Mastercard or virtual card', group: 'Card' },
+  { id: 'bank', icon: '🏦', name: 'Bank Transfer', desc: 'CRDB, NMB, NBC and more', group: 'Bank' },
 ];
 
 const quickAmounts = [5000, 10000, 20000, 50000, 100000, 200000];
@@ -27,30 +33,49 @@ const quickAmounts = [5000, 10000, 20000, 50000, 100000, 200000];
 export default function WalletPage() {
   const { t } = useTranslation();
   const { formatCurrency, currency } = useCurrency();
+  const { user } = useAuth();
   const { data: wallet, loading, error, refetch: refetchWallet } = useApi<Wallet>('/wallets/me');
   const { data: transactions, loading: txLoading, error: txError, refetch: refetchTx } = useApi<WalletTransaction[]>('/wallets/transactions');
 
   const [showTopup, setShowTopup] = useState(false);
   const [topupAmount, setTopupAmount] = useState(10000);
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState('mpesa');
+  const [selectedMethod, setSelectedMethod] = useState<ProviderId>('mpesa');
   const [submitting, setSubmitting] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState('');
   const [topupError, setTopupError] = useState('');
+  const [cardHolder, setCardHolder] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardExpiry, setCardExpiry] = useState('');
+  const [bankReference, setBankReference] = useState('');
+
+  const groups = ['Mobile Money', 'Card', 'Bank'] as const;
 
   const handleTopup = async () => {
+    if (selectedMethod === 'card' && (!cardNumber.trim() || !cardHolder.trim() || !cardExpiry.trim())) {
+      setTopupError('Please fill in cardholder name, card number and expiry.');
+      return;
+    }
     setSubmitting(true);
     setTopupSuccess('');
     setTopupError('');
     try {
-      const res = await api.post('/wallets/top-up', { amount: topupAmount, phoneNumber });
+      const res = await api.post('/wallets/top-up', {
+        amount: topupAmount,
+        phoneNumber,
+        provider: selectedMethod,
+        cardHolder: selectedMethod === 'card' ? cardHolder : undefined,
+        cardNumber: selectedMethod === 'card' ? cardNumber : undefined,
+        cardExpiry: selectedMethod === 'card' ? cardExpiry : undefined,
+        bankReference: selectedMethod === 'bank' ? bankReference : undefined,
+      });
       if (res.data?.data?.success) {
-        setTopupSuccess('M-Pesa prompt sent to your phone. Confirm to complete top-up.');
+        setTopupSuccess(res.data.data.message || 'Payment prompt sent to your phone. Confirm to complete top-up.');
         setTimeout(() => {
           setShowTopup(false);
           refetchWallet();
           refetchTx();
-        }, 3000);
+        }, 4000);
       } else {
         setTopupError(res.data?.data?.message || res.data?.message || 'Top-up failed');
       }
@@ -73,12 +98,14 @@ export default function WalletPage() {
     );
   }
 
+  const isMobileMoney = selectedMethod === 'mpesa' || selectedMethod === 'mixx_by_yas' || selectedMethod === 'airtel_money' || selectedMethod === 'halotel';
+
   return (
     <div className="page">
       <PageHeader
         title={t('wallet.title')}
         action={
-          <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(''); setTopupSuccess(''); setTopupError(''); setShowTopup(true); }}>
+          <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setCardHolder(''); setCardNumber(''); setCardExpiry(''); setBankReference(''); setShowTopup(true); }}>
             + {t('wallet.topUp')}
           </button>
         }
@@ -143,7 +170,7 @@ export default function WalletPage() {
 
       {showTopup && (
         <div className="modal-overlay" onClick={() => setShowTopup(false)}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div className="modal-title">💳 {t('wallet.topUpTitle')}</div>
 
             {topupSuccess && <div className="alert alert-success mb-1">✅ {topupSuccess}</div>}
@@ -166,35 +193,79 @@ export default function WalletPage() {
             </div>
 
             <div className="field">
-              <label className="field-label">{t('wallet.phoneNumber')}</label>
-              <input className="input" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. 0712345678 or +255712345678" />
-            </div>
-
-            <div className="field">
               <label className="field-label">{t('product.paymentMethod')}</label>
-              {paymentMethods.map((m) => (
-                <div
-                  key={m.id}
-                  onClick={() => setSelectedMethod(m.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.7rem 1rem',
-                    border: selectedMethod === m.id ? '2px solid var(--brand)' : '2px solid var(--line)',
-                    borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.5rem',
-                    background: selectedMethod === m.id ? 'var(--brand-soft)' : '#fff',
-                  }}
-                >
-                  <span style={{ fontSize: '1.5rem' }}>{m.icon}</span>
-                  <div>
-                    <div style={{ fontWeight: 700, color: 'var(--ink)', fontSize: '0.9rem' }}>{m.name}</div>
-                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{m.desc}</div>
-                  </div>
+              {groups.map((group) => (
+                <div key={group} style={{ marginBottom: '0.75rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', marginBottom: '0.4rem' }}>{group}</div>
+                  {paymentMethods.filter((m) => m.group === group).map((m) => (
+                    <div
+                      key={m.id}
+                      onClick={() => { setSelectedMethod(m.id); setTopupError(''); }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.65rem 1rem',
+                        border: selectedMethod === m.id ? '2px solid var(--brand)' : '2px solid var(--line)',
+                        borderRadius: 'var(--radius)', cursor: 'pointer', marginBottom: '0.4rem',
+                        background: selectedMethod === m.id ? 'var(--brand-soft)' : '#fff',
+                      }}
+                    >
+                      <span style={{ fontSize: '1.4rem' }}>{m.icon}</span>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--ink)', fontSize: '0.9rem' }}>{m.name}</div>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{m.desc}</div>
+                      </div>
+                      {selectedMethod === m.id && <span style={{ marginLeft: 'auto', color: 'var(--brand)' }}>✓</span>}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
 
+            {isMobileMoney && (
+              <div className="field">
+                <label className="field-label">{t('wallet.phoneNumber')}</label>
+                <input className="input" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. 0712345678 or +255712345678" />
+                <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
+                  📲 A secure payment prompt will be pushed to this number — enter your PIN to confirm.
+                </div>
+              </div>
+            )}
+
+            {selectedMethod === 'card' && (
+              <div className="field">
+                <label className="field-label">Card Details</label>
+                <input className="input mb-1" placeholder="Cardholder name" value={cardHolder} onChange={(e) => setCardHolder(e.target.value)} />
+                <input className="input mb-1" placeholder="Card number (or virtual card ID)" inputMode="numeric" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+                <div className="grid grid-2">
+                  <input className="input" placeholder="MM/YY" value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} />
+                  <input className="input" placeholder="CVV" type="password" inputMode="numeric" maxLength={4} />
+                </div>
+                <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
+                  🔒 Payments are encrypted. Card is charged once you confirm.
+                </div>
+              </div>
+            )}
+
+            {selectedMethod === 'bank' && (
+              <div className="field">
+                <label className="field-label">Bank</label>
+                <select className="select" value={bankReference} onChange={(e) => setBankReference(e.target.value)}>
+                  <option value="">Select your bank...</option>
+                  <option value="CRDB">CRDB Bank</option>
+                  <option value="NMB">NMB Bank</option>
+                  <option value="NBC">NBC Bank</option>
+                  <option value="Stanbic">Stanbic Bank</option>
+                  <option value="Absa">Absa Bank</option>
+                  <option value="Equity">Equity Bank</option>
+                </select>
+                <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
+                  🏦 You will receive transfer instructions to complete your top-up.
+                </div>
+              </div>
+            )}
+
             <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={() => setShowTopup(false)} disabled={submitting}>{t('common.cancel')}</button>
-              <button className="btn btn-primary" onClick={handleTopup} disabled={submitting || !topupAmount || topupAmount < 100 || !phoneNumber}>
+              <button className="btn btn-primary" onClick={handleTopup} disabled={submitting || !topupAmount || topupAmount < 100 || (isMobileMoney && !phoneNumber)}>
                 {submitting ? 'Processing...' : `Top Up ${formatCurrency(topupAmount)}`}
               </button>
             </div>

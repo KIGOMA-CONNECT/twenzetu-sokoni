@@ -56,9 +56,17 @@ export class TypeOrmAddressRepository extends TypeOrmRepository<Address, Address
       userId: EntityId.from(e.userId),
       label: e.label,
       fullAddress: e.fullAddress,
-      latitude: Number(e.latitude),
-      longitude: Number(e.longitude),
+      latitude: e.latitude != null ? Number(e.latitude) : undefined,
+      longitude: e.longitude != null ? Number(e.longitude) : undefined,
       isDefault: e.isDefault,
+      country: e.country,
+      region: e.region,
+      city: e.city,
+      district: e.district,
+      street: e.street,
+      landmark: e.landmark,
+      postalCode: e.postalCode,
+      notes: e.notes,
     });
   }
 
@@ -72,6 +80,14 @@ export class TypeOrmAddressRepository extends TypeOrmRepository<Address, Address
       latitude: entity.latitude,
       longitude: entity.longitude,
       isDefault: entity.isDefault,
+      country: entity.country,
+      region: entity.region,
+      city: entity.city,
+      district: entity.district,
+      street: entity.street,
+      landmark: entity.landmark,
+      postalCode: entity.postalCode,
+      notes: entity.notes,
     };
   }
 }
