@@ -31,6 +31,9 @@ import {
   TypeOrmAdminUserRepository,
   TypeOrmCouponRepository,
   TypeOrmFlashSaleRepository,
+  TypeOrmServiceListingRepository,
+  TypeOrmServiceRequestRepository,
+  TypeOrmServiceQuoteRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
@@ -46,6 +49,7 @@ import {
   PRODUCT_CATEGORY_REPOSITORY, ADDRESS_REPOSITORY, MENU_REPOSITORY,
   ADMIN_USER_REPOSITORY,
   COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
+  SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
@@ -137,6 +141,14 @@ import { ListCouponsUseCase } from './use-cases/promotion/list-coupons.use-case'
 import { CreateFlashSaleUseCase } from './use-cases/promotion/create-flash-sale.use-case';
 import { ListActiveFlashSalesUseCase } from './use-cases/promotion/list-active-flash-sales.use-case';
 import { ListFlashSalesUseCase } from './use-cases/promotion/list-flash-sales.use-case';
+import { CreateServiceListingUseCase } from './use-cases/service/create-service-listing.use-case';
+import { ListServiceListingsUseCase } from './use-cases/service/list-service-listings.use-case';
+import { CreateServiceRequestUseCase } from './use-cases/service/create-service-request.use-case';
+import { ListServiceRequestsUseCase } from './use-cases/service/list-service-requests.use-case';
+import { SubmitServiceQuoteUseCase } from './use-cases/service/submit-service-quote.use-case';
+import { AcceptServiceQuoteUseCase } from './use-cases/service/accept-service-quote.use-case';
+import { SendServiceMessageUseCase } from './use-cases/service/send-service-message.use-case';
+import { ListServiceMessagesUseCase } from './use-cases/service/list-service-messages.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -167,6 +179,9 @@ const REPOSITORIES = [
   { provide: ADMIN_USER_REPOSITORY, useClass: TypeOrmAdminUserRepository },
   { provide: COUPON_REPOSITORY, useClass: TypeOrmCouponRepository },
   { provide: FLASH_SALE_REPOSITORY, useClass: TypeOrmFlashSaleRepository },
+  { provide: SERVICE_LISTING_REPOSITORY, useClass: TypeOrmServiceListingRepository },
+  { provide: SERVICE_REQUEST_REPOSITORY, useClass: TypeOrmServiceRequestRepository },
+  { provide: SERVICE_QUOTE_REPOSITORY, useClass: TypeOrmServiceQuoteRepository },
 ];
 
 const SERVICES = [
@@ -270,11 +285,19 @@ const USE_CASES = [
   CreateFlashSaleUseCase,
   ListActiveFlashSalesUseCase,
   ListFlashSalesUseCase,
+  CreateServiceListingUseCase,
+  ListServiceListingsUseCase,
+  CreateServiceRequestUseCase,
+  ListServiceRequestsUseCase,
+  SubmitServiceQuoteUseCase,
+  AcceptServiceQuoteUseCase,
+  SendServiceMessageUseCase,
+  ListServiceMessagesUseCase,
 ];
 
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE],
 })
 export class MarketplaceApplicationModule {}

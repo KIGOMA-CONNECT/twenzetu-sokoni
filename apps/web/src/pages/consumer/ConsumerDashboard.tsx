@@ -100,6 +100,10 @@ function ConsumerDashboard() {
           <div className="section">
             <SectionTitle title={t('app.categories')} emoji="🛍️" />
             <div className="cat-scroll">
+              <div className="cat-tile" onClick={() => navigate('/services')}>
+                <div className="cat-emoji" style={{ background: 'var(--brand-soft)' }}>🧰</div>
+                <div className="cat-name">Services</div>
+              </div>
               {(categories ?? []).map((category) => {
                 const icon = categoryIcon(category);
                 return (

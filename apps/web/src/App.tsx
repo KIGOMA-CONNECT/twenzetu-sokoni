@@ -39,6 +39,8 @@ import CustomerKyc from './pages/consumer/CustomerKyc';
 import ReferralPage from './pages/consumer/ReferralPage';
 import SubscriptionPage from './pages/consumer/SubscriptionPage';
 import SmartCatalog from './pages/consumer/SmartCatalog';
+import ConsumerServices from './pages/consumer/ConsumerServices';
+import VendorServices from './pages/vendor/VendorServices';
 
 const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
@@ -63,9 +65,11 @@ function AppRoutes() {
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><SmartCatalog /></ProtectedRoute>} />
+        <Route path="/services" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ConsumerServices /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />
         <Route path="/vendor/products" element={<ProtectedRoute roles={['vendor']}><VendorProducts /></ProtectedRoute>} />
         <Route path="/vendor/orders" element={<ProtectedRoute roles={['vendor']}><VendorOrders /></ProtectedRoute>} />
+        <Route path="/vendor/services" element={<ProtectedRoute roles={['vendor']}><VendorServices /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/vendors" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVendors /></ProtectedRoute>} />
         <Route path="/admin/disputes" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDisputes /></ProtectedRoute>} />

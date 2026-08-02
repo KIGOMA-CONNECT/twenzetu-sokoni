@@ -36,6 +36,11 @@ export type { IAdminUserRepository } from '@afri-market/marketplace-domain';
 export const COUPON_REPOSITORY = 'ICouponRepository';
 export const FLASH_SALE_REPOSITORY = 'IFlashSaleRepository';
 
+// Services marketplace
+export const SERVICE_LISTING_REPOSITORY = 'IServiceListingRepository';
+export const SERVICE_REQUEST_REPOSITORY = 'IServiceRequestRepository';
+export const SERVICE_QUOTE_REPOSITORY = 'IServiceQuoteRepository';
+
 // Services
 export const SMS_SERVICE = 'ISmsService';
 export const MOBILE_MONEY_SERVICE = 'IMobileMoneyService';

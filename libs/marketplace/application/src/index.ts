@@ -13,6 +13,10 @@ export * from './lib/commands/create-delivery.command';
 export * from './lib/commands/create-review.command';
 export * from './lib/commands/create-custom-procurement.command';
 export * from './lib/commands/submit-vendor-quote.command';
+export * from './lib/commands/create-service-listing.command';
+export * from './lib/commands/create-service-request.command';
+export * from './lib/commands/submit-service-quote.command';
+export * from './lib/commands/accept-service-quote.command';
 
 // Use Cases - Vendor
 export * from './lib/use-cases/vendor/create-vendor.use-case';
@@ -50,6 +54,16 @@ export * from './lib/use-cases/review/find-reviews-by-vendor.use-case';
 export * from './lib/use-cases/procurement/create-procurement.use-case';
 export * from './lib/use-cases/procurement/submit-quote.use-case';
 export * from './lib/use-cases/procurement/get-procurement-detail.use-case';
+
+// Use Cases - Services
+export * from './lib/use-cases/service/create-service-listing.use-case';
+export * from './lib/use-cases/service/list-service-listings.use-case';
+export * from './lib/use-cases/service/create-service-request.use-case';
+export * from './lib/use-cases/service/list-service-requests.use-case';
+export * from './lib/use-cases/service/submit-service-quote.use-case';
+export * from './lib/use-cases/service/accept-service-quote.use-case';
+export * from './lib/use-cases/service/send-service-message.use-case';
+export * from './lib/use-cases/service/list-service-messages.use-case';
 
 // Use Cases - Dispute
 export * from './lib/use-cases/dispute/create-dispute.use-case';

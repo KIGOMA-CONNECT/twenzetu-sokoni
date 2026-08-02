@@ -59,6 +59,7 @@ export function MainLayout() {
   const menuItems: { label: string; path: string; show: boolean }[] = [
     { label: 'Dashboard', path: '/dashboard', show: true },
     { label: 'Browse Vendors', path: '/vendors', show: isCustomer || isAdmin },
+    { label: 'Services', path: '/services', show: isCustomer || isAdmin },
     { label: 'My Orders', path: '/orders', show: isCustomer },
     { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Addresses', path: '/addresses', show: isCustomer },
@@ -68,6 +69,7 @@ export function MainLayout() {
     { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer },
     { label: 'Vendor Panel', path: '/vendor/dashboard', show: isVendor },
     { label: 'My Products', path: '/vendor/products', show: isVendor },
+    { label: 'My Services', path: '/vendor/services', show: isVendor },
     { label: 'Vendor Orders', path: '/vendor/orders', show: isVendor },
     { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
     { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },
@@ -93,12 +95,14 @@ export function MainLayout() {
 
   const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
     ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
+    { label: '🧰 Services', path: '/services', cta: true },
     { label: '💳 Smart Cart', path: '/catalog', cta: true },
   ];
 
   const bottomNav = [
     { label: 'Home', ico: '🏠', path: '/dashboard', show: true },
     { label: 'Vendors', ico: '🏪', path: '/vendors', show: isCustomer || isAdmin },
+    { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Account', ico: '👤', path: '/notifications', show: true },

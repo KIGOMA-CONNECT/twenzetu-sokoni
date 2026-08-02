@@ -245,3 +245,58 @@ export interface WalletTransaction {
   referenceType?: string;
   createdAt?: string;
 }
+
+export type ServicePricingModel = 'per_sqm' | 'per_hour' | 'per_room' | 'per_unit';
+
+export interface ServiceListing {
+  id: string;
+  vendorId: string;
+  name: string;
+  description: string;
+  category: string;
+  pricingModel: ServicePricingModel;
+  basePrice: number;
+  currency: string;
+  unitLabel: string;
+  imageUrl?: string;
+  isActive: boolean;
+  createdAt: string;
+}
+
+export interface ServiceQuote {
+  id: string;
+  requestId: string;
+  vendorId: string;
+  price: number;
+  currency: string;
+  message?: string;
+  status: 'OPEN' | 'ACCEPTED' | 'DECLINED';
+  createdAt: string;
+}
+
+export interface ServiceRequest {
+  id: string;
+  customerId: string;
+  vendorId: string;
+  listingId?: string;
+  title: string;
+  quantity: number;
+  unitLabel: string;
+  details?: string;
+  photoUrls: string[];
+  status: 'PENDING' | 'QUOTED' | 'AGREED' | 'ORDERED' | 'CANCELLED';
+  agreedPrice?: number;
+  currency: string;
+  createdAt: string;
+  quotes?: ServiceQuote[];
+}
+
+export interface ServiceMessage {
+  id: string;
+  requestId: string;
+  senderId: string;
+  senderName: string;
+  senderRole: string;
+  message: string;
+  createdAt: string;
+}

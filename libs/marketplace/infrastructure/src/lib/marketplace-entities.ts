@@ -32,6 +32,10 @@ import { NotificationOrmEntity } from './entities/notification-orm.entity';
 import { AuditLogOrmEntity } from './entities/audit-log-orm.entity';
 import { ReferralOrmEntity } from './entities/referral-orm.entity';
 import { SubscriptionOrmEntity } from './entities/subscription-orm.entity';
+import { ServiceListingOrmEntity } from './entities/service-listing-orm.entity';
+import { ServiceRequestOrmEntity } from './entities/service-request-orm.entity';
+import { ServiceQuoteOrmEntity } from './entities/service-quote-orm.entity';
+import { ServiceRequestMessageOrmEntity } from './entities/service-request-message-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -68,4 +72,8 @@ export const MARKETPLACE_ENTITIES = [
   AuditLogOrmEntity,
   ReferralOrmEntity,
   SubscriptionOrmEntity,
+  ServiceListingOrmEntity,
+  ServiceRequestOrmEntity,
+  ServiceQuoteOrmEntity,
+  ServiceRequestMessageOrmEntity,
 ];

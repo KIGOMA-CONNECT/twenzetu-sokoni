@@ -8,4 +8,4 @@ export type OrderStatus =
   | 'CANCELLED'
   | 'REFUNDED';
 
-export type OrderType = 'food' | 'grocery' | 'laundry' | 'secondhand' | 'procurement' | 'general';
+export type OrderType = 'food' | 'grocery' | 'laundry' | 'secondhand' | 'procurement' | 'general' | 'service';
