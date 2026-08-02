@@ -40,7 +40,7 @@ function OrderHistory() {
       .forEach((o) => {
         api.get(`/reviews/order/${o.id}`)
           .then((res) => {
-            const rev = res.data?.data;
+            const rev = res.data?.data?.data;
             if (rev) setReviewedOrders((m) => ({ ...m, [o.id]: true }));
           })
           .catch(() => { /* ignore */ });
