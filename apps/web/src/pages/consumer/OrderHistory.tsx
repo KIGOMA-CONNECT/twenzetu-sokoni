@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -8,6 +8,12 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, EmptyState } from '../../components/ui';
 import type { Order, Vendor, OrderItem } from '../../types';
+
+interface OrderReviewTarget {
+  orderId: string;
+  vendorId: string;
+  vendorName: string;
+}
 
 function OrderHistory() {
   const PAGE_SIZE = 10;
@@ -20,6 +26,26 @@ function OrderHistory() {
   const [itemsError, setItemsError] = useState<string | null>(null);
   const [itemsLoading, setItemsLoading] = useState(false);
   const [page, setPage] = useState(1);
+  const [reviewedOrders, setReviewedOrders] = useState<Record<string, boolean>>({});
+  const [reviewTarget, setReviewTarget] = useState<OrderReviewTarget | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orders) return;
+    (orders || [])
+      .filter((o) => o.status === 'DELIVERED')
+      .forEach((o) => {
+        api.get(`/reviews/order/${o.id}`)
+          .then((res) => {
+            const rev = res.data?.data;
+            if (rev) setReviewedOrders((m) => ({ ...m, [o.id]: true }));
+          })
+          .catch(() => { /* ignore */ });
+      });
+  }, [orders]);
 
   const allOrders = orders || [];
   const totalPages = Math.ceil(allOrders.length / PAGE_SIZE);
@@ -39,6 +65,34 @@ function OrderHistory() {
   };
 
   const trackableStatuses = ['OUT_FOR_DELIVERY', 'IN_TRANSIT', 'PICKED_UP', 'DELIVERED'];
+
+  const openReview = (o: Order) => {
+    setReviewTarget({ orderId: o.id, vendorId: o.vendorId, vendorName: vendorName(o.vendorId) });
+    setReviewRating(5);
+    setReviewComment('');
+    setReviewError(null);
+  };
+
+  const submitReview = async () => {
+    if (!reviewTarget) return;
+    setReviewBusy(true);
+    setReviewError(null);
+    try {
+      await api.post('/reviews', {
+        vendorId: reviewTarget.vendorId,
+        orderId: reviewTarget.orderId,
+        rating: reviewRating,
+        comment: reviewComment.trim() || undefined,
+      });
+      setReviewedOrders((m) => ({ ...m, [reviewTarget.orderId]: true }));
+      setReviewTarget(null);
+      alert('Thank you for your review!');
+    } catch (err: any) {
+      setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
+    } finally {
+      setReviewBusy(false);
+    }
+  };
 
   const toggleRow = async (orderId: string) => {
     if (expandedId === orderId) {
@@ -104,6 +158,16 @@ function OrderHistory() {
                                 onClick={(e) => { e.stopPropagation(); navigate(`/orders/${o.id}/tracking`); }}
                               >Track</button>
                             )}
+                            {o.status === 'DELIVERED' && (
+                              reviewedOrders[o.id] ? (
+                                <span className="btn btn-sm" style={{ background: '#dcfce7', color: '#166534', border: 'none', cursor: 'default' }}>✓ Reviewed</span>
+                              ) : (
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={(e) => { e.stopPropagation(); openReview(o); }}
+                                >Rate &amp; Review</button>
+                              )
+                            )}
                             <span style={{ fontSize: '0.75rem', color: 'var(--faint)', fontStyle: 'italic' }}>
                               {isExpanded ? '▾ hide' : '▸ details'}
                             </span>
@@ -157,6 +221,57 @@ function OrderHistory() {
             )}
           </div>
         )
+      )}
+
+      {reviewTarget && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+          onClick={() => !reviewBusy && setReviewTarget(null)}
+        >
+          <div
+            style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+              Rate &amp; Review — {reviewTarget.vendorName}
+            </div>
+            <div className="field">
+              <label className="field-label">Your Rating</label>
+              <div className="flex" style={{ gap: '0.4rem' }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setReviewRating(n)}
+                    style={{
+                      fontSize: '1.6rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                      opacity: n <= reviewRating ? 1 : 0.3,
+                    }}
+                    aria-label={`${n} stars`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label className="field-label">Comment (optional)</label>
+              <textarea
+                className="input"
+                style={{ minHeight: '80px' }}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="How was your order?"
+              />
+            </div>
+            {reviewError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{reviewError}</div>}
+            <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setReviewTarget(null)} disabled={reviewBusy}>Cancel</button>
+              <button className="btn btn-primary" onClick={submitReview} disabled={reviewBusy}>
+                {reviewBusy ? 'Submitting…' : 'Submit Review'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
