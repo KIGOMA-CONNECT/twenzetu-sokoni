@@ -261,6 +261,8 @@ export interface ServiceListing {
   imageUrl?: string;
   isActive: boolean;
   createdAt: string;
+  vendorRating?: number | null;
+  vendorName?: string | null;
 }
 
 export interface ServiceQuote {

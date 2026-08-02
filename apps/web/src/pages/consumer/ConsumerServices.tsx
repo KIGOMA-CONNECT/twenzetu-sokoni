@@ -79,6 +79,12 @@ export default function ConsumerServices() {
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [accepting, setAccepting] = useState(false);
 
+  const [reviewTarget, setReviewTarget] = useState<ServiceRequest | null>(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
   const myRequests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as any)?.data ?? []);
 
   const openRequest = (listing: ServiceListing) => {
@@ -190,6 +196,31 @@ export default function ConsumerServices() {
     }
   };
 
+  const openReview = (req: ServiceRequest) => {
+    setReviewTarget(req);
+    setReviewRating(5);
+    setReviewComment('');
+    setReviewError(null);
+  };
+
+  const submitReview = async () => {
+    if (!reviewTarget) return;
+    setReviewBusy(true);
+    setReviewError(null);
+    try {
+      await api.post(`/services/requests/${reviewTarget.id}/review`, {
+        rating: reviewRating,
+        comment: reviewComment.trim() || undefined,
+      });
+      setReviewTarget(null);
+      alert('Thank you for your review!');
+    } catch (err: any) {
+      setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
+    } finally {
+      setReviewBusy(false);
+    }
+  };
+
   const estimate = (l: ServiceListing) => l.basePrice * (l.pricingModel === 'per_unit' ? 1 : Math.max(1, requestForm.quantity || 1));
 
   return (
@@ -231,6 +262,13 @@ export default function ConsumerServices() {
                   <span style={styles.badge}>{l.pricingModel.replace('_', ' ')}</span>
                   <h3 style={styles.listingName}>{l.name}</h3>
                   <p style={styles.listingDesc}>{l.description}</p>
+                  {l.vendorRating ? (
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.4rem' }}>
+                      ⭐ {l.vendorRating.toFixed(1)} {l.vendorName ? `· ${l.vendorName}` : ''}
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.4rem' }}>No ratings yet</div>
+                  )}
                   <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.6rem' }}>
                     {formatCurrency(l.basePrice)}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748b' }}> / {l.unitLabel || unitLabelFor(l.pricingModel)}</span>
                   </div>
@@ -262,6 +300,9 @@ export default function ConsumerServices() {
                   <StatusBadge status={r.status} />
                   <div style={{ marginTop: '0.5rem' }}>
                     <button style={styles.buttonSecondary} onClick={() => openThread(r)}>Chat &amp; Quotes</button>
+                    {r.status === 'ORDERED' && (
+                      <button style={{ ...styles.buttonSecondary, marginLeft: '0.4rem', color: '#1e40af', borderColor: '#bfdbfe' }} onClick={() => openReview(r)}>Rate Service</button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -380,6 +421,45 @@ export default function ConsumerServices() {
               <button style={styles.buttonSecondary} onClick={() => setAcceptModal(null)} disabled={accepting}>Cancel</button>
               <button style={styles.button} onClick={acceptQuote} disabled={accepting} className="btn-primary">
                 {accepting ? 'Processing…' : 'Confirm & Pay'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {reviewTarget && (
+        <div style={styles.overlay} onClick={() => !reviewBusy && setReviewTarget(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalTitle}>Rate Service — {reviewTarget.title}</div>
+            <div style={styles.field}>
+              <label style={styles.label}>Your Rating</label>
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setReviewRating(n)}
+                    style={{
+                      fontSize: '1.6rem',
+                      border: 'none',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      opacity: n <= reviewRating ? 1 : 0.3,
+                    }}
+                    aria-label={`${n} stars`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Comment (optional)</label>
+              <textarea style={styles.textarea} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="How was the service?" />
+            </div>
+            {reviewError && <div style={styles.smallError}>{reviewError}</div>}
+            <div style={styles.footer}>
+              <button style={styles.buttonSecondary} onClick={() => setReviewTarget(null)} disabled={reviewBusy}>Cancel</button>
+              <button style={styles.button} onClick={submitReview} disabled={reviewBusy} className="btn-primary">
+                {reviewBusy ? 'Submitting…' : 'Submit Review'}
               </button>
             </div>
           </div>

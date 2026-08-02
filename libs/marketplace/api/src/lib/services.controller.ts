@@ -16,6 +16,7 @@ import {
   SendServiceMessageUseCase,
   ListServiceMessagesUseCase,
   DeleteServiceListingUseCase,
+  CreateServiceReviewUseCase,
   CreateServiceListingCommand,
   CreateServiceRequestCommand,
   SubmitServiceQuoteCommand,
@@ -26,6 +27,7 @@ import { CreateServiceRequestDto } from './dto/create-service-request.dto';
 import { SubmitServiceQuoteDto } from './dto/submit-service-quote.dto';
 import { AcceptServiceQuoteDto } from './dto/accept-service-quote.dto';
 import { SendServiceMessageDto } from './dto/send-service-message.dto';
+import { CreateServiceReviewDto } from './dto/create-service-review.dto';
 
 @ApiTags('Services')
 @ApiBearerAuth()
@@ -41,6 +43,7 @@ export class ServicesController {
     private readonly sendMessage: SendServiceMessageUseCase,
     private readonly listMessages: ListServiceMessagesUseCase,
     private readonly deleteListing: DeleteServiceListingUseCase,
+    private readonly createServiceReview: CreateServiceReviewUseCase,
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
     @Inject(SERVICE_LISTING_REPOSITORY) private readonly listingRepo: IServiceListingRepository,
   ) {}
@@ -170,6 +173,20 @@ export class ServicesController {
   public async getRequestMessages(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     const data = await this.listMessages.execute(user.tenantId, id);
     return { data };
+  }
+
+  @Post('requests/:id/review')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiParam({ name: 'id', description: 'Request ID' })
+  @ApiOperation({ summary: 'Review a completed service request (customer)' })
+  @ApiBody({ type: CreateServiceReviewDto })
+  @ApiResponse({ status: 201, description: 'Review created' })
+  public async createServiceReviewEndpoint(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: CreateServiceReviewDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.createServiceReview.execute(user.tenantId, id, user.sub, dto.rating, dto.comment);
   }
 
   // ── Quotes ──────────────────────────────────────────────────
