@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { Coupon, ICouponRepository } from '@afri-market/marketplace-domain';
+import { ICouponRepository } from '@afri-market/marketplace-domain';
 import { COUPON_REPOSITORY } from '../../tokens';
 
 @Injectable()

@@ -8,7 +8,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 
-import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, IsIn, IsUUID, MinLength } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, Min, IsIn, IsUUID } from 'class-validator';
 
 class CreateSubscriptionDto {
   @IsString()

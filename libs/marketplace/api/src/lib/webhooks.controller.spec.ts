@@ -1,6 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import { WebhooksController } from './webhooks.controller';
-import { ConfirmPaymentUseCase } from '@afri-market/marketplace-application';
+import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase } from '@afri-market/marketplace-application';
+import { MobileMoneyService } from '@afri-market/integrations';
 
 describe('WebhooksController', () => {
   let controller: WebhooksController;
@@ -12,10 +14,30 @@ describe('WebhooksController', () => {
       execute: jest.fn().mockResolvedValue({ paymentId: 'pay-1', status: 'CONFIRMED', message: 'Payment confirmed and vendor wallet credited' }),
     } as unknown as jest.Mocked<ConfirmPaymentUseCase>;
 
+    const failPayment = {
+      execute: jest.fn().mockResolvedValue({ paymentId: '', status: 'FAILED' }),
+    } as unknown as jest.Mocked<FailPaymentUseCase>;
+
+    const creditWallet = {
+      execute: jest.fn().mockResolvedValue({ walletId: 'wallet-1', balance: 1000 }),
+    } as unknown as jest.Mocked<CreditWalletUseCase>;
+
+    const mobileMoney = {
+      checkPaymentStatus: jest.fn().mockResolvedValue({ status: 'SUCCESS', receiptNumber: 'receipt-1' }),
+    } as unknown as jest.Mocked<MobileMoneyService>;
+
+    const dataSource = {
+      query: jest.fn().mockResolvedValue([]),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [WebhooksController],
       providers: [
         { provide: ConfirmPaymentUseCase, useValue: confirmPayment },
+        { provide: FailPaymentUseCase, useValue: failPayment },
+        { provide: CreditWalletUseCase, useValue: creditWallet },
+        { provide: MobileMoneyService, useValue: mobileMoney },
+        { provide: getDataSourceToken(), useValue: dataSource },
       ],
     }).compile();
 
@@ -27,22 +49,30 @@ describe('WebhooksController', () => {
   });
 
   describe('handleMpesaCallback', () => {
+    const stk = (overrides: Record<string, unknown>) => ({
+      Body: {
+        stkCallback: {
+          MerchantRequestID: 'mr-1',
+          CheckoutRequestID: 'ext-1',
+          ResultCode: 0,
+          ResultDesc: 'Success',
+          CallbackMetadata: {
+            Item: [
+              { Name: 'MpesaReceiptNumber', Value: 'receipt-1' },
+            ],
+          },
+          ...overrides,
+        },
+      },
+    });
+
     it('should return success response shape', async () => {
-      const result = await controller.handleMpesaCallback({
-        CheckoutRequestID: 'ext-1',
-        ResultCode: 0,
-        ResultDesc: 'Success',
-        MpesaReceiptNumber: 'receipt-1',
-      });
+      const result = await controller.handleMpesaCallback(stk({}));
       expect(result).toEqual({ ResultCode: 0, ResultDesc: 'Success' });
     });
 
     it('should call confirmPayment.execute when ResultCode=0', async () => {
-      await controller.handleMpesaCallback({
-        ResultCode: 0,
-        CheckoutRequestID: 'ext-1',
-        MpesaReceiptNumber: 'receipt-1',
-      });
+      await controller.handleMpesaCallback(stk({}));
 
       expect(confirmPayment.execute).toHaveBeenCalledWith({
         transactionRef: 'ext-1',
@@ -51,10 +81,7 @@ describe('WebhooksController', () => {
     });
 
     it('should not call confirmPayment.execute when ResultCode is not 0', async () => {
-      await controller.handleMpesaCallback({
-        ResultCode: 1,
-        CheckoutRequestID: 'ext-1',
-      });
+      await controller.handleMpesaCallback(stk({ ResultCode: 1, ResultDesc: 'Failed' }));
 
       expect(confirmPayment.execute).not.toHaveBeenCalled();
     });
@@ -62,11 +89,7 @@ describe('WebhooksController', () => {
     it('should still return success when payment not found', async () => {
       confirmPayment.execute.mockResolvedValue({ paymentId: '', status: 'NOT_FOUND', message: 'Payment not found for transaction ref' });
 
-      const result = await controller.handleMpesaCallback({
-        ResultCode: 0,
-        ResultDesc: 'Success',
-        CheckoutRequestID: 'nonexistent',
-      });
+      const result = await controller.handleMpesaCallback(stk({ CheckoutRequestID: 'nonexistent' }));
       expect(result).toEqual({ ResultCode: 0, ResultDesc: 'Success' });
     });
   });

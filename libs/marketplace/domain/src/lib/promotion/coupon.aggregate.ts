@@ -1,4 +1,4 @@
-import { AggregateRoot, EntityId, Money, TenantId } from '@afri-market/kernel';
+import { AggregateRoot, EntityId, TenantId } from '@afri-market/kernel';
 
 export type DiscountType = 'percentage' | 'fixed';
 export type CouponStatus = 'ACTIVE' | 'EXPIRED' | 'DISABLED';
