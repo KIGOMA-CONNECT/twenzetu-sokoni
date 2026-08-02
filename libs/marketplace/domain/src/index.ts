@@ -1,6 +1,7 @@
 export * from './lib/vendor/vendor-status';
 export * from './lib/vendor/vendor.aggregate';
 export * from './lib/vendor/vendor.repository.interface';
+export * from './lib/vendor/vendor-category';
 export * from './lib/product/product-status';
 export * from './lib/product/product-type';
 export * from './lib/product/product.aggregate';
@@ -16,6 +17,7 @@ export * from './lib/order-item/order-item.aggregate';
 export { DeliveryStatus } from './lib/delivery/delivery-status';
 export * from './lib/delivery/delivery.aggregate';
 export * from './lib/delivery/delivery.repository.interface';
+export * from './lib/delivery/delivery-fare';
 export * from './lib/fleet/vehicle-type';
 export * from './lib/fleet/vehicle.aggregate';
 export * from './lib/fleet/vehicle.repository.interface';

@@ -1,4 +1,4 @@
-export type UserRole = 'super_admin' | 'admin' | 'vendor' | 'customer' | 'driver';
+export type UserRole = 'super_admin' | 'admin' | 'finance_admin' | 'operations_admin' | 'support_admin' | 'compliance_admin' | 'marketing_admin' | 'vendor' | 'customer' | 'driver' | 'market_captain';
 export type UserStatus = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED';
 
 export interface User {

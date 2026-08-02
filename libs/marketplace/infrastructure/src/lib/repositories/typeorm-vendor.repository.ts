@@ -111,6 +111,8 @@ export class TypeOrmVendorRepository extends TypeOrmRepository<Vendor, VendorOrm
       averageRating: Number(e.averageRating),
       totalOrders: e.totalOrders,
       version: e.version,
+      latitude: e.latitude == null ? undefined : Number(e.latitude),
+      longitude: e.longitude == null ? undefined : Number(e.longitude),
     });
   }
 
@@ -127,6 +129,8 @@ export class TypeOrmVendorRepository extends TypeOrmRepository<Vendor, VendorOrm
       averageRating: entity.averageRating,
       totalOrders: entity.totalOrders,
       version: entity.version,
+      latitude: entity.latitude ?? null,
+      longitude: entity.longitude ?? null,
     };
   }
 }

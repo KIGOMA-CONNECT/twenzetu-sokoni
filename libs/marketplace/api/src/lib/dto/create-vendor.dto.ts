@@ -17,4 +17,12 @@ export class CreateVendorDto {
   @Min(0)
   @Max(100)
   commissionRate!: number;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
 }

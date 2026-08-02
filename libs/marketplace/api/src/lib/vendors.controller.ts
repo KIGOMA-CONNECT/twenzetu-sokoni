@@ -49,6 +49,8 @@ export class VendorsController {
       dto.description,
       dto.category,
       dto.commissionRate,
+      dto.latitude,
+      dto.longitude,
     );
     return this.createVendor.execute(user.tenantId, command);
   }

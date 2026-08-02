@@ -103,7 +103,7 @@ function ConsumerDashboard() {
               {(categories ?? []).map((category) => {
                 const icon = categoryIcon(category);
                 return (
-                  <div key={category.id} className="cat-tile" onClick={() => navigate('/catalog')}>
+                  <div key={category.id} className="cat-tile" onClick={() => navigate(`/vendors?category=${encodeURIComponent(category.type)}`)}>
                     <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
                     <div className="cat-name">{category.name}</div>
                   </div>

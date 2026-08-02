@@ -8,6 +8,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, EmptyState, VendorCard } from '../../components/ui';
 import api from '../../api/client';
+import { VENDOR_CATEGORIES } from '../../constants/categories';
 import type { Vendor } from '../../types';
 
 function VendorList() {
@@ -15,13 +16,14 @@ function VendorList() {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const [searchParams] = useSearchParams();
+  const category = searchParams.get('category') || '';
   const [query, setQuery] = useState(searchParams.get('q') || '');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<any>(null);
-  const { data: vendors, loading, error } = useApi<Vendor[]>('/vendors', []);
+  const { data: vendors, loading, error } = useApi<Vendor[]>(category ? `/vendors?category=${encodeURIComponent(category)}` : '/vendors', [category]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -57,6 +59,26 @@ function VendorList() {
   return (
     <div className="page">
       <PageHeader title={t('vendor.title')} subtitle={t('vendor.subtitle')} />
+
+      <div className="cat-scroll" style={{ marginBottom: '1.25rem' }}>
+        <div
+          className={`cat-tile ${category === '' ? 'cat-tile-active' : ''}`}
+          onClick={() => navigate('/vendors')}
+          style={{ minWidth: 'auto', padding: '0.6rem 1rem' }}
+        >
+          <span className="cat-name" style={{ fontWeight: 700 }}>All</span>
+        </div>
+        {VENDOR_CATEGORIES.map((c) => (
+          <div
+            key={c.key}
+            className={`cat-tile ${category === c.key ? 'cat-tile-active' : ''}`}
+            onClick={() => navigate(`/vendors?category=${c.key}`)}
+            style={{ minWidth: 'auto', padding: '0.6rem 1rem' }}
+          >
+            <span className="cat-name" style={{ fontWeight: 700 }}>{c.emoji} {c.label}</span>
+          </div>
+        ))}
+      </div>
 
       <div ref={searchRef} style={{ position: 'relative', marginBottom: '1.5rem', maxWidth: 560 }}>
         <div className="searchbar">

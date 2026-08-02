@@ -26,6 +26,8 @@ export class CreateVendorUseCase {
       description: command.description,
       category: command.category,
       commissionRate: command.commissionRate,
+      latitude: command.latitude,
+      longitude: command.longitude,
     });
 
     await this.vendorRepo.save(vendor);

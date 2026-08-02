@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { PageHeader } from '../../components/ui';
+import { VENDOR_CATEGORIES } from '../../constants/categories';
 
 const STEPS = ['Shop Info', 'Contact & Location', 'KYC Documents', 'Review'];
 
@@ -50,6 +51,8 @@ export default function VendorOnboarding() {
         commissionRate: form.commissionRate,
         address: form.address,
         phone: form.phone,
+        latitude: form.gpsLatitude ? Number(form.gpsLatitude) : undefined,
+        longitude: form.gpsLongitude ? Number(form.gpsLongitude) : undefined,
       });
 
       if (kyc.nidaNumber) {
@@ -107,11 +110,9 @@ export default function VendorOnboarding() {
             <div className="field">
               <label className="field-label">Category</label>
               <select className="select" value={form.category} onChange={e => update('category', e.target.value)}>
-                <option value="food">Food</option>
-                <option value="grocery">Grocery</option>
-                <option value="laundry">Laundry</option>
-                <option value="secondhand">Secondhand</option>
-                <option value="procurement">Procurement</option>
+                {VENDOR_CATEGORIES.map(c => (
+                  <option key={c.key} value={c.key}>{c.label}</option>
+                ))}
               </select>
             </div>
             <div className="field">

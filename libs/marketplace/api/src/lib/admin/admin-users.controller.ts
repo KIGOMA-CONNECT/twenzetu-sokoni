@@ -49,6 +49,9 @@ export class AdminUsersController {
     @CurrentUser() caller: JwtPayload,
     @Body() dto: { phoneNumber: string; fullName: string; password: string; role: string; permissions?: string[]; email?: string },
   ) {
+    if (!ADMIN_ROLES.includes(dto.role as UserRole)) {
+      return { success: false, message: `Invalid role. Must be one of: ${ADMIN_ROLES.join(', ')}` };
+    }
     const existing = await this.userRepo.findOne({ where: { phoneNumber: dto.phoneNumber } });
     if (existing) {
       return { success: false, message: 'Phone number already registered' };

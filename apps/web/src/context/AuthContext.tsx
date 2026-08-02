@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import api, { clearSession } from '../api/client';
 import type { User, AuthResponse, VerifyOtpResponse } from '../types';
 
+const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -88,7 +90,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sendOtp,
     verifyOtp,
     logout,
-    isAdmin: user?.role === 'admin' || user?.role === 'super_admin',
+    isAdmin: STAFF_ADMIN_ROLES.includes(user?.role || ''),
     isSuperAdmin: user?.role === 'super_admin',
     isVendor: user?.role === 'vendor',
     isCustomer: user?.role === 'customer',

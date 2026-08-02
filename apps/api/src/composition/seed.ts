@@ -30,15 +30,15 @@ const USERS = [
 ];
 
 const VENDORS = [
-  { id: 'c0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000011', shopName: 'Dar Fresh Market', description: 'Fresh produce from local farms', category: 'food', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000014', shopName: 'Kariakoo Electronics', description: 'Phones, laptops, and accessories', category: 'electronics', commissionRate: 8 },
-  { id: 'c0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000015', shopName: 'Mama Rehema Cleaning', description: 'Usafi wa nyumbani, sabuni na huduma za kusafisha', category: 'cleaning', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000016', shopName: 'Saada Fashion Tailors', description: 'Ushonaji na ufuaji wa nguo', category: 'tailoring', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000022', shopName: 'Nairobi Fresh Market', description: 'Kenyan fresh produce and groceries', category: 'food', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000023', shopName: 'Lagos Groceries Hub', description: 'Nigerian staples and daily goods', category: 'grocery', commissionRate: 8 },
-  { id: 'c0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000024', shopName: 'Accra Marketplace', description: 'Ghanaian food and household essentials', category: 'food', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000025', shopName: 'Kigali Farm Produce', description: 'Rwandan farm-fresh produce', category: 'food', commissionRate: 10 },
-  { id: 'c0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000026', shopName: "Jo'burg Wholesale", description: 'South African groceries in bulk', category: 'grocery', commissionRate: 8 },
+  { id: 'c0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000011', shopName: 'Dar Fresh Market', description: 'Fresh produce from local farms', category: 'food', commissionRate: 10, latitude: -6.8191, longitude: 39.2802 },
+  { id: 'c0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000014', shopName: 'Kariakoo Electronics', description: 'Phones, laptops, and accessories', category: 'electronics', commissionRate: 8, latitude: -6.8204, longitude: 39.2837 },
+  { id: 'c0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000015', shopName: 'Mama Rehema Cleaning', description: 'Usafi wa nyumbani, sabuni na huduma za kusafisha', category: 'cleaning', commissionRate: 10, latitude: -6.7924, longitude: 39.2083 },
+  { id: 'c0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000016', shopName: 'Saada Fashion Tailors', description: 'Ushonaji na ufuaji wa nguo', category: 'tailoring', commissionRate: 10, latitude: -6.8124, longitude: 39.2561 },
+  { id: 'c0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000022', shopName: 'Nairobi Fresh Market', description: 'Kenyan fresh produce and groceries', category: 'food', commissionRate: 10, latitude: -6.8015, longitude: 39.2672 },
+  { id: 'c0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000023', shopName: 'Lagos Groceries Hub', description: 'Nigerian staples and daily goods', category: 'grocery', commissionRate: 8, latitude: -6.8084, longitude: 39.2391 },
+  { id: 'c0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000024', shopName: 'Accra Marketplace', description: 'Ghanaian food and household essentials', category: 'food', commissionRate: 10, latitude: -6.8262, longitude: 39.2911 },
+  { id: 'c0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000025', shopName: 'Kigali Farm Produce', description: 'Rwandan farm-fresh produce', category: 'food', commissionRate: 10, latitude: -6.7861, longitude: 39.2874 },
+  { id: 'c0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, userId: 'b0000000-0000-0000-0000-000000000026', shopName: "Jo'burg Wholesale", description: 'South African groceries in bulk', category: 'grocery', commissionRate: 8, latitude: -6.7997, longitude: 39.2467 },
 ];
 
 const CATEGORIES = [
@@ -153,9 +153,10 @@ async function seed(): Promise<void> {
     // Vendors
     for (const v of VENDORS) {
       await ds.query(
-        `INSERT INTO vendors (id, tenant_id, user_id, shop_name, description, category, commission_rate, status, version, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', 1, NOW(), NOW()) ON CONFLICT DO NOTHING`,
-        [v.id, v.tenantId, v.userId, v.shopName, v.description, v.category, v.commissionRate],
+        `INSERT INTO vendors (id, tenant_id, user_id, shop_name, description, category, commission_rate, status, version, latitude, longitude, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE', 1, $8, $9, NOW(), NOW())
+         ON CONFLICT (id) DO UPDATE SET latitude = $8, longitude = $9`,
+        [v.id, v.tenantId, v.userId, v.shopName, v.description, v.category, v.commissionRate, v.latitude, v.longitude],
       );
     }
     console.log('  Vendors seeded');

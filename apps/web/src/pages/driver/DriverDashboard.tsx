@@ -7,6 +7,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import DeliveryMap from '../../components/DeliveryMap';
 import type { Delivery } from '../../types';
 
 const styles: Record<string, React.CSSProperties> = {
@@ -184,28 +185,48 @@ export default function DriverDashboard() {
             {active.length === 0 ? (
               <div style={styles.empty}>No active deliveries right now.</div>
             ) : (
-              <table style={styles.table}>
-                <thead>
-                  <tr>
-                    <th style={styles.th}>Order ID</th>
-                    <th style={styles.th}>Pickup</th>
-                    <th style={styles.th}>Delivery</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Earnings</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {active.map((d) => (
-                    <tr key={d.id}>
-                      <td style={styles.td}>{truncateId(d.orderId)}</td>
-                      <td style={styles.td}>{d.pickupAddress}</td>
-                      <td style={styles.td}>{d.deliveryAddress}</td>
-                      <td style={styles.td}><StatusBadge status={d.status} /></td>
-                      <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
+              <>
+                {active[0]?.deliveryLatitude && active[0]?.deliveryLongitude ? (
+                  <div style={{ marginBottom: '1.25rem' }}>
+                    <DeliveryMap
+                      pickupLat={active[0]?.pickupLatitude}
+                      pickupLng={active[0]?.pickupLongitude}
+                      deliveryLat={active[0]?.deliveryLatitude}
+                      deliveryLng={active[0]?.deliveryLongitude}
+                      driverLat={active[0]?.currentLatitude}
+                      driverLng={active[0]?.currentLongitude}
+                      pickupLabel={active[0]?.pickupAddress || 'Pickup'}
+                      deliveryLabel={active[0]?.deliveryAddress || 'Customer'}
+                      height={280}
+                    />
+                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>
+                      📍 Drop off: {active[0]?.deliveryAddress}
+                    </div>
+                  </div>
+                ) : null}
+                <table style={styles.table}>
+                  <thead>
+                    <tr>
+                      <th style={styles.th}>Order ID</th>
+                      <th style={styles.th}>Pickup</th>
+                      <th style={styles.th}>Delivery</th>
+                      <th style={styles.th}>Status</th>
+                      <th style={styles.th}>Earnings</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {active.map((d) => (
+                      <tr key={d.id}>
+                        <td style={styles.td}>{truncateId(d.orderId)}</td>
+                        <td style={styles.td}>{d.pickupAddress}</td>
+                        <td style={styles.td}>{d.deliveryAddress}</td>
+                        <td style={styles.td}><StatusBadge status={d.status} /></td>
+                        <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
             )}
           </div>
         </>

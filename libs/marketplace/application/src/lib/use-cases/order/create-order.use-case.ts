@@ -8,6 +8,7 @@ import {
   IOrderRepository,
   IPaymentRepository,
   OrderType,
+  DeliveryFareCalculator,
 } from '@afri-market/marketplace-domain';
 import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, getCurrencyForPhone } from '@afri-market/integrations';
 import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
@@ -49,13 +50,30 @@ export class CreateOrderUseCase {
 
     const currency = command.currency ?? getCurrencyForPhone(command.customerPhone ?? '');
 
+    let deliveryFee = 0;
+    if (
+      vendor!.latitude != null &&
+      vendor!.longitude != null &&
+      command.deliveryLatitude != null &&
+      command.deliveryLongitude != null
+    ) {
+      deliveryFee = DeliveryFareCalculator.calculate({
+        pickupLatitude: vendor!.latitude,
+        pickupLongitude: vendor!.longitude,
+        dropLatitude: command.deliveryLatitude,
+        dropLongitude: command.deliveryLongitude,
+        vehicleType: 'boda',
+        currency,
+      }).totalFare;
+    }
+
     const commissionSplit = CommissionEngine.calculate({
       items: command.items.map((i) => ({
         unitPrice: i.unitPrice,
         quantity: i.quantity,
       })),
       vendorCommissionRate: vendor!.commissionRate,
-      deliveryFee: 0,
+      deliveryFee,
       currency,
     });
 

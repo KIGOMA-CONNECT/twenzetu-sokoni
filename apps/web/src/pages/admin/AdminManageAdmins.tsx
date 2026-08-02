@@ -13,10 +13,24 @@ interface AdminUser {
 }
 
 const ALL_PERMISSIONS = [
-  'manage_vendors', 'manage_disputes', 'manage_drivers',
+  'manage_admins', 'manage_vendors', 'manage_disputes', 'manage_drivers',
   'manage_promotions', 'view_analytics', 'manage_orders',
   'manage_finance', 'manage_settings',
 ];
+
+const ROLE_OPTIONS = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'super_admin', label: 'Super Admin' },
+  { value: 'finance_admin', label: 'Finance Admin' },
+  { value: 'operations_admin', label: 'Operations Admin' },
+  { value: 'support_admin', label: 'Support Admin' },
+  { value: 'compliance_admin', label: 'Compliance Admin' },
+  { value: 'marketing_admin', label: 'Marketing Admin' },
+];
+
+const ROLE_LABELS: Record<string, string> = Object.fromEntries(
+  ROLE_OPTIONS.map(r => [r.value, r.label]),
+);
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
@@ -140,8 +154,7 @@ export default function AdminManageAdmins() {
             <div style={styles.fieldGroup}>
               <label style={styles.label}>Role</label>
               <select style={styles.input} value={fRole} onChange={e => setFRole(e.target.value)}>
-                <option value="admin">Admin</option>
-                <option value="super_admin">Super Admin</option>
+                {ROLE_OPTIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
               </select>
             </div>
             <div style={styles.fieldGroup}>
@@ -175,7 +188,7 @@ export default function AdminManageAdmins() {
                   <td style={styles.td}>{a.phoneNumber}</td>
                   <td style={styles.td}>
                     <span style={a.role === 'super_admin' ? styles.badgeSuper : styles.badgeAdmin}>
-                      {a.role === 'super_admin' ? 'Super Admin' : 'Admin'}
+                      {ROLE_LABELS[a.role] || a.role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                     </span>
                   </td>
                   <td style={styles.td}><span style={styles.badgeActive}>{a.status}</span></td>
@@ -211,10 +224,15 @@ export default function AdminManageAdmins() {
                     )}
                   </td>
                   <td style={styles.td}>
-                    {a.role === 'admin' ? (
-                      <button style={{ ...styles.btn, ...styles.primaryBtn }} onClick={() => handleChangeRole(a.id, 'super_admin')}>Promote</button>
+                    {a.role === 'super_admin' ? (
+                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Full access</span>
                     ) : (
-                      <button style={{ ...styles.btn, ...styles.outlineBtn }} onClick={() => handleChangeRole(a.id, 'admin')}>Demote</button>
+                      <>
+                        {a.role === 'admin' && (
+                          <button style={{ ...styles.btn, ...styles.primaryBtn }} onClick={() => handleChangeRole(a.id, 'super_admin')}>Promote</button>
+                        )}
+                        <button style={{ ...styles.btn, ...styles.outlineBtn }} onClick={() => handleChangeRole(a.id, 'admin')}>Demote</button>
+                      </>
                     )}
                     <button style={{ ...styles.btn, ...styles.dangerBtn }} onClick={() => handleDelete(a.id, a.fullName)}>Delete</button>
                   </td>

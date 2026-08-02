@@ -30,6 +30,12 @@ export class VendorOrmEntity extends TenantAwareEntity {
   @Column({ name: 'total_orders', type: 'integer', default: 0 })
   public totalOrders!: number;
 
+  @Column({ name: 'latitude', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  public latitude!: number | null;
+
+  @Column({ name: 'longitude', type: 'decimal', precision: 10, scale: 7, nullable: true })
+  public longitude!: number | null;
+
   @Column({ type: 'integer', default: 1 })
   public version!: number;
 }

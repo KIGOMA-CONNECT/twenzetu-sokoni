@@ -5,6 +5,7 @@ import { useCurrency } from '../context/CurrencyContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
+import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
   const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
@@ -36,7 +37,16 @@ export function MainLayout() {
   const handleLogout = () => { logout(); navigate('/login'); };
   const go = (path: string) => { navigate(path); setMenuOpen(false); };
 
-  const p = (perm: string) => isSuperAdmin || (user?.permissions?.includes(perm) ?? false);
+  const roleDefaults: Record<string, string[]> = {
+    finance_admin: ['manage_finance', 'manage_orders', 'view_analytics'],
+    operations_admin: ['manage_orders', 'manage_vendors', 'manage_drivers', 'view_analytics'],
+    support_admin: ['manage_disputes', 'manage_orders', 'view_analytics'],
+    compliance_admin: ['manage_vendors', 'manage_disputes', 'manage_settings', 'view_analytics'],
+    marketing_admin: ['manage_promotions', 'view_analytics'],
+  };
+  const effectivePerms = (role: string | undefined) =>
+    role === 'super_admin' ? ['*'] : (user?.permissions?.length ? user.permissions : roleDefaults[role || ''] || []);
+  const p = (perm: string) => isSuperAdmin || (effectivePerms(user?.role) ?? []).includes(perm);
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -82,12 +92,7 @@ export function MainLayout() {
     location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
   const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
-    { label: '🍲 Food', path: '/vendors' },
-    { label: '🥬 Groceries', path: '/vendors' },
-    { label: '📱 Electronics', path: '/vendors' },
-    { label: '🧵 General', path: '/vendors' },
-    { label: '🧺 Laundry', path: '/vendors' },
-    { label: '♻️ Secondhand', path: '/vendors' },
+    ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
     { label: '💳 Smart Cart', path: '/catalog', cta: true },
   ];
 

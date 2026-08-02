@@ -1,4 +1,5 @@
 import { AggregateRoot, EntityId, Guard, TenantId } from '@afri-market/kernel';
+import { isVendorCategory } from './vendor-category';
 
 export interface CreateVendorProps {
   readonly tenantId: TenantId;
@@ -7,6 +8,8 @@ export interface CreateVendorProps {
   readonly description?: string;
   readonly category: string;
   readonly commissionRate: number;
+  readonly latitude?: number;
+  readonly longitude?: number;
 }
 
 export interface ReconstituteVendorProps {
@@ -21,6 +24,8 @@ export interface ReconstituteVendorProps {
   readonly averageRating: number;
   readonly totalOrders: number;
   readonly version: number;
+  readonly latitude?: number;
+  readonly longitude?: number;
 }
 
 import { VendorStatus } from './vendor-status';
@@ -38,6 +43,8 @@ export class Vendor extends AggregateRoot<EntityId> {
     private _averageRating: number,
     private _totalOrders: number,
     private readonly _version: number,
+    private _latitude?: number,
+    private _longitude?: number,
   ) {
     super(id);
   }
@@ -45,10 +52,11 @@ export class Vendor extends AggregateRoot<EntityId> {
   public static create(props: CreateVendorProps): Vendor {
     Guard.assert(Guard.againstEmptyString(props.shopName, 'shopName'));
     Guard.assert(props.commissionRate >= 0 && props.commissionRate <= 100, 'Commission rate must be 0-100');
+    Guard.assert(isVendorCategory(props.category), `Invalid vendor category: ${props.category}`);
     return new Vendor(
       EntityId.create(), props.tenantId, props.userId, props.shopName,
       props.description, props.category, props.commissionRate,
-      'PENDING', 0, 0, 1,
+      'PENDING', 0, 0, 1, props.latitude, props.longitude,
     );
   }
 
@@ -57,6 +65,7 @@ export class Vendor extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.userId, props.shopName,
       props.description, props.category, props.commissionRate,
       props.status, props.averageRating, props.totalOrders, props.version,
+      props.latitude, props.longitude,
     );
   }
 
@@ -70,6 +79,8 @@ export class Vendor extends AggregateRoot<EntityId> {
   public get averageRating(): number { return this._averageRating; }
   public get totalOrders(): number { return this._totalOrders; }
   public get version(): number { return this._version; }
+  public get latitude(): number | undefined { return this._latitude; }
+  public get longitude(): number | undefined { return this._longitude; }
 
   public toDto() {
     return {
@@ -81,7 +92,14 @@ export class Vendor extends AggregateRoot<EntityId> {
       status: this._status,
       averageRating: this._averageRating,
       totalOrders: this._totalOrders,
+      latitude: this._latitude,
+      longitude: this._longitude,
     };
+  }
+
+  public updateCoordinates(latitude: number, longitude: number): void {
+    this._latitude = latitude;
+    this._longitude = longitude;
   }
 
   public approve(): void { this._status = 'ACTIVE'; }

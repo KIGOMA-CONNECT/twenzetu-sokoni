@@ -40,6 +40,8 @@ import ReferralPage from './pages/consumer/ReferralPage';
 import SubscriptionPage from './pages/consumer/SubscriptionPage';
 import SmartCatalog from './pages/consumer/SmartCatalog';
 
+const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
+
 function AppRoutes() {
   const { user } = useAuth();
   return (
@@ -49,10 +51,10 @@ function AppRoutes() {
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardRedirect />} />
-        <Route path="/vendors" element={<ProtectedRoute roles={['customer','admin']}><VendorList /></ProtectedRoute>} />
-        <Route path="/vendors/:vendorId/products" element={<ProtectedRoute roles={['customer','admin']}><ProductList /></ProtectedRoute>} />
-        <Route path="/orders" element={<ProtectedRoute roles={['customer','admin']}><OrderHistory /></ProtectedRoute>} />
-        <Route path="/orders/:orderId/tracking" element={<ProtectedRoute roles={['customer','admin']}><OrderTracking /></ProtectedRoute>} />
+        <Route path="/vendors" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><VendorList /></ProtectedRoute>} />
+        <Route path="/vendors/:vendorId/products" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ProductList /></ProtectedRoute>} />
+        <Route path="/orders" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><OrderHistory /></ProtectedRoute>} />
+        <Route path="/orders/:orderId/tracking" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><OrderTracking /></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute roles={['customer','vendor']}><WalletPage /></ProtectedRoute>} />
         <Route path="/addresses" element={<ProtectedRoute roles={['customer']}><AddressPage /></ProtectedRoute>} />
         <Route path="/loyalty" element={<ProtectedRoute roles={['customer']}><LoyaltyPage /></ProtectedRoute>} />
@@ -60,20 +62,20 @@ function AppRoutes() {
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
-        <Route path="/catalog" element={<ProtectedRoute roles={['customer','admin']}><SmartCatalog /></ProtectedRoute>} />
+        <Route path="/catalog" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><SmartCatalog /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />
         <Route path="/vendor/products" element={<ProtectedRoute roles={['vendor']}><VendorProducts /></ProtectedRoute>} />
         <Route path="/vendor/orders" element={<ProtectedRoute roles={['vendor']}><VendorOrders /></ProtectedRoute>} />
-        <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-        <Route path="/admin/vendors" element={<ProtectedRoute roles={['admin']}><AdminVendors /></ProtectedRoute>} />
-        <Route path="/admin/disputes" element={<ProtectedRoute roles={['admin']}><AdminDisputes /></ProtectedRoute>} />
-        <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
-        <Route path="/admin/ussd" element={<ProtectedRoute roles={['admin']}><UssdSimulator /></ProtectedRoute>} />
-        <Route path="/admin/promotions" element={<ProtectedRoute roles={['admin']}><AdminPromotions /></ProtectedRoute>} />
-        <Route path="/admin/drivers" element={<ProtectedRoute roles={['admin']}><AdminDrivers /></ProtectedRoute>} />
+        <Route path="/admin/dashboard" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDashboard /></ProtectedRoute>} />
+        <Route path="/admin/vendors" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVendors /></ProtectedRoute>} />
+        <Route path="/admin/disputes" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDisputes /></ProtectedRoute>} />
+        <Route path="/admin/analytics" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminAnalytics /></ProtectedRoute>} />
+        <Route path="/admin/ussd" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><UssdSimulator /></ProtectedRoute>} />
+        <Route path="/admin/promotions" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminPromotions /></ProtectedRoute>} />
+        <Route path="/admin/drivers" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDrivers /></ProtectedRoute>} />
         <Route path="/admin/manage-admins" element={<ProtectedRoute roles={['super_admin']}><AdminManageAdmins /></ProtectedRoute>} />
-        <Route path="/admin/reconciliation" element={<ProtectedRoute roles={['admin']}><AdminReconciliation /></ProtectedRoute>} />
-        <Route path="/admin/audit-log" element={<ProtectedRoute roles={['admin']}><AdminAuditLog /></ProtectedRoute>} />
+        <Route path="/admin/reconciliation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminReconciliation /></ProtectedRoute>} />
+        <Route path="/admin/audit-log" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminAuditLog /></ProtectedRoute>} />
         <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
         <Route path="/terms" element={<LegalPage />} />
         <Route path="/privacy" element={<LegalPage />} />
@@ -91,7 +93,7 @@ function AppRoutes() {
 function DashboardRedirect() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
-  if (user.role === 'admin' || user.role === 'super_admin') return <Navigate to="/admin/dashboard" />;
+  if (STAFF_ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin/dashboard" />;
   if (user.role === 'vendor') return <Navigate to="/vendor/dashboard" />;
   if (user.role === 'driver') return <Navigate to="/driver/dashboard" />;
   if (user.role === 'customer') return <ConsumerDashboard />;

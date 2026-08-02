@@ -1,10 +1,25 @@
-export type UserRole = 'customer' | 'vendor' | 'driver' | 'market_captain' | 'admin' | 'super_admin';
+export type UserRole =
+  | 'customer'
+  | 'vendor'
+  | 'driver'
+  | 'market_captain'
+  | 'admin'
+  | 'super_admin'
+  | 'finance_admin'
+  | 'operations_admin'
+  | 'support_admin'
+  | 'compliance_admin'
+  | 'marketing_admin';
 
 export const USER_ROLES: ReadonlyArray<UserRole> = [
   'customer', 'vendor', 'driver', 'market_captain', 'admin', 'super_admin',
+  'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin',
 ];
 
-export const ADMIN_ROLES: ReadonlyArray<UserRole> = ['admin', 'super_admin'];
+export const ADMIN_ROLES: ReadonlyArray<UserRole> = [
+  'admin', 'super_admin', 'finance_admin', 'operations_admin',
+  'support_admin', 'compliance_admin', 'marketing_admin',
+];
 
 export const SUPER_ADMIN_PERMISSIONS = [
   'manage_admins', 'manage_vendors', 'manage_disputes',
@@ -28,7 +43,21 @@ export function defaultPermissionsForRole(role: UserRole): AdminPermission[] {
       return [...SUPER_ADMIN_PERMISSIONS];
     case 'admin':
       return [...FULL_ADMIN_PERMISSIONS];
+    case 'finance_admin':
+      return ['manage_finance', 'manage_orders', 'view_analytics'];
+    case 'operations_admin':
+      return ['manage_orders', 'manage_vendors', 'manage_drivers', 'view_analytics'];
+    case 'support_admin':
+      return ['manage_disputes', 'manage_orders', 'view_analytics'];
+    case 'compliance_admin':
+      return ['manage_vendors', 'manage_disputes', 'manage_settings', 'view_analytics'];
+    case 'marketing_admin':
+      return ['manage_promotions', 'view_analytics'];
     default:
       return [];
   }
+}
+
+export function isAdminRole(role: string | undefined | null): boolean {
+  return ADMIN_ROLES.includes(role as UserRole);
 }

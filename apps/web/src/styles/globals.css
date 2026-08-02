@@ -468,6 +468,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   transition: all 0.18s ease;
 }
 .cat-tile:hover { transform: translateY(-3px); box-shadow: var(--shadow); border-color: var(--brand); }
+.cat-tile-active { border-color: var(--brand); background: var(--brand-soft); box-shadow: var(--shadow); }
 .cat-tile .cat-emoji {
   width: 48px;
   height: 48px;

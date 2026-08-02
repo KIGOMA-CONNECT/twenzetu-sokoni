@@ -130,6 +130,8 @@ function SmartCatalog() {
             unitPrice: Number(m.price),
           })),
           deliveryAddress: selectedAddr.fullAddress,
+          deliveryLatitude: selectedAddr.latitude ?? undefined,
+          deliveryLongitude: selectedAddr.longitude ?? undefined,
           paymentMethod,
         });
         const otpCode = res.data.data.otpCode;
