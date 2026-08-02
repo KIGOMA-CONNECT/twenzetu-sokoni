@@ -118,6 +118,11 @@ export default function AddressPage() {
 
   const onMapReady = (el: HTMLDivElement | null) => {
     if (!el || mapRef.current) return;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+    });
     const defaultPos: [number, number] = [-6.7924, 39.2083];
     const map = L.map(el, { attributionControl: true }).setView(defaultPos, 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
