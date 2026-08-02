@@ -28,6 +28,7 @@ export interface ReconstituteServiceRequestProps {
   readonly status: ServiceRequestStatus;
   readonly agreedPrice: Money | undefined;
   readonly currency: string;
+  readonly orderId: EntityId | undefined;
   readonly version: number;
 }
 
@@ -46,6 +47,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
     private _status: ServiceRequestStatus,
     private _agreedPrice: Money | undefined,
     private _currency: string,
+    private _orderId: EntityId | undefined,
     private readonly _version: number,
   ) {
     super(id);
@@ -56,7 +58,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       EntityId.create(), props.tenantId, props.customerId, props.vendorId,
       props.listingId, props.title, props.quantity, props.unitLabel ?? 'unit',
       props.details ?? '', props.photoUrls ?? [], 'PENDING', undefined,
-      props.currency ?? 'TZS', 1,
+      props.currency ?? 'TZS', undefined, 1,
     );
   }
 
@@ -65,7 +67,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.customerId, props.vendorId,
       props.listingId, props.title, props.quantity, props.unitLabel,
       props.details, props.photoUrls, props.status, props.agreedPrice,
-      props.currency, props.version,
+      props.currency, props.orderId, props.version,
     );
   }
 
@@ -81,6 +83,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
   public get status(): ServiceRequestStatus { return this._status; }
   public get agreedPrice(): Money | undefined { return this._agreedPrice; }
   public get currency(): string { return this._currency; }
+  public get orderId(): EntityId | undefined { return this._orderId; }
   public get version(): number { return this._version; }
 
   public receiveQuote(): void {
@@ -107,6 +110,10 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
     this._status = 'ORDERED';
   }
 
+  public linkOrder(orderId: EntityId): void {
+    this._orderId = orderId;
+  }
+
   public cancel(): void {
     if (this._status === 'ORDERED') {
       throw new Error('Ordered requests cannot be cancelled');
@@ -128,6 +135,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       status: this._status,
       agreedPrice: this._agreedPrice?.amount ?? null,
       currency: this._currency,
+      orderId: this._orderId?.value ?? null,
     };
   }
 }

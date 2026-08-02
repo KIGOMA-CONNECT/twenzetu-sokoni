@@ -289,6 +289,7 @@ export interface ServiceRequest {
   status: 'PENDING' | 'QUOTED' | 'AGREED' | 'ORDERED' | 'CANCELLED';
   agreedPrice?: number;
   currency: string;
+  orderId?: string | null;
   createdAt: string;
   quotes?: ServiceQuote[];
 }

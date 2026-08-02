@@ -295,6 +295,12 @@ export default function ConsumerServices() {
                   <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {new Date(r.createdAt).toLocaleDateString()}</div>
                   {r.agreedPrice ? <div style={{ fontWeight: 800, color: '#0f172a', marginTop: '0.2rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
+                  {r.status === 'ORDERED' && r.orderId && (
+                    <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#475569' }}>
+                      <span>Order #{r.orderId.slice(0, 8)}</span>{' '}
+                      <a href="/orders" style={{ color: '#1e40af', fontWeight: 700 }}>Track Order →</a>
+                    </div>
+                  )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <StatusBadge status={r.status} />

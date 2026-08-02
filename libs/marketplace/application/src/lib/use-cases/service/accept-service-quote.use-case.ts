@@ -89,6 +89,7 @@ export class AcceptServiceQuoteUseCase {
     ));
 
     request.markOrdered();
+    request.linkOrder(EntityId.from(orderResult.orderId));
     await this.requestRepo.save(request);
 
     return {

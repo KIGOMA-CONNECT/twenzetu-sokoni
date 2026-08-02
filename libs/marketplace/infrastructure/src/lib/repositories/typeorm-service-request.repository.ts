@@ -76,6 +76,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
       status: e.status as ServiceRequestStatus,
       agreedPrice: e.agreedPrice ? Money.create(Number(e.agreedPrice), e.currency) : undefined,
       currency: e.currency,
+      orderId: e.orderId ? EntityId.from(e.orderId) : undefined,
       version: e.version,
     });
   }
@@ -95,6 +96,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
       status: entity.status,
       agreedPrice: entity.agreedPrice ? String(entity.agreedPrice.amount) : null,
       currency: entity.currency,
+      orderId: entity.orderId?.value ?? null,
       version: 1,
     };
   }

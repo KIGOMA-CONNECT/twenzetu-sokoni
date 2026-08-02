@@ -5,6 +5,7 @@ import { Column, Entity, Index } from 'typeorm';
 @Index(['tenantId', 'customerId'])
 @Index(['tenantId', 'vendorId'])
 @Index(['status'])
+@Index(['orderId'])
 export class ServiceRequestOrmEntity extends TenantAwareEntity {
   @Column({ name: 'customer_id', type: 'uuid' })
   public customerId!: string;
@@ -38,6 +39,9 @@ export class ServiceRequestOrmEntity extends TenantAwareEntity {
 
   @Column({ type: 'varchar', length: 10, default: 'TZS' })
   public currency!: string;
+
+  @Column({ name: 'order_id', type: 'uuid', nullable: true })
+  public orderId!: string | null;
 
   @Column({ type: 'integer', default: 1 })
   public version!: number;
