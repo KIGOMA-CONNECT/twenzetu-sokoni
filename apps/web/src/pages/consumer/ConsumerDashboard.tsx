@@ -6,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
+import { SectionTitle } from '../../components/ui';
 import type { Order, Category } from '../../types';
 
 const TYPE_ICONS: Record<string, string> = {
@@ -18,7 +19,7 @@ const TYPE_ICONS: Record<string, string> = {
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  'Chakula Kilicho Tayari': '🍽️',
+  'Chakula Kilicho Tayari': '🍲',
   'Mboga na Matunda': '🥬',
   'Mchele na Maharage': '🍚',
   'Ufuaji na Usafishaji Nguo': '🧵',
@@ -30,111 +31,14 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Electronics': '📱',
 };
 
+const CATEGORY_BG: Record<string, string> = {
+  '🍲': '#ccfbf1', '🥬': '#dcfce7', '🍚': '#fef9c3', '🧵': '#fbcfe8',
+  '🧹': '#e0f2fe', '👩‍🍳': '#ffedd5', '♻️': '#fde68a', '📱': '#ddd6fe', '🥕': '#ffedd5',
+};
+
 function categoryIcon(category: Category): string {
   return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
 }
-
-const styles = {
-  page: {
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    color: '#0f172a',
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    marginBottom: '1.5rem',
-  },
-  greeting: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    margin: 0,
-  },
-  subtext: {
-    color: '#64748b',
-    marginTop: '0.25rem',
-    fontSize: '0.95rem',
-  },
-  stats: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-    gap: '1rem',
-    marginBottom: '1.5rem',
-  },
-  card: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-  },
-  statLabel: {
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    color: '#64748b',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  statValue: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    color: '#0f766e',
-    marginTop: '0.5rem',
-  },
-  sectionTitle: {
-    fontSize: '1.1rem',
-    fontWeight: 600,
-    marginBottom: '0.75rem',
-  },
-  quickLinks: {
-    display: 'flex',
-    gap: '0.75rem',
-    flexWrap: 'wrap' as const,
-  },
-  button: {
-    padding: '0.625rem 1.25rem',
-    borderRadius: '6px',
-    border: 'none',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.95rem',
-  },
-  primaryBtn: {
-    background: '#0f766e',
-    color: '#ffffff',
-  },
-  secondaryBtn: {
-    background: '#ffffff',
-    color: '#0f766e',
-    border: '1px solid #0f766e',
-  },
-  categoryGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-    gap: '0.75rem',
-    marginBottom: '1.5rem',
-  },
-  categoryCard: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1rem',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    gap: '0.5rem',
-    cursor: 'pointer',
-    transition: 'box-shadow 0.15s ease, transform 0.15s ease',
-  },
-  categoryIcon: {
-    fontSize: '1.75rem',
-  },
-  categoryName: {
-    fontSize: '0.85rem',
-    fontWeight: 600,
-    textAlign: 'center' as const,
-    color: '#0f172a',
-  },
-};
 
 function ConsumerDashboard() {
   const { user } = useAuth();
@@ -152,85 +56,70 @@ function ConsumerDashboard() {
     0
   );
   const loyaltyPoints = Math.floor(totalSpent / 1000);
+  const firstName = user?.fullName?.split(' ')[0] || 'there';
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h1 style={styles.greeting}>{t('app.welcome')}, {user?.fullName?.split(' ')[0] || 'there'}</h1>
-        <div style={styles.subtext}>{t('app.welcomeBack')}</div>
-      </div>
+    <div className="page">
+      {/* Hero welcome */}
+      <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem' }}>
+        <div style={{ maxWidth: 700, padding: '2.25rem 2rem', position: 'relative', zIndex: 1 }}>
+          <span className="hero-badge" style={{ marginBottom: '0.9rem' }}>🎉 Karibu, {firstName}!</span>
+          <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+            What would you like <span className="hero-gradient">today?</span>
+          </h1>
+          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem' }}>{t('app.welcomeBack')}</p>
+          <div className="flex gap-2 wrap">
+            <button className="btn btn-accent" onClick={() => navigate('/catalog')}>🛒 {t('catalog.title')}</button>
+            <button className="btn btn-outline" onClick={() => navigate('/vendors')}>🏪 {t('app.browseVendors')}</button>
+          </div>
+        </div>
+      </section>
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 
       {!loading && !error && (
         <>
-          <div style={styles.stats}>
-            <div style={styles.card}>
-            <div style={styles.statLabel}>{t('app.activeOrders')}</div>
-            <div style={styles.statValue}>{activeOrders}</div>
+          {/* Stats */}
+          <div className="grid grid-2 mb-3">
+            <div className="stat-card">
+              <div className="stat-label">{t('app.activeOrders')}</div>
+              <div className="stat-value">{activeOrders}</div>
             </div>
-            <div style={styles.card}>
-              <div style={styles.statLabel}>{t('app.totalSpent')}</div>
-              <div style={styles.statValue}>{formatCurrency(totalSpent)}</div>
+            <div className="stat-card amber">
+              <div className="stat-label">{t('app.totalSpent')}</div>
+              <div className="stat-value">{formatCurrency(totalSpent)}</div>
             </div>
-            <div style={styles.card}>
-              <div style={styles.statLabel}>{t('app.loyaltyPoints')}</div>
-              <div style={styles.statValue}>{loyaltyPoints}</div>
-            </div>
-          </div>
-
-          <div style={styles.card}>
-            <div style={styles.sectionTitle}>{t('app.categories')}</div>
-            <div style={styles.categoryGrid}>
-              {(categories ?? []).map((category) => (
-                <div
-                  key={category.id}
-                  style={styles.categoryCard}
-                  onClick={() => navigate('/catalog')}
-                  onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.transform = 'none'; }}
-                >
-                  <span style={styles.categoryIcon}>{categoryIcon(category)}</span>
-                  <span style={styles.categoryName}>{category.name}</span>
-                </div>
-              ))}
+            <div className="stat-card violet">
+              <div className="stat-label">{t('app.loyaltyPoints')}</div>
+              <div className="stat-value">{loyaltyPoints} ⭐</div>
             </div>
           </div>
 
-          <div style={styles.card}>
-            <div style={styles.sectionTitle}>{t('app.quickLinks')}</div>
-            <div style={styles.quickLinks}>
-              <button
-                style={{ ...styles.button, ...styles.primaryBtn }}
-                onClick={() => navigate('/catalog')}
-              >
-                🛒 {t('catalog.title')}
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.secondaryBtn }}
-                onClick={() => navigate('/vendors')}
-              >
-                {t('app.browseVendors')}
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.secondaryBtn }}
-                onClick={() => navigate('/orders')}
-              >
-                Order History
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.primaryBtn }}
-                onClick={() => navigate('/referrals')}
-              >
-                Refer a Friend
-              </button>
-              <button
-                style={{ ...styles.button, ...styles.secondaryBtn }}
-                onClick={() => navigate('/subscriptions')}
-              >
-                Subscriptions
-              </button>
+          {/* Categories */}
+          <div className="section">
+            <SectionTitle title={t('app.categories')} emoji="🛍️" />
+            <div className="cat-scroll">
+              {(categories ?? []).map((category) => {
+                const icon = categoryIcon(category);
+                return (
+                  <div key={category.id} className="cat-tile" onClick={() => navigate('/catalog')}>
+                    <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
+                    <div className="cat-name">{category.name}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick actions */}
+          <div className="section">
+            <SectionTitle title={t('app.quickLinks')} emoji="⚡" />
+            <div className="flex gap-2 wrap">
+              <button className="btn btn-primary" onClick={() => navigate('/orders')}>📦 My Orders</button>
+              <button className="btn btn-outline" onClick={() => navigate('/referrals')}>🎁 {t('nav.referrals')}</button>
+              <button className="btn btn-outline" onClick={() => navigate('/subscriptions')}>🔁 {t('nav.subscriptions')}</button>
+              <button className="btn btn-outline" onClick={() => navigate('/wallet')}>💳 Wallet</button>
             </div>
           </div>
 

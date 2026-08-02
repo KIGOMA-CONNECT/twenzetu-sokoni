@@ -6,91 +6,8 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import { PageHeader, EmptyState } from '../../components/ui';
 import type { Order, Vendor, OrderItem } from '../../types';
-
-const styles = {
-  page: {
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    color: '#0f172a',
-  },
-  header: {
-    marginBottom: '1.5rem',
-  },
-  title: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    margin: 0,
-  },
-  subtext: {
-    color: '#64748b',
-    marginTop: '0.25rem',
-    fontSize: '0.95rem',
-  },
-  card: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    overflowX: 'auto' as const,
-  },
-  table: {
-    width: '100%',
-    borderCollapse: 'collapse' as const,
-    fontSize: '0.9rem',
-  },
-  th: {
-    textAlign: 'left' as const,
-    padding: '0.75rem',
-    borderBottom: '2px solid #e2e8f0',
-    fontSize: '0.75rem',
-    fontWeight: 700,
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-    color: '#64748b',
-  },
-  td: {
-    padding: '0.75rem',
-    borderBottom: '1px solid #e2e8f0',
-    verticalAlign: 'top' as const,
-  },
-  row: {
-    cursor: 'pointer',
-    transition: 'background 0.15s ease',
-  },
-  expandedRow: {
-    background: '#f8fafc',
-  },
-  itemsBox: {
-    padding: '0.75rem 1rem 0.75rem 2rem',
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    margin: '0.5rem 0',
-  },
-  itemsHeader: {
-    fontWeight: 600,
-    marginBottom: '0.5rem',
-    fontSize: '0.85rem',
-  },
-  itemRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '0.85rem',
-    padding: '0.25rem 0',
-    color: '#475569',
-  },
-  expandHint: {
-    fontSize: '0.75rem',
-    color: '#94a3b8',
-    fontStyle: 'italic',
-  },
-  empty: {
-    textAlign: 'center' as const,
-    color: '#64748b',
-    padding: '2rem 0',
-  },
-};
 
 function OrderHistory() {
   const PAGE_SIZE = 10;
@@ -144,29 +61,25 @@ function OrderHistory() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Order History</h1>
-        <div style={styles.subtext}>Track your past and current orders</div>
-      </div>
+    <div className="page">
+      <PageHeader title="Order History" subtitle="Track your past and current orders" />
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 
       {!loading && !error && (
-        <div style={styles.card}>
-          {!orders || orders.length === 0 ? (
-            <div style={styles.empty}>You have no orders yet.</div>
-          ) : (
-            <>
-            <table style={styles.table}>
+        !orders || orders.length === 0 ? (
+          <EmptyState icon="📦" title="You have no orders yet." sub="Browse vendors and place your first order" />
+        ) : (
+          <div className="table-wrap">
+            <table className="table">
               <thead>
                 <tr>
-                  <th style={styles.th}>Vendor</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Total</th>
-                  <th style={styles.th}>Date</th>
-                  <th style={styles.th}>{''}</th>
+                  <th>Vendor</th>
+                  <th>Status</th>
+                  <th>Total</th>
+                  <th>Date</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -176,30 +89,22 @@ function OrderHistory() {
                     <>
                       <tr
                         key={o.id}
-                        style={{ ...styles.row, ...(isExpanded ? styles.expandedRow : {}) }}
                         onClick={() => toggleRow(o.id)}
+                        style={{ cursor: 'pointer', background: isExpanded ? 'var(--line-soft)' : 'transparent' }}
                       >
-                        <td style={styles.td}>{vendorName(o.vendorId)}</td>
-                        <td style={styles.td}>
-                          <StatusBadge status={o.status} />
-                        </td>
-                        <td style={styles.td}>
-                          {formatCurrency(o.totalAmount || 0)}
-                        </td>
-                        <td style={styles.td}>{formatDate(o.createdAt)}</td>
-                        <td style={styles.td}>
-                          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <td style={{ fontWeight: 700, color: 'var(--ink)' }}>{vendorName(o.vendorId)}</td>
+                        <td><StatusBadge status={o.status} /></td>
+                        <td style={{ fontWeight: 800, color: 'var(--brand-strong)' }}>{formatCurrency(o.totalAmount || 0)}</td>
+                        <td style={{ color: 'var(--muted)' }}>{formatDate(o.createdAt)}</td>
+                        <td>
+                          <div className="flex items-center gap-1">
                             {trackableStatuses.includes(o.status) && (
                               <button
+                                className="btn btn-primary btn-sm"
                                 onClick={(e) => { e.stopPropagation(); navigate(`/orders/${o.id}/tracking`); }}
-                                style={{
-                                  padding: '4px 12px', borderRadius: 6, border: '1px solid #2563eb',
-                                  background: '#2563eb', color: '#fff', fontSize: 12, fontWeight: 600,
-                                  cursor: 'pointer', whiteSpace: 'nowrap',
-                                }}
                               >Track</button>
                             )}
-                            <span style={styles.expandHint}>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--faint)', fontStyle: 'italic' }}>
                               {isExpanded ? '▾ hide' : '▸ details'}
                             </span>
                           </div>
@@ -207,42 +112,32 @@ function OrderHistory() {
                       </tr>
                       {isExpanded && (
                         <tr key={`${o.id}-items`}>
-                          <td style={styles.td} colSpan={5}>
-                            <div style={styles.itemsBox}>
-                              <div style={styles.itemsHeader}>Order items — #{o.id}</div>
-                              {itemsLoading && <div style={styles.expandHint}>Loading items...</div>}
-                              {itemsError && (
-                                <div style={{ color: '#dc2626', fontSize: '0.85rem' }}>
-                                  {itemsError}
-                                </div>
-                              )}
+                          <td colSpan={5} style={{ padding: '0 1rem 1rem', background: 'var(--surface)' }}>
+                            <div className="card card-flat" style={{ marginTop: '0.5rem' }}>
+                              <div style={{ fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontSize: '0.85rem' }}>Order items — #{o.id}</div>
+                              {itemsLoading && <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>Loading items...</div>}
+                              {itemsError && <div style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{itemsError}</div>}
                               {!itemsLoading && !itemsError && items && (
                                 <>
                                   {items.length === 0 ? (
-                                    <div style={styles.expandHint}>
-                                      Item details unavailable for this order.
-                                    </div>
+                                    <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>Item details unavailable for this order.</div>
                                   ) : (
                                     items.map((it, idx) => (
-                                      <div key={idx} style={styles.itemRow}>
-                                        <span>
-                                          {it.productName} × {it.quantity}
-                                        </span>
-                                        <span>
-                                          {formatCurrency(it.unitPrice * it.quantity)}
-                                        </span>
+                                      <div key={idx} className="flex justify-between" style={{ fontSize: '0.85rem', padding: '0.25rem 0', color: 'var(--text)' }}>
+                                        <span>{it.productName} × {it.quantity}</span>
+                                        <span>{formatCurrency(it.unitPrice * it.quantity)}</span>
                                       </div>
                                     ))
                                   )}
                                 </>
                               )}
-                              <div style={{ ...styles.itemRow, marginTop: '0.5rem', fontWeight: 600, borderTop: '1px solid #e2e8f0', paddingTop: '0.5rem' }}>
+                              <div className="flex justify-between mt-1" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', borderTop: '1px solid var(--line)', paddingTop: '0.5rem' }}>
                                 <span>Delivery fee</span>
                                 <span>{formatCurrency(o.deliveryFee || 0)}</span>
                               </div>
-                              <div style={{ ...styles.itemRow, fontWeight: 700 }}>
+                              <div className="flex justify-between" style={{ fontWeight: 800, color: 'var(--ink)' }}>
                                 <span>Total</span>
-                                <span>{formatCurrency(o.totalAmount || 0)}</span>
+                                <span className="text-brand">{formatCurrency(o.totalAmount || 0)}</span>
                               </div>
                             </div>
                           </td>
@@ -254,23 +149,14 @@ function OrderHistory() {
               </tbody>
             </table>
             {totalPages > 1 && (
-              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '1rem' }}>
-                <button
-                  style={{ padding: '0.35rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '0.8rem', opacity: page <= 1 ? 0.4 : 1 }}
-                  disabled={page <= 1}
-                  onClick={() => setPage((p) => p - 1)}
-                >Prev</button>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Page {page} of {totalPages}</span>
-                <button
-                  style={{ padding: '0.35rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '0.8rem', opacity: page >= totalPages ? 0.4 : 1 }}
-                  disabled={page >= totalPages}
-                  onClick={() => setPage((p) => p + 1)}
-                >Next</button>
+              <div className="flex items-center justify-center gap-1" style={{ padding: '1rem' }}>
+                <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
+                <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Page {page} of {totalPages}</span>
+                <button className="btn btn-outline btn-sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
               </div>
             )}
-            </>
-          )}
-        </div>
+          </div>
+        )
       )}
     </div>
   );

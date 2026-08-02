@@ -6,6 +6,7 @@ import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { PageHeader } from '../../components/ui';
 import type { Address, CatalogMatch } from '../../types';
 
 interface MatchGroup {
@@ -19,129 +20,6 @@ interface MatchResponse {
   matchedItems: number;
   unmatched: string[];
 }
-
-const styles = {
-  page: {
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    color: '#0f172a',
-  },
-  header: {
-    marginBottom: '1.25rem',
-  },
-  title: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    margin: 0,
-  },
-  subtext: {
-    color: '#64748b',
-    marginTop: '0.25rem',
-    fontSize: '0.95rem',
-  },
-  card: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    marginBottom: '1rem',
-  },
-  textarea: {
-    width: '100%',
-    minHeight: 140,
-    border: '1px solid #cbd5e1',
-    borderRadius: '6px',
-    padding: '0.75rem',
-    fontSize: '0.95rem',
-    fontFamily: 'inherit',
-    boxSizing: 'border-box' as const,
-    resize: 'vertical' as const,
-  },
-  primaryBtn: {
-    marginTop: '0.75rem',
-    padding: '0.625rem 1.25rem',
-    background: '#0f766e',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-    fontWeight: 600,
-    fontSize: '0.95rem',
-  },
-  disabledBtn: {
-    background: '#cbd5e1',
-    cursor: 'not-allowed',
-  },
-  groupTitle: {
-    fontSize: '1.05rem',
-    fontWeight: 700,
-    marginBottom: '0.5rem',
-    textTransform: 'capitalize' as const,
-  },
-  matchRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.75rem',
-    padding: '0.75rem',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    marginBottom: '0.5rem',
-    cursor: 'pointer',
-  },
-  matchRowSelected: {
-    borderColor: '#0f766e',
-    background: '#f0fdfa',
-  },
-  radio: {
-    flexShrink: 0,
-  },
-  matchName: {
-    fontWeight: 600,
-  },
-  matchVendor: {
-    fontSize: '0.8rem',
-    color: '#64748b',
-  },
-  matchPrice: {
-    marginLeft: 'auto',
-    fontWeight: 700,
-    color: '#0f766e',
-    whiteSpace: 'nowrap' as const,
-  },
-  unmatched: {
-    color: '#b91c1c',
-    fontSize: '0.9rem',
-  },
-  summary: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap' as const,
-    gap: '0.75rem',
-  },
-  totalText: {
-    fontSize: '1.1rem',
-    fontWeight: 700,
-  },
-  select: {
-    width: '100%',
-    padding: '0.625rem',
-    border: '1px solid #cbd5e1',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    background: '#ffffff',
-  },
-  fieldLabel: {
-    display: 'block',
-    fontSize: '0.85rem',
-    fontWeight: 600,
-    color: '#334155',
-    marginBottom: '0.35rem',
-  },
-  link: {
-    color: '#1e40af',
-  },
-};
 
 function SmartCatalog() {
   const { t } = useTranslation();
@@ -267,41 +145,37 @@ function SmartCatalog() {
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>{t('catalog.title')}</h1>
-        <div style={styles.subtext}>{t('catalog.subtitle')}</div>
-      </div>
+    <div className="page">
+      <PageHeader title={t('catalog.title')} subtitle={t('catalog.subtitle')} />
 
-      <div style={styles.card}>
+      <div className="card mb-2">
         <textarea
-          style={styles.textarea}
+          className="textarea"
+          style={{ minHeight: 140, resize: 'vertical' }}
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder={t('catalog.placeholder')}
         />
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <button
-            style={{ ...styles.primaryBtn, ...(searching ? styles.disabledBtn : {}) }}
-            onClick={findPrices}
-            disabled={searching}
-          >
+        <div className="flex items-center gap-2 mt-2">
+          <button className="btn btn-primary" onClick={findPrices} disabled={searching}>
             {searching ? '...' : t('catalog.findPrices')}
           </button>
-          {success && <span style={{ color: '#047857', fontWeight: 600 }}>{success}</span>}
+          {success && <span className="alert alert-success" style={{ margin: 0 }}>✅ {success}</span>}
         </div>
         {error && <ErrorMessage message={error} />}
       </div>
 
       {result && (
         <>
-          <div style={styles.card}>
-            <div style={styles.groupTitle}>{t('catalog.results')}</div>
+          <div className="card mb-2">
+            <h3 className="section-title" style={{ marginBottom: '0.75rem' }}>📋 {t('catalog.results')}</h3>
             {result.results.map((group) => (
               <div key={group.query} style={{ marginBottom: '1rem' }}>
-                <div style={styles.groupTitle}>{group.query}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem' }}>
+                  <span style={{ textTransform: 'capitalize' }}>{group.query}</span>
+                </div>
                 {group.matches.length === 0 ? (
-                  <div style={styles.unmatched}>
+                  <div style={{ color: 'var(--danger)', fontSize: '0.9rem' }}>
                     {t('catalog.noMatches')}
                   </div>
                 ) : (
@@ -310,24 +184,24 @@ function SmartCatalog() {
                     return (
                       <div
                         key={m.id}
-                        style={{ ...styles.matchRow, ...(selected ? styles.matchRowSelected : {}) }}
                         onClick={() => selectMatch(group.query, m)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.8rem',
+                          border: selected ? '1.5px solid var(--brand)' : '1px solid var(--line)',
+                          borderRadius: 'var(--radius)', marginBottom: '0.5rem', cursor: 'pointer',
+                          background: selected ? 'var(--brand-soft)' : '#fff',
+                          transition: 'all 0.15s ease',
+                        }}
                       >
-                        <input
-                          type="radio"
-                          style={styles.radio}
-                          checked={selected}
-                          onChange={() => selectMatch(group.query, m)}
-                          onClick={(e) => e.stopPropagation()}
-                        />
-                        <div>
-                          <div style={styles.matchName}>{m.name}</div>
-                          <div style={styles.matchVendor}>
+                        <input type="radio" style={{ flexShrink: 0, accentColor: 'var(--brand)' }} checked={selected} onChange={() => selectMatch(group.query, m)} onClick={(e) => e.stopPropagation()} />
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, color: 'var(--ink)', fontSize: '0.9rem' }}>{m.name}</div>
+                          <div style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>
                             {t('catalog.vendor')}: {m.vendorName}
                             {m.vendorRating ? ` • ${m.vendorRating}★` : ''}
                           </div>
                         </div>
-                        <div style={styles.matchPrice}>{formatCurrency(Number(m.price))}</div>
+                        <div style={{ marginLeft: 'auto', fontWeight: 800, color: 'var(--brand-strong)', whiteSpace: 'nowrap' }}>{formatCurrency(Number(m.price))}</div>
                       </div>
                     );
                   })
@@ -336,58 +210,45 @@ function SmartCatalog() {
             ))}
             {result.unmatched.length > 0 && (
               <div style={{ marginTop: '0.5rem' }}>
-                <div style={styles.groupTitle}>{t('catalog.unmatched')}</div>
-                <div style={styles.unmatched}>{result.unmatched.join(', ')}</div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.25rem' }}>{t('catalog.unmatched')}</div>
+                <div style={{ color: 'var(--danger)', fontSize: '0.9rem' }}>{result.unmatched.join(', ')}</div>
               </div>
             )}
           </div>
 
-          <div style={styles.card}>
-            <div style={styles.summary}>
+          <div className="card">
+            <div className="flex justify-between items-center wrap gap-2">
               <div>
-                <div style={styles.totalText}>
-                  {t('catalog.total')}: {formatCurrency(grandTotal)}
+                <div style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--ink)' }}>
+                  {t('catalog.total')}: <span className="text-brand">{formatCurrency(grandTotal)}</span>
                 </div>
-                <div style={styles.subtext}>
+                <div className="text-muted" style={{ fontSize: '0.85rem' }}>
                   {byVendor.size} {t('catalog.vendor')}(s) • {selectedItems.length} {t('catalog.itemsToOrder')}
                 </div>
               </div>
             </div>
 
             {vendorSubtotals.length > 1 && (
-              <div style={{ marginTop: '0.75rem' }}>
-                <div style={styles.subtext}><strong>{t('catalog.perVendor')}</strong></div>
-                <div style={{ marginTop: '0.4rem' }}>
+              <div className="mt-2">
+                <div className="text-muted" style={{ fontSize: '0.85rem' }}><strong>{t('catalog.perVendor')}</strong></div>
+                <div className="mt-1">
                   {vendorSubtotals.map((vs) => (
-                    <div
-                      key={vs.vendorId}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        padding: '0.35rem 0',
-                        borderBottom: '1px dashed #e2e8f0',
-                        fontSize: '0.875rem',
-                      }}
-                    >
+                    <div key={vs.vendorId} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.35rem 0', borderBottom: '1px dashed var(--line)', fontSize: '0.875rem' }}>
                       <span>{vs.vendorName} ({vs.items.length} item{vs.items.length === 1 ? '' : 's'})</span>
-                      <span style={{ fontWeight: 700 }}>{formatCurrency(vs.total)}</span>
+                      <span style={{ fontWeight: 800 }}>{formatCurrency(vs.total)}</span>
                     </div>
                   ))}
                 </div>
-                <div style={{ ...styles.subtext, marginTop: '0.5rem' }}>
+                <div className="text-muted mt-1" style={{ fontSize: '0.85rem' }}>
                   {byVendor.size} separate order{byVendor.size === 1 ? '' : 's'} will be placed (one per vendor), each with its own delivery.
                 </div>
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }} className="responsive-grid-2col">
+            <div className="grid grid-2 mt-2 responsive-grid-2col" style={{ gridTemplateColumns: '1fr 1fr' }}>
               <div>
-                <label style={styles.fieldLabel}>{t('order.deliveryAddress')} *</label>
-                <select
-                  style={styles.select}
-                  value={selectedAddressId}
-                  onChange={(e) => setSelectedAddressId(e.target.value)}
-                >
+                <label className="field-label">{t('order.deliveryAddress')} *</label>
+                <select className="select" value={selectedAddressId} onChange={(e) => setSelectedAddressId(e.target.value)}>
                   <option value="">{t('order.selectAddress')}...</option>
                   {addresses?.map((addr) => (
                     <option key={addr.id} value={addr.id}>
@@ -396,19 +257,15 @@ function SmartCatalog() {
                   ))}
                 </select>
                 {addresses && addresses.length === 0 && (
-                  <div style={styles.subtext}>
+                  <div className="text-muted" style={{ fontSize: '0.85rem', marginTop: '0.4rem' }}>
                     {t('order.noAddresses')}.{' '}
-                    <a href="/addresses" style={styles.link}>{t('order.addOne')}</a>.
+                    <a href="/addresses" style={{ color: 'var(--brand)', fontWeight: 700 }}>{t('order.addOne')}</a>.
                   </div>
                 )}
               </div>
               <div>
-                <label style={styles.fieldLabel}>Payment</label>
-                <select
-                  style={styles.select}
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                >
+                <label className="field-label">Payment</label>
+                <select className="select" value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
                   <option value="mpesa">M-Pesa</option>
                   <option value="tigo_money">Tigo Pesa</option>
                   <option value="airtel_money">Airtel Money</option>
@@ -418,7 +275,7 @@ function SmartCatalog() {
             </div>
 
             <button
-              style={{ ...styles.primaryBtn, ...(submitting || selectedItems.length === 0 ? styles.disabledBtn : {}) }}
+              className="btn btn-accent btn-lg btn-block mt-2"
               onClick={placeOrder}
               disabled={submitting || selectedItems.length === 0}
             >

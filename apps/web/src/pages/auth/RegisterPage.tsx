@@ -2,75 +2,35 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/client';
 
-const s = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f766e 100%)',
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    position: 'relative' as const,
-    overflow: 'hidden',
-  },
-  bgGrid: {
-    position: 'absolute' as const,
-    inset: 0,
-    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255,255,255,0.03) 1px, transparent 0)',
-    backgroundSize: '50px 50px',
-  },
-  card: {
-    position: 'relative' as const,
-    background: '#ffffff',
-    borderRadius: '16px',
-    padding: '2.5rem',
-    width: '100%',
-    maxWidth: '440px',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-  },
-  brand: { display: 'flex', flexDirection: 'column' as const, alignItems: 'center', marginBottom: '1.75rem' },
-  logo: {
-    fontSize: '1.5rem', fontWeight: 800,
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-    letterSpacing: '-0.5px',
-  },
-  title: { fontSize: '1.1rem', fontWeight: 600, color: '#0f172a', marginBottom: '1.5rem', textAlign: 'center' as const },
-  field: { marginBottom: '1.1rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#475569', marginBottom: '0.35rem' },
-  input: {
-    width: '100%', padding: '0.7rem 0.85rem', border: '1.5px solid #e2e8f0', borderRadius: '10px',
-    fontSize: '0.9rem', outline: 'none', background: '#f8fafc', transition: 'border-color 0.2s, box-shadow 0.2s',
-    boxSizing: 'border-box' as const,
-  },
-  select: {
-    width: '100%', padding: '0.7rem 0.85rem', border: '1.5px solid #e2e8f0', borderRadius: '10px',
-    fontSize: '0.9rem', outline: 'none', background: '#f8fafc', boxSizing: 'border-box' as const, cursor: 'pointer',
-  },
-  button: {
-    width: '100%', padding: '0.8rem 1rem',
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    color: '#ffffff', border: 'none', borderRadius: '10px', fontSize: '0.9rem', fontWeight: 700,
-    cursor: 'pointer', marginTop: '0.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
-  },
-  buttonDisabled: { opacity: 0.7, cursor: 'not-allowed' },
-  error: {
-    padding: '0.7rem 0.85rem', background: '#fef2f2', border: '1px solid #fecaca', borderRadius: '10px',
-    color: '#dc2626', fontSize: '0.8rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem',
-  },
-  success: {
-    padding: '0.7rem 0.85rem', background: '#f0fdf4', border: '1px solid #bbf7d0', borderRadius: '10px',
-    color: '#16a34a', fontSize: '0.8rem', marginBottom: '1rem',
-  },
-  footer: { marginTop: '1.25rem', textAlign: 'center' as const, fontSize: '0.8rem', color: '#94a3b8' },
-  link: { color: '#0f766e', fontWeight: 600, cursor: 'pointer', background: 'none', border: 'none', fontSize: '0.8rem', textDecoration: 'none' },
-  spinner: { width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: '#ffffff', borderRadius: '50%', animation: 'spin 0.6s linear infinite', display: 'inline-block' },
-};
+function AuthSidePanel() {
+  const navigate = useNavigate();
+  const points = [
+    ['🛒', 'Shop smarter with price comparison'],
+    ['💳', 'Pay securely with escrow & mobile money'],
+    ['🛵', 'Fast delivery with live tracking'],
+  ];
+  return (
+    <div className="auth-side">
+      <button className="brand" onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.6rem', marginBottom: '2.5rem' }}>
+        <span className="brand-dot" />
+        afriMarket
+      </button>
+      <h1>Your market, in your pocket</h1>
+      <p>Join the fastest-growing marketplace across Africa. Order anything, delivered fast.</p>
+      <div className="auth-points">
+        {points.map(([emoji, text]) => (
+          <div key={text} className="auth-point">
+            <span>{emoji}</span>
+            {text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -95,59 +55,52 @@ export default function RegisterPage() {
     }
   };
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = '#0f766e';
-    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-    e.currentTarget.style.background = '#ffffff';
-  };
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    e.currentTarget.style.borderColor = '#e2e8f0';
-    e.currentTarget.style.boxShadow = 'none';
-    e.currentTarget.style.background = '#f8fafc';
-  };
-
   return (
-    <div style={s.page}>
-      <div style={s.bgGrid} />
-      <div style={s.card}>
-        <div style={s.brand}>
-          <div style={s.logo}>afriMarket</div>
-        </div>
-        <h1 style={s.title}>Create your account</h1>
-
-        {error && <div style={s.error}><span>&#9888;</span><span>{error}</span></div>}
-        {msg && <div style={s.success}>{msg}</div>}
-
-        <form onSubmit={handleRegister}>
-          <div style={s.field}>
-            <label style={s.label}>Full Name</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" style={s.input} onFocus={handleFocus} onBlur={handleBlur} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Phone Number</label>
-            <input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+255 754 000 000" style={s.input} onFocus={handleFocus} onBlur={handleBlur} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" style={s.input} onFocus={handleFocus} onBlur={handleBlur} minLength={8} required />
-          </div>
-          <div style={s.field}>
-            <label style={s.label}>I want to join as</label>
-            <select value={role} onChange={e => setRole(e.target.value)} style={s.select}>
-              <option value="customer">Customer — order products</option>
-              <option value="vendor">Vendor — sell products</option>
-              <option value="driver">Driver — make deliveries</option>
-            </select>
-          </div>
-
-          <button type="submit" disabled={submitting} style={{ ...s.button, ...(submitting ? s.buttonDisabled : {}) } as React.CSSProperties}>
-            {submitting ? <><span style={s.spinner} /> Creating account...</> : 'Create account'}
+    <div className="auth-page">
+      <AuthSidePanel />
+      <div className="auth-main">
+        <div className="auth-card">
+          <button className="brand" onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', fontSize: '1.4rem', marginBottom: '1.5rem' }}>
+            <span className="brand-dot" />
+            afriMarket
           </button>
-        </form>
+          <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Create your account</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Join the marketplace in under a minute</p>
 
-        <div style={s.footer}>
-          Already have an account?{' '}
-          <Link to="/login" style={s.link}>Sign in</Link>
+          {error && <div className="alert alert-error mb-2"><span>⚠️</span><span>{error}</span></div>}
+          {msg && <div className="alert alert-success mb-2">✅ {msg}</div>}
+
+          <form onSubmit={handleRegister}>
+            <div className="field">
+              <label className="field-label">Full Name</label>
+              <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" required />
+            </div>
+            <div className="field">
+              <label className="field-label">Phone Number</label>
+              <input type="tel" className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+255 754 000 000" required />
+            </div>
+            <div className="field">
+              <label className="field-label">Password</label>
+              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" minLength={8} required />
+            </div>
+            <div className="field">
+              <label className="field-label">I want to join as</label>
+              <select className="select" value={role} onChange={e => setRole(e.target.value)}>
+                <option value="customer">Customer — order products</option>
+                <option value="vendor">Vendor — sell products</option>
+                <option value="driver">Driver — make deliveries</option>
+              </select>
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
+              {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Creating account...</> : 'Create account'}
+            </button>
+          </form>
+
+          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--muted)' }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--brand)', fontWeight: 700 }}>Sign in</Link>
+          </p>
         </div>
       </div>
     </div>

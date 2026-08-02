@@ -33,35 +33,25 @@ afriMarket respects your privacy. This policy explains how we collect, use, and 
 export default function LegalPage() {
   const [tab, setTab] = useState<'terms' | 'privacy'>('terms');
 
-  const tabStyle = (active: boolean) => ({
-    padding: '0.75rem 1.5rem',
-    border: 'none',
-    background: active ? '#1e293b' : '#e2e8f0',
-    color: active ? '#fff' : '#334155',
-    cursor: 'pointer',
-    fontWeight: 600,
-    borderRadius: '6px 6px 0 0',
-  });
-
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', gap: '4px', marginBottom: 0 }}>
-        <button style={tabStyle(tab === 'terms')} onClick={() => setTab('terms')}>
+    <div className="page" style={{ maxWidth: 800, margin: '0 auto' }}>
+      <div className="flex gap-1" style={{ marginBottom: 0, flexWrap: 'wrap' }}>
+        <button
+          className={`btn ${tab === 'terms' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ borderRadius: '10px 10px 0 0', borderBottom: tab === 'terms' ? 'none' : '1.5px solid var(--line)' }}
+          onClick={() => setTab('terms')}
+        >
           Terms of Service
         </button>
-        <button style={tabStyle(tab === 'privacy')} onClick={() => setTab('privacy')}>
+        <button
+          className={`btn ${tab === 'privacy' ? 'btn-primary' : 'btn-ghost'}`}
+          style={{ borderRadius: '10px 10px 0 0', borderBottom: tab === 'privacy' ? 'none' : '1.5px solid var(--line)' }}
+          onClick={() => setTab('privacy')}
+        >
           Privacy Policy
         </button>
       </div>
-      <div style={{
-        background: '#fff',
-        border: '1px solid #e2e8f0',
-        borderTop: '3px solid #1e293b',
-        borderRadius: '0 6px 6px 6px',
-        padding: '2rem',
-        lineHeight: 1.8,
-        whiteSpace: 'pre-line',
-      }}>
+      <div className="card" style={{ borderTopLeftRadius: 0, borderTop: '3px solid var(--brand)', padding: '2rem', lineHeight: 1.8, whiteSpace: 'pre-line' }}>
         {tab === 'terms' ? renderMarkdown(TOS_CONTENT) : renderMarkdown(PRIVACY_CONTENT)}
       </div>
     </div>

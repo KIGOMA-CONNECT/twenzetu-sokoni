@@ -2,48 +2,26 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../api/client';
-import { useCurrency } from '../context/CurrencyContext';
 import { LoadingSpinner } from './LoadingSpinner';
-import type { Product } from '../types';
+import { ProductCard } from './ui';
 
 const styles = {
   section: {
     marginTop: '1.5rem',
   },
   title: {
-    fontSize: '1.1rem',
-    fontWeight: 600,
-    marginBottom: '0.75rem',
+    fontSize: '1.2rem',
+    fontWeight: 800,
+    color: 'var(--ink)',
+    marginBottom: '0.9rem',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.5rem',
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: '0.75rem',
-  },
-  card: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1rem',
-    cursor: 'pointer',
-    transition: 'box-shadow 0.2s',
-  },
-  name: {
-    fontSize: '0.9rem',
-    fontWeight: 600,
-    margin: 0,
-    color: '#0f172a',
-  },
-  price: {
-    fontSize: '0.95rem',
-    fontWeight: 700,
-    color: '#0f766e',
-    marginTop: '0.3rem',
-  },
-  vendor: {
-    fontSize: '0.75rem',
-    color: '#64748b',
-    marginTop: '0.2rem',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))',
+    gap: '0.9rem',
   },
 };
 
@@ -55,7 +33,7 @@ interface RecommendationsProps {
 
 export function Recommendations({ title = 'Recommended', endpoint, vendorMap = {} }: RecommendationsProps) {
   const navigate = useNavigate();
-  const { formatCurrency } = useCurrency();
+  const { t } = useTranslation();
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -76,20 +54,25 @@ export function Recommendations({ title = 'Recommended', endpoint, vendorMap = {
 
   return (
     <div style={styles.section}>
-      <h3 style={styles.title}>{title}</h3>
+      <h3 style={styles.title}>
+        <span>✨</span>
+        {title}
+      </h3>
       <div style={styles.grid}>
         {items.slice(0, 6).map((item: any) => (
-          <div
+          <ProductCard
             key={item.id}
-            style={styles.card}
+            name={item.name}
+            price={Number(item.price)}
+            oldPrice={item.old_price != null ? Number(item.old_price) : undefined}
+            imageUrl={item.image_url || item.imageUrl}
+            vendor={vendorMap[item.vendor_id] || item.vendor_name}
+            rating={item.rating ?? item.averageRating}
+            stockQuantity={item.stock_quantity ?? item.stockQuantity}
+            unit={item.unit}
+            actionLabel={t('product.placeOrder')}
             onClick={() => navigate(`/vendors/${item.vendor_id}/products`)}
-          >
-            <div style={styles.name}>{item.name}</div>
-            <div style={styles.price}>{formatCurrency(Number(item.price))}</div>
-            {item.vendor_id && vendorMap[item.vendor_id] && (
-              <div style={styles.vendor}>{vendorMap[item.vendor_id]}</div>
-            )}
-          </div>
+          />
         ))}
       </div>
     </div>

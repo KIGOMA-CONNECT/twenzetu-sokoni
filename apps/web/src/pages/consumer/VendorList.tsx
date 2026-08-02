@@ -1,131 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import { PageHeader, EmptyState, VendorCard } from '../../components/ui';
 import api from '../../api/client';
 import type { Vendor } from '../../types';
-
-const styles = {
-  page: {
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    color: '#0f172a',
-  },
-  header: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    marginBottom: '1.5rem',
-  },
-  title: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    margin: 0,
-  },
-  subtext: {
-    color: '#64748b',
-    marginTop: '0.25rem',
-    fontSize: '0.95rem',
-  },
-  search: {
-    width: '100%',
-    padding: '0.625rem 0.75rem',
-    border: '1px solid #cbd5e1',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    outline: 'none',
-    background: '#ffffff',
-    marginBottom: '1.5rem',
-    boxSizing: 'border-box' as const,
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-    gap: '1rem',
-  },
-  card: {
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderRadius: '8px',
-    padding: '1.5rem',
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '0.5rem',
-    transition: 'box-shadow 0.15s ease',
-  },
-  shopName: {
-    fontSize: '1.15rem',
-    fontWeight: 700,
-    color: '#0f172a',
-    margin: 0,
-  },
-  category: {
-    fontSize: '0.75rem',
-    fontWeight: 600,
-    color: '#0f766e',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
-  },
-  description: {
-    fontSize: '0.9rem',
-    color: '#475569',
-    lineHeight: 1.5,
-    minHeight: '2.7rem',
-  },
-  meta: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: '0.5rem',
-    fontSize: '0.8rem',
-    color: '#64748b',
-  },
-  rating: {
-    color: '#f59e0b',
-    fontWeight: 600,
-  },
-  empty: {
-    textAlign: 'center' as const,
-    color: '#64748b',
-    padding: '3rem 0',
-  },
-  searchWrapper: {
-    position: 'relative' as const,
-  },
-  suggestions: {
-    position: 'absolute' as const,
-    top: '100%',
-    left: 0,
-    right: 0,
-    background: '#ffffff',
-    border: '1px solid #e2e8f0',
-    borderTop: 'none',
-    borderRadius: '0 0 8px 8px',
-    zIndex: 10,
-    maxHeight: 240,
-    overflowY: 'auto' as const,
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-  },
-  suggestionItem: {
-    padding: '0.6rem 0.75rem',
-    cursor: 'pointer',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '0.85rem',
-    borderBottom: '1px solid #f1f5f9',
-  },
-};
 
 function VendorList() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
-  const [query, setQuery] = useState('');
+  const [searchParams] = useSearchParams();
+  const [query, setQuery] = useState(searchParams.get('q') || '');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searching, setSearching] = useState(false);
@@ -165,29 +55,28 @@ function VendorList() {
   );
 
   return (
-    <div style={styles.page}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>{t('vendor.title')}</h1>
-        <div style={styles.subtext}>{t('vendor.subtitle')}</div>
-      </div>
+    <div className="page">
+      <PageHeader title={t('vendor.title')} subtitle={t('vendor.subtitle')} />
 
-      <div ref={searchRef} style={styles.searchWrapper}>
-        <input
-          type="text"
-          placeholder={t('vendor.searchPlaceholder')}
-          value={query}
-          onChange={(e) => handleSearchInput(e.target.value)}
-          onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
-          style={styles.search}
-        />
-        {searching && <span style={{ position: 'absolute', right: 12, top: 10, fontSize: 12, color: '#94a3b8' }}>searching...</span>}
+      <div ref={searchRef} style={{ position: 'relative', marginBottom: '1.5rem', maxWidth: 560 }}>
+        <div className="searchbar">
+          <span style={{ color: 'var(--faint)' }}>🔍</span>
+          <input
+            type="text"
+            placeholder={t('vendor.searchPlaceholder')}
+            value={query}
+            onChange={(e) => handleSearchInput(e.target.value)}
+            onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+          />
+          {searching && <span style={{ fontSize: 12, color: 'var(--faint)' }}>searching...</span>}
+        </div>
         {showSuggestions && suggestions.length > 0 && (
-          <div style={styles.suggestions}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid var(--line)', borderTop: 'none', borderRadius: '0 0 12px 12px', zIndex: 20, maxHeight: 240, overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
             {suggestions.map((s: any) => (
               <div
                 key={s.id}
-                style={styles.suggestionItem}
-                onMouseEnter={e => { e.currentTarget.style.background = '#f1f5f9'; }}
+                style={{ padding: '0.7rem 0.9rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', borderBottom: '1px solid var(--line-soft)' }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--line-soft)'; }}
                 onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}
                 onClick={() => {
                   setShowSuggestions(false);
@@ -195,8 +84,8 @@ function VendorList() {
                   navigate(`/vendors/${s.vendor_id}/products`);
                 }}
               >
-                <span style={{ fontWeight: 600 }}>{s.name}</span>
-                <span style={{ color: '#0f766e', fontWeight: 600 }}>{formatCurrency(Number(s.price))}</span>
+                <span style={{ fontWeight: 700 }}>{s.name}</span>
+                <span style={{ color: 'var(--brand)', fontWeight: 800 }}>{formatCurrency(Number(s.price))}</span>
               </div>
             ))}
           </div>
@@ -207,33 +96,24 @@ function VendorList() {
       {error && <ErrorMessage message={error} />}
 
       {!loading && !error && (
-        <>
-          {filtered.length === 0 ? (
-            <div style={styles.empty}>No vendors found.</div>
-          ) : (
-            <div style={styles.grid}>
-              {filtered.map((v) => (
-                <div
-                  key={v.id}
-                  style={styles.card}
-                  onClick={() => navigate(`/vendors/${v.id}/products`)}
-                >
-                  <div style={styles.category}>{v.category}</div>
-                  <h3 style={styles.shopName}>{v.shopName}</h3>
-                  <div style={styles.description}>{v.description}</div>
-                  <div style={styles.meta}>
-                    <span>
-                      <span style={styles.rating}>★ {v.averageRating?.toFixed(1) || 'N/A'}</span>
-                      {' · '}
-                      {v.totalOrders} orders
-                    </span>
-                    <StatusBadge status={v.status} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </>
+        filtered.length === 0 ? (
+          <EmptyState icon="🏪" title={t('vendor.noVendors')} sub="Try a different search or check back soon" />
+        ) : (
+          <div className="grid grid-auto-lg">
+            {filtered.map((v) => (
+              <VendorCard
+                key={v.id}
+                shopName={v.shopName}
+                category={v.category}
+                description={v.description}
+                rating={v.averageRating}
+                totalOrders={v.totalOrders}
+                status={v.status}
+                onClick={() => navigate(`/vendors/${v.id}/products`)}
+              />
+            ))}
+          </div>
+        )
       )}
     </div>
   );

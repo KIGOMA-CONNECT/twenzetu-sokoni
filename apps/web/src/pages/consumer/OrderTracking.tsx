@@ -171,21 +171,21 @@ export default function OrderTracking() {
 
   const styles = {
     container: {
-      maxWidth: 800, margin: '0 auto', padding: 24,
+      maxWidth: 800, margin: '0 auto', padding: '1.5rem 1rem',
     },
     header: {
       display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24,
     },
     backBtn: {
-      background: 'none', border: '1px solid #ddd', borderRadius: 8,
-      padding: '8px 16px', cursor: 'pointer', fontSize: 16,
+      background: 'none', border: '1.5px solid var(--line)', borderRadius: 10,
+      padding: '8px 16px', cursor: 'pointer', fontSize: 16, color: 'var(--ink)',
     },
     card: {
-      background: '#fff', borderRadius: 12, padding: 24, marginBottom: 20,
-      boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+      background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: 24, marginBottom: 20,
+      border: '1px solid var(--line)', boxShadow: 'var(--shadow-sm)',
     },
-    title: { fontSize: 20, fontWeight: 700, margin: '0 0 4px 0' },
-    subtitle: { color: '#666', fontSize: 14, margin: 0 },
+    title: { fontSize: 20, fontWeight: 800, margin: '0 0 4px 0', color: 'var(--ink)' },
+    subtitle: { color: 'var(--muted)', fontSize: 14, margin: 0 },
     progressContainer: {
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       position: 'relative' as const, padding: '16px 0',
@@ -196,41 +196,41 @@ export default function OrderTracking() {
     },
     stepDot: (active: boolean) => ({
       width: 28, height: 28, borderRadius: '50%',
-      backgroundColor: active ? '#2563eb' : '#e5e7eb',
+      backgroundColor: active ? 'var(--brand)' : 'var(--line)',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: active ? '#fff' : '#999', fontSize: 12, fontWeight: 700,
+      color: active ? '#fff' : 'var(--faint)', fontSize: 12, fontWeight: 700,
       transition: 'all 0.3s',
     }),
     stepLabel: (active: boolean) => ({
-      fontSize: 11, color: active ? '#2563eb' : '#999',
+      fontSize: 11, color: active ? 'var(--brand)' : 'var(--faint)',
       fontWeight: active ? 600 : 400, textAlign: 'center' as const,
     }),
     line: {
       position: 'absolute' as const, top: 32, left: '5%', right: '5%',
-      height: 3, backgroundColor: '#e5e7eb', zIndex: 0,
+      height: 3, backgroundColor: 'var(--line)', zIndex: 0,
     },
     lineFill: (pct: number) => ({
       position: 'absolute' as const, top: 0, left: 0,
       width: `${pct}%`, height: '100%',
-      backgroundColor: '#2563eb', transition: 'width 0.5s',
+      backgroundColor: 'var(--brand)', transition: 'width 0.5s',
     }),
     mapPlaceholder: {
-      width: '100%', height: 220, backgroundColor: '#f3f4f6',
+      width: '100%', height: 220, backgroundColor: 'var(--bg)',
       borderRadius: 12, display: 'flex', flexDirection: 'column' as const,
       alignItems: 'center', justifyContent: 'center', gap: 8,
-      color: '#666', fontSize: 14,
+      color: 'var(--muted)', fontSize: 14,
     },
     infoRow: {
       display: 'flex', justifyContent: 'space-between', padding: '8px 0',
-      borderBottom: '1px solid #f3f4f6',
+      borderBottom: '1px solid var(--line-soft)',
     },
-    infoLabel: { color: '#666', fontSize: 14 },
-    infoValue: { fontWeight: 600, fontSize: 14 },
+    infoLabel: { color: 'var(--muted)', fontSize: 14 },
+    infoValue: { fontWeight: 600, fontSize: 14, color: 'var(--ink)' },
     badge: (status: string) => ({
       display: 'inline-block', padding: '4px 12px', borderRadius: 20,
       fontSize: 12, fontWeight: 600,
-      backgroundColor: status === 'DELIVERED' ? '#d1fae5' : status === 'OUT_FOR_DELIVERY' ? '#dbeafe' : '#fef3c7',
-      color: status === 'DELIVERED' ? '#065f46' : status === 'OUT_FOR_DELIVERY' ? '#1e40af' : '#92400e',
+      backgroundColor: status === 'DELIVERED' ? 'var(--success-soft)' : status === 'OUT_FOR_DELIVERY' ? 'var(--info-soft)' : 'var(--warning-soft)',
+      color: status === 'DELIVERED' ? 'var(--success)' : status === 'OUT_FOR_DELIVERY' ? 'var(--info)' : '#b45309',
     }),
     connectionBadge: {
       display: 'inline-block', padding: '2px 8px', borderRadius: 12,
@@ -367,9 +367,9 @@ export default function OrderTracking() {
           <div style={styles.card}>
             <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>{t('chat.title')}</h3>
             <div ref={chatRef} style={{ maxHeight: 200, overflowY: 'auto', marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {messages.length === 0 && <div style={{ color: '#94a3b8', fontSize: 13, textAlign: 'center', padding: 12 }}>{t('chat.noMessages')}</div>}
+              {messages.length === 0 && <div style={{ color: 'var(--faint)', fontSize: 13, textAlign: 'center', padding: 12 }}>{t('chat.noMessages')}</div>}
               {messages.map((m: any) => (
-                <div key={m.id} style={{ padding: '6px 10px', borderRadius: 8, maxWidth: '80%', fontSize: 13, background: m.senderRole === 'customer' ? '#2563eb' : '#f1f5f9', color: m.senderRole === 'customer' ? '#fff' : '#1e293b', alignSelf: m.senderRole === 'customer' ? 'flex-end' : 'flex-start' }}>
+                <div key={m.id} style={{ padding: '6px 10px', borderRadius: 8, maxWidth: '80%', fontSize: 13, background: m.senderRole === 'customer' ? 'var(--brand)' : 'var(--line-soft)', color: m.senderRole === 'customer' ? '#fff' : 'var(--ink)', alignSelf: m.senderRole === 'customer' ? 'flex-end' : 'flex-start' }}>
                   <div style={{ fontWeight: 600, fontSize: 11, marginBottom: 2, opacity: 0.8 }}>{m.sender_role || m.senderRole}</div>
                   <div>{m.message}</div>
                 </div>
@@ -377,14 +377,15 @@ export default function OrderTracking() {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <input
-                style={{ flex: 1, padding: '7px 10px', border: '1px solid #cbd5e1', borderRadius: 6, fontSize: 13, outline: 'none' }}
+                className="input"
+                style={{ flex: 1, padding: '7px 10px' }}
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendChat()}
                 placeholder={t('chat.placeholder')}
               />
               <button
-                style={{ padding: '7px 14px', border: 'none', borderRadius: 6, background: '#2563eb', color: '#fff', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+                className="btn btn-primary"
                 onClick={sendChat}
               >{t('chat.send')}</button>
             </div>

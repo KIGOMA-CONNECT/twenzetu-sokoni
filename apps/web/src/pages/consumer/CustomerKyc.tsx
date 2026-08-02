@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import api from '../../api/client';
+import { LoadingSpinner } from '../../components/LoadingSpinner';
+import { PageHeader } from '../../components/ui';
 
 interface KycStatus {
   status: string;
@@ -42,46 +44,37 @@ export default function CustomerKyc() {
     }
   };
 
-  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading...</div>;
+  if (loading) return <div className="page"><LoadingSpinner /></div>;
 
   return (
-    <div style={{ maxWidth: '500px', margin: '0 auto' }}>
-      <h2>Identity Verification</h2>
-      <p style={{ color: '#64748b', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-        Verify your identity to unlock higher order limits and faster dispute resolution.
-      </p>
+    <div className="page page-narrow">
+      <PageHeader title="Identity Verification" sub="Verify your identity to unlock higher order limits and faster dispute resolution." />
 
       {kyc?.status === 'APPROVED' ? (
-        <div style={{ background: '#f0fdf4', color: '#166534', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+        <div className="alert alert-success" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✓</div>
           <strong>Identity Verified</strong>
-          {kyc.verifiedAt && <div style={{ fontSize: '0.85rem', marginTop: '0.25rem' }}>Verified {new Date(kyc.verifiedAt).toLocaleDateString()}</div>}
+          {kyc.verifiedAt && <div className="text-muted" style={{ marginTop: '0.25rem' }}>Verified {new Date(kyc.verifiedAt).toLocaleDateString()}</div>}
         </div>
       ) : (
-        <div style={{ background: '#fff', borderRadius: '8px', padding: '2rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+        <div className="card" style={{ padding: '2rem' }}>
           {kyc?.status && (
-            <div style={{ background: '#fefce8', color: '#a16207', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem' }}>
-              Status: <strong>{kyc.status}</strong>
-            </div>
+            <div className="alert alert-warning mb-1">Status: <strong>{kyc.status}</strong></div>
           )}
-          {error && <div style={{ background: '#fef2f2', color: '#ef4444', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.9rem' }}>{error}</div>}
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 500 }}>NIDA Number</label>
+          {error && <div className="alert alert-error mb-1">{error}</div>}
+          <div className="field">
+            <label className="field-label">NIDA Number</label>
             <input
-              style={{ width: '100%', padding: '0.6rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem' }}
+              className="input"
               value={nidaNumber}
               onChange={e => setNidaNumber(e.target.value)}
               placeholder="National ID number"
             />
           </div>
           <button
+            className="btn btn-primary btn-block"
             onClick={submit}
             disabled={submitting}
-            style={{
-              width: '100%', padding: '0.6rem', border: 'none', borderRadius: '6px',
-              background: submitting ? '#94a3b8' : '#3b82f6', color: '#fff',
-              fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer',
-            }}
           >
             {submitting ? 'Submitting...' : 'Submit for Verification'}
           </button>

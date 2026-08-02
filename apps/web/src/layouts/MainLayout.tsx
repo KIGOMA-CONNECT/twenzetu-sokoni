@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, FormEvent } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCurrency } from '../context/CurrencyContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
 
 export function MainLayout() {
   const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
+  const { formatCurrency } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [query, setQuery] = useState('');
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
@@ -34,6 +37,14 @@ export function MainLayout() {
   const go = (path: string) => { navigate(path); setMenuOpen(false); };
 
   const p = (perm: string) => isSuperAdmin || (user?.permissions?.includes(perm) ?? false);
+
+  const onSearch = (e: FormEvent) => {
+    e.preventDefault();
+    const q = query.trim();
+    if (!q) return;
+    navigate(`/vendors?q=${encodeURIComponent(q)}`);
+    setQuery('');
+  };
 
   const menuItems: { label: string; path: string; show: boolean }[] = [
     { label: 'Dashboard', path: '/dashboard', show: true },
@@ -67,65 +78,223 @@ export function MainLayout() {
 
   const visibleItems = menuItems.filter(m => m.show);
 
+  const isActive = (path: string) =>
+    location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
+
+  const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
+    { label: '🍲 Food', path: '/vendors' },
+    { label: '🥬 Groceries', path: '/vendors' },
+    { label: '📱 Electronics', path: '/vendors' },
+    { label: '🧵 General', path: '/vendors' },
+    { label: '🧺 Laundry', path: '/vendors' },
+    { label: '♻️ Secondhand', path: '/vendors' },
+    { label: '💳 Smart Cart', path: '/catalog', cta: true },
+  ];
+
+  const bottomNav = [
+    { label: 'Home', ico: '🏠', path: '/dashboard', show: true },
+    { label: 'Vendors', ico: '🏪', path: '/vendors', show: isCustomer || isAdmin },
+    { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
+    { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
+    { label: 'Account', ico: '👤', path: '/notifications', show: true },
+  ].filter(n => n.show);
+
   const sidebarContent = (
     <>
-      <div style={{ padding: '1.25rem 1.5rem 1.25rem', fontSize: '1.25rem', fontWeight: 700, borderBottom: '1px solid #334155' }}>afriMarket</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem 1.25rem', borderBottom: '1px solid #334155' }}>
+        <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>afriMarket</div>
+        {isMobile && (
+          <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
+        )}
+      </div>
       <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
-        {visibleItems.map(item => {
-          const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.startsWith(item.path));
-          return (
-            <button key={item.path} onClick={() => go(item.path)} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '0.6rem 1.5rem', background: isActive ? '#334155' : 'transparent', border: 'none', color: isActive ? '#ffffff' : '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer', borderLeft: isActive ? '3px solid #0f766e' : '3px solid transparent' }}>{item.label}</button>
-          );
-        })}
+        {visibleItems.map(item => (
+          <button
+            key={item.path}
+            onClick={() => go(item.path)}
+            style={{
+              display: 'block',
+              width: '100%',
+              textAlign: 'left',
+              padding: '0.6rem 1.5rem',
+              background: isActive(item.path) ? '#334155' : 'transparent',
+              border: 'none',
+              color: isActive(item.path) ? '#ffffff' : '#cbd5e1',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              borderLeft: isActive(item.path) ? '3px solid #14b8a6' : '3px solid transparent',
+            }}
+          >{item.label}</button>
+        ))}
       </nav>
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user?.fullName} ({user?.role})</div>
           <NotificationBell />
         </div>
-        <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher /></div>
+        <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher dark /></div>
         <div style={{ marginBottom: '0.5rem' }}><CurrencySwitcher /></div>
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.5rem', justifyContent: 'center' }}>
-          <button onClick={() => navigate('/terms')} style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}>Terms</button>
-          <button onClick={() => navigate('/privacy')} style={{ background: 'transparent', border: 'none', color: '#64748b', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}>Privacy</button>
-        </div>
-        <button onClick={handleLogout} style={{ background: '#dc2626', color: '#fff', border: 'none', padding: '0.4rem 1rem', borderRadius: '6px', fontSize: '0.85rem', width: '100%' }}>Logout</button>
+        <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Logout</button>
       </div>
     </>
   );
 
-  if (isMobile) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <header style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#1e293b', color: '#e2e8f0', padding: '0.75rem 1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}>
-          <button onClick={() => setMenuOpen(true)} aria-label="Open menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.4rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>☰</button>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>afriMarket</div>
-          <NotificationBell />
-        </header>
-        {menuOpen && (
-          <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }} aria-hidden="true" />
-        )}
-        <aside aria-hidden={!menuOpen} style={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: '280px', maxWidth: '85vw', background: '#1e293b', color: '#e2e8f0', zIndex: 70, display: 'flex', flexDirection: 'column', transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)', transition: 'transform 0.25s ease, visibility 0.25s ease', visibility: menuOpen ? 'visible' : 'hidden', pointerEvents: menuOpen ? 'auto' : 'none', boxShadow: '2px 0 8px rgba(0,0,0,0.3)' }}>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '0.75rem' }}>
-            <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
-          </div>
-          {sidebarContent}
-        </aside>
-        <main style={{ flex: 1, padding: '1rem', overflow: 'auto' }}>
-          <Outlet />
-        </main>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <aside style={{ width: '240px', background: '#1e293b', color: '#e2e8f0', padding: '1.5rem 0', flexShrink: 0, display: 'flex', flexDirection: 'column', position: 'sticky', top: 0, height: '100vh' }}>
+    <>
+      {/* ===== Top bar ===== */}
+      <header className="topbar">
+        <div className="topbar-inner">
+          {isMobile && (
+            <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="icon-btn" style={{ fontSize: '1.35rem' }}>☰</button>
+          )}
+          <button className="brand" onClick={() => go(isCustomer || isAdmin ? '/dashboard' : user?.role === 'vendor' ? '/vendor/dashboard' : user?.role === 'driver' ? '/driver/dashboard' : '/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+            <span className="brand-dot" />
+            afriMarket
+          </button>
+
+          <form className="searchbar hide-tablet" onSubmit={onSearch} role="search">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search vendors, products..."
+              aria-label="Search"
+            />
+            <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
+          </form>
+
+          <div className="topbar-actions">
+            {isCustomer && (
+              <button className="icon-btn" onClick={() => go('/wallet')} aria-label="Wallet">
+                💳
+              </button>
+            )}
+            <NotificationBell />
+            <div className="hide-tablet" style={{ width: 1, height: 26, background: 'rgba(148,163,184,0.25)' }} />
+            <div className="hide-tablet" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <LanguageSwitcher dark />
+              <div style={{ width: 130 }}>
+                <CurrencySwitcher />
+              </div>
+            </div>
+            <button className="user-chip" onClick={handleLogout} title="Logout">
+              <span className="avatar">{(user?.fullName || 'U').charAt(0).toUpperCase()}</span>
+              <span className="chip-name hide-tablet">{user?.fullName?.split(' ')[0] || 'Account'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Category bar (desktop) */}
+        {!isMobile && (
+          <nav className="catbar hide-mobile">
+            <div className="catbar-inner">
+              {categoryLinks.map((c) => (
+                <a key={c.label} href="#" onClick={(e) => { e.preventDefault(); go(c.path); }} className={c.cta ? 'cta' : ''}>
+                  {c.label}
+                </a>
+              ))}
+            </div>
+          </nav>
+        )}
+      </header>
+
+      {/* Mobile search row */}
+      {isMobile && (
+        <div style={{ background: 'var(--ink-soft)', padding: '0 1rem 0.75rem' }}>
+          <form className="searchbar" onSubmit={onSearch} role="search">
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search vendors, products..."
+              aria-label="Search"
+            />
+            <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
+          </form>
+        </div>
+      )}
+
+      {/* Mobile drawer */}
+      {isMobile && menuOpen && (
+        <div onClick={() => setMenuOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 60 }} aria-hidden="true" />
+      )}
+      <aside
+        aria-hidden={!menuOpen}
+        style={{
+          position: 'fixed', top: 0, bottom: 0, left: 0, width: '280px', maxWidth: '85vw',
+          background: '#1e293b', color: '#e2e8f0', zIndex: 70, display: 'flex', flexDirection: 'column',
+          transform: menuOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.25s ease, visibility 0.25s ease',
+          visibility: menuOpen ? 'visible' : 'hidden',
+          pointerEvents: menuOpen ? 'auto' : 'none',
+          boxShadow: '2px 0 8px rgba(0,0,0,0.3)',
+        }}
+      >
         {sidebarContent}
       </aside>
-      <main style={{ flex: 1, padding: '2rem', overflow: 'auto' }}>
+
+      {/* ===== Main content ===== */}
+      <main className="main-content" style={{ minHeight: 'calc(100vh - var(--topbar-h))' }}>
         <Outlet />
       </main>
-    </div>
+
+      {/* ===== Footer ===== */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <div>
+            <div className="footer-brand">
+              <span className="brand-dot" />
+              afriMarket
+            </div>
+            <p style={{ fontSize: '0.85rem', marginTop: '0.85rem', maxWidth: 260 }}>
+              The African marketplace connecting buyers, vendors and drivers. Order anything, delivered fast.
+            </p>
+          </div>
+          <div>
+            <h4>Marketplace</h4>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/vendors'); }}>Browse Vendors</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/catalog'); }}>Smart Cart</a>
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/orders'); }}>My Orders</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/referrals'); }}>Refer a Friend</a>}
+          </div>
+          <div>
+            <h4>Account</h4>
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/wallet'); }}>Wallet</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/addresses'); }}>Addresses</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/loyalty'); }}>Loyalty Points</a>}
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/notifications'); }}>Notifications</a>
+            <button onClick={handleLogout} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Logout</button>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/terms'); }}>Terms of Service</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/privacy'); }}>Privacy Policy</a>
+            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>Get the app on</div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>Android</span>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>iOS</span>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          © {new Date().getFullYear()} afriMarket. Order anything, delivered fast. All rights reserved.
+        </div>
+      </footer>
+
+      {/* ===== Mobile bottom nav ===== */}
+      {isMobile && (
+        <nav className="bottomnav">
+          {bottomNav.map((n) => (
+            <a
+              key={n.label}
+              href="#"
+              onClick={(e) => { e.preventDefault(); go(n.path); }}
+              className={isActive(n.path) ? 'active' : ''}
+            >
+              <span className="b-ico">{n.ico}</span>
+              {n.label}
+            </a>
+          ))}
+        </nav>
+      )}
+    </>
   );
 }

@@ -1,208 +1,236 @@
+import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const s = {
-  page: {
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    color: '#0f172a',
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column' as const,
-  },
-  nav: {
-    padding: '1.25rem 2rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    maxWidth: 1200,
-    margin: '0 auto',
-    width: '100%',
-    boxSizing: 'border-box' as const,
-  },
-  logo: { fontSize: '1.3rem', fontWeight: 800, color: '#0f766e', letterSpacing: '-0.5px' },
-  navLinks: { display: 'flex', gap: '1rem', alignItems: 'center' },
-  navBtn: {
-    padding: '0.5rem 1.25rem',
-    borderRadius: '8px',
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    cursor: 'pointer',
-    border: 'none',
-    background: 'transparent',
-    color: '#475569',
-    textDecoration: 'none',
-  },
-  navBtnPrimary: {
-    padding: '0.5rem 1.25rem',
-    borderRadius: '8px',
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    cursor: 'pointer',
-    border: 'none',
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    color: '#fff',
-    textDecoration: 'none',
-  },
-  hero: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '5rem 2rem',
-    textAlign: 'center' as const,
-    background: 'linear-gradient(135deg, #f0fdfa 0%, #f8fafc 50%, #f1f5f9 100%)',
-  },
-  heroBadge: {
-    display: 'inline-block',
-    padding: '0.4rem 1rem',
-    background: '#ecfdf5',
-    color: '#0f766e',
-    borderRadius: '999px',
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    marginBottom: '1.5rem',
-  },
-  heroTitle: {
-    fontSize: 'clamp(2rem, 5vw, 3.5rem)',
-    fontWeight: 800,
-    letterSpacing: '-1px',
-    lineHeight: 1.15,
-    marginBottom: '1.25rem',
-    maxWidth: 700,
-  },
-  heroGradient: {
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-  },
-  heroSub: {
-    fontSize: 'clamp(1rem, 2vw, 1.15rem)',
-    color: '#64748b',
-    maxWidth: 550,
-    marginBottom: '2rem',
-    lineHeight: 1.6,
-  },
-  heroCta: {
-    display: 'inline-block',
-    padding: '0.85rem 2rem',
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    color: '#fff',
-    borderRadius: '10px',
-    textDecoration: 'none',
-    fontWeight: 700,
-    fontSize: '1rem',
-    border: 'none',
-    cursor: 'pointer',
-    transition: 'opacity 0.2s, transform 0.1s',
-  },
-  heroCtaSecondary: {
-    display: 'inline-block',
-    padding: '0.85rem 2rem',
-    background: '#fff',
-    color: '#0f766e',
-    borderRadius: '10px',
-    textDecoration: 'none',
-    fontWeight: 600,
-    fontSize: '1rem',
-    border: '1.5px solid #0f766e',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-  },
-  ctaGroup: { display: 'flex', gap: '1rem', flexWrap: 'wrap' as const, justifyContent: 'center' },
-  features: {
-    padding: '5rem 2rem',
-    maxWidth: 1100,
-    margin: '0 auto',
-    width: '100%',
-    boxSizing: 'border-box' as const,
-  },
-  featuresTitle: {
-    fontSize: '1.75rem',
-    fontWeight: 700,
-    textAlign: 'center' as const,
-    marginBottom: '0.75rem',
-  },
-  featuresSub: {
-    textAlign: 'center' as const,
-    color: '#64748b',
-    marginBottom: '3rem',
-    fontSize: '1rem',
-  },
-  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem' },
-  featureCard: {
-    padding: '2rem',
-    background: '#fff',
-    borderRadius: '12px',
-    border: '1px solid #e2e8f0',
-    transition: 'box-shadow 0.2s',
-  },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: '12px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '1.3rem',
-    marginBottom: '1rem',
-  },
-  featureName: { fontSize: '1.05rem', fontWeight: 700, marginBottom: '0.5rem' },
-  featureDesc: { fontSize: '0.88rem', color: '#64748b', lineHeight: 1.6 },
-  footer: { padding: '2rem', textAlign: 'center' as const, fontSize: '0.8rem', color: '#94a3b8', borderTop: '1px solid #e2e8f0' },
-};
+const CATEGORIES = [
+  { emoji: '🍲', name: 'Food', desc: 'Chakula kilicho tayari', bg: '#ccfbf1' },
+  { emoji: '🥬', name: 'Groceries', desc: 'Mboga na matunda', bg: '#dcfce7' },
+  { emoji: '🍚', name: 'Rice & Beans', desc: 'Mchele na maharage', bg: '#fef9c3' },
+  { emoji: '🧵', name: 'Laundry', desc: 'Ufuaji na usafishaji', bg: '#fbcfe8' },
+  { emoji: '🧹', name: 'Home & Garden', desc: 'Usafi nyumbani', bg: '#e0f2fe' },
+  { emoji: '♻️', name: 'Secondhand', desc: 'Vitu vya used', bg: '#fde68a' },
+  { emoji: '📱', name: 'Electronics', desc: 'Bidhaa na vifaa', bg: '#ddd6fe' },
+  { emoji: '👩‍🍳', name: 'Home Cooks', desc: 'Kupikiwa nyumbani', bg: '#ffedd5' },
+];
 
-const features = [
-  { icon: '\u{1F4B0}', bg: '#ecfdf5', name: 'Mobile Money Payments', desc: 'Seamless M-Pesa, Airtel Money, Tigo Pesa and mobile money integration across East Africa.' },
-  { icon: '\u{1F69A}', bg: '#eff6ff', name: 'Smart Delivery', desc: 'Real-time tracking, boda boda logistics, and optimized delivery routing for vendors.' },
-  { icon: '\u{1F3E0}', bg: '#fef3c7', name: 'Multi-Tenant', desc: 'Support for multiple cities and markets with isolated tenant data and custom configurations.' },
-  { icon: '\u{2696}\uFE0F', bg: '#f3e8ff', name: 'Escrow Payments', desc: 'Secure payment holding until delivery confirmation. Trust built into every transaction.' },
-  { icon: '\u{1F4CA}', bg: '#fce7f3', name: 'Analytics & Insights', desc: 'Real-time dashboards for sales, disputes, fleet performance, and financial reconciliation.' },
-  { icon: '\u{1F4F1}', bg: '#e0f2fe', name: 'USSD & Mobile App', desc: 'Feature phone support via USSD and smartphone app for maximum accessibility.' },
+const STEPS = [
+  { emoji: '📝', title: 'Tell us what you need', desc: 'Type your shopping list in Swahili, English or French.' },
+  { emoji: '🛒', title: 'We find the best prices', desc: 'Match across vendors for the lowest price, instantly.' },
+  { emoji: '🛵', title: 'Track it to your door', desc: 'Real-time delivery tracking with live driver location.' },
+  { emoji: '🔒', title: 'Pay with escrow', desc: 'Funds are held safely until your order is delivered.' },
+];
+
+const TRUST = [
+  { emoji: '🛡️', title: 'Escrow Payments', sub: 'Money held safely until delivery confirmed' },
+  { emoji: '🛵', title: 'Fast Delivery', sub: 'Boda boda & courier across your city' },
+  { emoji: '✅', title: 'Verified Vendors', sub: 'Every shop is vetted and rated' },
+  { emoji: '🌍', title: 'Made for Africa', sub: 'M-Pesa, Tigo Pesa, Airtel Money & more' },
 ];
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+
+  const onSearch = (e: FormEvent) => {
+    e.preventDefault();
+    navigate(`/register?q=${encodeURIComponent(query.trim())}`);
+  };
+
   return (
-    <div style={s.page}>
-      <nav style={s.nav}>
-        <div style={s.logo}>afriMarket</div>
-        <div style={s.navLinks}>
-          <span style={{ ...s.navBtn } as React.CSSProperties} onClick={() => navigate('/login')}>Sign in</span>
-          <span style={s.navBtnPrimary as React.CSSProperties} onClick={() => navigate('/register')}>Get started</span>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font)', color: 'var(--ink)' }}>
+      {/* Nav */}
+      <nav style={{ padding: '1.1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1240, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+        <div className="brand" style={{ color: 'var(--brand)' }}>
+          <span className="brand-dot" />
+          afriMarket
+        </div>
+        <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+          <button className="btn btn-ghost" onClick={() => navigate('/login')}>Sign in</button>
+          <button className="btn btn-primary" onClick={() => navigate('/register')}>Get started</button>
         </div>
       </nav>
 
-      <section style={s.hero}>
-        <div style={s.heroBadge}>Now serving across Africa</div>
-        <h1 style={s.heroTitle}>
-          Your local marketplace,<br /><span style={s.heroGradient}>reimagined for Africa</span>
-        </h1>
-        <p style={s.heroSub}>
-          afriMarket connects buyers, vendors, and drivers in African cities. 
-          Order fresh produce, electronics, and more — delivered to your door.
-        </p>
-        <div style={s.ctaGroup}>
-          <button style={s.heroCta as React.CSSProperties} onClick={() => navigate('/register')}>Create account</button>
-          <button style={s.heroCtaSecondary as React.CSSProperties} onClick={() => navigate('/login')}>Sign in</button>
+      {/* Hero */}
+      <section className="hero">
+        <div className="hero-inner">
+          <div>
+            <span className="hero-badge">🌍 Now serving across Africa</span>
+            <h1 className="hero-title">
+              Your local market, <span className="hero-gradient">reimagined for Africa</span>
+            </h1>
+            <p className="hero-sub">
+              Order food, groceries, electronics and more from trusted vendors. Compare prices,
+              pay safely with escrow, and track your delivery live — all in one app.
+            </p>
+
+            <form className="searchbar" onSubmit={onSearch} style={{ maxWidth: 480, background: '#fff', borderColor: '#cbd5e1', boxShadow: 'var(--shadow)' }}>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Try 'wali wa nazi', 'nyanya', 'sabuni'..."
+                aria-label="Search products"
+                style={{ color: 'var(--ink)' }}
+              />
+              <button type="submit" className="btn btn-primary">Search prices</button>
+            </form>
+
+            <div className="hero-cta-group">
+              <button className="btn btn-accent btn-lg" onClick={() => navigate('/register')}>
+                🛍️ Start shopping
+              </button>
+              <button className="btn btn-outline btn-lg" onClick={() => navigate('/login')}>
+                Sign in
+              </button>
+            </div>
+
+            <div className="hero-stats">
+              <div className="hero-stat">
+                <div className="num">100+</div>
+                <div className="lbl">Verified vendors</div>
+              </div>
+              <div className="hero-stat">
+                <div className="num">4.9★</div>
+                <div className="lbl">Average rating</div>
+              </div>
+              <div className="hero-stat">
+                <div className="num">30min</div>
+                <div className="lbl">Avg delivery</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="float-tiles">
+            <div className="float-tile">
+              <div className="tile-emoji" style={{ background: '#dcfce7' }}>🥬</div>
+              <div>
+                <div className="tile-name">Fresh produce</div>
+                <div className="tile-desc">Mboga & matunda daily</div>
+              </div>
+            </div>
+            <div className="float-tile">
+              <div className="tile-emoji" style={{ background: '#ccfbf1' }}>🍲</div>
+              <div>
+                <div className="tile-name">Home-cooked food</div>
+                <div className="tile-desc">Chakula cha nyumbani</div>
+              </div>
+            </div>
+            <div className="float-tile">
+              <div className="tile-emoji" style={{ background: '#ffedd5' }}>📱</div>
+              <div>
+                <div className="tile-name">Electronics</div>
+                <div className="tile-desc">Phones, gadgets & more</div>
+              </div>
+            </div>
+            <div className="float-tile">
+              <div className="tile-emoji" style={{ background: '#fbcfe8' }}>🧵</div>
+              <div>
+                <div className="tile-name">Laundry services</div>
+                <div className="tile-desc">Kwa urahisi sana</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section style={s.features}>
-        <h2 style={s.featuresTitle}>Everything you need</h2>
-        <p style={s.featuresSub}>Built for the way Africa does business</p>
-        <div style={s.grid}>
-          {features.map((f, i) => (
-            <div key={i} style={s.featureCard}>
-              <div style={{ ...s.featureIcon, background: f.bg } as React.CSSProperties}>{f.icon}</div>
-              <div style={s.featureName}>{f.name}</div>
-              <div style={s.featureDesc}>{f.desc}</div>
+      {/* Categories */}
+      <section className="container" style={{ paddingTop: '3.5rem' }}>
+        <h2 className="section-title">🛍️ Shop by category</h2>
+        <div className="cat-scroll">
+          {CATEGORIES.map((c) => (
+            <div key={c.name} className="cat-tile" onClick={() => navigate('/register')}>
+              <div className="cat-emoji" style={{ background: c.bg }}>{c.emoji}</div>
+              <div className="cat-name">{c.name}</div>
             </div>
           ))}
         </div>
       </section>
 
-      <footer style={s.footer}>
-        &copy; {new Date().getFullYear()} afriMarket. All rights reserved.
+      {/* Deal banner */}
+      <section className="container" style={{ paddingTop: '2rem' }}>
+        <div className="deal-banner">
+          <div>
+            <div className="deal-title">🔥 Today's Hot Deals</div>
+            <div className="deal-sub">Up to 40% off fresh produce, electronics and more. Limited time only.</div>
+          </div>
+          <button className="btn btn-lg" onClick={() => navigate('/register')}>Shop deals</button>
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section className="container" style={{ paddingTop: '3.5rem' }}>
+        <div style={{ textAlign: 'center', marginBottom: '2.25rem' }}>
+          <h2 style={{ fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', fontWeight: 800 }}>How afriMarket works</h2>
+          <p style={{ color: 'var(--muted)', marginTop: '0.4rem' }}>Simple, fast and secure — just like your local market</p>
+        </div>
+        <div className="grid grid-auto-lg">
+          {STEPS.map((s, i) => (
+            <div key={i} className="card card-hover" style={{ textAlign: 'center', padding: '2rem 1.5rem' }}>
+              <div style={{ fontSize: '2.4rem', marginBottom: '0.75rem' }}>{s.emoji}</div>
+              <div style={{ fontWeight: 800, color: 'var(--ink)', fontSize: '1.05rem', marginBottom: '0.4rem' }}>{s.title}</div>
+              <div style={{ fontSize: '0.88rem', color: 'var(--muted)', lineHeight: 1.6 }}>{s.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="container" style={{ paddingTop: '3.5rem' }}>
+        <h2 className="section-title">💳 Payments that work for Africa</h2>
+        <div className="trust-row">
+          {TRUST.map((t) => (
+            <div key={t.title} className="trust-item">
+              <div className="trust-emoji">{t.emoji}</div>
+              <div>
+                <div className="trust-title">{t.title}</div>
+                <div className="trust-sub">{t.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="container" style={{ paddingTop: '3.5rem', paddingBottom: '1rem' }}>
+        <div className="card" style={{ background: 'linear-gradient(135deg, #134e4a, #0f766e 60%, #14b8a6)', textAlign: 'center', padding: '3rem 2rem', color: '#fff', border: 'none' }}>
+          <h2 style={{ color: '#fff', fontSize: 'clamp(1.6rem, 3vw, 2.2rem)', marginBottom: '0.5rem' }}>Ready to shop smarter?</h2>
+          <p style={{ color: 'rgba(255,255,255,0.85)', marginBottom: '1.5rem' }}>Join thousands of happy customers across Africa</p>
+          <button className="btn btn-accent btn-lg" onClick={() => navigate('/register')}>Create your free account</button>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="footer">
+        <div className="footer-inner">
+          <div>
+            <div className="footer-brand">
+              <span className="brand-dot" />
+              afriMarket
+            </div>
+            <p style={{ fontSize: '0.85rem', marginTop: '0.85rem', maxWidth: 260 }}>
+              The African marketplace connecting buyers, vendors and drivers. Order anything, delivered fast.
+            </p>
+          </div>
+          <div>
+            <h4>Marketplace</h4>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Browse Vendors</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Become a Vendor</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Become a Driver</a>
+          </div>
+          <div>
+            <h4>Company</h4>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/terms'); }}>Terms of Service</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/privacy'); }}>Privacy Policy</a>
+          </div>
+          <div>
+            <h4>Get the app</h4>
+            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>Android</span>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>iOS</span>
+            </div>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          © {new Date().getFullYear()} afriMarket. Order anything, delivered fast. All rights reserved.
+        </div>
       </footer>
     </div>
   );

@@ -1,202 +1,6 @@
 import { useState, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-
-const styles = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f766e 100%)',
-    padding: '1.5rem',
-    fontFamily: 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
-    position: 'relative' as const,
-    overflow: 'hidden',
-  },
-  bgGrid: {
-    position: 'absolute' as const,
-    inset: 0,
-    backgroundImage: 'radial-gradient(circle at 25px 25px, rgba(255,255,255,0.03) 1px, transparent 0)',
-    backgroundSize: '50px 50px',
-  },
-  card: {
-    position: 'relative' as const,
-    background: '#ffffff',
-    borderRadius: '16px',
-    padding: '2.5rem',
-    width: '100%',
-    maxWidth: '420px',
-    boxShadow: '0 25px 50px rgba(0,0,0,0.25)',
-  },
-  brand: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    marginBottom: '2rem',
-  },
-  logo: {
-    fontSize: '1.5rem',
-    fontWeight: 800,
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    WebkitBackgroundClip: 'text',
-    WebkitTextFillColor: 'transparent',
-    letterSpacing: '-0.5px',
-  },
-  tagline: {
-    fontSize: '0.8rem',
-    color: '#94a3b8',
-    marginTop: '0.35rem',
-  },
-  title: {
-    fontSize: '1.1rem',
-    fontWeight: 600,
-    color: '#0f172a',
-    marginBottom: '1.5rem',
-    textAlign: 'center' as const,
-  },
-  tabs: {
-    display: 'flex',
-    background: '#f1f5f9',
-    borderRadius: '10px',
-    padding: '0.25rem',
-    marginBottom: '1.25rem',
-  },
-  tab: {
-    flex: 1,
-    padding: '0.55rem',
-    border: 'none',
-    borderRadius: '8px',
-    background: 'transparent',
-    color: '#64748b',
-    fontWeight: 600,
-    fontSize: '0.85rem',
-    cursor: 'pointer',
-    transition: 'background 0.2s, color 0.2s',
-  },
-  tabActive: {
-    background: '#ffffff',
-    color: '#0f172a',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-  },
-  field: {
-    marginBottom: '1.25rem',
-  },
-  label: {
-    display: 'block',
-    fontSize: '0.8rem',
-    fontWeight: 600,
-    color: '#475569',
-    marginBottom: '0.4rem',
-  },
-  inputWrap: {
-    position: 'relative' as const,
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem 0.85rem',
-    border: '1.5px solid #e2e8f0',
-    borderRadius: '10px',
-    fontSize: '0.9rem',
-    outline: 'none',
-    background: '#f8fafc',
-    transition: 'border-color 0.2s, box-shadow 0.2s',
-    boxSizing: 'border-box' as const,
-  },
-  inputFocus: {
-    borderColor: '#0f766e',
-    boxShadow: '0 0 0 3px rgba(15,118,110,0.12)',
-    background: '#ffffff',
-  },
-  passwordToggle: {
-    position: 'absolute' as const,
-    right: '12px',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'none',
-    border: 'none',
-    color: '#94a3b8',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    padding: '4px',
-    lineHeight: 1,
-  },
-  options: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: '1.25rem',
-    fontSize: '0.8rem',
-  },
-  checkbox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.4rem',
-    color: '#64748b',
-    cursor: 'pointer',
-  },
-  checkboxInput: {
-    accentColor: '#0f766e',
-    width: '15px',
-    height: '15px',
-    cursor: 'pointer',
-  },
-  forgotLink: {
-    color: '#0f766e',
-    fontWeight: 500,
-    cursor: 'pointer',
-    background: 'none',
-    border: 'none',
-    fontSize: '0.8rem',
-    padding: 0,
-  },
-  button: {
-    width: '100%',
-    padding: '0.8rem 1rem',
-    background: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '0.9rem',
-    fontWeight: 700,
-    cursor: 'pointer',
-    transition: 'opacity 0.2s, transform 0.1s',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '0.5rem',
-  },
-  buttonDisabled: {
-    opacity: 0.7,
-    cursor: 'not-allowed',
-  },
-  error: {
-    padding: '0.7rem 0.85rem',
-    background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: '10px',
-    color: '#dc2626',
-    fontSize: '0.8rem',
-    marginBottom: '1rem',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '0.5rem',
-  },
-  footer: {
-    marginTop: '1.5rem',
-    textAlign: 'center' as const,
-    fontSize: '0.75rem',
-    color: '#94a3b8',
-  },
-  spinner: {
-    width: '16px',
-    height: '16px',
-    border: '2px solid rgba(255,255,255,0.3)',
-    borderTopColor: '#ffffff',
-    borderRadius: '50%',
-    animation: 'spin 0.6s linear infinite',
-  },
-};
 
 function getErrorMessage(err: unknown, fallback: string): string {
   if (err && typeof err === 'object' && 'response' in err) {
@@ -207,7 +11,45 @@ function getErrorMessage(err: unknown, fallback: string): string {
   return fallback;
 }
 
-function LoginPage() {
+function AuthSidePanel({ mode }: { mode: 'login' | 'register' }) {
+  const navigate = useNavigate();
+  const points =
+    mode === 'login'
+      ? [
+          ['🛒', 'Order food & groceries from trusted vendors'],
+          ['📈', 'Compare prices across your local market'],
+          ['🛵', 'Track deliveries live to your door'],
+        ]
+      : [
+          ['🛒', 'Shop smarter with price comparison'],
+          ['💳', 'Pay securely with escrow & mobile money'],
+          ['🛵', 'Fast delivery with live tracking'],
+        ];
+  return (
+    <div className="auth-side">
+      <button className="brand" onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.6rem', marginBottom: '2.5rem' }}>
+        <span className="brand-dot" />
+        afriMarket
+      </button>
+      <h1>{mode === 'login' ? 'Welcome back to your market' : 'Your market, in your pocket'}</h1>
+      <p>
+        {mode === 'login'
+          ? 'Sign in to continue shopping, track your orders and pay safely with escrow.'
+          : 'Join the fastest-growing marketplace across Africa. Order anything, delivered fast.'}
+      </p>
+      <div className="auth-points">
+        {points.map(([emoji, text]) => (
+          <div key={text} className="auth-point">
+            <span>{emoji}</span>
+            {text}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function LoginPage() {
   const { login, sendOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
   const [mode, setMode] = useState<'password' | 'otp'>('password');
@@ -218,7 +60,6 @@ function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -268,216 +109,75 @@ function LoginPage() {
     }
   };
 
+  const inputStyle = {};
+
   return (
-    <div style={styles.page}>
-      <div style={styles.bgGrid} />
-      <div style={styles.card}>
-        <div style={styles.brand}>
-          <div style={styles.logo}>afriMarket</div>
-          <div style={styles.tagline}>Enterprise marketplace platform</div>
-        </div>
-        <h1 style={styles.title}>Welcome back</h1>
+    <div className="auth-page">
+      <AuthSidePanel mode="login" />
+      <div className="auth-main">
+        <div className="auth-card">
+          <button className="brand" onClick={() => navigate('/')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--brand)', fontSize: '1.4rem', marginBottom: '1.5rem' }}>
+            <span className="brand-dot" />
+            afriMarket
+          </button>
+          <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Welcome back</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Sign in to continue to your market</p>
 
-        {error && (
-          <div style={styles.error}>
-            <span>&#9888;</span>
-            <span>{error}</span>
+          {error && <div className="alert alert-error mb-2"><span>⚠️</span><span>{error}</span></div>}
+
+          <div className="auth-tabs">
+            <button type="button" className={mode === 'password' ? 'active' : ''} onClick={() => { setMode('password'); setError(null); }}>Password</button>
+            <button type="button" className={mode === 'otp' ? 'active' : ''} onClick={() => { setMode('otp'); setError(null); setCodeSent(false); }}>SMS Code</button>
           </div>
-        )}
 
-        <div style={styles.tabs}>
-          <button
-            type="button"
-            style={{ ...styles.tab, ...(mode === 'password' ? styles.tabActive : {}) }}
-            onClick={() => { setMode('password'); setError(null); }}
-          >
-            Password
-          </button>
-          <button
-            type="button"
-            style={{ ...styles.tab, ...(mode === 'otp' ? styles.tabActive : {}) }}
-            onClick={() => { setMode('otp'); setError(null); setCodeSent(false); }}
-          >
-            SMS Code
-          </button>
-        </div>
-
-        {mode === 'password' ? (
-          <form onSubmit={handlePasswordSubmit}>
-            <div style={styles.field}>
-              <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
-              <div style={styles.inputWrap}>
-                <input
-                  id="phoneNumber"
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+255 754 000 000"
-                  style={styles.input}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#0f766e';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-                    e.currentTarget.style.background = '#ffffff';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.background = '#f8fafc';
-                  }}
-                  required
-                />
+          {mode === 'password' ? (
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="field">
+                <label className="field-label" htmlFor="phoneNumber">Phone Number</label>
+                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000" required style={inputStyle} />
               </div>
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label} htmlFor="password">Password</label>
-              <div style={styles.inputWrap}>
-                <input
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  style={styles.input}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#0f766e';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-                    e.currentTarget.style.background = '#ffffff';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.background = '#f8fafc';
-                  }}
-                  required
-                />
-                <button
-                  type="button"
-                  style={styles.passwordToggle}
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  {showPassword ? '\u{1F441}' : '\u{1F512}'}
-                </button>
+              <div className="field">
+                <label className="field-label" htmlFor="password">Password</label>
+                <div style={{ position: 'relative' }}>
+                  <input id="password" type={showPassword ? 'text' : 'password'} className="input" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required style={inputStyle} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--faint)', fontSize: '1rem', cursor: 'pointer' }}>
+                    {showPassword ? '👁' : '🔒'}
+                  </button>
+                </div>
               </div>
-            </div>
-
-            <div style={styles.options}>
-              <label style={styles.checkbox}>
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  style={styles.checkboxInput}
-                />
-                Remember me
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
-            >
-              {submitting ? (
-                <>
-                  <span style={styles.spinner} />
-                  Signing in...
-                </>
-              ) : (
-                'Sign in'
-              )}
-            </button>
-          </form>
-        ) : codeSent ? (
-          <form onSubmit={handleVerifyCode}>
-            <div style={styles.field}>
-              <label style={styles.label} htmlFor="otpCode">Verification code</label>
-              <div style={styles.inputWrap}>
-                <input
-                  id="otpCode"
-                  type="text"
-                  inputMode="numeric"
-                  value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  placeholder="4-digit code"
-                  style={{ ...styles.input, textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700 }}
-                  maxLength={4}
-                  required
-                />
+              <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
+                {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Signing in...</> : 'Sign in'}
+              </button>
+            </form>
+          ) : codeSent ? (
+            <form onSubmit={handleVerifyCode}>
+              <div className="field">
+                <label className="field-label" htmlFor="otpCode">Verification code</label>
+                <input id="otpCode" type="text" inputMode="numeric" className="input" value={code} onChange={(e) => setCode(e.target.value)} placeholder="4-digit code" maxLength={4} required style={{ textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }} />
               </div>
-            </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
-            >
-              {submitting ? (
-                <>
-                  <span style={styles.spinner} />
-                  Verifying...
-                </>
-              ) : (
-                'Verify code'
-              )}
-            </button>
-            <button
-              type="button"
-              style={{ ...styles.forgotLink, width: '100%', marginTop: '0.9rem', textAlign: 'center' }}
-              onClick={() => setCodeSent(false)}
-            >
-              Resend code
-            </button>
-          </form>
-        ) : (
-          <form onSubmit={handleSendCode}>
-            <div style={styles.field}>
-              <label style={styles.label} htmlFor="phoneNumber">Phone Number</label>
-              <div style={styles.inputWrap}>
-                <input
-                  id="phoneNumber"
-                  type="tel"
-                  value={phoneNumber}
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  placeholder="+255 754 000 000"
-                  style={styles.input}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = '#0f766e';
-                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(15,118,110,0.12)';
-                    e.currentTarget.style.background = '#ffffff';
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor = '#e2e8f0';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.background = '#f8fafc';
-                  }}
-                  required
-                />
+              <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
+                {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Verifying...</> : 'Verify code'}
+              </button>
+              <button type="button" className="btn btn-ghost btn-block mt-2" onClick={() => setCodeSent(false)}>Resend code</button>
+            </form>
+          ) : (
+            <form onSubmit={handleSendCode}>
+              <div className="field">
+                <label className="field-label" htmlFor="phoneNumber">Phone Number</label>
+                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000" required style={inputStyle} />
               </div>
-            </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              style={{ ...styles.button, ...(submitting ? styles.buttonDisabled : {}) }}
-            >
-              {submitting ? (
-                <>
-                  <span style={styles.spinner} />
-                  Sending...
-                </>
-              ) : (
-                'Send code'
-              )}
-            </button>
-          </form>
-        )}
+              <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
+                {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Sending...</> : 'Send code'}
+              </button>
+            </form>
+          )}
 
-        <div style={styles.footer}>
-          &copy; {new Date().getFullYear()} afriMarket. All rights reserved.
+          <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--muted)' }}>
+            New to afriMarket?{' '}
+            <Link to="/register" style={{ color: 'var(--brand)', fontWeight: 700 }}>Create an account</Link>
+          </p>
         </div>
       </div>
     </div>
   );
 }
-
-export default LoginPage;
