@@ -64,7 +64,7 @@ export default function ConsumerServices() {
   const { data: reqRaw, loading: loadingReqs, error: reqsError, refetch: refetchReqs } = useApi<ServiceRequest[]>('/services/requests');
 
   const [selected, setSelected] = useState<ServiceListing | null>(null);
-  const [requestForm, setRequestForm] = useState({ quantity: 1, unitLabel: '', details: '' });
+  const [requestForm, setRequestForm] = useState({ quantity: 1, unitLabel: '', details: '', scheduledAt: '' });
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -126,6 +126,7 @@ export default function ConsumerServices() {
         details: requestForm.details.trim(),
         photoUrls,
         currency: selected.currency,
+        scheduledAt: requestForm.scheduledAt ? new Date(requestForm.scheduledAt).toISOString() : undefined,
       });
       setSelected(null);
       setTab('requests');
@@ -295,6 +296,7 @@ export default function ConsumerServices() {
                   <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {new Date(r.createdAt).toLocaleDateString()}</div>
                   {r.agreedPrice ? <div style={{ fontWeight: 800, color: '#0f172a', marginTop: '0.2rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
+                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#475569' }}>🕐 {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.status === 'ORDERED' && r.orderId && (
                     <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#475569' }}>
                       <span>Order #{r.orderId.slice(0, 8)}</span>{' '}
@@ -332,6 +334,10 @@ export default function ConsumerServices() {
             <div style={styles.field}>
               <label style={styles.label}>Details (what you need done)</label>
               <textarea style={styles.textarea} value={requestForm.details} onChange={(e) => setRequestForm((f) => ({ ...f, details: e.target.value }))} />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Preferred Date &amp; Time (optional)</label>
+              <input type="datetime-local" style={styles.input} value={requestForm.scheduledAt} onChange={(e) => setRequestForm((f) => ({ ...f, scheduledAt: e.target.value }))} />
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Photos (up to 4)</label>

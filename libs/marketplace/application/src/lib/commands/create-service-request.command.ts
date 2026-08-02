@@ -11,6 +11,7 @@ export class CreateServiceRequestCommand extends CommandBase {
     public readonly details: string,
     public readonly photoUrls: string[],
     public readonly currency: string,
+    public readonly scheduledAt?: Date,
   ) {
     super();
   }

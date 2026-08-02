@@ -42,6 +42,7 @@ export class CreateServiceRequestUseCase {
       details: command.details,
       photoUrls: command.photoUrls,
       currency: command.currency,
+      scheduledAt: command.scheduledAt,
     });
 
     await this.requestRepo.save(request);

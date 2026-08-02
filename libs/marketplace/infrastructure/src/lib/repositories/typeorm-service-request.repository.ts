@@ -77,6 +77,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
       agreedPrice: e.agreedPrice ? Money.create(Number(e.agreedPrice), e.currency) : undefined,
       currency: e.currency,
       orderId: e.orderId ? EntityId.from(e.orderId) : undefined,
+      scheduledAt: e.scheduledAt ? new Date(e.scheduledAt) : undefined,
       version: e.version,
     });
   }
@@ -97,6 +98,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
       agreedPrice: entity.agreedPrice ? String(entity.agreedPrice.amount) : null,
       currency: entity.currency,
       orderId: entity.orderId?.value ?? null,
+      scheduledAt: entity.scheduledAt ?? null,
       version: 1,
     };
   }

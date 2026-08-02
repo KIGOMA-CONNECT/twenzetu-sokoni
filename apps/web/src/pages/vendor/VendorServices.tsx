@@ -258,6 +258,7 @@ export default function VendorServices() {
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {r.details || 'No details'}</div>
+                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#1e40af' }}>🕐 Requested for: {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.photoUrls?.length > 0 && (
                     <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.4rem' }}>
                       {r.photoUrls.slice(0, 4).map((u, i) => <img key={i} src={u} alt={`req ${i + 1}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }} />)}
@@ -336,6 +337,11 @@ export default function VendorServices() {
             <div style={{ fontSize: '0.85rem', color: '#334155', marginBottom: '0.75rem' }}>
               {activeReq.quantity} {activeReq.unitLabel} • {activeReq.details || 'No details'}
             </div>
+            {activeReq.scheduledAt && (
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '0.75rem' }}>
+                🕐 Requested for: {new Date(activeReq.scheduledAt).toLocaleString()}
+              </div>
+            )}
             {activeReq.photoUrls?.length > 0 && (
               <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', flexWrap: 'wrap' }}>
                 {activeReq.photoUrls.map((u, i) => <img key={i} src={u} alt={`req ${i + 1}`} style={{ width: 72, height: 72, objectFit: 'cover', borderRadius: 6 }} />)}

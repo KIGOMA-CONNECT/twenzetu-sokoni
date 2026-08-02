@@ -143,6 +143,7 @@ export class ServicesController {
       dto.details ?? '',
       dto.photoUrls ?? [],
       dto.currency ?? 'TZS',
+      dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
     ));
   }
 

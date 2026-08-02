@@ -68,6 +68,11 @@ export class AcceptServiceQuoteUseCase {
       ? (await this.listingRepo.findById(request.listingId))?.name
       : undefined;
 
+    const scheduleNote = request.scheduledAt
+      ? `Preferred service time: ${request.scheduledAt.toISOString()}`
+      : undefined;
+    const instructions = [specialInstructions, scheduleNote].filter(Boolean).join(' | ') || undefined;
+
     const orderResult = await this.createOrder.execute(tenantId, new CreateOrderCommand(
       request.customerId.value,
       request.vendorId.value,
@@ -82,7 +87,7 @@ export class AcceptServiceQuoteUseCase {
       paymentMethod,
       undefined,
       undefined,
-      specialInstructions,
+      instructions,
       customerPhone,
       customerEmail,
       quote.price.currency,

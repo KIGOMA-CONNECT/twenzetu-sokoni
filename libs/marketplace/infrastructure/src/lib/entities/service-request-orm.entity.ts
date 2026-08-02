@@ -6,6 +6,7 @@ import { Column, Entity, Index } from 'typeorm';
 @Index(['tenantId', 'vendorId'])
 @Index(['status'])
 @Index(['orderId'])
+@Index(['scheduledAt'])
 export class ServiceRequestOrmEntity extends TenantAwareEntity {
   @Column({ name: 'customer_id', type: 'uuid' })
   public customerId!: string;
@@ -42,6 +43,9 @@ export class ServiceRequestOrmEntity extends TenantAwareEntity {
 
   @Column({ name: 'order_id', type: 'uuid', nullable: true })
   public orderId!: string | null;
+
+  @Column({ name: 'scheduled_at', type: 'timestamptz', nullable: true })
+  public scheduledAt!: Date | null;
 
   @Column({ type: 'integer', default: 1 })
   public version!: number;

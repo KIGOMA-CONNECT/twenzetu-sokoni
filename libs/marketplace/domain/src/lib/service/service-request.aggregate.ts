@@ -12,6 +12,7 @@ export interface CreateServiceRequestProps {
   readonly details?: string;
   readonly photoUrls?: string[];
   readonly currency?: string;
+  readonly scheduledAt?: Date;
 }
 
 export interface ReconstituteServiceRequestProps {
@@ -29,6 +30,7 @@ export interface ReconstituteServiceRequestProps {
   readonly agreedPrice: Money | undefined;
   readonly currency: string;
   readonly orderId: EntityId | undefined;
+  readonly scheduledAt: Date | undefined;
   readonly version: number;
 }
 
@@ -48,6 +50,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
     private _agreedPrice: Money | undefined,
     private _currency: string,
     private _orderId: EntityId | undefined,
+    private _scheduledAt: Date | undefined,
     private readonly _version: number,
   ) {
     super(id);
@@ -58,7 +61,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       EntityId.create(), props.tenantId, props.customerId, props.vendorId,
       props.listingId, props.title, props.quantity, props.unitLabel ?? 'unit',
       props.details ?? '', props.photoUrls ?? [], 'PENDING', undefined,
-      props.currency ?? 'TZS', undefined, 1,
+      props.currency ?? 'TZS', undefined, props.scheduledAt, 1,
     );
   }
 
@@ -67,7 +70,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.customerId, props.vendorId,
       props.listingId, props.title, props.quantity, props.unitLabel,
       props.details, props.photoUrls, props.status, props.agreedPrice,
-      props.currency, props.orderId, props.version,
+      props.currency, props.orderId, props.scheduledAt, props.version,
     );
   }
 
@@ -84,6 +87,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
   public get agreedPrice(): Money | undefined { return this._agreedPrice; }
   public get currency(): string { return this._currency; }
   public get orderId(): EntityId | undefined { return this._orderId; }
+  public get scheduledAt(): Date | undefined { return this._scheduledAt; }
   public get version(): number { return this._version; }
 
   public receiveQuote(): void {
@@ -136,6 +140,7 @@ export class ServiceRequest extends AggregateRoot<EntityId> {
       agreedPrice: this._agreedPrice?.amount ?? null,
       currency: this._currency,
       orderId: this._orderId?.value ?? null,
+      scheduledAt: this._scheduledAt?.toISOString() ?? null,
     };
   }
 }

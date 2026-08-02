@@ -290,6 +290,7 @@ export interface ServiceRequest {
   agreedPrice?: number;
   currency: string;
   orderId?: string | null;
+  scheduledAt?: string | null;
   createdAt: string;
   quotes?: ServiceQuote[];
 }
