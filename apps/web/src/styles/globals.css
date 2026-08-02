@@ -862,7 +862,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
   .hero-stats { justify-content: center; }
   .hero-cta-group { justify-content: center; }
   .float-tiles { max-width: 460px; margin: 0 auto; }
-  .topbar .hide-tablet { display: none; }
+  .topbar .hide-tablet { display: none !important; }
 }
 
 @media (max-width: 768px) {
