@@ -36,7 +36,7 @@ export default function HomePage() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font)', color: 'var(--ink)' }}>
+    <div className="flex flex-col" style={{ minHeight: '100vh', fontFamily: 'var(--font)', color: 'var(--ink)' }}>
       {/* Nav */}
       <nav style={{ padding: '1.1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1240, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         <div className="brand" style={{ color: 'var(--brand)' }}>
