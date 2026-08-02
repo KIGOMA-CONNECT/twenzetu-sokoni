@@ -4,6 +4,7 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateFlashSaleUseCase, ListActiveFlashSalesUseCase, ListFlashSalesUseCase } from '@afri-market/marketplace-application';
 import { parsePagination, paginatedResult } from './pagination';
+import { CreateFlashSaleDto } from './promotions.dto';
 
 @ApiTags('Flash Sales')
 @Controller('flash-sales')
@@ -17,7 +18,7 @@ export class FlashSalesController {
   ) {}
 
   @Post()
-  public async create(@Body() body: any, @CurrentUser() user: JwtPayload) {
+  public async create(@Body() body: CreateFlashSaleDto, @CurrentUser() user: JwtPayload) {
     return this.createFlashSale.execute(user.tenantId, body);
   }
 

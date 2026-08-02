@@ -1,7 +1,7 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { TenantId } from '@afri-market/kernel';
-import { Coupon, ICouponRepository } from '@afri-market/marketplace-domain';
+import { Coupon, DiscountType, ICouponRepository } from '@afri-market/marketplace-domain';
 import { COUPON_REPOSITORY } from '../../tokens';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class CreateCouponUseCase {
   constructor(@Inject(COUPON_REPOSITORY) private readonly repo: ICouponRepository) {}
 
   public async execute(tenantId: string, params: {
-    code: string; discountType: string; discountValue: number;
+    code: string; discountType: DiscountType; discountValue: number;
     currency?: string; minOrderAmount?: number; maxUsageCount?: number;
     maxUsagePerUser?: number; expiresAt?: string; description?: string;
   }): Promise<{ id: string; code: string }> {
@@ -18,7 +18,7 @@ export class CreateCouponUseCase {
 
     const coupon = Coupon.create({
       tenantId: TenantId.create(tenantId),
-      code: params.code, discountType: params.discountType as any,
+      code: params.code, discountType: params.discountType,
       discountValue: params.discountValue, currency: params.currency,
       minOrderAmount: params.minOrderAmount, maxUsageCount: params.maxUsageCount,
       maxUsagePerUser: params.maxUsagePerUser,

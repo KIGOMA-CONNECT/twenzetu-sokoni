@@ -89,7 +89,7 @@ export class DriverFleetController {
       .orderBy('u.created_at', 'DESC')
       .getRawMany();
 
-    return { data: drivers.map((d: any) => ({
+    return { data: drivers.map((d) => ({
       id: d.u_id, phoneNumber: d.u_phone_number, fullName: d.u_full_name,
       status: d.u_status, createdAt: d.u_created_at,
       vehicleId: d.vehicle_id, vehicleType: d.v_vehicle_type,
@@ -108,7 +108,7 @@ export class DriverFleetController {
     await userRepo.save(driver);
 
     const vehicleRepo = this.dataSource.getRepository('vehicles');
-    await vehicleRepo.update({ driverId, tenantId: user.tenantId }, { verifiedAt: new Date() } as any);
+    await vehicleRepo.update({ driverId, tenantId: user.tenantId }, { verifiedAt: new Date() });
 
     return { success: true, message: 'Driver verified' };
   }

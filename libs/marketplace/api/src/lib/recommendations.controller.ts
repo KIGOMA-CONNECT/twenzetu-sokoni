@@ -88,7 +88,7 @@ export class RecommendationsController {
     @Query('offset') offset?: number,
   ) {
     const conditions: string[] = ['p.tenant_id = $1', "p.status = 'ACTIVE'"];
-    const params: any[] = [user.tenantId];
+    const params: Array<string | number> = [user.tenantId];
     let paramIdx = 2;
 
     if (q && q.length >= 2) {

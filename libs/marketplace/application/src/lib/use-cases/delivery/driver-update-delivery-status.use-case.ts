@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, Optional } from '@nestjs/common';
 import { Money } from '@afri-market/kernel';
-import { IDeliveryRepository, IOrderRepository } from '@afri-market/marketplace-domain';
+import { IDeliveryRepository, IOrderRepository, OrderStatus } from '@afri-market/marketplace-domain';
 import { DELIVERY_REPOSITORY, ORDER_REPOSITORY, MARKETPLACE_GATEWAY } from '../../tokens';
 
 const DELIVERY_VALID_TRANSITIONS: Record<string, string[]> = {
@@ -12,7 +12,7 @@ const DELIVERY_VALID_TRANSITIONS: Record<string, string[]> = {
   FAILED: [],
 };
 
-const DELIVERY_TO_ORDER_STATUS: Record<string, string> = {
+const DELIVERY_TO_ORDER_STATUS: Record<string, OrderStatus> = {
   ASSIGNED: 'OUT_FOR_DELIVERY',
   PICKED_UP: 'OUT_FOR_DELIVERY',
   IN_TRANSIT: 'OUT_FOR_DELIVERY',
@@ -72,7 +72,7 @@ export class DriverUpdateDeliveryStatusUseCase {
       if (order) {
         const orderStatus = DELIVERY_TO_ORDER_STATUS[newStatus];
         if (orderStatus) {
-          order.updateStatus(orderStatus as any);
+          order.updateStatus(orderStatus);
           await this.orderRepo.save(order);
         }
       }

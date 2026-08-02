@@ -151,7 +151,7 @@ export class SubscriptionsController {
       LEFT JOIN addresses a ON a.id = s.delivery_address_id
       WHERE s.user_id = $1 AND s.tenant_id = $2
     `;
-    const params: any[] = [user.sub, user.tenantId];
+    const params: Array<string | number> = [user.sub, user.tenantId];
 
     if (status) {
       query += ` AND s.status = $3`;
@@ -200,7 +200,7 @@ a.label as address_label, a.full_address as address_full
     }
 
     const fields: string[] = [];
-    const params: any[] = [];
+    const params: Array<string | number> = [];
     let idx = 1;
 
     if (body.quantity !== undefined) { fields.push(`quantity = $${idx++}`); params.push(body.quantity); }

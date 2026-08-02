@@ -1,6 +1,7 @@
 import {
   Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards, Req,
 } from '@nestjs/common';
+import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
@@ -199,7 +200,7 @@ export class AdminController {
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: VerifyKycAdminDto,
     @CurrentUser() user: JwtPayload,
-    @Req() req: any,
+    @Req() req: Request,
   ) {
     const result = await this.verifyKyc.execute({ kycId: id, ...dto });
     await this.auditLog.log({

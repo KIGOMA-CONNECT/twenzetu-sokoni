@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { QueryDeepPartialEntity, Repository } from 'typeorm';
 import { AuditLogOrmEntity } from '@afri-market/marketplace-infrastructure';
 
 export interface AuditLogInput {
@@ -29,9 +29,9 @@ export class AuditLogService {
       tenantId: input.tenantId ?? null,
       targetType: input.targetType ?? null,
       targetId: input.targetId ?? null,
-      metadata: (input.metadata ?? null) as unknown as JSON,
+      metadata: (input.metadata ?? null) as unknown as QueryDeepPartialEntity<Record<string, unknown> | null>,
       ipAddress: input.ipAddress ?? null,
-    } as any);
+    });
   }
 
   public async list(input: {

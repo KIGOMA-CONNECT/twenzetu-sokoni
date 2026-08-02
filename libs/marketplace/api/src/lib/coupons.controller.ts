@@ -4,6 +4,7 @@ import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateCouponUseCase, ValidateCouponUseCase, ListCouponsUseCase } from '@afri-market/marketplace-application';
 import { parsePagination, paginatedResult } from './pagination';
+import { CreateCouponDto } from './promotions.dto';
 
 @ApiTags('Coupons')
 @Controller('coupons')
@@ -17,7 +18,7 @@ export class CouponsController {
   ) {}
 
   @Post()
-  public async create(@Body() body: any, @CurrentUser() user: JwtPayload) {
+  public async create(@Body() body: CreateCouponDto, @CurrentUser() user: JwtPayload) {
     return this.createCoupon.execute(user.tenantId, body);
   }
 

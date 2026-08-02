@@ -2,7 +2,7 @@ import { EntityId, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
-import { Coupon, ICouponRepository } from '@afri-market/marketplace-domain';
+import { Coupon, CouponStatus, DiscountType, ICouponRepository } from '@afri-market/marketplace-domain';
 import { CouponOrmEntity } from '../entities/coupon-orm.entity';
 
 @Injectable()
@@ -42,8 +42,8 @@ export class TypeOrmCouponRepository extends TypeOrmRepository<Coupon, CouponOrm
   private toDomain(e: CouponOrmEntity): Coupon {
     return Coupon.reconstitute({
       id: EntityId.from(e.id), tenantId: TenantId.create(e.tenantId),
-      code: e.code, discountType: e.discountType as any, discountValue: Number(e.discountValue),
-      currency: e.currency, status: e.status as any, usageCount: e.usageCount,
+      code: e.code, discountType: e.discountType as DiscountType, discountValue: Number(e.discountValue),
+      currency: e.currency, status: e.status as CouponStatus, usageCount: e.usageCount,
       minOrderAmount: e.minOrderAmount ?? undefined, maxUsageCount: e.maxUsageCount ?? undefined,
       maxUsagePerUser: e.maxUsagePerUser ?? undefined, expiresAt: e.expiresAt ?? undefined,
       description: e.description ?? undefined, version: e.version,

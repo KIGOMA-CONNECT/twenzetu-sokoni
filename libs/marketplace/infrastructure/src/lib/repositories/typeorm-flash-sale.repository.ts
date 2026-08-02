@@ -2,7 +2,7 @@ import { EntityId, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
 import { EntityManager, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
-import { FlashSale, IFlashSaleRepository } from '@afri-market/marketplace-domain';
+import { FlashSale, FlashSaleStatus, IFlashSaleRepository } from '@afri-market/marketplace-domain';
 import { FlashSaleOrmEntity } from '../entities/flash-sale-orm.entity';
 
 @Injectable()
@@ -51,7 +51,7 @@ export class TypeOrmFlashSaleRepository extends TypeOrmRepository<FlashSale, Fla
       id: EntityId.from(e.id), tenantId: TenantId.create(e.tenantId),
       productId: EntityId.from(e.productId), discountPercent: Number(e.discountPercent),
       originalPrice: Number(e.originalPrice), salePrice: Number(e.salePrice),
-      currency: e.currency, status: e.status as any,
+      currency: e.currency, status: e.status as FlashSaleStatus,
       totalQuantity: e.totalQuantity, soldQuantity: e.soldQuantity,
       startsAt: e.startsAt, endsAt: e.endsAt, description: e.description ?? undefined,
       version: e.version,
