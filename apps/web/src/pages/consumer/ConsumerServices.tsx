@@ -166,16 +166,23 @@ export default function ConsumerServices() {
     if (!acceptModal) return;
     setAccepting(true);
     try {
-      await api.post('/services/quotes/accept', {
+      const res = await api.post('/services/quotes/accept', {
         quoteId: acceptModal.id,
         paymentMethod,
         deliveryAddress: deliveryAddress.trim() || undefined,
         specialInstructions: specialInstructions.trim() || undefined,
       });
+      const data = res.data?.data ?? res.data;
       setAcceptModal(null);
       if (activeReq) await openThread(activeReq);
       await refetchReqs();
-      alert('Quote accepted. Order created — check My Orders for payment confirmation.');
+      if (paymentMethod === 'cash') {
+        alert('Quote accepted. Order created — pay in cash on delivery.');
+      } else if (data?.otpCode) {
+        alert(`Quote accepted. Payment request sent to your phone (${paymentMethod.replace('_', ' ')}).\nComplete the STK push and keep this OTP: ${data.otpCode}`);
+      } else {
+        alert('Quote accepted. Order created — check My Orders for payment confirmation.');
+      }
     } catch (err: any) {
       alert(err.response?.data?.message || err.message || 'Failed to accept quote');
     } finally {

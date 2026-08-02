@@ -13,6 +13,8 @@ interface VendorStats {
   pendingBalance: number;
   todayOrders?: number;
   todayRevenue?: number;
+  serviceListings?: number;
+  openServiceRequests?: number;
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -121,6 +123,14 @@ export default function VendorDashboard() {
             <div style={styles.statCard}>
               <div style={styles.statLabel}>Today's Revenue</div>
               <div style={styles.statValue}>{formatCurrency(computedTodayRevenue)}</div>
+            </div>
+            <div style={styles.statCard}>
+              <div style={styles.statLabel}>Service Listings</div>
+              <div style={styles.statValue}>{stats?.serviceListings ?? 0}</div>
+            </div>
+            <div style={styles.statCard}>
+              <div style={styles.statLabel}>Open Service Requests</div>
+              <div style={styles.statValue}>{stats?.openServiceRequests ?? 0}</div>
             </div>
           </div>
 

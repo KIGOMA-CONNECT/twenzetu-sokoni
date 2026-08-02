@@ -7,6 +7,8 @@ describe('GetVendorStatsUseCase', () => {
   let useCase: GetVendorStatsUseCase;
   let mockOrderRepo: Record<string, jest.Mock>;
   let mockPaymentRepo: Record<string, jest.Mock>;
+  let mockListingRepo: Record<string, jest.Mock>;
+  let mockRequestRepo: Record<string, jest.Mock>;
 
   const TENANT_ID = 'test-tenant';
   const VENDOR_ID = 'vendor-123';
@@ -15,7 +17,9 @@ describe('GetVendorStatsUseCase', () => {
     jest.clearAllMocks();
     mockOrderRepo = { findByTenantAndVendor: jest.fn() };
     mockPaymentRepo = { sumRevenue: jest.fn() };
-    useCase = new GetVendorStatsUseCase(mockOrderRepo, mockPaymentRepo);
+    mockListingRepo = { findByVendorId: jest.fn().mockResolvedValue([]) };
+    mockRequestRepo = { findByVendorId: jest.fn().mockResolvedValue([]) };
+    useCase = new GetVendorStatsUseCase(mockOrderRepo, mockPaymentRepo, mockListingRepo, mockRequestRepo);
   });
 
   function makeOrder(status: string, amount: number, commission: number, createdAt?: Date): Order {
@@ -48,6 +52,8 @@ describe('GetVendorStatsUseCase', () => {
     expect(stats.totalCommission).toBe(0);
     expect(stats.netEarnings).toBe(0);
     expect(stats.averageOrderValue).toBe(0);
+    expect(stats.serviceListings).toBe(0);
+    expect(stats.openServiceRequests).toBe(0);
   });
 
   it('should calculate correct stats from mixed orders', async () => {

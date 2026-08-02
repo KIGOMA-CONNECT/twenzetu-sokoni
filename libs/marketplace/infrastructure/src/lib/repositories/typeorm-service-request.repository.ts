@@ -1,7 +1,7 @@
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
-import { EntityManager, FindOptionsWhere } from 'typeorm';
+import { EntityManager, FindOptionsWhere, In, Not } from 'typeorm';
 import {
   ServiceRequest,
   IServiceRequestRepository,
@@ -35,6 +35,12 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
     }
     const entities = await this.repository.find({ where, order: { createdAt: 'DESC' } });
     return entities.map((e) => this.toDomain(e));
+  }
+
+  public async countOpenByTenant(tenantId: string): Promise<number> {
+    return this.repository.count({
+      where: { tenantId, status: Not(In(['ORDERED', 'CANCELLED'])) },
+    });
   }
 
   public async save(entity: ServiceRequest): Promise<void> {

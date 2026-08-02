@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { IVendorRepository, IOrderRepository, IPaymentRepository, IDisputeRepository } from '@afri-market/marketplace-domain';
-import { VENDOR_REPOSITORY, ORDER_REPOSITORY, PAYMENT_REPOSITORY, DISPUTE_REPOSITORY, ADMIN_USER_REPOSITORY } from '../../tokens';
+import { IVendorRepository, IOrderRepository, IPaymentRepository, IDisputeRepository, IServiceListingRepository, IServiceRequestRepository } from '@afri-market/marketplace-domain';
+import { VENDOR_REPOSITORY, ORDER_REPOSITORY, PAYMENT_REPOSITORY, DISPUTE_REPOSITORY, ADMIN_USER_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY } from '../../tokens';
 import { IAdminUserRepository } from '../../tokens';
 
 @Injectable()
@@ -11,16 +11,20 @@ export class GetAdminDashboardUseCase {
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
     @Inject(DISPUTE_REPOSITORY) private readonly disputeRepo: IDisputeRepository,
     @Inject(ADMIN_USER_REPOSITORY) private readonly userRepo: IAdminUserRepository,
+    @Inject(SERVICE_LISTING_REPOSITORY) private readonly listingRepo: IServiceListingRepository,
+    @Inject(SERVICE_REQUEST_REPOSITORY) private readonly requestRepo: IServiceRequestRepository,
   ) {}
 
   public async execute(tenantId: string) {
-    const [totalVendors, pendingVendors, activeOrders, openDisputes, totalUsers, revenueResult] = await Promise.all([
+    const [totalVendors, pendingVendors, activeOrders, openDisputes, totalUsers, revenueResult, activeListings, openServiceRequests] = await Promise.all([
       this.vendorRepo.countByTenant(tenantId),
       this.vendorRepo.countByTenant(tenantId, { status: 'PENDING' }),
       this.orderRepo.countByTenant(tenantId, { excludeStatuses: ['DELIVERED', 'CANCELLED', 'REFUNDED'] }),
       this.disputeRepo.countByTenant(tenantId, 'OPEN'),
       this.userRepo.countByTenant(tenantId),
       this.paymentRepo.sumRevenue(tenantId, { status: 'RELEASED' }),
+      this.listingRepo.findActive(tenantId, { limit: 1 }),
+      this.requestRepo.countOpenByTenant(tenantId),
     ]);
 
     return {
@@ -31,6 +35,8 @@ export class GetAdminDashboardUseCase {
         totalRevenue: revenueResult.total,
         openDisputes,
         totalUsers,
+        serviceListings: activeListings.total,
+        openServiceRequests,
       },
     };
   }

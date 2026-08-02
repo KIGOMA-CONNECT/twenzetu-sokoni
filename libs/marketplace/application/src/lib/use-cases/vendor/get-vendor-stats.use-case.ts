@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
-import { IPaymentRepository, IOrderRepository } from '@afri-market/marketplace-domain';
-import { ORDER_REPOSITORY, PAYMENT_REPOSITORY } from '../../tokens';
+import { IPaymentRepository, IOrderRepository, IServiceListingRepository, IServiceRequestRepository } from '@afri-market/marketplace-domain';
+import { ORDER_REPOSITORY, PAYMENT_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY } from '../../tokens';
 
 @Injectable()
 export class GetVendorStatsUseCase {
   constructor(
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
+    @Inject(SERVICE_LISTING_REPOSITORY) private readonly listingRepo: IServiceListingRepository,
+    @Inject(SERVICE_REQUEST_REPOSITORY) private readonly requestRepo: IServiceRequestRepository,
   ) {}
 
   public async execute(
@@ -23,6 +25,8 @@ export class GetVendorStatsUseCase {
     averageOrderValue: number;
     todayOrders: number;
     todayRevenue: number;
+    serviceListings: number;
+    openServiceRequests: number;
   }> {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -45,6 +49,13 @@ export class GetVendorStatsUseCase {
       .filter((o) => o.status === 'DELIVERED' && new Date(o.createdAt) >= startOfDay)
       .reduce((sum, o) => sum + o.totalAmount.amount, 0);
 
+    const [listings, requests] = await Promise.all([
+      this.listingRepo.findByVendorId(tenantId, vendorId),
+      this.requestRepo.findByVendorId(tenantId, vendorId),
+    ]);
+    const serviceListings = listings.length;
+    const openServiceRequests = requests.filter((r) => !['ORDERED', 'CANCELLED'].includes(r.status)).length;
+
     return {
       totalOrders,
       pendingOrders,
@@ -55,6 +66,8 @@ export class GetVendorStatsUseCase {
       averageOrderValue,
       todayOrders,
       todayRevenue,
+      serviceListings,
+      openServiceRequests,
     };
   }
 }

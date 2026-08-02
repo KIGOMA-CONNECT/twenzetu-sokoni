@@ -75,6 +75,7 @@ export default function VendorServices() {
   const [form, setForm] = useState<ListingForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [activeReq, setActiveReq] = useState<ServiceRequest | null>(null);
   const [messages, setMessages] = useState<ServiceMessage[]>([]);
@@ -116,6 +117,19 @@ export default function VendorServices() {
       setFormError(err.response?.data?.message || err.message || 'Failed to create listing');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const deleteListing = async (id: string, name: string) => {
+    if (!window.confirm(`Delete "${name}"? This is permanent and blocked while it has active requests.`)) return;
+    setDeletingId(id);
+    try {
+      await api.delete(`/services/listings/${id}`);
+      await refetchListings();
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Failed to delete listing');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -200,6 +214,7 @@ export default function VendorServices() {
                   <th style={styles.th}>Pricing</th>
                   <th style={styles.th}>Base Price</th>
                   <th style={styles.th}>Status</th>
+                  <th style={styles.th}></th>
                 </tr>
               </thead>
               <tbody>
@@ -215,6 +230,11 @@ export default function VendorServices() {
                       <td style={styles.td}>{l.pricingModel.replace('_', ' ')}{l.unitLabel ? ` (${l.unitLabel})` : ''}</td>
                       <td style={styles.td}>{formatCurrency(l.basePrice)}</td>
                       <td style={styles.td}><StatusBadge status={l.isActive ? 'ACTIVE' : 'INACTIVE'} /></td>
+                      <td style={{ ...styles.td, textAlign: 'right' }}>
+                        <button style={{ ...styles.buttonSecondary, color: '#dc2626', borderColor: '#fecaca' }} onClick={() => deleteListing(l.id, l.name)} disabled={deletingId === l.id}>
+                          {deletingId === l.id ? 'Deleting…' : 'Delete'}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })}

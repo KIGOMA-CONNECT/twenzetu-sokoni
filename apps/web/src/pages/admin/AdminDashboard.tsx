@@ -24,6 +24,8 @@ export default function AdminDashboard() {
     { label: 'Pending Vendors', value: stats?.pendingVendors ?? 0 },
     { label: 'Open Disputes', value: stats?.openDisputes ?? 0 },
     { label: 'Total Customers', value: stats?.totalUsers ?? 0 },
+    { label: 'Service Listings', value: stats?.serviceListings ?? 0 },
+    { label: 'Open Service Requests', value: stats?.openServiceRequests ?? 0 },
   ];
 
   return (
