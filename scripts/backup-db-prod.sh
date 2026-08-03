@@ -53,5 +53,15 @@ if [ -n "$BACKUP_S3_BUCKET" ]; then
     echo "WARNING: S3 upload failed. Check AWS credentials."
 fi
 
+
+# Optional: Upload to Google Drive via rclone
+BACKUP_GDRIVE_FOLDER="${BACKUP_GDRIVE_FOLDER:-afrimarket-backups}"
+if command -v rclone >/dev/null 2>&1 && rclone listremotes 2>/dev/null | grep -q '^gdrive:'; then
+  echo ""
+  echo "Uploading to Google Drive: gdrive:${BACKUP_GDRIVE_FOLDER}/database/"
+  rclone copy "$FILEPATH" "gdrive:${BACKUP_GDRIVE_FOLDER}/database/" 2>/dev/null || \
+    echo "WARNING: Google Drive upload failed."
+  rclone delete --min-age ${RETENTION_DAYS}d "gdrive:${BACKUP_GDRIVE_FOLDER}/database/" 2>/dev/null || true
+fi
 echo ""
 echo "Done."
