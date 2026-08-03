@@ -17,7 +17,7 @@ export class UssdSessionService {
     tenantId: string,
     sessionId: string,
   ): Promise<UssdSession> {
-    let existing = await this.sessionRepo.findOne({
+    const existing = await this.sessionRepo.findOne({
       where: { sessionId, phoneNumber },
     });
 

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
-import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -113,11 +112,9 @@ const styles: Record<string, React.CSSProperties> = {
   smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
 };
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
 
 export default function VendorProducts() {
   const { formatCurrency } = useCurrency();
-  const { user } = useAuth();
   const { data: raw, loading, error, refetch } = useApi<PaginatedResponse<Product> | Product[]>('/vendors/me/products');
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<NewProduct>(emptyForm);

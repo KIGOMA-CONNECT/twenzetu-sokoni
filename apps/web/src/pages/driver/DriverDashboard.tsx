@@ -101,7 +101,7 @@ export default function DriverDashboard() {
     try {
       await api.patch(`/driver-fleet/${myVehicle.id}/availability`, { isOnline: !myVehicle.isOnline });
       await refetchVehicles();
-    } catch {
+    } catch { /* no-op */
     } finally {
       setToggling(false);
     }

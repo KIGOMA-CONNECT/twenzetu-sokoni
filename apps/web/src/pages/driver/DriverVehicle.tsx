@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
-import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
@@ -57,7 +56,6 @@ interface NewVehicle {
 const emptyForm: NewVehicle = { vehicleType: '', plateNumber: '', capacityKg: 0 };
 
 export default function DriverVehicle() {
-  const { user } = useAuth();
   const { data: vehicles, loading, error, refetch } = useApi<Vehicle[]>('/fleet/vehicles/me');
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState<NewVehicle>(emptyForm);

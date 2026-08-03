@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -8,11 +7,10 @@ import { PageHeader, EmptyState } from '../../components/ui';
 import api from '../../api/client';
 
 export default function ReferralPage() {
-  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: codeData, loading: codeLoading, refetch: refetchCode } = useApi<{ referralCode: string | null }>('/referrals/code');
   const { data: referrals, loading: refLoading, error: refError, refetch: refetchReferrals } = useApi<any[]>('/referrals');
-  const { data: stats, loading: statsLoading, refetch: refetchStats } = useApi<any>('/referrals/stats');
+  const { data: stats, refetch: refetchStats } = useApi<any>('/referrals/stats');
 
   const [customCode, setCustomCode] = useState('');
   const [generating, setGenerating] = useState(false);

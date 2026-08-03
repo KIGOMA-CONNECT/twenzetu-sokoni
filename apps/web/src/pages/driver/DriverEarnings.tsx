@@ -1,7 +1,4 @@
-import { useState } from 'react';
-import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
-import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -49,13 +46,10 @@ const styles: Record<string, React.CSSProperties> = {
   empty: { textAlign: 'center', color: '#64748b', padding: '1.5rem' },
 };
 
-const formatDate = (date: string) =>
-  new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
 const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
 
 export default function DriverEarnings() {
-  const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: deliveries, loading, error } = useApi<Delivery[]>('/deliveries/me');
 

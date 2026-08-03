@@ -1,0 +1,19 @@
+{
+  "name": "nikonekti-domain",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/nikonekti/domain/src",
+  "projectType": "library",
+  "tags": ["scope:nikonekti", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/nikonekti/domain",
+        "main": "libs/nikonekti/domain/src/index.ts",
+        "tsConfig": "libs/nikonekti/domain/tsconfig.lib.json",
+        "assets": []
+      }
+    }
+  }
+}

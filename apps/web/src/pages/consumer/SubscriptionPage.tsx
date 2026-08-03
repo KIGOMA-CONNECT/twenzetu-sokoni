@@ -1,5 +1,3 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -8,7 +6,6 @@ import { PageHeader, EmptyState } from '../../components/ui';
 import api from '../../api/client';
 
 export default function SubscriptionPage() {
-  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: subscriptions, loading, error, refetch } = useApi<any[]>('/subscriptions');
 

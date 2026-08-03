@@ -1,0 +1,24 @@
+{
+  "name": "hr-compliance-application",
+  "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/hr/compliance/application/src",
+  "projectType": "library",
+  "tags": ["scope:hr", "type:domain"],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/hr/compliance/application",
+        "main": "libs/hr/compliance/application/src/index.ts",
+        "tsConfig": "libs/hr/compliance/application/tsconfig.lib.json",
+        "assets": []
+      }
+    },
+    "test": {
+      "options": {
+        "passWithNoTests": true
+      }
+    }
+  }
+}

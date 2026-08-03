@@ -1,7 +1,6 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useCurrency } from '../context/CurrencyContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
@@ -9,7 +8,6 @@ import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
   const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
-  const { formatCurrency } = useCurrency();
   const navigate = useNavigate();
   const location = useLocation();
 

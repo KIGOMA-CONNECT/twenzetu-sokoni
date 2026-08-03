@@ -57,7 +57,7 @@ export default function ConsumerServices() {
   const category = searchParams.get('category') || '';
   const [tab, setTab] = useState<'browse' | 'requests'>('browse');
 
-  const { data: listings, loading: loadingListings, error: listingsError, refetch: refetchListings } = useApi<ServiceListing[]>(
+  const { data: listings, loading: loadingListings, error: listingsError } = useApi<ServiceListing[]>(
     category ? `/services/listings?category=${encodeURIComponent(category)}` : '/services/listings',
     [category],
   );

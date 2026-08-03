@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
-import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -61,7 +60,6 @@ const formatDate = (date: string) =>
 const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
 
 export default function VendorOrders() {
-  const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: orders, loading, error, refetch } = useApi<Order[]>('/vendors/me/orders');
   const [filter, setFilter] = useState<FilterStatus>('ALL');

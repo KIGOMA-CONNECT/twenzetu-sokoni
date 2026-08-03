@@ -8,7 +8,7 @@ import { formatCurrency } from './formatting';
 export class UssdEngine {
   async processInput(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     if (input === '0') {
       return this.goBack(session);
@@ -102,7 +102,7 @@ export class UssdEngine {
 
   private async handleCustomerMainMenu(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     switch (input) {
       case '1':
@@ -127,7 +127,7 @@ export class UssdEngine {
 
   private async handleShopCategories(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     const categories: Record<string, string> = {
       '1': 'Fresh Produce',
@@ -159,7 +159,7 @@ export class UssdEngine {
 
   private async handleShopProducts(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     const products: Record<string, { name: string; price: number; id: string; vendor: string }> = {
       '1': { name: 'Wali Wa Nazi (Coconut Rice)', price: 4000, id: 'e0000000-0000-0000-0000-000000000010', vendor: 'Dar Fresh Market' },
@@ -189,7 +189,7 @@ export class UssdEngine {
 
   private async handleShopDetail(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     if (input === '1') {
       session.currentMenu = 'shop:quantity';
@@ -204,7 +204,7 @@ export class UssdEngine {
 
   private async handleShopQuantity(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     const qty = parseInt(input, 10);
     if (isNaN(qty) || qty < 1) {
@@ -248,7 +248,7 @@ export class UssdEngine {
 
   private async handleShopCart(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     switch (input) {
       case '1':
@@ -296,7 +296,7 @@ export class UssdEngine {
 
   private async handleOrdersList(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     return {
       sessionId: session.sessionId,
@@ -324,7 +324,7 @@ export class UssdEngine {
 
   private async handleWalletMenu(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     if (input === '1') {
       return {
@@ -384,7 +384,7 @@ export class UssdEngine {
 
   private async handleProfileMenu(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     if (input === '1') {
       session.currentMenu = 'profile:view';
@@ -409,7 +409,7 @@ export class UssdEngine {
 
   private async handleProfileView(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     session.currentMenu = 'profile:main';
     return this.profileMenu(session);
@@ -435,7 +435,7 @@ export class UssdEngine {
 
   private async handleVendorMainMenu(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     switch (input) {
       case '1':
@@ -460,7 +460,7 @@ export class UssdEngine {
 
   private async handleVendorSubmenu(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     switch (session.currentMenu) {
       case 'vendor:orders':
@@ -563,7 +563,7 @@ export class UssdEngine {
 
   private async handleVendorWallet(
     session: UssdSession,
-    input: string,
+    _input: string,
   ): Promise<UssdResponse> {
     session.currentMenu = 'main';
     return vendorMainMenu(session);

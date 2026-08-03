@@ -80,6 +80,7 @@ export class EmailService implements IEmailService {
 
     if (host && user && pass) {
       try {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports -- lazy optional dep
         const nodemailer = require('nodemailer');
         this.transporter = nodemailer.createTransport({
           host,

@@ -6,7 +6,6 @@ import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
-import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, ProductCard } from '../../components/ui';
 import type { Product, Address, Vendor } from '../../types';
 

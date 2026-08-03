@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
-import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
@@ -48,7 +47,6 @@ const styles: Record<string, React.CSSProperties> = {
 const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
 
 export default function DriverDeliveries() {
-  const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: deliveries, loading, error, refetch } = useApi<Delivery[]>('/deliveries/me');
   const { subscribe } = useSocket();

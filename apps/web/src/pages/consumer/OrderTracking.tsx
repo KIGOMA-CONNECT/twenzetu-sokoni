@@ -3,7 +3,6 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
-import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import type { Order, TrackingInfo } from '../../types';
 import L from 'leaflet';
@@ -112,7 +111,7 @@ export default function OrderTracking() {
       setMessages(prev => [...prev, Array.isArray(sent) ? sent[0] : sent]);
       setChatInput('');
       setTimeout(() => chatRef.current?.scrollTo(0, chatRef.current.scrollHeight), 50);
-    } catch {}
+    } catch { /* no-op */}
   }, [chatInput, orderId]);
 
   useEffect(() => {

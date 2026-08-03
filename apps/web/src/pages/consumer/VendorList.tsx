@@ -5,7 +5,6 @@ import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
-import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, EmptyState, VendorCard } from '../../components/ui';
 import api from '../../api/client';
 import { VENDOR_CATEGORIES } from '../../constants/categories';

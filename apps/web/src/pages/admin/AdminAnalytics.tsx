@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -29,7 +28,7 @@ export default function AdminAnalytics() {
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<Period>('30d');
-  const { data: revenue, loading, error, refetch } = useApi<RevenueReport>(`/admin/analytics/revenue?period=${period}`, [period]);
+  const { data: revenue, loading, error } = useApi<RevenueReport>(`/admin/analytics/revenue?period=${period}`, [period]);
   const { data: disputeMetrics } = useApi<any>('/admin/analytics/disputes');
 
   if (loading) return <LoadingSpinner />;

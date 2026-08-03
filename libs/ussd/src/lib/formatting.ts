@@ -1,3 +1,3 @@
-export function formatCurrency(amount: number, currency: string = 'TZS'): string {
+export function formatCurrency(amount: number, _currency: string = 'TZS'): string {
   return `TZS ${amount.toLocaleString('en-US')}`;
 }

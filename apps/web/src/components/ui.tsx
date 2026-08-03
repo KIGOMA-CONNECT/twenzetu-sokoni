@@ -1,4 +1,3 @@
-import { useNavigate } from 'react-router-dom';
 import { useCurrency } from '../context/CurrencyContext';
 
 export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {

@@ -23,7 +23,6 @@ export class PaymentTimeoutService {
 
     const now = Date.now();
     const firstCutoff = new Date(now - PaymentTimeoutService.TIMEOUT_MS);
-    const maxCutoff = new Date(now - PaymentTimeoutService.MAX_RETRY_MS);
 
     const pendingPayments = await this.paymentRepo.findPendingOlderThan(firstCutoff, 50);
 

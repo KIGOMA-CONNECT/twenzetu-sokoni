@@ -45,7 +45,6 @@ export default function AdminVendors() {
   ) : vendors;
   const loading = tab === 'PENDING' ? pendingLoading : allLoading;
   const error = tab === 'PENDING' ? pendingError : allError;
-  const refetch = tab === 'PENDING' ? refetchPending : refetchAll;
 
   const handleAction = async (id: string, action: 'approve' | 'suspend') => {
     if (action === 'suspend' && !window.confirm('Suspend this vendor? They will be unable to receive new orders.')) return;

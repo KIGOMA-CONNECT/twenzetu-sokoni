@@ -1,0 +1,7 @@
+import { ICommand } from '@abms/kernel';
+
+export class CancelLeaveRequestCommand implements ICommand<void> {
+  public readonly _resultType?: void;
+
+  public constructor(public readonly leaveRequestId: string) {}
+}

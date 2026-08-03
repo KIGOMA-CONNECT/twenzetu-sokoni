@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../../../dist/out-tsc",
+    "declaration": true,
+    "types": ["node"]
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "jest.config.ts",
+    "jest.config.cts",
+    "src/**/*.spec.ts",
+    "src/**/*.test.ts",
+    "src/**/*.integration-spec.ts",
+    "src/test-integration-setup.ts"
+  ]
+}

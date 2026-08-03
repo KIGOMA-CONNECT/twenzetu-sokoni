@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "../../dist/out-tsc",
+    "module": "commonjs",
+    "moduleResolution": "node10",
+    "types": ["jest", "node"]
+  },
+  "include": [
+    "jest.config.ts",
+    "jest.config.cts",
+    "jest.integration.config.cts",
+    "src/**/*.test.ts",
+    "src/**/*.spec.ts",
+    "src/**/*.integration-spec.ts",
+    "src/**/*.d.ts",
+    "src/test-integration-setup.ts"
+  ]
+}

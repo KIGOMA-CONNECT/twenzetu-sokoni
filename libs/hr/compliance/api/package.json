@@ -1,0 +1,17 @@
+{
+  "name": "@abms/hr-compliance-api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "commonjs",
+  "main": "./src/index.js",
+  "types": "./src/index.d.ts",
+  "dependencies": {
+    "tslib": "^2.3.0",
+    "@abms/cqrs": "0.0.1",
+    "@abms/hr-compliance-application": "0.0.1",
+    "@abms/hr-compliance-infrastructure": "0.0.1",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/passport": "^11.0.5",
+    "class-validator": "^0.15.1"
+  }
+}

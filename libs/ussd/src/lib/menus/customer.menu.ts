@@ -1,5 +1,4 @@
 import { UssdSession, UssdResponse } from '../ussd.types';
-import { formatCurrency } from '../formatting';
 
 export async function customerMainMenu(
   session: UssdSession,

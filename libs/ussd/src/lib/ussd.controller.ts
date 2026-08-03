@@ -1,6 +1,6 @@
 import { Controller, Post, Body, HttpCode, Logger } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { ApiTags, ApiOperation, ApiExcludeController } from '@nestjs/swagger';
+import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { UssdSessionService } from './ussd-session.service';
 import { UssdEngine } from './ussd.engine';
 import { UssdRequest, UssdResponse } from './ussd.types';

@@ -111,7 +111,7 @@ export default function AdminReconciliation() {
                   </tr>
                 </thead>
                 <tbody>
-                  {report.pendingPayouts.map((p, i) => (
+                  {report.pendingPayouts.map((p) => (
                     <tr key={p.ownerId} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>{(p.ownerId || '').slice(0, 12)}...</td>
                       <td style={{ padding: '0.5rem' }}>{p.ownerType}</td>

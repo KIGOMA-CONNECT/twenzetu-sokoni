@@ -1,3 +1,4 @@
+/* global self, caches, fetch, Response */
 const CACHE_NAME = 'afrimarket-v1';
 const STATIC_ASSETS = [
   '/',

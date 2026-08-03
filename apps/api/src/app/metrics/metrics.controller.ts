@@ -25,12 +25,12 @@ export class MetricsController {
     try {
       await this.dataSource.query('SELECT 1');
       dbUp = 1;
-    } catch {}
+    } catch { /* no-op */}
 
     try {
       await this.cacheManager.get('metrics-check');
       redisUp = 1;
-    } catch {}
+    } catch { /* no-op */}
 
     const lines = [
       '# HELP afri_market_db_up Database connectivity (1=up, 0=down)',
