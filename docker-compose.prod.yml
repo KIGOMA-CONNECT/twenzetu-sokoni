@@ -39,6 +39,8 @@ services:
       dockerfile: Dockerfile
     container_name: afri-market-api
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:3300:3000'
     environment:
       NODE_ENV: production
       APP_PORT: 3000
@@ -83,6 +85,8 @@ services:
       dockerfile: web.Dockerfile
     container_name: afri-market-web
     restart: unless-stopped
+    ports:
+      - '127.0.0.1:3301:80'
     networks:
       - afri-market
 
@@ -90,6 +94,8 @@ services:
     image: nginx:alpine
     container_name: afri-market-nginx
     restart: unless-stopped
+    profiles:
+      - legacy-nginx
     ports:
       - '80:80'
       - '443:443'
