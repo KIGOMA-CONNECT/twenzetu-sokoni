@@ -17,7 +17,7 @@ if [ "$BEHIND" -le 0 ]; then
 fi
 
 echo "$(date '+%F %T') $BEHIND new commit(s) behind origin/master -> deploying" >> "$LOG"
-git pull --ff-only origin main >>"$LOG" 2>&1 || { echo "$(date '+%F %T') git pull failed" >> "$LOG"; exit 1; }
+git pull --ff-only origin master >>"$LOG" 2>&1 || { echo "$(date '+%F %T') git pull failed" >> "$LOG"; exit 1; }
 ./deploy.sh >>"$LOG" 2>&1
 echo "$(date '+%F %T') deploy finished (exit $?)" >> "$LOG"
 
