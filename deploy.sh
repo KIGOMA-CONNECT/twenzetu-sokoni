@@ -39,7 +39,7 @@ fi
 
 echo ""
 echo "1. Pulling latest images..."
-docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml pull 2>/dev/null || echo "  (pull skipped: images built locally)"
 
 echo ""
 echo "2. Building services..."
