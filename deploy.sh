@@ -1,5 +1,7 @@
 #!/bin/bash
 set -e
+exec 9>/tmp/afri-deploy.lock
+flock -n 9 || { echo "[deploy] another deploy running; skipping"; exit 0; }
 
 ENV_FILE="${ENV_FILE:-.env.production}"
 if [ ! -f "$ENV_FILE" ]; then
