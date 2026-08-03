@@ -2,7 +2,7 @@
 # Auto-deploy afriMarket from origin/master (run via cron; safe to run concurrently).
 set -u
 LOG=/opt/afri-market/backups/deploy.log
-LOCK=/tmp/afri-deploy.lock
+LOCK=/tmp/afri-auto-deploy.lock
 mkdir -p /opt/afri-market/backups
 
 exec 9>"$LOCK"
