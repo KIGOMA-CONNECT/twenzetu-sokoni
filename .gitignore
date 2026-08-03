@@ -55,3 +55,6 @@ backups/
 docker/nginx/ssl/
 web-static/
 *.bak
+
+# runtime logs
+*.log
