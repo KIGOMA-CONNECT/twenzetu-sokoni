@@ -79,6 +79,7 @@ export class MobileMoneyService implements IMobileMoneyService {
   }
 
   private generatePassword(): string {
+    const timestamp = this.getTimestamp();
     const dataToEncode = `${this.config.shortcode}${this.config.passkey}${timestamp}`;
     return Buffer.from(dataToEncode).toString('base64');
   }
@@ -144,6 +145,7 @@ export class MobileMoneyService implements IMobileMoneyService {
     }
 
     const token = await this.getOAuthToken();
+    const timestamp = this.getTimestamp();
     const formattedPhone = this.formatPhoneNumber(params.phoneNumber);
     const password = this.generatePassword();
 

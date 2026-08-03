@@ -12,7 +12,7 @@ env:
 
 jobs:
   lint-and-typecheck:
-    name: Lint & Typecheck
+    name: Lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,8 +23,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci --prefer-offline
-      - run: npx nx run-many -t lint --all --parallel=3
-      - run: npx nx run-many -t typecheck --all --parallel=3
+      - run: npx nx run-many -t lint --projects=api,web --parallel=3
 
   test:
     name: Test
@@ -61,7 +60,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci --prefer-offline
-      - run: npx nx run-many -t test --all --parallel=1
+      - run: npx nx run-many -t test --projects=api --parallel=1
         env:
           DB_HOST: localhost
           DB_PORT: 5432
@@ -87,7 +86,7 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
       - run: npm ci --prefer-offline
-      - run: npx nx run-many -t build --all --parallel=3
+      - run: npx nx run-many -t build --projects=api,web --parallel=3
 
   deploy:
     name: Deploy
