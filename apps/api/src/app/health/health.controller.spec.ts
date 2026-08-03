@@ -1,22 +1,42 @@
 import type { DataSource } from 'typeorm';
+import type { Cache } from 'cache-manager';
 import { HealthController } from './health.controller';
 
 describe('HealthController', () => {
-  it('checkLiveness() reports ok without touching the database', () => {
-    const dataSource = { query: jest.fn() } as unknown as DataSource;
-    const controller = new HealthController(dataSource);
+  it('reports ok when database and cache are reachable', async () => {
+    const dataSource = { query: jest.fn().mockResolvedValue([{ '?column?': 1 }]) } as unknown as DataSource;
+    const cacheManager = { get: jest.fn().mockResolvedValue(undefined) } as unknown as Cache;
+    const controller = new HealthController(dataSource, cacheManager);
 
-    expect(controller.checkLiveness()).toEqual({ status: 'ok' });
-    expect(dataSource.query).not.toHaveBeenCalled();
+    const result = await controller.check();
+
+    expect(result.status).toBe('ok');
+    expect(result.database.status).toBe('ok');
+    expect(result.redis.status).toBe('ok');
+    expect(dataSource.query).toHaveBeenCalledWith('SELECT 1');
   });
 
-  it('checkDatabase() performs a live round trip and reports reachable', async () => {
+  it('reports degraded when the database query fails', async () => {
+    const dataSource = { query: jest.fn().mockRejectedValue(new Error('db down')) } as unknown as DataSource;
+    const cacheManager = { get: jest.fn().mockResolvedValue(undefined) } as unknown as Cache;
+    const controller = new HealthController(dataSource, cacheManager);
+
+    const result = await controller.check();
+
+    expect(result.database.status).toBe('error');
+    expect(result.redis.status).toBe('ok');
+    expect(result.status).toBe('degraded');
+  });
+
+  it('reports degraded when the cache manager throws', async () => {
     const dataSource = { query: jest.fn().mockResolvedValue([{ '?column?': 1 }]) } as unknown as DataSource;
-    const controller = new HealthController(dataSource);
+    const cacheManager = { get: jest.fn().mockRejectedValue(new Error('redis down')) } as unknown as Cache;
+    const controller = new HealthController(dataSource, cacheManager);
 
-    const result = await controller.checkDatabase();
+    const result = await controller.check();
 
-    expect(dataSource.query).toHaveBeenCalledWith('SELECT 1');
-    expect(result).toEqual({ status: 'ok', database: 'reachable' });
+    expect(result.redis.status).toBe('error');
+    expect(result.database.status).toBe('ok');
+    expect(result.status).toBe('degraded');
   });
 });
