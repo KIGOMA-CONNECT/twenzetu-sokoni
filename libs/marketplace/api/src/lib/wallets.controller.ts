@@ -14,6 +14,7 @@ import {
   CreditWalletUseCase,
   DebitWalletUseCase,
   ListWalletTransactionsUseCase,
+  FindVendorsUseCase,
 } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
@@ -30,6 +31,7 @@ export class WalletsController {
     private readonly debitWallet: DebitWalletUseCase,
     private readonly listTransactions: ListWalletTransactionsUseCase,
     private readonly mobileMoney: MobileMoneyService,
+    private readonly findVendors: FindVendorsUseCase,
     @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
@@ -39,13 +41,21 @@ export class WalletsController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getMyWallet(@CurrentUser() user: JwtPayload) {
-    const wallet = await this.getWallet.execute(user.tenantId, user.sub, getCurrencyForPhone(user.phoneNumber));
+    const wallet = await this.getWallet.execute(user.tenantId, await this.resolveWalletOwner(user), getCurrencyForPhone(user.phoneNumber));
     return {
       id: wallet.id,
       balance: wallet.balance,
       pendingBalance: wallet.pendingBalance,
       currency: wallet.currency,
     };
+  }
+
+  private async resolveWalletOwner(user: JwtPayload): Promise<string> {
+    if (user.role === 'vendor') {
+      const vendor = await this.findVendors.findByUserId(user.sub);
+      if (vendor) return vendor.id.value;
+    }
+    return user.sub;
   }
 
   @Get('transactions')
@@ -61,7 +71,8 @@ export class WalletsController {
     @Query('offset') offset?: number,
   ) {
     const { limit: parsedLimit, offset: parsedOffset } = parsePagination({ limit, offset });
-    const result = await this.listTransactions.execute(user.tenantId, user.sub, { limit: parsedLimit, offset: parsedOffset });
+    const ownerId = await this.resolveWalletOwner(user);
+    const result = await this.listTransactions.execute(user.tenantId, ownerId, { limit: parsedLimit, offset: parsedOffset });
     return paginatedResult(result.data.map(t => t.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
@@ -206,8 +217,9 @@ export class WalletsController {
     }
 
     const currency = defaultCurrency();
+    const ownerId = await this.resolveWalletOwner(user);
 
-    const wallet = await this.getWallet.execute(user.tenantId, user.sub, getCurrencyForPhone(user.phoneNumber));
+    const wallet = await this.getWallet.execute(user.tenantId, ownerId, getCurrencyForPhone(user.phoneNumber));
     if (wallet.balance < body.amount) {
       throw new BadRequestException(
         `Insufficient wallet balance. Available: ${wallet.balance} ${wallet.currency}`,
@@ -237,7 +249,7 @@ export class WalletsController {
     try {
       const debited = await this.debitWallet.execute(
         user.tenantId,
-        user.sub,
+        ownerId,
         body.amount,
         body.description ?? `Wallet withdrawal to ${body.phoneNumber} (${providerLabel(body.provider)})`,
         reference,
