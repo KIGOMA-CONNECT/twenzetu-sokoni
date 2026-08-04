@@ -39,7 +39,13 @@
     "featured": "Bidhaa Zilizojitokeza",
     "recommended": "Mapendekezo Kwako",
     "trending": "Zinazovuma Sasa",
-    "categories": "Nunua kwa Kategoria"
+    "categories": "Nunua kwa Kategoria",
+    "cargoLogistics": "Mizigo na Usafirishaji wa Haraka",
+    "cargoLogisticsSub": "Boda · Bajaji · Carry · Fuso",
+    "customRequestTitle": "Hupati bidhaa unayotaka?",
+    "customRequestSub": "Tuma Ombi Maalum / Sauti / Picha",
+    "customRequestCta": "Omba sasa",
+    "freshSokoSub": "Fresh Soko Market (Moja kwa moja kutoka kwa Makapteni wa Soko)"
   },
   "catalog": {
     "title": "Orodha ya Ununuzi Mahiri",

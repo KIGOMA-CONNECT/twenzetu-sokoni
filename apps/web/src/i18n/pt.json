@@ -39,7 +39,13 @@
     "featured": "Produtos em destaque",
     "recommended": "Recomendado para si",
     "trending": "Em alta agora",
-    "categories": "Comprar por categoria"
+    "categories": "Comprar por categoria",
+    "cargoLogistics": "Logística de Carga & Express",
+    "cargoLogisticsSub": "Boda · Bajaji · Carry · Fuso",
+    "customRequestTitle": "Não encontra um artigo?",
+    "customRequestSub": "Submeta um Pedido Personalizado / Sauti / Picha",
+    "customRequestCta": "Pedir agora",
+    "freshSokoSub": "Fresh Soko Market (diretamente dos capitães locais)"
   },
   "catalog": {
     "title": "Lista de compras inteligente",

@@ -39,7 +39,13 @@
     "featured": "Featured Products",
     "recommended": "Recommended for You",
     "trending": "Trending Now",
-    "categories": "Shop by Category"
+    "categories": "Shop by Category",
+    "cargoLogistics": "Cargo & Express Logistics",
+    "cargoLogisticsSub": "Boda · Bajaji · Carry · Fuso",
+    "customRequestTitle": "Can't find an item?",
+    "customRequestSub": "Submit a Custom Request / Sauti / Picha",
+    "customRequestCta": "Request it now",
+    "freshSokoSub": "Fresh Soko Market (Direct from Local Captains)"
   },
   "catalog": {
     "title": "Smart Shopping List",

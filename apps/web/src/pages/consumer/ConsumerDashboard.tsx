@@ -36,6 +36,8 @@ const CATEGORY_BG: Record<string, string> = {
   '🧹': '#e0f2fe', '👩‍🍳': '#ffedd5', '♻️': '#fde68a', '📱': '#ddd6fe', '🥕': '#ffedd5',
 };
 
+const PRODUCE_NAMES = new Set(['Mboga na Matunda', 'Fresh Produce']);
+
 function categoryIcon(category: Category): string {
   return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
 }
@@ -75,6 +77,38 @@ function ConsumerDashboard() {
         </div>
       </section>
 
+      {/* AI Custom Request / RFQ banner */}
+      <button
+        className="btn"
+        onClick={() => navigate('/vendors?category=procurement')}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          padding: '1rem 1.25rem',
+          marginBottom: '1.5rem',
+          borderRadius: 'var(--radius-lg)',
+          background: 'linear-gradient(120deg, #1e3a8a, #4f46e5)',
+          color: '#fff',
+          border: 'none',
+          cursor: 'pointer',
+          boxShadow: 'var(--shadow-sm)',
+        }}
+      >
+        <span style={{ fontSize: '1.8rem' }}>🤖</span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontWeight: 800, fontSize: '1.05rem' }}>
+            {t('app.customRequestTitle')} {t('app.customRequestSub')}
+          </span>
+          <span style={{ display: 'block', opacity: 0.85, fontSize: '0.85rem', marginTop: '0.15rem' }}>
+            🛍️ AI Procurement Engine · Custom Request / Sauti / Picha
+          </span>
+        </span>
+        <span style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', fontWeight: 700 }}>{t('app.customRequestCta')} →</span>
+      </button>
+
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 
@@ -104,12 +138,21 @@ function ConsumerDashboard() {
                 <div className="cat-emoji" style={{ background: 'var(--brand-soft)' }}>🧰</div>
                 <div className="cat-name">Services</div>
               </div>
+              <div className="cat-tile" onClick={() => navigate('/services')}>
+                <div className="cat-emoji" style={{ background: '#e0f2fe' }}>🚚</div>
+                <div className="cat-name">{t('app.cargoLogistics')}</div>
+                <div className="cat-sub" style={{ fontSize: '0.68rem', color: 'var(--muted)', lineHeight: 1.2 }}>{t('app.cargoLogisticsSub')}</div>
+              </div>
               {(categories ?? []).map((category) => {
                 const icon = categoryIcon(category);
+                const produce = PRODUCE_NAMES.has(category.name);
                 return (
                   <div key={category.id} className="cat-tile" onClick={() => navigate(`/vendors?category=${encodeURIComponent(category.type)}`)}>
                     <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
                     <div className="cat-name">{category.name}</div>
+                    {produce && (
+                      <div className="cat-sub" style={{ fontSize: '0.62rem', color: '#16a34a', lineHeight: 1.2, fontWeight: 700 }}>{t('app.freshSokoSub')}</div>
+                    )}
                   </div>
                 );
               })}
