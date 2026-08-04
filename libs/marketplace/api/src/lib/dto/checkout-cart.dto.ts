@@ -1,9 +1,10 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { HEX_UUID_REGEX } from '../common/uuid.util';
 
 export class CheckoutCartDto {
   @IsString()
   @IsNotEmpty()
-  @IsUUID()
+  @Matches(HEX_UUID_REGEX)
   cartId!: string;
 
   @IsOptional()

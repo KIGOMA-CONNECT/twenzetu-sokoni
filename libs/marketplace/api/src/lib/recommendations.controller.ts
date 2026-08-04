@@ -1,8 +1,9 @@
-import { Controller, Get, Param, ParseUUIDPipe, Query, UseGuards, Inject } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam } from '@nestjs/swagger';
 import { EntityManager } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { ParseFlexibleUuidPipe } from './common/parse-flexible-uuid.pipe';
 
 @ApiTags('Recommendations')
 @Controller()
@@ -147,7 +148,7 @@ export class RecommendationsController {
   @ApiQuery({ name: 'limit', required: false, type: Number })
   public async findSimilar(
     @CurrentUser() user: JwtPayload,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseFlexibleUuidPipe) id: string,
     @Query('limit') limit?: number,
   ) {
     const result = await this.entityManager.query(

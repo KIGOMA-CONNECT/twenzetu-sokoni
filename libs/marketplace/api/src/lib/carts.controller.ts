@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
@@ -12,6 +12,7 @@ import {
 } from '@afri-market/marketplace-application';
 import { AddCartItemDto } from './dto/cart-add-item.dto';
 import { UpdateCartItemDto } from './dto/cart-update-item.dto';
+import { ParseFlexibleUuidPipe } from './common/parse-flexible-uuid.pipe';
 
 @ApiTags('Cart')
 @Controller('carts')
@@ -61,8 +62,8 @@ export class CartsController {
   @ApiBody({ type: UpdateCartItemDto })
   @ApiResponse({ status: 200, description: 'Updated cart' })
   public async updateItem(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('productId', ParseUUIDPipe) productId: string,
+    @Param('id', ParseFlexibleUuidPipe) id: string,
+    @Param('productId', ParseFlexibleUuidPipe) productId: string,
     @Body() dto: UpdateCartItemDto,
     @CurrentUser() user: JwtPayload,
   ) {
@@ -84,8 +85,8 @@ export class CartsController {
   @ApiOperation({ summary: 'Remove an item from the cart' })
   @ApiResponse({ status: 200, description: 'Updated cart' })
   public async removeItem(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Param('productId', ParseUUIDPipe) productId: string,
+    @Param('id', ParseFlexibleUuidPipe) id: string,
+    @Param('productId', ParseFlexibleUuidPipe) productId: string,
     @CurrentUser() user: JwtPayload,
   ) {
     return {
@@ -104,7 +105,7 @@ export class CartsController {
   @ApiOperation({ summary: 'Clear the cart' })
   @ApiResponse({ status: 200, description: 'Empty cart' })
   public async clear(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseFlexibleUuidPipe) id: string,
     @CurrentUser() user: JwtPayload,
   ) {
     return {

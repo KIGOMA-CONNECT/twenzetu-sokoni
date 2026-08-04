@@ -1,14 +1,15 @@
-import { IsNotEmpty, IsNumber, IsString, IsUUID, Min } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString, Matches, Min } from 'class-validator';
+import { HEX_UUID_REGEX } from '../common/uuid.util';
 
 export class AddCartItemDto {
   @IsString()
   @IsNotEmpty()
-  @IsUUID()
+  @Matches(HEX_UUID_REGEX)
   productId!: string;
 
   @IsString()
   @IsNotEmpty()
-  @IsUUID()
+  @Matches(HEX_UUID_REGEX)
   vendorId!: string;
 
   @IsNumber()
