@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
+import { CartIcon } from '../components/CartIcon';
 import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
@@ -176,6 +177,7 @@ export function MainLayout() {
               </button>
             )}
             <NotificationBell />
+            {(isCustomer || isAdmin) && <CartIcon />}
             <div className="hide-tablet" style={{ width: 1, height: 26, background: 'rgba(148,163,184,0.25)' }} />
             <div className="hide-tablet" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <LanguageSwitcher dark />

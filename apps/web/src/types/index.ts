@@ -199,6 +199,38 @@ export interface Address {
   notes?: string;
 }
 
+export interface CartItem {
+  id: string;
+  productId: string;
+  productName: string;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  currency: string;
+}
+
+export interface Cart {
+  id: string;
+  vendorId: string;
+  currency: string;
+  status: string;
+  itemCount: number;
+  subtotal: number;
+  items: CartItem[];
+}
+
+export interface CheckoutResult {
+  orderId: string;
+  status: string;
+  total: number;
+  commission: number;
+  vendorNet: number;
+  deliveryFee: number;
+  paymentId: string;
+  paymentStatus: string;
+  otpCode: string;
+}
+
 export interface Category {
   id: string;
   name: string;

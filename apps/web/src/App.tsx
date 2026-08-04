@@ -32,6 +32,7 @@ import AdminManageAdmins from './pages/admin/AdminManageAdmins';
 import AdminReconciliation from './pages/admin/AdminReconciliation';
 import AdminAuditLog from './pages/admin/AdminAuditLog';
 import { NotificationProvider } from './context/NotificationContext';
+import { CartProvider } from './context/CartContext';
 import NotificationsPage from './pages/NotificationsPage';
 import LegalPage from './pages/LegalPage';
 import VendorOnboarding from './pages/vendor/VendorOnboarding';
@@ -41,6 +42,8 @@ import SubscriptionPage from './pages/consumer/SubscriptionPage';
 import SmartCatalog from './pages/consumer/SmartCatalog';
 import ConsumerServices from './pages/consumer/ConsumerServices';
 import VendorServices from './pages/vendor/VendorServices';
+import CartPage from './pages/consumer/CartPage';
+import CheckoutPage from './pages/consumer/CheckoutPage';
 
 const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
@@ -55,6 +58,8 @@ function AppRoutes() {
         <Route path="/dashboard" element={<DashboardRedirect />} />
         <Route path="/vendors" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><VendorList /></ProtectedRoute>} />
         <Route path="/vendors/:vendorId/products" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ProductList /></ProtectedRoute>} />
+        <Route path="/cart" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><CartPage /></ProtectedRoute>} />
+        <Route path="/checkout" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><OrderHistory /></ProtectedRoute>} />
         <Route path="/orders/:orderId/tracking" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><OrderTracking /></ProtectedRoute>} />
         <Route path="/wallet" element={<ProtectedRoute roles={['customer','vendor']}><WalletPage /></ProtectedRoute>} />
@@ -108,7 +113,9 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <AppRoutes />
+        <CartProvider>
+          <AppRoutes />
+        </CartProvider>
       </NotificationProvider>
     </AuthProvider>
   );
