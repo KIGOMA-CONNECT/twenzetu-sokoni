@@ -7,7 +7,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
-import { MobileMoneyService, defaultCurrency, getCurrencyForPhone } from '@afri-market/integrations';
+import { MobileMoneyService, defaultCurrency, getCurrencyForPhone, providerLabel } from '@afri-market/integrations';
 import {
   GetWalletUseCase,
   CreditWalletUseCase,
@@ -128,6 +128,7 @@ export class WalletsController {
   ) {
     const provider = body.provider ?? 'mpesa';
     const accountReference = `topup_${user.tenantId}_${user.sub}`;
+    const currency = defaultCurrency();
 
     if (provider === 'card') {
       const cardRef = `card_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
@@ -161,8 +162,9 @@ export class WalletsController {
       phoneNumber: body.phoneNumber,
       amount: body.amount,
       accountReference,
-      description: `Wallet top-up: ${body.amount} ${defaultCurrency()} (${provider})`,
+      description: `Wallet top-up: ${body.amount} ${currency} (${provider})`,
       provider,
+      currency,
     });
 
     if (stkResult.responseCode !== '0') {
@@ -178,17 +180,10 @@ export class WalletsController {
       [user.tenantId, user.sub, body.amount, body.phoneNumber, stkResult.checkoutRequestId, provider],
     );
 
-    const providerLabel: Record<string, string> = {
-      mpesa: 'M-Pesa',
-      mixx_by_yas: 'Mixx by Yas',
-      airtel_money: 'Airtel Money',
-      halotel: 'Halotel',
-    };
-
     return {
       success: true,
       checkoutRequestId: stkResult.checkoutRequestId,
-      message: `${providerLabel[provider] || provider} prompt sent to your phone. Confirm to complete top-up.`,
+      message: `${providerLabel(provider)} prompt sent to your phone. Confirm to complete top-up.`,
     };
   }
 }

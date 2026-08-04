@@ -4,8 +4,11 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export const WALLET_TOPUP_PROVIDERS = [
   'mpesa',
   'mixx_by_yas',
+  'tigo_pesa',
+  'tigo_money',
   'airtel_money',
   'halotel',
+  'azampesa',
   'card',
   'bank',
 ] as const;

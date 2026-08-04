@@ -10,7 +10,7 @@ import {
   OrderType,
   DeliveryFareCalculator,
 } from '@afri-market/marketplace-domain';
-import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, getCurrencyForPhone } from '@afri-market/integrations';
+import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, InitiateStkPushParams, getCurrencyForPhone } from '@afri-market/integrations';
 import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
 import { CreateOrderCommand } from '../../commands/create-order.command';
 
@@ -99,7 +99,7 @@ export class CreateOrderUseCase {
 
     await this.orderRepo.save(order);
 
-    const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'airtel_money' | 'cash') || 'mpesa';
+    const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'cash') || 'mpesa';
 
     const payment = Payment.create({
       tenantId: TenantId.create(tenantId),
@@ -141,6 +141,7 @@ export class CreateOrderUseCase {
           amount: commissionSplit.totalPaid.amount,
           accountReference: order.id.value,
           description: `Payment for order ${order.id.value}`,
+          provider: paymentMethod as InitiateStkPushParams['provider'],
         });
         if (stkResult?.checkoutRequestId) {
           payment.setTransactionRef(stkResult.checkoutRequestId);

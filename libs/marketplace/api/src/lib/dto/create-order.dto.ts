@@ -42,7 +42,7 @@ export class CreateOrderDto {
   specialInstructions?: string;
 
   @IsOptional()
-  @IsEnum(['mpesa', 'tigo_money', 'airtel_money', 'cash'])
+  @IsEnum(['mpesa', 'tigo_money', 'tigo_pesa', 'airtel_money', 'halotel', 'azampesa', 'cash'])
   paymentMethod?: string;
 
   @IsOptional()
