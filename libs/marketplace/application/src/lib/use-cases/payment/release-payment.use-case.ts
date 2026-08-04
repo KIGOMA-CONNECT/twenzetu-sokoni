@@ -39,7 +39,7 @@ export class ReleasePaymentUseCase {
     const vendorNet = payment.vendorNet.amount;
     const commission = payment.systemCommission.amount;
 
-    payment.release(`release-${Date.now()}`);
+    payment.release(`release-${orderId}`);
     await this.paymentRepo.save(payment);
 
     let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value);

@@ -19,6 +19,7 @@ import {
 import { MarketplaceGateway } from './gateway';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
+import { OrderNotifierService } from './order-notifier.service';
 
 @ApiTags('Vendors')
 @Controller('vendors')
@@ -34,6 +35,7 @@ export class VendorsController {
     private readonly searchVendors: SearchVendorsUseCase,
     private readonly findProducts: FindProductsUseCase,
     private readonly gateway: MarketplaceGateway,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   @Post()
@@ -152,6 +154,11 @@ export class VendorsController {
     }
     const result = await this.updateOrderStatus.execute(user.tenantId, orderId, vendor.id.value, body.status);
     this.gateway.notifyOrderUpdate(orderId, { status: body.status, vendorId: vendor.id.value });
+    this.orderNotifier.notifyCustomerStatusChanged({
+      tenantId: user.tenantId,
+      orderId,
+      newStatus: result.status,
+    });
     return result;
   }
 

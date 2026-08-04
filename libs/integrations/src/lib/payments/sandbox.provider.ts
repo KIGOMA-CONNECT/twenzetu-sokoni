@@ -1,5 +1,6 @@
 import { AppLoggerService } from '@afri-market/core-logger';
 import {
+  DisbursePaymentParams,
   IPaymentProvider,
   PaymentInitiationParams,
   PaymentInitiationResult,
@@ -41,5 +42,13 @@ export class SandboxPaymentProvider implements IPaymentProvider {
   ): Promise<ReversePaymentResult> {
     this.logger.warn(`Reversal simulated (sandbox) for ${transactionId}`, 'SandboxPaymentProvider');
     return { success: true };
+  }
+
+  public async disburse(params: DisbursePaymentParams): Promise<ReversePaymentResult> {
+    this.logger.warn(
+      `Disbursement simulated (sandbox) via ${params.provider ?? 'mpesa'} for ${params.phoneNumber}`,
+      'SandboxPaymentProvider',
+    );
+    return { success: true, message: 'Sandbox mode - simulated disbursement' };
   }
 }

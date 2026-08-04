@@ -14,6 +14,10 @@ export interface ISmsService {
   send(params: SendSmsParams): Promise<SendSmsResult>;
   sendOtp(phone: string, otp: string): Promise<{ success: boolean }>;
   sendDeliveryOtp(phone: string, code: string, orderId: string): Promise<SendSmsResult>;
+  sendOrderStatusUpdate(phone: string, orderId: string, status: string): Promise<SendSmsResult>;
+  sendVendorNewOrder(phone: string, orderId: string, total: number, currency?: string): Promise<SendSmsResult>;
+  sendVendorCredited(phone: string, orderId: string, amount: number, currency?: string): Promise<SendSmsResult>;
+  sendDriverAssignment(phone: string, orderId: string, pickup: string, delivery: string): Promise<SendSmsResult>;
 }
 
 /**
@@ -83,6 +87,16 @@ export class SmsService implements ISmsService {
     currency: string = defaultCurrency(),
   ): Promise<SendSmsResult> {
     const message = `New order received! Order #${orderId.substring(0, 8)}... Total: ${currency} ${total.toLocaleString()}. Open your vendor panel to view details.`;
+    return this.send({ to: phone, message });
+  }
+
+  public async sendVendorCredited(
+    phone: string,
+    orderId: string,
+    amount: number,
+    currency: string = defaultCurrency(),
+  ): Promise<SendSmsResult> {
+    const message = `Payment released! ${currency} ${amount.toLocaleString()} for order #${orderId.substring(0, 8)} has been credited to your wallet.`;
     return this.send({ to: phone, message });
   }
 

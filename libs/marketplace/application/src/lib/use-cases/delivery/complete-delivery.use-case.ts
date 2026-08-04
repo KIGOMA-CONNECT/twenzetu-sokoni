@@ -91,7 +91,7 @@ export class CompleteDeliveryUseCase {
 
     const payment = await this.paymentRepo.findByOrderId(order.id.value);
     if (payment && payment.status === 'ESCROW_HELD') {
-      payment.release(`delivery-${Date.now()}`);
+      payment.release(`delivery-${order.id.value}`);
       await this.paymentRepo.save(payment);
 
       if (this.walletRepo) {

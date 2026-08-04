@@ -171,6 +171,17 @@ export class CreateOrderUseCase {
       vendorId: command.vendorId,
     });
 
+    if (vendor?.userId) {
+      const vendorUser = await this.ds.query(
+        `SELECT phone_number AS "phoneNumber" FROM users WHERE id = $1`,
+        [vendor.userId.value],
+      );
+      const vendorPhone = vendorUser?.[0]?.phoneNumber as string | undefined;
+      if (vendorPhone) {
+        this.smsService?.sendVendorNewOrder(vendorPhone, order.id.value, commissionSplit.totalPaid.amount, currency);
+      }
+    }
+
     return {
       orderId: order.id.value,
       status: order.status,

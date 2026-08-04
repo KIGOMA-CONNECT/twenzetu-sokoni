@@ -1,6 +1,7 @@
 import { AppLoggerService } from '@afri-market/core-logger';
 import { httpRequest } from './http';
 import {
+  DisbursePaymentParams,
   IPaymentProvider,
   PaymentInitiationParams,
   PaymentInitiationResult,
@@ -246,6 +247,43 @@ export class MpesaProvider implements IPaymentProvider {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`Reversal failed: ${message}`, 'MpesaProvider');
+      return { success: false, message };
+    }
+  }
+
+  public async disburse(params: DisbursePaymentParams): Promise<ReversePaymentResult> {
+    if (!this.isConfigured) {
+      this.logger.warn('M-Pesa not configured. Simulating disbursement.', 'MpesaProvider');
+      return { success: true, message: 'Sandbox mode - simulated M-Pesa disbursement' };
+    }
+
+    const token = await this.getOAuthToken();
+    const password = this.generatePassword();
+
+    const requestBody = {
+      InitiatorName: 'afriMarket',
+      SecurityCredential: password,
+      CommandID: 'BusinessPayment',
+      Amount: Math.round(params.amount),
+      PartyA: this.config.shortcode,
+      PartyB: params.phoneNumber,
+      Remarks: params.description ?? 'Vendor wallet withdrawal',
+      QueueTimeOutURL: `${this.config.callbackUrl}/b2c-timeout`,
+      ResultURL: `${this.config.callbackUrl}/b2c-result`,
+      Occasion: params.reference,
+    };
+
+    try {
+      await httpRequest<unknown>({
+        method: 'POST',
+        url: `${this.baseUrl}/mpesa/b2c/v1/paymentrequest`,
+        headers: { Authorization: `Bearer ${token}` },
+        body: requestBody,
+      });
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Disbursement failed: ${message}`, 'MpesaProvider');
       return { success: false, message };
     }
   }

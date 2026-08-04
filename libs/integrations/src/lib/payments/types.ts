@@ -40,12 +40,22 @@ export interface ReversePaymentResult {
   message?: string;
 }
 
+export interface DisbursePaymentParams {
+  phoneNumber: string;
+  amount: number;
+  reference: string;
+  description?: string;
+  currency?: string;
+  provider?: string;
+}
+
 export interface IPaymentProvider {
   readonly name: string;
   readonly isConfigured: boolean;
   initiatePayment(params: PaymentInitiationParams): Promise<PaymentInitiationResult>;
   checkPaymentStatus(reference: string): Promise<PaymentStatusResponse>;
   reversePayment(transactionId: string, amount: number, reason: string): Promise<ReversePaymentResult>;
+  disburse(params: DisbursePaymentParams): Promise<ReversePaymentResult>;
 }
 
 export const MNO_PROVIDERS: MobileMoneyProvider[] = [

@@ -19,6 +19,8 @@ const formatDate = (iso: string) => {
 
 type ProviderId = 'mpesa' | 'mixx_by_yas' | 'airtel_money' | 'halotel' | 'card' | 'bank';
 
+type WithdrawProviderId = 'mpesa' | 'mixx_by_yas' | 'airtel_money' | 'halotel' | 'azampesa';
+
 const paymentMethods: Array<{ id: ProviderId; icon: string; name: string; desc: string; group: string }> = [
   { id: 'mpesa', icon: '📱', name: 'M-Pesa', desc: 'Vodacom Tanzania', group: 'Mobile Money' },
   { id: 'mixx_by_yas', icon: '📱', name: 'Mixx by Yas', desc: 'Yas (Tigo) Tanzania', group: 'Mobile Money' },
@@ -26,6 +28,14 @@ const paymentMethods: Array<{ id: ProviderId; icon: string; name: string; desc: 
   { id: 'halotel', icon: '📱', name: 'Halotel', desc: 'Halotel Money', group: 'Mobile Money' },
   { id: 'card', icon: '💳', name: 'Card / Virtual Card', desc: 'Visa, Mastercard or virtual card', group: 'Card' },
   { id: 'bank', icon: '🏦', name: 'Bank Transfer', desc: 'CRDB, NMB, NBC and more', group: 'Bank' },
+];
+
+const withdrawMethods: Array<{ id: WithdrawProviderId; icon: string; name: string }> = [
+  { id: 'mpesa', icon: '📱', name: 'M-Pesa' },
+  { id: 'mixx_by_yas', icon: '📱', name: 'Mixx by Yas' },
+  { id: 'airtel_money', icon: '📱', name: 'Airtel Money' },
+  { id: 'halotel', icon: '📱', name: 'Halotel' },
+  { id: 'azampesa', icon: '📱', name: 'AzamPay' },
 ];
 
 const quickAmounts = [5000, 10000, 20000, 50000, 100000, 200000];
@@ -49,7 +59,17 @@ export default function WalletPage() {
   const [cardExpiry, setCardExpiry] = useState('');
   const [bankReference, setBankReference] = useState('');
 
+  const [showWithdraw, setShowWithdraw] = useState(false);
+  const [withdrawAmount, setWithdrawAmount] = useState(10000);
+  const [withdrawPhone, setWithdrawPhone] = useState('');
+  const [withdrawProvider, setWithdrawProvider] = useState<WithdrawProviderId>('mpesa');
+  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawSuccess, setWithdrawSuccess] = useState('');
+  const [withdrawError, setWithdrawError] = useState('');
+
   const groups = ['Mobile Money', 'Card', 'Bank'] as const;
+
+  const canWithdraw = user?.role === 'vendor' || user?.role === 'driver';
 
   const handleTopup = async () => {
     if (selectedMethod === 'card' && (!cardNumber.trim() || !cardHolder.trim() || !cardExpiry.trim())) {
@@ -86,6 +106,37 @@ export default function WalletPage() {
     }
   };
 
+  const handleWithdraw = async () => {
+    if (!withdrawPhone.trim()) {
+      setWithdrawError('Enter the mobile money number to receive your funds.');
+      return;
+    }
+    setWithdrawing(true);
+    setWithdrawSuccess('');
+    setWithdrawError('');
+    try {
+      const res = await api.post('/wallets/withdraw', {
+        amount: withdrawAmount,
+        phoneNumber: withdrawPhone,
+        provider: withdrawProvider,
+      });
+      if (res.data?.data?.success) {
+        setWithdrawSuccess(res.data.data.message || 'Withdrawal initiated.');
+        setTimeout(() => {
+          setShowWithdraw(false);
+          refetchWallet();
+          refetchTx();
+        }, 4000);
+      } else {
+        setWithdrawError(res.data?.data?.message || res.data?.message || 'Withdrawal failed');
+      }
+    } catch (err: any) {
+      setWithdrawError(err.response?.data?.error?.message || err.message || 'Failed to initiate withdrawal');
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
   if (loading) return <div className="page"><LoadingSpinner /></div>;
   if (error) return <div className="page"><ErrorMessage message={error} /></div>;
 
@@ -105,9 +156,16 @@ export default function WalletPage() {
       <PageHeader
         title={t('wallet.title')}
         action={
-          <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setCardHolder(''); setCardNumber(''); setCardExpiry(''); setBankReference(''); setShowTopup(true); }}>
-            + {t('wallet.topUp')}
-          </button>
+          <div className="flex gap-1 wrap">
+            {canWithdraw && (
+              <button className="btn btn-primary" onClick={() => { setWithdrawAmount(10000); setWithdrawPhone(user?.phoneNumber || ''); setWithdrawProvider('mpesa'); setWithdrawSuccess(''); setWithdrawError(''); setShowWithdraw(true); }}>
+                {t('wallet.withdraw')}
+              </button>
+            )}
+            <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setCardHolder(''); setCardNumber(''); setCardExpiry(''); setBankReference(''); setShowTopup(true); }}>
+              + {t('wallet.topUp')}
+            </button>
+          </div>
         }
       />
 
@@ -267,6 +325,59 @@ export default function WalletPage() {
               <button className="btn btn-ghost" onClick={() => setShowTopup(false)} disabled={submitting}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={handleTopup} disabled={submitting || !topupAmount || topupAmount < 100 || (isMobileMoney && !phoneNumber)}>
                 {submitting ? 'Processing...' : `Top Up ${formatCurrency(topupAmount)}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showWithdraw && (
+        <div className="modal-overlay" onClick={() => setShowWithdraw(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-title">🏦 {t('wallet.withdrawTitle')}</div>
+
+            {withdrawSuccess && <div className="alert alert-success mb-1">✅ {withdrawSuccess}</div>}
+            {withdrawError && <div className="alert alert-error mb-1">⚠️ {withdrawError}</div>}
+
+            <div className="field">
+              <label className="field-label">{t('wallet.amount')}</label>
+              <input className="input" type="number" min="100" step="100" value={withdrawAmount} onChange={(e) => setWithdrawAmount(Number(e.target.value))} placeholder="Enter amount" />
+              <div className="flex gap-1 wrap mt-1">
+                {quickAmounts.map((a) => (
+                  <button
+                    key={a}
+                    className={`btn btn-sm ${withdrawAmount === a ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setWithdrawAmount(a)}
+                  >
+                    {formatCurrency(a)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">{t('wallet.withdrawTo')}</label>
+              <div className="flex gap-1 wrap mb-1">
+                {withdrawMethods.map((m) => (
+                  <button
+                    key={m.id}
+                    className={`btn btn-sm ${withdrawProvider === m.id ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setWithdrawProvider(m.id)}
+                  >
+                    {m.icon} {m.name}
+                  </button>
+                ))}
+              </div>
+              <input className="input" type="tel" value={withdrawPhone} onChange={(e) => setWithdrawPhone(e.target.value)} placeholder="e.g. 0712345678 or +255712345678" />
+              <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
+                📲 {t('wallet.withdrawInfo')}
+              </div>
+            </div>
+
+            <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowWithdraw(false)} disabled={withdrawing}>{t('common.cancel')}</button>
+              <button className="btn btn-primary" onClick={handleWithdraw} disabled={withdrawing || !withdrawAmount || withdrawAmount < 100 || !withdrawPhone}>
+                {withdrawing ? 'Processing...' : `${t('wallet.withdraw')} ${formatCurrency(withdrawAmount)}`}
               </button>
             </div>
           </div>

@@ -38,10 +38,33 @@ export interface StkPushResult {
   merchantRequestID?: string;
 }
 
+export interface DisburseParams {
+  phoneNumber: string;
+  amount: number;
+  reference: string;
+  description?: string;
+  currency?: string;
+  provider?:
+    | 'mpesa'
+    | 'mixx_by_yas'
+    | 'tigo_money'
+    | 'tigo_pesa'
+    | 'airtel_money'
+    | 'halotel'
+    | 'azampesa';
+}
+
+export interface DisburseResult {
+  success: boolean;
+  message?: string;
+  reference?: string;
+}
+
 export interface IMobileMoneyService {
   initiateStkPush(params: InitiateStkPushParams): Promise<StkPushResult>;
   checkPaymentStatus(checkoutRequestId: string, provider?: string): Promise<PaymentStatusResponse>;
   reversePayment(transactionId: string, amount: number, reason: string): Promise<{ success: boolean }>;
+  disburse(params: DisburseParams): Promise<DisburseResult>;
   verifyCallback(
     provider: string,
     headers: Record<string, string | string[] | undefined>,
@@ -111,6 +134,26 @@ export class MobileMoneyService implements IMobileMoneyService {
   ): Promise<{ success: boolean }> {
     const { impl } = this.selectProvider(provider);
     return impl.reversePayment(transactionId, amount, reason);
+  }
+
+  public async disburse(params: DisburseParams): Promise<DisburseResult> {
+    const { impl, normalized } = this.selectProvider(params.provider);
+
+    this.logger.log(
+      `Initiating ${impl.name} disbursement for ${params.phoneNumber} (provider=${params.provider ?? 'mpesa'})`,
+      'MobileMoneyService',
+    );
+
+    const result = await impl.disburse({
+      ...params,
+      provider: normalized,
+    });
+
+    return {
+      success: result.success,
+      message: result.message,
+      reference: params.reference,
+    };
   }
 
   public verifyCallback(

@@ -178,7 +178,11 @@
     "phoneNumber": "Nambari ya Simu",
     "submit": "Wasilisha",
     "transactions": "Miamala",
-    "noTransactions": "Hakuna miamala bado"
+    "noTransactions": "Hakuna miamala bado",
+    "withdraw": "Toa",
+    "withdrawTitle": "Toa kwa Mobile Money",
+    "withdrawTo": "Toa Kwenda",
+    "withdrawInfo": "Fedha hutumwa kwenye nambari yako ya mobile money. Mtoa huduma atatuma uthibitisho."
   },
   "vendor": {
     "title": "Vinjali Wauzaji",

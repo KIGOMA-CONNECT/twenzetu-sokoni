@@ -178,7 +178,11 @@
     "phoneNumber": "Phone Number",
     "submit": "Submit",
     "transactions": "Transactions",
-    "noTransactions": "No transactions yet"
+    "noTransactions": "No transactions yet",
+    "withdraw": "Withdraw",
+    "withdrawTitle": "Withdraw to Mobile Money",
+    "withdrawTo": "Withdraw To",
+    "withdrawInfo": "Funds are sent to your mobile money number. The provider will push a confirmation."
   },
   "vendor": {
     "title": "Browse Vendors",

@@ -178,7 +178,11 @@
     "phoneNumber": "Número de telefone",
     "submit": "Enviar",
     "transactions": "Transações",
-    "noTransactions": "Sem transações ainda"
+    "noTransactions": "Sem transações ainda",
+    "withdraw": "Levantar",
+    "withdrawTitle": "Levantar para Mobile Money",
+    "withdrawTo": "Levantar para",
+    "withdrawInfo": "Os fundos são enviados para o seu número de mobile money. O fornecedor enviará uma confirmação."
   },
   "vendor": {
     "title": "Explorar vendedores",

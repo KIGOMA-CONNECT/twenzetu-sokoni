@@ -19,6 +19,7 @@ import {
 import { MarketplaceGateway } from './gateway';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
+import { OrderNotifierService } from './order-notifier.service';
 
 @ApiTags('Deliveries')
 @Controller('deliveries')
@@ -34,6 +35,7 @@ export class DeliveriesController {
     private readonly getDeliveryTracking: GetDeliveryTrackingUseCase,
     private readonly updateDriverLocation: UpdateDriverLocationUseCase,
     private readonly gateway: MarketplaceGateway,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   @Post()
@@ -151,11 +153,25 @@ export class DeliveriesController {
     @Body() body: CompleteDeliveryDto,
     @CurrentUser() user: JwtPayload,
   ) {
-    return this.completeDelivery.execute(user.tenantId, {
+    const result = await this.completeDelivery.execute(user.tenantId, {
       deliveryId: id,
       driverEarnings: body.driverEarnings ?? 0,
       deliveryOtp: body.deliveryOtp,
     });
+    this.orderNotifier.notifyCustomerStatusChanged({
+      tenantId: user.tenantId,
+      orderId: result.orderId,
+      newStatus: result.status,
+    });
+    if (result.paymentReleased) {
+      this.orderNotifier.notifyVendorPaid({
+        tenantId: user.tenantId,
+        orderId: result.orderId,
+        amount: result.vendorAmountCredited,
+        currency: 'TZS',
+      });
+    }
+    return result;
   }
 
   @Get('order/:orderId/tracking')

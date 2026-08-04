@@ -6,6 +6,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { ReleasePaymentUseCase, ListPaymentsUseCase, GetPaymentByOrderUseCase } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
+import { OrderNotifierService } from './order-notifier.service';
 
 @ApiTags('Payments')
 @Controller('payments')
@@ -16,6 +17,7 @@ export class PaymentsController {
     private readonly releasePayment: ReleasePaymentUseCase,
     private readonly listPayments: ListPaymentsUseCase,
     private readonly getPaymentByOrder: GetPaymentByOrderUseCase,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   @Get('order/:orderId')
@@ -43,7 +45,14 @@ export class PaymentsController {
     @CurrentUser() user: JwtPayload,
     @Param('orderId', ParseUUIDPipe) orderId: string,
   ) {
-    return this.releasePayment.execute(user.tenantId, orderId);
+    const result = await this.releasePayment.execute(user.tenantId, orderId);
+    this.orderNotifier.notifyVendorPaid({
+      tenantId: user.tenantId,
+      orderId,
+      amount: result.vendorNetCredited,
+      currency: 'TZS',
+    });
+    return result;
   }
 
   @Get()

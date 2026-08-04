@@ -211,6 +211,17 @@ export class CheckoutCartUseCase {
       vendorId: cart!.vendorId.value,
     });
 
+    if (vendor?.userId) {
+      const vendorUser = await this.ds.query(
+        `SELECT phone_number AS "phoneNumber" FROM users WHERE id = $1`,
+        [vendor.userId.value],
+      );
+      const vendorPhone = vendorUser?.[0]?.phoneNumber as string | undefined;
+      if (vendorPhone) {
+        this.smsService?.sendVendorNewOrder(vendorPhone, order.id.value, commissionSplit.totalPaid.amount, currency);
+      }
+    }
+
     cart!.markCheckedOut();
     await this.cartRepo.save(cart!);
 

@@ -13,6 +13,7 @@ import { getCurrencyForPhone } from '@afri-market/integrations';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 import { NotificationsService } from './notifications.service';
+import { OrderNotifierService } from './order-notifier.service';
 
 @ApiTags('Orders')
 @Controller('orders')
@@ -26,6 +27,7 @@ export class OrdersController {
     private readonly checkoutCart: CheckoutCartUseCase,
     private readonly entityManager: EntityManager,
     private readonly notifService: NotificationsService,
+    private readonly orderNotifier: OrderNotifierService,
   ) {}
 
   @Post()
@@ -182,6 +184,12 @@ export class OrdersController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateStatusEndpoint(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderStatusDto, @CurrentUser() user: JwtPayload) {
     const command = new UpdateOrderStatusCommand(id, dto.status);
-    return this.updateStatus.execute(user.tenantId, command);
+    const result = await this.updateStatus.execute(user.tenantId, command);
+    this.orderNotifier.notifyCustomerStatusChanged({
+      tenantId: user.tenantId,
+      orderId: id,
+      newStatus: result.status,
+    });
+    return result;
   }
 }

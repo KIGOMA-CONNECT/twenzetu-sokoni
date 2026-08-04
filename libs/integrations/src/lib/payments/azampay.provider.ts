@@ -2,6 +2,7 @@ import { AppLoggerService } from '@afri-market/core-logger';
 import { httpRequest } from './http';
 import {
   AZAMPAY_PROVIDER_MAP,
+  DisbursePaymentParams,
   IPaymentProvider,
   PaymentInitiationParams,
   PaymentInitiationResult,
@@ -179,6 +180,40 @@ export class AzamPayProvider implements IPaymentProvider {
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       this.logger.error(`AzamPay reversal failed: ${message}`, 'AzamPayProvider');
+      return { success: false, message };
+    }
+  }
+
+  public async disburse(params: DisbursePaymentParams): Promise<ReversePaymentResult> {
+    const provider = AZAMPAY_PROVIDER_MAP[params.provider ?? 'mpesa'] ?? 'M-Pesa';
+
+    if (!this.isConfigured) {
+      this.logger.warn('AzamPay not configured. Simulating disbursement.', 'AzamPayProvider');
+      return { success: true, message: 'Sandbox mode - simulated AzamPay disbursement' };
+    }
+
+    try {
+      const token = await this.getAccessToken();
+      await httpRequest<unknown>({
+        method: 'POST',
+        url: `${this.checkoutBaseUrl}/azampay/createtransfer`,
+        headers: { Authorization: `Bearer ${token}` },
+        body: {
+          source: { countryCode: 'TZ', fullName: '', bankName: '', accountNumber: '', currency: params.currency ?? 'TZS' },
+          destination: { countryCode: 'TZ', fullName: '', bankName: '', accountNumber: params.phoneNumber, currency: params.currency ?? 'TZS' },
+          transferDetails: {
+            type: provider,
+            amount: Math.round(params.amount),
+            date: new Date().toISOString(),
+          },
+          externalReferenceId: params.reference,
+          remarks: params.description ?? 'Vendor wallet withdrawal',
+        },
+      });
+      return { success: true };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`AzamPay disbursement failed: ${message}`, 'AzamPayProvider');
       return { success: false, message };
     }
   }

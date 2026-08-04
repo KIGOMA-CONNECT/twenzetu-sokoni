@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UseGuards, UseInterceptors, Logger } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, BadRequestException, Get, Post, Query, UseGuards, UseInterceptors, Logger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -7,6 +7,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
+import { WalletWithdrawDto } from './dto/wallet-withdraw.dto';
 import { MobileMoneyService, defaultCurrency, getCurrencyForPhone, providerLabel } from '@afri-market/integrations';
 import {
   GetWalletUseCase,
@@ -184,6 +185,81 @@ export class WalletsController {
       success: true,
       checkoutRequestId: stkResult.checkoutRequestId,
       message: `${providerLabel(provider)} prompt sent to your phone. Confirm to complete top-up.`,
+    };
+  }
+
+  @Post('withdraw')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Withdraw wallet balance to mobile money (vendors & drivers)' })
+  @ApiBody({ type: WalletWithdrawDto })
+  @ApiResponse({ status: 201, description: 'Withdrawal initiated' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance or failed initiation' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Customers cannot withdraw' })
+  public async withdraw(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: WalletWithdrawDto,
+  ) {
+    if (user.role !== 'vendor' && user.role !== 'driver') {
+      throw new ForbiddenException('Only vendors and drivers can withdraw wallet funds');
+    }
+
+    const currency = defaultCurrency();
+
+    const wallet = await this.getWallet.execute(user.tenantId, user.sub, getCurrencyForPhone(user.phoneNumber));
+    if (wallet.balance < body.amount) {
+      throw new BadRequestException(
+        `Insufficient wallet balance. Available: ${wallet.balance} ${wallet.currency}`,
+      );
+    }
+
+    const reference = `withdrawal_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const disburseResult = await this.mobileMoney.disburse({
+      phoneNumber: body.phoneNumber,
+      amount: body.amount,
+      reference,
+      description: body.description ?? `Wallet withdrawal ${body.amount} ${currency} (${providerLabel(body.provider)})`,
+      provider: body.provider,
+      currency,
+    });
+
+    if (!disburseResult.success) {
+      await this.ds.query(
+        `INSERT INTO wallet_withdrawals (tenant_id, user_id, amount, phone_number, provider, reference, status, message)
+         VALUES ($1, $2, $3, $4, $5, $6, 'FAILED', $7)`,
+        [user.tenantId, user.sub, body.amount, body.phoneNumber, body.provider, reference, disburseResult.message ?? 'Disbursement failed'],
+      );
+      throw new BadRequestException(disburseResult.message || 'Failed to initiate withdrawal');
+    }
+
+    let balance: number;
+    try {
+      const debited = await this.debitWallet.execute(
+        user.tenantId,
+        user.sub,
+        body.amount,
+        body.description ?? `Wallet withdrawal to ${body.phoneNumber} (${providerLabel(body.provider)})`,
+        reference,
+        'withdrawal',
+      );
+      balance = debited.balance;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      throw new BadRequestException(`Withdrawal failed: ${message}`);
+    }
+
+    await this.ds.query(
+      `INSERT INTO wallet_withdrawals (tenant_id, user_id, amount, phone_number, provider, reference, status)
+       VALUES ($1, $2, $3, $4, $5, $6, 'COMPLETED')`,
+      [user.tenantId, user.sub, body.amount, body.phoneNumber, body.provider, reference],
+    );
+
+    return {
+      success: true,
+      reference,
+      balance,
+      message: `${providerLabel(body.provider)} withdrawal of ${body.amount} ${currency} initiated to ${body.phoneNumber}.`,
     };
   }
 }
