@@ -89,7 +89,7 @@ export class WalletsController {
     @Body() body: WalletCreditDto,
   ) {
     const wallet = await this.creditWallet.execute(
-      user.tenantId, user.sub, body.amount,
+      user.tenantId, await this.resolveWalletOwner(user), body.amount,
       body.description ?? 'Wallet top-up',
       body.referenceId,
       body.referenceType,
@@ -115,7 +115,7 @@ export class WalletsController {
     @Body() body: WalletDebitDto,
   ) {
     const wallet = await this.debitWallet.execute(
-      user.tenantId, user.sub, body.amount,
+      user.tenantId, await this.resolveWalletOwner(user), body.amount,
       body.description ?? 'Wallet debit',
       body.referenceId,
       body.referenceType,

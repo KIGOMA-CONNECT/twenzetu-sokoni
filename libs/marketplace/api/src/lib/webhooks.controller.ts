@@ -2,7 +2,7 @@ import { Controller, Post, Body, Headers, Logger, HttpCode, BadRequestException,
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeController } from '@nestjs/swagger';
-import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase } from '@afri-market/marketplace-application';
+import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
 
 @ApiTags('Webhooks')
@@ -16,8 +16,15 @@ export class WebhooksController {
     private readonly failPayment: FailPaymentUseCase,
     private readonly creditWallet: CreditWalletUseCase,
     private readonly mobileMoney: MobileMoneyService,
+    private readonly findVendors: FindVendorsUseCase,
     @InjectDataSource() private readonly ds: DataSource,
   ) {}
+
+  private async resolveWalletOwner(userId: string): Promise<string> {
+    const vendor = await this.findVendors.findByUserId(userId);
+    if (vendor) return vendor.id.value;
+    return userId;
+  }
 
   @Post('mpesa')
   @HttpCode(200)
@@ -70,7 +77,7 @@ export class WebhooksController {
         [receipt, checkoutRequestId],
       );
       await this.creditWallet.execute(
-        req.tenant_id, req.user_id, Number(req.amount),
+        req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
         `M-Pesa top-up: ${receipt}`,
         receipt, 'mpesa_topup',
       );
@@ -121,7 +128,7 @@ export class WebhooksController {
           [receipt, transactionId],
         );
         await this.creditWallet.execute(
-          req.tenant_id, req.user_id, Number(req.amount),
+          req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
           `${String(body.provider ?? 'AzamPay')} top-up: ${receipt}`,
           receipt || transactionId, 'momo_topup',
         );
@@ -179,7 +186,7 @@ export class WebhooksController {
       [receipt, checkoutRequestId],
     );
     await this.creditWallet.execute(
-      req.tenant_id, req.user_id, Number(req.amount),
+      req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
       `${String(req.provider ?? 'manual')} top-up: ${receipt}`,
       receipt, `${req.provider ?? 'manual'}_topup`,
     );

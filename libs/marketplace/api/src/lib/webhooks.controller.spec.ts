@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { WebhooksController } from './webhooks.controller';
-import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase } from '@afri-market/marketplace-application';
+import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
 
 describe('WebhooksController', () => {
@@ -29,6 +29,10 @@ describe('WebhooksController', () => {
       verifyCallback: jest.fn().mockReturnValue(true),
     } as unknown as jest.Mocked<MobileMoneyService>;
 
+    const findVendors = {
+      findByUserId: jest.fn().mockResolvedValue(null),
+    } as unknown as jest.Mocked<FindVendorsUseCase>;
+
     dataSource = {
       query: jest.fn().mockResolvedValue([]),
     };
@@ -40,6 +44,7 @@ describe('WebhooksController', () => {
         { provide: FailPaymentUseCase, useValue: failPayment },
         { provide: CreditWalletUseCase, useValue: creditWallet },
         { provide: MobileMoneyService, useValue: mobileMoney },
+        { provide: FindVendorsUseCase, useValue: findVendors },
         { provide: getDataSourceToken(), useValue: dataSource },
       ],
     }).compile();
