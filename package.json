@@ -10,11 +10,11 @@
     "migration:generate": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:generate -d apps/api/src/composition/cli-data-source.ts",
     "migration:run": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:run -d apps/api/src/composition/cli-data-source.ts",
     "migration:revert": "cross-env TS_NODE_PROJECT=tsconfig.cli.json typeorm-ts-node-commonjs migration:revert -d apps/api/src/composition/cli-data-source.ts",
-    "migration:run:prod": "cross-env TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:run -d dist/out-tsc/apps/api/src/composition/cli-data-source.js",
-    "migration:revert:prod": "cross-env TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:revert -d dist/out-tsc/apps/api/src/composition/cli-data-source.js",
+    "migration:run:prod": "TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:run -d dist/out-tsc/apps/api/src/composition/cli-data-source.js",
+    "migration:revert:prod": "TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register node_modules/typeorm/cli.js migration:revert -d dist/out-tsc/apps/api/src/composition/cli-data-source.js",
     "db:setup": "npm run migration:run && npm run seed",
     "seed": "cross-env TS_NODE_PROJECT=tsconfig.cli.json ts-node apps/api/src/composition/seed.ts",
-    "seed:prod": "cross-env TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register dist/out-tsc/apps/api/src/composition/seed.js"
+    "seed:prod": "TS_NODE_PROJECT=tsconfig.runner.json node -r tsconfig-paths/register dist/out-tsc/apps/api/src/composition/seed.js"
   },
   "private": true,
   "dependencies": {
