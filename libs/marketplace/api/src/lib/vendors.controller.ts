@@ -5,6 +5,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, 
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateVendorDto } from './dto/create-vendor.dto';
 import { VendorUpdateOrderStatusDto } from './dto/vendor-update-order-status.dto';
+import { ParseFlexibleUuidPipe } from './common/parse-flexible-uuid.pipe';
 import {
   CreateVendorUseCase,
   FindVendorsUseCase,
@@ -160,7 +161,7 @@ export class VendorsController {
   @ApiOperation({ summary: 'Get vendor by ID' })
   @ApiParam({ name: 'id', description: 'Vendor ID' })
   @ApiResponse({ status: 200, description: 'Success' })
-  public async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  public async findOne(@Param('id', ParseFlexibleUuidPipe) id: string) {
     const vendor = await this.findVendors.findById(id);
     return { data: vendor?.toDto() ?? null };
   }
