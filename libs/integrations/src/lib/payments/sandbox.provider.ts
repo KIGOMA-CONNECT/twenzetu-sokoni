@@ -30,11 +30,15 @@ export class SandboxPaymentProvider implements IPaymentProvider {
     };
   }
 
-  public async checkPaymentStatus(reference: string): Promise<PaymentStatusResponse> {
+  public async checkPaymentStatus(_reference: string): Promise<PaymentStatusResponse> {
     return { status: 'PENDING' };
   }
 
-  public async reversePayment(transactionId: string, amount: number, reason: string): Promise<ReversePaymentResult> {
+  public async reversePayment(
+    transactionId: string,
+    _amount: number,
+    _reason: string,
+  ): Promise<ReversePaymentResult> {
     this.logger.warn(`Reversal simulated (sandbox) for ${transactionId}`, 'SandboxPaymentProvider');
     return { success: true };
   }

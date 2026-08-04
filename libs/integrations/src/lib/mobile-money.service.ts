@@ -42,7 +42,11 @@ export interface IMobileMoneyService {
   initiateStkPush(params: InitiateStkPushParams): Promise<StkPushResult>;
   checkPaymentStatus(checkoutRequestId: string, provider?: string): Promise<PaymentStatusResponse>;
   reversePayment(transactionId: string, amount: number, reason: string): Promise<{ success: boolean }>;
-  verifyCallback(provider: string, headers: Record<string, string | string[] | undefined>): boolean;
+  verifyCallback(
+    provider: string,
+    headers: Record<string, string | string[] | undefined>,
+    body?: Record<string, unknown>,
+  ): boolean;
 }
 
 @Injectable()
@@ -109,11 +113,15 @@ export class MobileMoneyService implements IMobileMoneyService {
     return impl.reversePayment(transactionId, amount, reason);
   }
 
-  public verifyCallback(provider: string, headers: Record<string, string | string[] | undefined>): boolean {
+  public verifyCallback(
+    provider: string,
+    headers: Record<string, string | string[] | undefined>,
+    body?: Record<string, unknown>,
+  ): boolean {
     const gateway = (provider || '').toLowerCase().trim();
     if (gateway === 'mpesa') {
       return true;
     }
-    return this.azamPay.verifyCallback(headers);
+    return this.azamPay.verifyCallback(headers, body);
   }
 }

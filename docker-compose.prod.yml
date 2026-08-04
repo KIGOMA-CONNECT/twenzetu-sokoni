@@ -65,6 +65,12 @@ services:
       MPESA_PASSKEY: ${MPESA_PASSKEY:-}
       MPESA_CALLBACK_URL: ${MPESA_CALLBACK_URL:-https://yourdomain.com/api/webhooks/mpesa}
       MPESA_ENVIRONMENT: ${MPESA_ENVIRONMENT:-production}
+      AZAMPAY_APP_NAME: ${AZAMPAY_APP_NAME:-}
+      AZAMPAY_CLIENT_ID: ${AZAMPAY_CLIENT_ID:-}
+      AZAMPAY_CLIENT_SECRET: ${AZAMPAY_CLIENT_SECRET:-}
+      AZAMPAY_API_KEY: ${AZAMPAY_API_KEY:-}
+      AZAMPAY_ENVIRONMENT: ${AZAMPAY_ENVIRONMENT:-sandbox}
+      AZAMPAY_CALLBACK_URL: ${AZAMPAY_CALLBACK_URL:-https://yourdomain.com/api/webhooks/azampay}
     depends_on:
       postgres:
         condition: service_healthy

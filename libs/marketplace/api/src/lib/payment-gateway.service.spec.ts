@@ -130,6 +130,8 @@ describe('MobileMoneyService (payment gateway dispatcher)', () => {
 
     expect(service.verifyCallback('azampay', { 'x-api-key': 'secret-key' })).toBe(true);
     expect(service.verifyCallback('azampay', { 'x-api-key': 'wrong-key' })).toBe(false);
+    expect(service.verifyCallback('azampay', {}, { password: 'secret-key' })).toBe(true);
+    expect(service.verifyCallback('azampay', {}, { password: 'wrong-key' })).toBe(false);
     expect(service.verifyCallback('mpesa', {})).toBe(true);
   });
 });

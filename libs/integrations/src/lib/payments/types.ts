@@ -72,13 +72,13 @@ export const PROVIDER_LABELS: Record<string, string> = {
 };
 
 export const AZAMPAY_PROVIDER_MAP: Record<string, string> = {
-  mpesa: 'M-Pesa',
-  mixx_by_yas: 'M-Pesa',
-  tigo_money: 'TigoPesa',
-  tigo_pesa: 'TigoPesa',
-  airtel_money: 'AirtelMoney',
-  halotel: 'HaloPesa',
-  azampesa: 'AzamPesa',
+  mpesa: 'Mpesa',
+  mixx_by_yas: 'Mpesa',
+  tigo_money: 'Tigo',
+  tigo_pesa: 'Tigo',
+  airtel_money: 'Airtel',
+  halotel: 'Halopesa',
+  azampesa: 'Azampesa',
 };
 
 export function normalizeProvider(provider?: string): MobileMoneyProvider {

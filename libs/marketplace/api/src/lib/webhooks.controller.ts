@@ -95,7 +95,7 @@ export class WebhooksController {
   ) {
     this.logger.log(`AzamPay callback received: ${JSON.stringify(body).substring(0, 300)}...`);
 
-    if (!this.mobileMoney.verifyCallback('azampay', headers)) {
+    if (!this.mobileMoney.verifyCallback('azampay', headers, body)) {
       this.logger.warn('AzamPay callback signature mismatch - ignoring');
       return { success: false, message: 'Invalid signature' };
     }

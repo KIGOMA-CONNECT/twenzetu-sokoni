@@ -183,12 +183,24 @@ export class AzamPayProvider implements IPaymentProvider {
     }
   }
 
-  public verifyCallback(headers: Record<string, string | string[] | undefined>): boolean {
+  public verifyCallback(
+    headers: Record<string, string | string[] | undefined>,
+    body?: Record<string, unknown>,
+  ): boolean {
     if (!this.config.apiKey) {
       return true;
     }
     const headerValue = headers['x-api-key'] ?? headers['X-API-Key'];
-    const value = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-    return value === this.config.apiKey;
+    const headerSecret = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    if (headerSecret && headerSecret === this.config.apiKey) {
+      return true;
+    }
+    if (body) {
+      const password = body['password'] ?? body['Password'];
+      if (typeof password === 'string' && password === this.config.apiKey) {
+        return true;
+      }
+    }
+    return false;
   }
 }
