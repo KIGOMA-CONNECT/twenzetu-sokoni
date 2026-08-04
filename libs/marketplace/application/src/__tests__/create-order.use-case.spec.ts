@@ -81,7 +81,14 @@ describe('CreateOrderUseCase', () => {
       sendDeliveryOtp: jest.fn().mockResolvedValue({ success: true }),
     };
 
-    useCase = new CreateOrderUseCase(mockOrderRepo, mockVendorRepo, mockPaymentRepo, undefined, mockSmsService);
+    useCase = new CreateOrderUseCase(
+      mockOrderRepo,
+      mockVendorRepo,
+      mockPaymentRepo,
+      { query: jest.fn().mockResolvedValue([]) } as never,
+      undefined,
+      mockSmsService,
+    );
   });
 
   const createActiveVendor = () =>

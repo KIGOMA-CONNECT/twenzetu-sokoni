@@ -36,6 +36,14 @@ export * from './lib/use-cases/order/create-order.use-case';
 export * from './lib/use-cases/order/update-order-status.use-case';
 export * from './lib/use-cases/order/find-orders.use-case';
 export * from './lib/use-cases/order/cancel-order.use-case';
+export * from './lib/use-cases/order/checkout-cart.use-case';
+
+// Use Cases - Cart
+export * from './lib/use-cases/cart/get-cart.use-case';
+export * from './lib/use-cases/cart/add-to-cart.use-case';
+export * from './lib/use-cases/cart/update-cart-item.use-case';
+export * from './lib/use-cases/cart/remove-cart-item.use-case';
+export * from './lib/use-cases/cart/clear-cart.use-case';
 
 // Use Cases - Delivery
 export * from './lib/use-cases/delivery/create-delivery.use-case';

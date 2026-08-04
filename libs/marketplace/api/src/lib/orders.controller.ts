@@ -5,9 +5,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, 
 import { EntityManager } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateOrderDto } from './dto/create-order.dto';
+import { CheckoutCartDto } from './dto/checkout-cart.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
-import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand } from '@afri-market/marketplace-application';
+import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand, CheckoutCartUseCase } from '@afri-market/marketplace-application';
 import { getCurrencyForPhone } from '@afri-market/integrations';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
@@ -22,6 +23,7 @@ export class OrdersController {
     private readonly updateStatus: UpdateOrderStatusUseCase,
     private readonly findOrders: FindOrdersUseCase,
     private readonly cancelOrder: CancelOrderUseCase,
+    private readonly checkoutCart: CheckoutCartUseCase,
     private readonly entityManager: EntityManager,
     private readonly notifService: NotificationsService,
   ) {}
@@ -62,6 +64,41 @@ export class OrdersController {
       userId: user.sub,
       title: 'Order Placed',
       message: `Your order of ${currency} ${result.total || ''} has been placed successfully.`,
+      type: 'order_placed',
+      referenceId: result.orderId,
+      referenceType: 'order',
+    }).catch(() => {});
+    return result;
+  }
+
+  @Post('checkout')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @UseGuards(AuthGuard('jwt'))
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @ApiOperation({ summary: 'Checkout a server-side cart into an order (server-validated prices and stock)' })
+  @ApiBody({ type: CheckoutCartDto })
+  @ApiResponse({ status: 201, description: 'Order created' })
+  @ApiResponse({ status: 400, description: 'Cart empty, unavailable product or insufficient stock' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async checkout(@Body() dto: CheckoutCartDto, @CurrentUser() user: JwtPayload) {
+    const result = await this.checkoutCart.execute({
+      tenantId: user.tenantId,
+      userId: user.sub,
+      cartId: dto.cartId,
+      paymentMethod: dto.paymentMethod || 'mpesa',
+      deliveryAddress: dto.deliveryAddress,
+      deliveryLatitude: dto.deliveryLatitude,
+      deliveryLongitude: dto.deliveryLongitude,
+      specialInstructions: dto.specialInstructions,
+      customerPhone: user.phoneNumber,
+      customerEmail: dto.customerEmail,
+      currency: dto.currency,
+    });
+    this.notifService.create({
+      tenantId: user.tenantId,
+      userId: user.sub,
+      title: 'Order Placed',
+      message: `Your order of ${dto.currency ?? 'TZS'} ${result.total || ''} has been placed successfully.`,
       type: 'order_placed',
       referenceId: result.orderId,
       referenceType: 'order',

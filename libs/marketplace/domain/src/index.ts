@@ -21,6 +21,9 @@ export * from './lib/order/order-status';
 export * from './lib/order/order.aggregate';
 export * from './lib/order/order.repository.interface';
 export * from './lib/order-item/order-item.aggregate';
+// Cart
+export * from './lib/cart/cart.aggregate';
+export * from './lib/cart/cart.repository.interface';
 export { DeliveryStatus } from './lib/delivery/delivery-status';
 export * from './lib/delivery/delivery.aggregate';
 export * from './lib/delivery/delivery.repository.interface';

@@ -1,4 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 import { randomInt } from 'crypto';
 import { EntityId, Guard, TenantId } from '@afri-market/kernel';
 import {
@@ -20,6 +22,7 @@ export class CreateOrderUseCase {
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
+    @InjectDataSource() private readonly ds: DataSource,
     @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyNewOrder(vendorId: string, order: Record<string, unknown>): void } | undefined,
     @Optional() @Inject(SMS_SERVICE) private readonly smsService?: ISmsService,
     @Optional() @Inject(EMAIL_SERVICE) private readonly emailService?: IEmailService,
@@ -98,6 +101,14 @@ export class CreateOrderUseCase {
     order.setOTP(otpCode);
 
     await this.orderRepo.save(order);
+
+    for (const item of command.items) {
+      await this.ds.query(
+        `INSERT INTO order_items (id, tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
+         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
+        [tenantId, order.id.value, item.productId, item.productName, item.quantity, item.unitPrice, item.unitPrice * item.quantity, currency],
+      );
+    }
 
     const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'cash') || 'mpesa';
 

@@ -9,6 +9,7 @@ const config: Config = {
   moduleFileExtensions: ['ts', 'js', 'json'],
   moduleNameMapper: {
     '^@afri-market/kernel$': '<rootDir>/../../kernel/src/index.ts',
+    '^@afri-market/core-logger$': '<rootDir>/../../core/logger/src/index.ts',
     '^@afri-market/marketplace-domain$': '<rootDir>/../domain/src/index.ts',
     '^@afri-market/integrations$': '<rootDir>/../../integrations/src/index.ts',
   },

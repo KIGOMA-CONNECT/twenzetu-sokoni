@@ -34,6 +34,7 @@ import {
   TypeOrmServiceListingRepository,
   TypeOrmServiceRequestRepository,
   TypeOrmServiceQuoteRepository,
+  TypeOrmCartRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
@@ -50,6 +51,7 @@ import {
   ADMIN_USER_REPOSITORY,
   COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
   SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY,
+  CART_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
@@ -151,6 +153,12 @@ import { SendServiceMessageUseCase } from './use-cases/service/send-service-mess
 import { ListServiceMessagesUseCase } from './use-cases/service/list-service-messages.use-case';
 import { DeleteServiceListingUseCase } from './use-cases/service/delete-service-listing.use-case';
 import { CreateServiceReviewUseCase } from './use-cases/service/create-service-review.use-case';
+import { GetCartUseCase } from './use-cases/cart/get-cart.use-case';
+import { AddToCartUseCase } from './use-cases/cart/add-to-cart.use-case';
+import { UpdateCartItemUseCase } from './use-cases/cart/update-cart-item.use-case';
+import { RemoveCartItemUseCase } from './use-cases/cart/remove-cart-item.use-case';
+import { ClearCartUseCase } from './use-cases/cart/clear-cart.use-case';
+import { CheckoutCartUseCase } from './use-cases/order/checkout-cart.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -184,6 +192,7 @@ const REPOSITORIES = [
   { provide: SERVICE_LISTING_REPOSITORY, useClass: TypeOrmServiceListingRepository },
   { provide: SERVICE_REQUEST_REPOSITORY, useClass: TypeOrmServiceRequestRepository },
   { provide: SERVICE_QUOTE_REPOSITORY, useClass: TypeOrmServiceQuoteRepository },
+  { provide: CART_REPOSITORY, useClass: TypeOrmCartRepository },
 ];
 
 const SERVICES = [
@@ -297,6 +306,12 @@ const USE_CASES = [
   ListServiceMessagesUseCase,
   DeleteServiceListingUseCase,
   CreateServiceReviewUseCase,
+  GetCartUseCase,
+  AddToCartUseCase,
+  UpdateCartItemUseCase,
+  RemoveCartItemUseCase,
+  ClearCartUseCase,
+  CheckoutCartUseCase,
 ];
 
 @Module({

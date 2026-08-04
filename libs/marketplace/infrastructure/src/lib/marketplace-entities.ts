@@ -36,6 +36,8 @@ import { ServiceListingOrmEntity } from './entities/service-listing-orm.entity';
 import { ServiceRequestOrmEntity } from './entities/service-request-orm.entity';
 import { ServiceQuoteOrmEntity } from './entities/service-quote-orm.entity';
 import { ServiceRequestMessageOrmEntity } from './entities/service-request-message-orm.entity';
+import { CartOrmEntity } from './entities/cart-orm.entity';
+import { CartItemOrmEntity } from './entities/cart-item-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -76,4 +78,6 @@ export const MARKETPLACE_ENTITIES = [
   ServiceRequestOrmEntity,
   ServiceQuoteOrmEntity,
   ServiceRequestMessageOrmEntity,
+  CartOrmEntity,
+  CartItemOrmEntity,
 ];

@@ -26,6 +26,7 @@ import { UploadsController } from './uploads.controller';
 import { WebhooksController } from './webhooks.controller';
 import { CategoriesController } from './categories.controller';
 import { AddressesController } from './addresses.controller';
+import { CartsController } from './carts.controller';
 import { MenusController } from './menus.controller';
 import { VehiclesController } from './vehicles.controller';
 import { CouponsController } from './coupons.controller';
@@ -64,6 +65,7 @@ import { ServicesController } from './services.controller';
     WebhooksController,
     CategoriesController,
     AddressesController,
+    CartsController,
     MenusController,
     VehiclesController,
     CouponsController,

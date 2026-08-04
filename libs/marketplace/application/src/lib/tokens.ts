@@ -24,6 +24,7 @@ export const COUNTRY_CONFIG_REPOSITORY = 'ICountryConfigRepository';
 export const PRODUCT_CATEGORY_REPOSITORY = 'IProductCategoryRepository';
 export const ADDRESS_REPOSITORY = 'IAddressRepository';
 export const MENU_REPOSITORY = 'IMenuRepository';
+export const CART_REPOSITORY = 'ICartRepository';
 
 // Gateway
 export const MARKETPLACE_GATEWAY = 'MARKETPLACE_GATEWAY';
