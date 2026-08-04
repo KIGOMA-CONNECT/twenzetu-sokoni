@@ -1,6 +1,7 @@
 import { useEffect, useState, FormEvent } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
@@ -9,6 +10,7 @@ import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
   const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
+  const { itemCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -102,6 +104,7 @@ export function MainLayout() {
     { label: 'Home', ico: '🏠', path: '/dashboard', show: true },
     { label: 'Vendors', ico: '🏪', path: '/vendors', show: isCustomer || isAdmin },
     { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
+    { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Account', ico: '👤', path: '/notifications', show: true },
@@ -298,7 +301,27 @@ export function MainLayout() {
               onClick={(e) => { e.preventDefault(); go(n.path); }}
               className={isActive(n.path) ? 'active' : ''}
             >
-              <span className="b-ico">{n.ico}</span>
+              <span className="b-ico" style={{ position: 'relative' }}>
+                {n.ico}
+                {typeof n.badge === 'number' && n.badge > 0 && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-4px',
+                      right: '-10px',
+                      background: 'var(--brand)',
+                      color: '#fff',
+                      fontSize: '0.62rem',
+                      fontWeight: 800,
+                      borderRadius: '999px',
+                      padding: '0 4px',
+                      lineHeight: '1.5',
+                    }}
+                  >
+                    {n.badge > 9 ? '9+' : n.badge}
+                  </span>
+                )}
+              </span>
               {n.label}
             </a>
           ))}

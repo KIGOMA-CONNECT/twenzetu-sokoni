@@ -5,12 +5,15 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import { useApi } from '../../hooks/useApi';
+import type { Vendor } from '../../types';
 
 function CartPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
   const { cart, activeVendorId, loading, mutation, error, itemCount, updateItem, removeItem, clearCart } = useCart();
+  const { data: vendor } = useApi<Vendor>(activeVendorId ? `/vendors/${activeVendorId}` : null);
 
   if (!activeVendorId) {
     return (
@@ -98,6 +101,21 @@ function CartPage() {
 
             <div className="card" style={{ position: 'sticky', top: 'calc(var(--topbar-h) + 1rem)' }}>
               <h2 className="section-title" style={{ marginBottom: '0.75rem' }}>🧾 {t('cart.summaryTitle')}</h2>
+              {vendor && (
+                <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>
+                  {t('cart.vendor')}:{' '}
+                  <a
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(`/vendors/${activeVendorId}/products`);
+                    }}
+                    style={{ color: 'var(--brand)', fontWeight: 700 }}
+                  >
+                    {vendor.shopName}
+                  </a>
+                </div>
+              )}
               <div className="flex justify-between items-center" style={{ fontWeight: 800, fontSize: '1.1rem', color: 'var(--ink)' }}>
                 <span>{t('cart.total')} ({itemCount})</span>
                 <span className="text-brand" style={{ fontSize: '1.25rem' }}>
@@ -118,7 +136,13 @@ function CartPage() {
                 <button className="btn btn-outline btn-block" onClick={() => navigate('/vendors')}>
                   {t('cart.continueShopping')}
                 </button>
-                <button className="btn btn-ghost" disabled={mutation} onClick={() => clearCart()}>
+                <button
+                  className="btn btn-ghost"
+                  disabled={mutation}
+                  onClick={() => {
+                    if (window.confirm(t('cart.clearConfirm'))) clearCart();
+                  }}
+                >
                   {t('cart.clear')}
                 </button>
               </div>

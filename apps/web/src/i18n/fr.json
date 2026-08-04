@@ -22,7 +22,9 @@
     "instructions": "Instructions de livraison (facultatif)",
     "deliveryFeeNote": "Frais de livraison calculés à la confirmation",
     "summaryTitle": "Récapitulatif de la commande",
-    "backToCart": "Retour au panier"
+    "backToCart": "Retour au panier",
+    "vendor": "Vendeur",
+    "clearConfirm": "Retirer tous les articles de votre panier ?"
   },
   "app": {
     "name": "afriMarket",

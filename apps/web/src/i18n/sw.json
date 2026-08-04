@@ -22,7 +22,9 @@
     "instructions": "Maelekezo ya usafirishaji (hiari)",
     "deliveryFeeNote": "Ada ya usafirishaji itahesabiwa baada ya uthibitisho",
     "summaryTitle": "Muhtasari wa Agizo",
-    "backToCart": "Rudi kwenye rukoba"
+    "backToCart": "Rudi kwenye rukoba",
+    "vendor": "Muuzaji",
+    "clearConfirm": "Kuondoa bidhaa zote kwenye rukoba lako?"
   },
   "app": {
     "name": "afriMarket",

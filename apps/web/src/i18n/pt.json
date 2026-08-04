@@ -22,7 +22,9 @@
     "instructions": "Instruções de entrega (opcional)",
     "deliveryFeeNote": "Taxa de entrega calculada na confirmação",
     "summaryTitle": "Resumo do Pedido",
-    "backToCart": "Voltar ao carrinho"
+    "backToCart": "Voltar ao carrinho",
+    "vendor": "Vendedor",
+    "clearConfirm": "Remover todos os itens do seu carrinho?"
   },
   "app": {
     "name": "afriMarket",
