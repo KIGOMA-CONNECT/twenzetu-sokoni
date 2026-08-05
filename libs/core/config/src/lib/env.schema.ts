@@ -21,6 +21,20 @@ export const envSchema = z.object({
   SMS_DEFAULT_COUNTRY: z.string().default('TZ'),
   DEFAULT_CURRENCY: z.string().default('TZS'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+}).superRefine((val, ctx) => {
+  if (val.APP_ENV !== 'production') return;
+  const defaults = new Set(['postgres', 'afri_owner_dev_password', 'afri_runtime_dev_password', 'dev-jwt-secret']);
+  const checks: Array<[string, string]> = [
+    ['DB_BOOTSTRAP_PASSWORD', val.DB_BOOTSTRAP_PASSWORD],
+    ['DB_OWNER_PASSWORD', val.DB_OWNER_PASSWORD],
+    ['DB_RUNTIME_PASSWORD', val.DB_RUNTIME_PASSWORD],
+    ['JWT_SECRET', val.JWT_SECRET],
+  ];
+  for (const [key, value] of checks) {
+    if (!value || defaults.has(value) || value.length < 12) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: [key], message: `${key} must be a strong, non-default secret in production` });
+    }
+  }
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

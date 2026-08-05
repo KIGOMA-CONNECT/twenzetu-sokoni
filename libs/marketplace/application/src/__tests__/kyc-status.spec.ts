@@ -44,14 +44,14 @@ describe('ListPendingKycUseCase', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRepo = {
-      findPending: jest.fn(),
+      findPendingByTenant: jest.fn(),
     };
     useCase = new ListPendingKycUseCase(mockRepo);
   });
 
   it('should return empty when no pending', async () => {
-    mockRepo.findPending.mockResolvedValue([]);
-    const result = await useCase.execute();
+    mockRepo.findPendingByTenant.mockResolvedValue([]);
+    const result = await useCase.execute('t-1');
     expect(result.data).toEqual([]);
     expect(result.total).toBe(0);
   });
@@ -67,8 +67,8 @@ describe('ListPendingKycUseCase', () => {
       status: 'PENDING',
       version: 1,
     });
-    mockRepo.findPending.mockResolvedValue([kyc]);
-    const result = await useCase.execute();
+    mockRepo.findPendingByTenant.mockResolvedValue([kyc]);
+    const result = await useCase.execute('t-1');
     expect(result.data).toHaveLength(1);
     expect(result.total).toBe(1);
   });

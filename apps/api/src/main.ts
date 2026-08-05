@@ -9,7 +9,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
 import { AppModule } from './app/app.module';
 
@@ -44,8 +44,12 @@ async function bootstrap(): Promise<void> {
       return res.status(404).send('Not found');
     }
     const assetPath = join(webDir, req.path === '/' ? 'index.html' : req.path);
-    if (existsSync(assetPath) && statSync(assetPath).isFile()) {
-      const ext = assetPath.split('.').pop()?.toLowerCase() || '';
+    const resolvedAssetPath = resolve(assetPath);
+    if (!resolvedAssetPath.startsWith(resolve(webDir)) && resolvedAssetPath !== resolve(join(webDir, 'index.html'))) {
+      return res.status(403).send('Forbidden');
+    }
+    if (existsSync(resolvedAssetPath) && statSync(resolvedAssetPath).isFile()) {
+      const ext = resolvedAssetPath.split('.').pop()?.toLowerCase() || '';
       const mime: Record<string, string> = {
         js: 'application/javascript', css: 'text/css', html: 'text/html',
         svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg',
@@ -53,7 +57,7 @@ async function bootstrap(): Promise<void> {
         json: 'application/json', webp: 'image/webp', txt: 'text/plain',
         wasm: 'application/wasm', map: 'application/json',
       };
-      res.type(mime[ext] || 'application/octet-stream').send(readFileSync(assetPath));
+      res.type(mime[ext] || 'application/octet-stream').send(readFileSync(resolvedAssetPath));
       return;
     }
     res.type('html').send(webIndex);
@@ -68,41 +72,44 @@ async function bootstrap(): Promise<void> {
   app.enableShutdownHooks();
   console.log('[Bootstrap] Pipes, filters, interceptors configured');
 
-  const swaggerConfig = new DocumentBuilder()
-    .setTitle('afriMarket API')
-    .setDescription('Pan-African Hyperlocal Multi-Service Aggregator & Universal Procurement Platform')
-    .setVersion('1.0')
-    .addBearerAuth(
-      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Enter JWT token' },
-      'jwt-auth',
-    )
-    .addSecurityRequirements('jwt-auth')
-    .addTag('Vendors', 'Vendor onboarding, profiles, and management')
-    .addTag('Products', 'Product catalog and inventory')
-    .addTag('Orders', 'Order placement, tracking, and management')
-    .addTag('Deliveries', 'Delivery assignment, tracking, and completion')
-    .addTag('Reviews', 'Customer reviews and ratings')
-    .addTag('Procurement', 'Universal procurement and vendor quotes')
-    .addTag('Disputes', 'Dispute filing and resolution')
-    .addTag('Surge Pricing', 'Dynamic surge pricing rules and calculation')
-    .addTag('Loyalty', 'Loyalty points, tiers, and redemption')
-    .addTag('KYC', 'Partner KYC submission and verification')
-    .addTag('Points of Interest', 'Hyperlocal POI indexing')
-    .addTag('Finance', 'Micro-loans and credit scoring')
-    .addTag('B2B', 'Bulk orders and B2B sourcing')
-    .addTag('Agents', 'Field agent registration and earnings')
-    .addTag('Wallets', 'Vendor/driver wallet balances')
-    .addTag('Payments', 'Payment escrow, release, and history')
-    .addTag('Used Goods', 'Second-hand goods marketplace')
-    .addTag('Auth', 'Authentication, OTP, and JWT')
-    .addTag('Admin', 'Platform administration and moderation')
-    .build();
-  console.log('[Bootstrap] Swagger config built');
-
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  console.log('[Bootstrap] Swagger document created');
-  SwaggerModule.setup('docs', app, document);
-  console.log('[Bootstrap] Swagger UI setup done');
+  const nodeEnv = config.app.env ?? process.env.NODE_ENV ?? 'development';
+  const swaggerEnabled = nodeEnv !== 'production' || process.env.SWAGGER_ENABLED === 'true';
+  if (swaggerEnabled) {
+    const swaggerConfig = new DocumentBuilder()
+      .setTitle('afriMarket API')
+      .setDescription('Pan-African Hyperlocal Multi-Service Aggregator & Universal Procurement Platform')
+      .setVersion('1.0')
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT', description: 'Enter JWT token' },
+        'jwt-auth',
+      )
+      .addSecurityRequirements('jwt-auth')
+      .addTag('Vendors', 'Vendor onboarding, profiles, and management')
+      .addTag('Products', 'Product catalog and inventory')
+      .addTag('Orders', 'Order placement, tracking, and management')
+      .addTag('Deliveries', 'Delivery assignment, tracking, and completion')
+      .addTag('Reviews', 'Customer reviews and ratings')
+      .addTag('Procurement', 'Universal procurement and vendor quotes')
+      .addTag('Disputes', 'Dispute filing and resolution')
+      .addTag('Surge Pricing', 'Dynamic surge pricing rules and calculation')
+      .addTag('Loyalty', 'Loyalty points, tiers, and redemption')
+      .addTag('KYC', 'Partner KYC submission and verification')
+      .addTag('Points of Interest', 'Hyperlocal POI indexing')
+      .addTag('Finance', 'Micro-loans and credit scoring')
+      .addTag('B2B', 'Bulk orders and B2B sourcing')
+      .addTag('Agents', 'Field agent registration and earnings')
+      .addTag('Wallets', 'Vendor/driver wallet balances')
+      .addTag('Payments', 'Payment escrow, release, and history')
+      .addTag('Used Goods', 'Second-hand goods marketplace')
+      .addTag('Auth', 'Authentication, OTP, and JWT')
+      .addTag('Admin', 'Platform administration and moderation')
+      .build();
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup('docs', app, document);
+    console.log('[Bootstrap] Swagger UI setup done');
+  } else {
+    console.log('[Bootstrap] Swagger disabled in production');
+  }
 
   console.log('[Bootstrap] Starting to listen on port', config.app.port);
   await app.listen(config.app.port);

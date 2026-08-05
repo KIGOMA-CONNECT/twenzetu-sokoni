@@ -26,6 +26,11 @@ export class TypeOrmPartnerKycRepository extends TypeOrmRepository<PartnerKyc, P
     return entities.map(e => this.toDomain(e));
   }
 
+  public async findPendingByTenant(tenantId: string): Promise<PartnerKyc[]> {
+    const entities = await this.repository.find({ where: { status: 'PENDING', tenantId } });
+    return entities.map(e => this.toDomain(e));
+  }
+
   public async findPendingByType(partnerType: string): Promise<PartnerKyc[]> {
     const entities = await this.repository.find({ where: { status: 'PENDING', partnerType } });
     return entities.map(e => this.toDomain(e));

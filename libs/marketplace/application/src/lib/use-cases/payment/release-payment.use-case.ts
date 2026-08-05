@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException, Optional } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, ForbiddenException, Optional } from '@nestjs/common';
 import { Inject } from '@nestjs/common';
 import { Money, TenantId } from '@afri-market/kernel';
 import {
@@ -22,6 +22,7 @@ export class ReleasePaymentUseCase {
   public async execute(
     tenantId: string,
     orderId: string,
+    caller?: { userId: string; role: string; vendorId?: string },
   ): Promise<{
     paymentId: string;
     status: string;
@@ -31,6 +32,16 @@ export class ReleasePaymentUseCase {
     const payment = await this.paymentRepo.findByOrderId(orderId);
     if (!payment) {
       throw new NotFoundException(`No payment found for order ${orderId}`);
+    }
+    if (payment.tenantId.value !== tenantId) {
+      throw new NotFoundException(`No payment found for order ${orderId}`);
+    }
+    if (caller) {
+      const isAdmin = caller.role === 'admin' || caller.role === 'super_admin';
+      const ownsPayment = caller.userId === payment.vendorId.value || caller.vendorId === payment.vendorId.value;
+      if (!isAdmin && !ownsPayment) {
+        throw new ForbiddenException('You are not allowed to release this payment');
+      }
     }
     if (payment.status !== 'ESCROW_HELD') {
       throw new BadRequestException(`Payment is not in ESCROW_HELD status (current: ${payment.status})`);

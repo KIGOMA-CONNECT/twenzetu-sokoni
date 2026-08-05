@@ -72,7 +72,12 @@ export class FinanceController {
   public async repayLoanEndpoint(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: RepayLoanDto,
+    @CurrentUser() user: JwtPayload,
   ) {
-    return this.repayLoan.execute({ loanId: id, amount: dto.amount });
+    return this.repayLoan.execute({
+      loanId: id,
+      amount: dto.amount,
+      actor: { tenantId: user.tenantId, borrowerId: user.sub },
+    });
   }
 }

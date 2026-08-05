@@ -52,7 +52,7 @@ describe('ReleasePaymentUseCase', () => {
     mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
     mockWalletRepo.findByOwnerId.mockResolvedValue(null);
 
-    const result = await useCase.execute(TENANT_ID, ORDER_ID);
+    const result = await useCase.execute(TENANT_ID, ORDER_ID, { userId: VENDOR_ID, role: 'vendor', vendorId: VENDOR_ID });
 
     expect(result.paymentId).toBe('payment-123');
     expect(result.status).toBe('RELEASED');
@@ -77,16 +77,45 @@ describe('ReleasePaymentUseCase', () => {
     mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
     mockWalletRepo.findByOwnerId.mockResolvedValue(existingWallet);
 
-    const result = await useCase.execute(TENANT_ID, ORDER_ID);
+    const result = await useCase.execute(TENANT_ID, ORDER_ID, { userId: VENDOR_ID, role: 'vendor', vendorId: VENDOR_ID });
 
     expect(result.vendorNetCredited).toBe(9000);
     expect(mockWalletRepo.save).toHaveBeenCalledTimes(1);
   });
 
+  it('should throw if caller is not the payment vendor', async () => {
+    const payment = createEscrowPayment();
+    mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
+
+    await expect(useCase.execute(TENANT_ID, ORDER_ID, { userId: 'other-user', role: 'vendor', vendorId: 'other-vendor' }))
+      .rejects.toThrow('You are not allowed to release this payment');
+    expect(mockPaymentRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should allow admin to release', async () => {
+    const payment = createEscrowPayment();
+    mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
+    mockWalletRepo.findByOwnerId.mockResolvedValue(null);
+
+    const result = await useCase.execute(TENANT_ID, ORDER_ID, { userId: 'admin-user', role: 'admin' });
+
+    expect(result.status).toBe('RELEASED');
+    expect(mockPaymentRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should throw if payment belongs to another tenant', async () => {
+    const payment = createEscrowPayment();
+    mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
+
+    await expect(useCase.execute('other-tenant', ORDER_ID, { userId: VENDOR_ID, role: 'vendor', vendorId: VENDOR_ID }))
+      .rejects.toThrow('No payment found');
+    expect(mockPaymentRepo.save).not.toHaveBeenCalled();
+  });
+
   it('should throw if payment not found', async () => {
     mockPaymentRepo.findByOrderId.mockResolvedValue(null);
 
-    await expect(useCase.execute(TENANT_ID, ORDER_ID)).rejects.toThrow('No payment found');
+    await expect(useCase.execute(TENANT_ID, ORDER_ID, { userId: VENDOR_ID, role: 'vendor', vendorId: VENDOR_ID })).rejects.toThrow('No payment found');
     expect(mockPaymentRepo.save).not.toHaveBeenCalled();
   });
 
@@ -95,7 +124,7 @@ describe('ReleasePaymentUseCase', () => {
     payment.release('ref');
     mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
 
-    await expect(useCase.execute(TENANT_ID, ORDER_ID)).rejects.toThrow('not in ESCROW_HELD');
+    await expect(useCase.execute(TENANT_ID, ORDER_ID, { userId: VENDOR_ID, role: 'vendor', vendorId: VENDOR_ID })).rejects.toThrow('not in ESCROW_HELD');
     expect(mockPaymentRepo.save).not.toHaveBeenCalled();
   });
 });

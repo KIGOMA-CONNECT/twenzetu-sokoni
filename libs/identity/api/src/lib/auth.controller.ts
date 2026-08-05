@@ -127,8 +127,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Suspend a user and force-logout all their sessions' })
   @ApiResponse({ status: 201, description: 'User suspended and sessions revoked' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async suspendUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.authService.suspend(id);
+  public async suspendUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() caller: JwtPayload,
+  ) {
+    return this.authService.suspend(id, caller.tenantId);
   }
 
   @Post('admin/users/:id/unsuspend')
@@ -139,8 +142,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Re-activate a suspended user' })
   @ApiResponse({ status: 201, description: 'User re-activated' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async unsuspendUser(@Param('id', ParseUUIDPipe) id: string) {
-    return this.authService.unsuspend(id);
+  public async unsuspendUser(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() caller: JwtPayload,
+  ) {
+    return this.authService.unsuspend(id, caller.tenantId);
   }
 
   private extractMetadata(req: Request): SessionMetadata {

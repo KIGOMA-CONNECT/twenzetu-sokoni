@@ -12,6 +12,7 @@ export class RepayLoanUseCase {
   public async execute(params: {
     loanId: string;
     amount: number;
+    actor?: { tenantId: string; borrowerId: string };
   }): Promise<{
     loanId: string;
     status: string;
@@ -20,6 +21,11 @@ export class RepayLoanUseCase {
   }> {
     const loan = await this.loanRepo.findById(EntityId.from(params.loanId));
     if (!loan) throw new NotFoundException('Loan not found');
+    if (params.actor) {
+      if (loan.tenantId.value !== params.actor.tenantId || loan.borrowerId.value !== params.actor.borrowerId) {
+        throw new NotFoundException('Loan not found');
+      }
+    }
 
     loan.repay(Money.create(params.amount));
     await this.loanRepo.save(loan);

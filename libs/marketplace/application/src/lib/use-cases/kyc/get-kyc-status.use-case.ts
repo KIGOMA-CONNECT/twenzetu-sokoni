@@ -23,8 +23,8 @@ export class ListPendingKycUseCase {
     @Inject(PARTNER_KYC_REPOSITORY) private readonly kycRepo: IPartnerKycRepository,
   ) {}
 
-  public async execute(): Promise<{ data: Record<string, unknown>[]; total: number }> {
-    const pending = await this.kycRepo.findPending();
+  public async execute(tenantId: string): Promise<{ data: Record<string, unknown>[]; total: number }> {
+    const pending = await this.kycRepo.findPendingByTenant(tenantId);
     return {
       data: pending.map(k => ({ id: k.id.value, partnerId: k.partnerId.value, partnerType: k.partnerType, status: k.status })),
       total: pending.length,

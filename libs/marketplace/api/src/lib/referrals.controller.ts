@@ -5,6 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { randomInt } from 'crypto';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 
 import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
@@ -228,7 +229,7 @@ export class ReferralsController {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let code = '';
     for (let i = 0; i < 8; i++) {
-      code += chars.charAt(Math.floor(Math.random() * chars.length));
+      code += chars.charAt(randomInt(0, chars.length));
     }
     return code;
   }

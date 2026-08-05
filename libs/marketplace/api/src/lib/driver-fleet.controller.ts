@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { ToggleDriverAvailabilityUseCase } from '@afri-market/marketplace-application';
 import { DataSource } from 'typeorm';
 
@@ -27,7 +27,9 @@ export class DriverFleetController {
   }
 
   @Get('stats/:driverId')
-  @ApiOperation({ summary: 'Get driver performance metrics' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Get driver performance metrics (admin only)' })
   public async getDriverStats(@Param('driverId', ParseUUIDPipe) driverId: string, @CurrentUser() user: JwtPayload) {
     const deliveryRepo = this.dataSource.getRepository('deliveries');
     const [completedDeliveries, totalDeliveries] = await Promise.all([
@@ -68,7 +70,9 @@ export class DriverFleetController {
   }
 
   @Get('list')
-  @ApiOperation({ summary: 'List all drivers with vehicle info (admin)' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'List all drivers with vehicle info (admin only)' })
   public async listDrivers(@CurrentUser() user: JwtPayload, @Query('status') status?: string) {
     const userRepo = this.dataSource.getRepository('users');
     const query = userRepo.createQueryBuilder('u')
@@ -99,7 +103,9 @@ export class DriverFleetController {
   }
 
   @Patch(':driverId/verify')
-  @ApiOperation({ summary: 'Approve driver verification (admin)' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Approve driver verification (admin only)' })
   public async verifyDriver(@Param('driverId', ParseUUIDPipe) driverId: string, @CurrentUser() user: JwtPayload) {
     const userRepo = this.dataSource.getRepository('users');
     const driver = await userRepo.findOne({ where: { id: driverId, tenantId: user.tenantId } });

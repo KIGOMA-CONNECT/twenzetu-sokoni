@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, NotFoundException } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
@@ -138,7 +138,11 @@ export class OrdersController {
   @ApiOperation({ summary: 'Get order items' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async findOrderItems(@Param('id', ParseUUIDPipe) id: string) {
+  public async findOrderItems(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    const order = await this.findOrders.findById(id);
+    if (!order || !(await this.canAccessOrder(order, user))) {
+      throw new NotFoundException('Order not found');
+    }
     const items = await this.entityManager.query(
       'SELECT product_name as "productName", quantity, unit_price as "unitPrice", total_price as "totalPrice", currency FROM order_items WHERE order_id = $1',
       [id],
@@ -152,9 +156,28 @@ export class OrdersController {
   @ApiOperation({ summary: 'Get order by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  public async findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     const order = await this.findOrders.findById(id);
-    return { data: order?.toDto() ?? null };
+    if (!order || !(await this.canAccessOrder(order, user))) {
+      throw new NotFoundException('Order not found');
+    }
+    return { data: order.toDto() };
+  }
+
+  private async canAccessOrder(order: { customerId: { value: string }; vendorId: { value: string }; driverId?: { value: string } }, user: JwtPayload): Promise<boolean> {
+    if (user.role === 'admin' || user.role === 'super_admin') {
+      return true;
+    }
+    if (user.role === 'vendor') {
+      const vendor = await this.findVendors.findByUserId(user.sub);
+      if (vendor && vendor.id.value === order.vendorId.value) {
+        return true;
+      }
+    }
+    if (user.role === 'driver' && order.driverId && order.driverId.value === user.sub) {
+      return true;
+    }
+    return order.customerId.value === user.sub;
   }
 
   @Patch(':id/cancel')

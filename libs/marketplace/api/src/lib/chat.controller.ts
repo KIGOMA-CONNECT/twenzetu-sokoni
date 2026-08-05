@@ -1,10 +1,11 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards, Logger } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards, Logger, NotFoundException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { MarketplaceGateway } from './gateway';
+import { FindOrdersUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 
 import { IsString, IsNotEmpty } from 'class-validator';
 
@@ -28,13 +29,39 @@ export class ChatController {
   constructor(
     @InjectDataSource() private readonly ds: DataSource,
     private readonly gateway: MarketplaceGateway,
+    private readonly findOrders: FindOrdersUseCase,
+    private readonly findVendors: FindVendorsUseCase,
   ) {}
+
+  private async assertParticipant(orderId: string, user: JwtPayload): Promise<void> {
+    const order = await this.findOrders.findById(orderId);
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+    if (user.role === 'admin' || user.role === 'super_admin') {
+      return;
+    }
+    if (user.role === 'vendor') {
+      const vendor = await this.findVendors.findByUserId(user.sub);
+      if (vendor && vendor.id.value === order.vendorId.value) {
+        return;
+      }
+    }
+    if (user.role === 'driver' && order.driverId && order.driverId.value === user.sub) {
+      return;
+    }
+    if (order.customerId.value === user.sub) {
+      return;
+    }
+    throw new NotFoundException('Order not found');
+  }
 
   @Post()
   @ApiOperation({ summary: 'Send a chat message for an order' })
   @ApiBody({ schema: { properties: { orderId: { type: 'string' }, message: { type: 'string' } } } })
   @ApiResponse({ status: 201, description: 'Message sent' })
   async sendMessage(@CurrentUser() user: JwtPayload, @Body() body: SendMessageDto) {
+    await this.assertParticipant(body.orderId, user);
     const result = await this.ds.query(
       `INSERT INTO order_messages (tenant_id, order_id, sender_id, sender_name, sender_role, message)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, created_at`,
@@ -61,6 +88,7 @@ export class ChatController {
   @ApiOperation({ summary: 'Get chat messages for an order' })
   @ApiResponse({ status: 200, description: 'List of messages' })
   async getMessages(@Param('orderId', ParseUUIDPipe) orderId: string, @CurrentUser() user: JwtPayload) {
+    await this.assertParticipant(orderId, user);
     const rows = await this.ds.query(
       `SELECT id, sender_id, sender_name, sender_role, message, created_at
        FROM order_messages WHERE tenant_id = $1 AND order_id = $2 ORDER BY created_at ASC`,

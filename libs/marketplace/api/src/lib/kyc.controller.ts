@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { SubmitKycDto } from './dto/submit-kyc.dto';
 import { SubmitKycUseCase, GetMyKycStatusUseCase, ListPendingKycUseCase } from '@afri-market/marketplace-application';
 
@@ -44,11 +44,13 @@ export class KycController {
   }
 
   @Get('pending')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'List pending KYC submissions' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'List pending KYC submissions (admin only)' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async findPendingEndpoint() {
-    return this.listPendingKyc.execute();
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  public async findPendingEndpoint(@CurrentUser() user: JwtPayload) {
+    return this.listPendingKyc.execute(user.tenantId);
   }
 }

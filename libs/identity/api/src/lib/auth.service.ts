@@ -1,5 +1,6 @@
 import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { randomInt } from 'crypto';
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { User, Tenant, UserRole } from '@afri-market/identity-domain';
 import { IUserRepository, ITenantRepository } from '@afri-market/identity-domain';
@@ -21,8 +22,33 @@ export interface TokenBundle {
   refreshToken: string;
 }
 
+const OTP_SEND_LIMIT = 5;
+const OTP_SEND_WINDOW_MS = 10 * 60 * 1000;
+const OTP_VERIFY_LIMIT = 5;
+const OTP_VERIFY_WINDOW_MS = 10 * 60 * 1000;
+
+class InMemoryRateLimiter {
+  private readonly buckets = new Map<string, number[]>();
+
+  public isAllowed(key: string, limit: number, windowMs: number): boolean {
+    const now = Date.now();
+    const cutoff = now - windowMs;
+    const timestamps = (this.buckets.get(key) ?? []).filter((t) => t > cutoff);
+    if (timestamps.length >= limit) {
+      this.buckets.set(key, timestamps);
+      return false;
+    }
+    timestamps.push(now);
+    this.buckets.set(key, timestamps);
+    return true;
+  }
+}
+
 @Injectable()
 export class AuthService {
+  private readonly otpSendLimiter = new InMemoryRateLimiter();
+  private readonly otpVerifyLimiter = new InMemoryRateLimiter();
+
   constructor(
     @Inject(USER_REPOSITORY) private readonly userRepo: IUserRepository,
     @Inject(TENANT_REPOSITORY) private readonly tenantRepo: ITenantRepository,
@@ -50,6 +76,10 @@ export class AuthService {
     password: string,
     email?: string,
   ): Promise<{ userId: string }> {
+    const tenant = await this.tenantRepo.findById(EntityId.from(tenantId));
+    if (!tenant) {
+      throw new NotFoundException('Tenant not found');
+    }
     const existing = await this.userRepo.findByPhoneNumber(phoneNumber);
     if (existing) {
       throw new ConflictException('Phone number already registered');
@@ -118,6 +148,9 @@ export class AuthService {
   }
 
   public async sendOtp(phoneNumber: string): Promise<{ message: string }> {
+    if (!this.otpSendLimiter.isAllowed(`send:${phoneNumber}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
+      throw new UnauthorizedException('Too many OTP requests for this phone number. Try again later.');
+    }
     await this.otpRepo.invalidateAll(phoneNumber);
     const code = this.generateOtpCode();
     const expiresAt = new Date();
@@ -141,6 +174,9 @@ export class AuthService {
     | { verified: true; registered: false }
     | { verified: false; registered: false }
   > {
+    if (!this.otpVerifyLimiter.isAllowed(`verify:${phoneNumber}`, OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW_MS)) {
+      return { verified: false, registered: false };
+    }
     const otp = await this.otpRepo.findValid(phoneNumber, code);
     if (!otp) {
       return { verified: false, registered: false };
@@ -186,9 +222,12 @@ export class AuthService {
     return { success: true };
   }
 
-  public async suspend(userId: string): Promise<Record<string, unknown>> {
+  public async suspend(userId: string, callerTenantId: string): Promise<Record<string, unknown>> {
     const user = await this.userRepo.findById(EntityId.from(userId));
     if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.tenantId.value !== callerTenantId) {
       throw new NotFoundException('User not found');
     }
     user.suspend();
@@ -197,9 +236,12 @@ export class AuthService {
     return this.toUserDto(user);
   }
 
-  public async unsuspend(userId: string): Promise<Record<string, unknown>> {
+  public async unsuspend(userId: string, callerTenantId: string): Promise<Record<string, unknown>> {
     const user = await this.userRepo.findById(EntityId.from(userId));
     if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.tenantId.value !== callerTenantId) {
       throw new NotFoundException('User not found');
     }
     user.activate();
@@ -272,10 +314,9 @@ export class AuthService {
 
   private generateOtpCode(): string {
     const length = this.config.otp.length;
-    const digits = '0123456789';
     let code = '';
     for (let i = 0; i < length; i++) {
-      code += digits[Math.floor(Math.random() * digits.length)];
+      code += randomInt(0, 10).toString();
     }
     return code;
   }

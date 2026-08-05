@@ -18,9 +18,9 @@ export class RegisterUserDto {
   @IsNotEmpty()
   fullName!: string;
 
-  @ApiProperty({ enum: ['customer', 'vendor', 'driver', 'market_captain', 'admin'] })
-  @IsEnum(['customer', 'vendor', 'driver', 'market_captain', 'admin'] as const)
-  role!: UserRole;
+  @ApiProperty({ enum: ['customer', 'vendor', 'driver', 'market_captain'] })
+  @IsEnum(['customer', 'vendor', 'driver', 'market_captain'] as const)
+  role!: Exclude<UserRole, 'admin' | 'super_admin'>;
 
   @ApiProperty({ example: 'secureP@ss1' })
   @IsString()

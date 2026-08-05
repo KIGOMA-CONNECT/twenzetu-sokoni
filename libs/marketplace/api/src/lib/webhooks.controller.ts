@@ -200,8 +200,15 @@ export class WebhooksController {
   @HttpCode(200)
   @ApiOperation({ summary: 'MTN Mobile Money callback' })
   @ApiResponse({ status: 200, description: 'Callback processed' })
-  async handleMtnMomoCallback(@Body() body: Record<string, unknown>) {
-    this.logger.log(`MTN MoMo callback: ${JSON.stringify(body)}`);
+  async handleMtnMomoCallback(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Body() body: Record<string, unknown>,
+  ) {
+    if (!this.verifyWebhookSecret(headers)) {
+      this.logger.warn('MTN MoMo callback rejected: invalid webhook secret');
+      throw new UnauthorizedException('Invalid webhook secret');
+    }
+    this.logger.log(`MTN MoMo callback received: ${JSON.stringify(body).substring(0, 300)}...`);
 
     const externalId = body.externalId as string;
     const status = body.status as string;
@@ -222,8 +229,15 @@ export class WebhooksController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Tigo Pesa payment callback' })
   @ApiResponse({ status: 200, description: 'Callback processed' })
-  async handleTigoPesaCallback(@Body() body: Record<string, unknown>) {
-    this.logger.log(`Tigo Pesa callback: ${JSON.stringify(body)}`);
+  async handleTigoPesaCallback(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Body() body: Record<string, unknown>,
+  ) {
+    if (!this.verifyWebhookSecret(headers)) {
+      this.logger.warn('Tigo Pesa callback rejected: invalid webhook secret');
+      throw new UnauthorizedException('Invalid webhook secret');
+    }
+    this.logger.log(`Tigo Pesa callback received: ${JSON.stringify(body).substring(0, 300)}...`);
 
     const transactionId = body.TransactionID as string;
     const callbackReason = (body.ConversationMetadata as Record<string, unknown>)?.CallbackReason as string;
@@ -237,6 +251,16 @@ export class WebhooksController {
     }
 
     return { status: 'SUCCESS' };
+  }
+
+  private verifyWebhookSecret(headers: Record<string, string | string[] | undefined>): boolean {
+    const secret = process.env.PAYMENT_CONFIRM_SECRET || process.env.WEBHOOK_INTERNAL_SECRET;
+    if (!secret) {
+      return true;
+    }
+    const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
+    const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    return provided === secret;
   }
 
   private async failTopUpOrPayment(reference: string, reason: string): Promise<void> {
