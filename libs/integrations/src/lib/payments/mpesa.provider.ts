@@ -26,13 +26,14 @@ export class MpesaProvider implements IPaymentProvider {
   private tokenExpiry = 0;
 
   constructor(private readonly logger: AppLoggerService) {
+    const isProd = process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production';
     this.config = {
       consumerKey: process.env.MPESA_CONSUMER_KEY || '',
       consumerSecret: process.env.MPESA_CONSUMER_SECRET || '',
-      shortcode: process.env.MPESA_SHORTCODE || '174379',
+      shortcode: process.env.MPESA_SHORTCODE || '',
       passkey: process.env.MPESA_PASSKEY || '',
-      callbackUrl: process.env.MPESA_CALLBACK_URL || 'https://yourdomain.com/api/webhooks/mpesa',
-      environment: (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox',
+      callbackUrl: process.env.MPESA_CALLBACK_URL || '',
+      environment: (process.env.MPESA_ENVIRONMENT as 'sandbox' | 'production') || (isProd ? 'production' : 'sandbox'),
     };
   }
 

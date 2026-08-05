@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Headers, UnauthorizedException } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -18,7 +18,19 @@ export class MetricsController {
 
   @Get()
   @ApiOperation({ summary: 'Prometheus metrics endpoint' })
-  public async metrics(): Promise<string> {
+  public async metrics(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+  ): Promise<string> {
+    const secret = process.env.METRICS_SECRET;
+    if (secret) {
+      const authHeader = headers['authorization'];
+      const authToken = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+      const provided = authToken && authToken.startsWith('Bearer ') ? authToken.substring('Bearer '.length) : '';
+      if (provided !== secret) {
+        throw new UnauthorizedException('Invalid metrics token');
+      }
+    }
+
     let dbUp = 0;
     let redisUp = 0;
 

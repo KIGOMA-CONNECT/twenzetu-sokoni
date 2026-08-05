@@ -41,12 +41,13 @@ export class AzamPayProvider implements IPaymentProvider {
   private tokenExpiry = 0;
 
   constructor(private readonly logger: AppLoggerService) {
+    const isProd = process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production';
     this.config = {
       appName: process.env.AZAMPAY_APP_NAME || '',
       clientId: process.env.AZAMPAY_CLIENT_ID || '',
       clientSecret: process.env.AZAMPAY_CLIENT_SECRET || '',
       apiKey: process.env.AZAMPAY_API_KEY || '',
-      environment: (process.env.AZAMPAY_ENVIRONMENT as 'sandbox' | 'production') || 'sandbox',
+      environment: (process.env.AZAMPAY_ENVIRONMENT as 'sandbox' | 'production') || (isProd ? 'production' : 'sandbox'),
       callbackUrl: process.env.AZAMPAY_CALLBACK_URL || '',
     };
   }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { AzamPayProvider } from './payments/azampay.provider';
 import { MpesaProvider } from './payments/mpesa.provider';
@@ -95,7 +95,18 @@ export class MobileMoneyService implements IMobileMoneyService {
       return { impl: this.mpesa, normalized };
     }
 
+    const demoMode = process.env.PAYMENTS_DEMO_MODE === 'true';
+    if (this.isProduction() && !demoMode) {
+      throw new ServiceUnavailableException(
+        `Payment provider ${normalized} is not configured for production`,
+      );
+    }
+
     return { impl: this.sandbox, normalized };
+  }
+
+  private isProduction(): boolean {
+    return process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production';
   }
 
   public async initiateStkPush(params: InitiateStkPushParams): Promise<StkPushResult> {

@@ -1,4 +1,4 @@
-import { IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, Matches, MinLength } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '@afri-market/identity-domain';
 
@@ -24,7 +24,10 @@ export class RegisterUserDto {
 
   @ApiProperty({ example: 'secureP@ss1' })
   @IsString()
-  @MinLength(6)
+  @MinLength(8)
+  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, {
+    message: 'Password must be at least 8 characters and contain uppercase, lowercase, and a number',
+  })
   password!: string;
 
   @ApiPropertyOptional({ example: 'jean@example.com' })
