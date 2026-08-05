@@ -1,9 +1,9 @@
-import { IDomainEvent } from '@abms/kernel';
+import { IDomainEvent } from '@afri-market/kernel';
 import type { EntityManager } from 'typeorm';
 import { TypeOrmTransactionContext } from './transaction-context';
 
-function fakeEvent(eventName: string): IDomainEvent {
-  return { eventId: eventName, occurredAt: new Date(), eventName, aggregateId: 'agg-1' };
+function fakeEvent(eventType: string): IDomainEvent {
+  return { eventId: crypto.randomUUID(), occurredOn: new Date(), eventType };
 }
 
 describe('TypeOrmTransactionContext', () => {
@@ -39,6 +39,6 @@ describe('TypeOrmTransactionContext', () => {
     ctx.addEvent(fakeEvent('first'));
     ctx.addEvent(fakeEvent('second'));
 
-    expect(ctx.events.map((e) => e.eventName)).toEqual(['first', 'second']);
+    expect(ctx.events.map((e) => e.eventType)).toEqual(['first', 'second']);
   });
 });

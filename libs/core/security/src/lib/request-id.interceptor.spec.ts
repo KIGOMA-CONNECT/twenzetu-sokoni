@@ -32,25 +32,25 @@ describe('RequestIdInterceptor', () => {
   });
 
   it('should generate a UUID when no X-Request-Id header present', () => {
-    interceptor.intercept(mockContext, mockCallHandler);
+    interceptor.intercept(mockContext, mockCallHandler).subscribe();
     expect(uuid.v4).toHaveBeenCalled();
     expect(mockRequest.requestId).toBe('test-uuid-1234');
   });
 
   it('should use existing X-Request-Id header when provided', () => {
     mockRequest.headers['x-request-id'] = 'existing-id-abc';
-    interceptor.intercept(mockContext, mockCallHandler);
+    interceptor.intercept(mockContext, mockCallHandler).subscribe();
     expect(uuid.v4).not.toHaveBeenCalled();
     expect(mockRequest.requestId).toBe('existing-id-abc');
   });
 
   it('should set X-Request-Id on response', () => {
-    interceptor.intercept(mockContext, mockCallHandler);
+    interceptor.intercept(mockContext, mockCallHandler).subscribe();
     expect(mockResponse.setHeader).toHaveBeenCalledWith('X-Request-Id', 'test-uuid-1234');
   });
 
   it('should pipe the call handler', () => {
-    interceptor.intercept(mockContext, mockCallHandler);
+    interceptor.intercept(mockContext, mockCallHandler).subscribe();
     expect(mockCallHandler.handle).toHaveBeenCalled();
   });
 });

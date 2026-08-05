@@ -1,5 +1,5 @@
-import { EntityId } from '@abms/kernel';
-import { Tenant } from '@abms/identity-domain';
+import { EntityId } from '@afri-market/kernel';
+import { Tenant } from '@afri-market/identity-domain';
 import type { EntityManager, Repository } from 'typeorm';
 import { TenantOrmEntity } from '../entities/tenant-orm.entity';
 import { TypeOrmTenantRepository } from './typeorm-tenant.repository';
@@ -37,7 +37,7 @@ describe('TypeOrmTenantRepository', () => {
     const id = EntityId.create();
     const ormRepository = fakeOrmRepository();
     ormRepository.findOne.mockResolvedValue({
-      id: id.toValue(),
+      id: id.value,
       name: 'Afribiz Holdings Ltd',
       status: 'ACTIVE',
     } as TenantOrmEntity);
@@ -57,7 +57,7 @@ describe('TypeOrmTenantRepository', () => {
     await new TypeOrmTenantRepository(manager as unknown as EntityManager).save(tenant);
 
     expect(ormRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({ id: tenant.id.toValue(), name: 'Afribiz Holdings Ltd', status: 'ACTIVE' }),
+      expect.objectContaining({ id: tenant.id.value, name: 'Afribiz Holdings Ltd', status: 'ACTIVE' }),
     );
   });
 });

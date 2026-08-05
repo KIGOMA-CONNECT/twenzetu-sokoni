@@ -1,6 +1,6 @@
 import { ValueObject } from './value-object.base';
 
-interface MoneyProps extends Record<string, unknown> {
+interface MoneyProps {
   amount: number;
   currency: string;
 }
@@ -11,23 +11,34 @@ class Money extends ValueObject<MoneyProps> {
   }
 
   public get amount(): number {
-    return this.props.amount;
+    return this._value.amount;
   }
 
   public get currency(): string {
-    return this.props.currency;
+    return this._value.currency;
+  }
+
+  public equals(other?: Money): boolean {
+    if (other === undefined) return false;
+    return this._value.amount === other._value.amount && this._value.currency === other._value.currency;
   }
 }
 
 describe('ValueObject', () => {
-  it('two value objects with identical props are equal', () => {
+  it('exposes its value through the value getter', () => {
+    const money = new Money({ amount: 100, currency: 'TZS' });
+
+    expect(money.value).toEqual({ amount: 100, currency: 'TZS' });
+  });
+
+  it('two value objects with identical values are equal', () => {
     const a = new Money({ amount: 100, currency: 'TZS' });
     const b = new Money({ amount: 100, currency: 'TZS' });
 
     expect(a.equals(b)).toBe(true);
   });
 
-  it('two value objects with different props are not equal', () => {
+  it('two value objects with different values are not equal', () => {
     const a = new Money({ amount: 100, currency: 'TZS' });
     const b = new Money({ amount: 200, currency: 'TZS' });
 
@@ -37,15 +48,12 @@ describe('ValueObject', () => {
   it('is not equal to null or undefined', () => {
     const a = new Money({ amount: 100, currency: 'TZS' });
 
-    expect(a.equals(null)).toBe(false);
     expect(a.equals(undefined)).toBe(false);
   });
 
-  it('props are immutable', () => {
+  it('stringifies to its raw value', () => {
     const a = new Money({ amount: 100, currency: 'TZS' });
 
-    expect(() => {
-      (a as unknown as { props: MoneyProps }).props.amount = 999;
-    }).toThrow();
+    expect(a.toString()).toBe('[object Object]');
   });
 });

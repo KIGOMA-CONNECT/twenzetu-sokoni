@@ -1,26 +1,34 @@
 import type { Request } from 'express';
-import { TenantResolutionException } from './tenant-resolution.exception';
 import { HeaderTenantResolver } from './header-tenant.resolver';
 
-function fakeRequest(headerValue: string | undefined): Request {
-  return {
-    header: () => headerValue,
-  } as unknown as Request;
+function fakeRequest(headers: Record<string, string | string[] | undefined>): Request {
+  return { headers } as unknown as Request;
 }
 
 describe('HeaderTenantResolver', () => {
   const resolver = new HeaderTenantResolver();
-  const validTenantId = '3f2504e0-4f89-41d3-9a0c-0305e82c3301';
 
-  it('resolves the tenant id from the x-tenant-id header', () => {
-    expect(resolver.resolve(fakeRequest(validTenantId))).toBe(validTenantId);
+  it('resolves the tenant id from the x-tenant-id header', async () => {
+    const result = await resolver.resolve(fakeRequest({ 'x-tenant-id': 'tenant-a' }));
+
+    expect(result).toBe('tenant-a');
   });
 
-  it('throws when the header is missing', () => {
-    expect(() => resolver.resolve(fakeRequest(undefined))).toThrow(TenantResolutionException);
+  it('trims surrounding whitespace', async () => {
+    const result = await resolver.resolve(fakeRequest({ 'x-tenant-id': '  tenant-a  ' }));
+
+    expect(result).toBe('tenant-a');
   });
 
-  it('throws when the header is not a valid UUID', () => {
-    expect(() => resolver.resolve(fakeRequest('not-a-uuid'))).toThrow(TenantResolutionException);
+  it('returns null when the header is missing', async () => {
+    const result = await resolver.resolve(fakeRequest({}));
+
+    expect(result).toBeNull();
+  });
+
+  it('returns null when the header is empty or whitespace-only', async () => {
+    const result = await resolver.resolve(fakeRequest({ 'x-tenant-id': '   ' }));
+
+    expect(result).toBeNull();
   });
 });

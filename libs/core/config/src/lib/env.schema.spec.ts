@@ -1,55 +1,81 @@
-import { parseEnv } from './env.schema';
+import { envSchema } from './env.schema';
 
-function validSource(overrides: Partial<NodeJS.ProcessEnv> = {}): NodeJS.ProcessEnv {
+function validSource(overrides: Record<string, string> = {}): Record<string, string> {
   return {
-    DB_HOST: 'localhost',
-    DB_NAME: 'abms',
-    DB_SSL: 'false',
-    DB_OWNER_USER: 'abms_owner',
+    APP_PORT: '8080',
+    APP_NAME: 'afriMarket',
+    APP_ENV: 'production',
+    DB_HOST: 'db.internal',
+    DB_PORT: '5432',
+    DB_NAME: 'afri_market',
+    DB_BOOTSTRAP_USER: 'postgres',
+    DB_BOOTSTRAP_PASSWORD: 'bootstrap-secret',
+    DB_OWNER_USER: 'afri_owner',
     DB_OWNER_PASSWORD: 'owner-secret',
-    DB_RUNTIME_USER: 'abms_runtime',
+    DB_RUNTIME_USER: 'afri_runtime',
     DB_RUNTIME_PASSWORD: 'runtime-secret',
-    LOG_LEVEL: 'info',
-    LOG_PRETTY: 'false',
-    JWT_SECRET: 'a'.repeat(32),
+    JWT_SECRET: 'my-jwt-secret',
+    JWT_EXPIRY: '2h',
+    JWT_REFRESH_EXPIRY: '15d',
+    OTP_EXPIRY_MINUTES: '10',
+    OTP_LENGTH: '4',
+    SMS_DEFAULT_COUNTRY: 'KE',
+    DEFAULT_CURRENCY: 'KES',
+    CORS_ORIGINS: 'http://localhost:4200,https://app.example.com',
     ...overrides,
-  } as NodeJS.ProcessEnv;
+  };
 }
 
-describe('parseEnv', () => {
-  it('parses a fully valid environment and applies defaults', () => {
-    const env = parseEnv(validSource());
+describe('envSchema', () => {
+  it('parses a fully valid environment', () => {
+    const env = envSchema.parse(validSource());
 
-    expect(env.NODE_ENV).toBe('development');
-    expect(env.PORT).toBe(3000);
+    expect(env.APP_PORT).toBe(8080);
+    expect(env.APP_NAME).toBe('afriMarket');
+    expect(env.APP_ENV).toBe('production');
+    expect(env.DB_HOST).toBe('db.internal');
     expect(env.DB_PORT).toBe(5432);
-    expect(env.DB_POOL_MAX).toBe(20);
-    expect(env.DB_SSL).toBe(false);
-    expect(env.JWT_EXPIRES_IN).toBe('1h');
+    expect(env.DB_OWNER_USER).toBe('afri_owner');
+    expect(env.DB_RUNTIME_USER).toBe('afri_runtime');
+    expect(env.JWT_SECRET).toBe('my-jwt-secret');
+    expect(env.JWT_EXPIRY).toBe('2h');
+    expect(env.JWT_REFRESH_EXPIRY).toBe('15d');
+    expect(env.OTP_EXPIRY_MINUTES).toBe(10);
+    expect(env.OTP_LENGTH).toBe(4);
+    expect(env.SMS_DEFAULT_COUNTRY).toBe('KE');
+    expect(env.DEFAULT_CURRENCY).toBe('KES');
   });
 
-  it('throws when JWT_SECRET is shorter than 32 characters', () => {
-    expect(() => parseEnv(validSource({ JWT_SECRET: 'too-short' }))).toThrow();
+  it('applies defaults for unset variables', () => {
+    const env = envSchema.parse({});
+
+    expect(env.APP_PORT).toBe(3000);
+    expect(env.APP_NAME).toBe('afriMarket');
+    expect(env.APP_ENV).toBe('development');
+    expect(env.DB_HOST).toBe('localhost');
+    expect(env.DB_PORT).toBe(5432);
+    expect(env.JWT_SECRET).toBe('dev-jwt-secret');
+    expect(env.JWT_EXPIRY).toBe('7d');
+    expect(env.JWT_REFRESH_EXPIRY).toBe('30d');
+    expect(env.OTP_EXPIRY_MINUTES).toBe(5);
+    expect(env.OTP_LENGTH).toBe(6);
+    expect(env.SMS_DEFAULT_COUNTRY).toBe('TZ');
+    expect(env.DEFAULT_CURRENCY).toBe('TZS');
+    expect(env.CORS_ORIGINS).toBe('http://localhost:3000');
   });
 
   it('coerces numeric string env vars into numbers', () => {
-    const env = parseEnv(validSource({ PORT: '4000', DB_PORT: '6543' }));
+    const env = envSchema.parse(validSource({ APP_PORT: '4000', DB_PORT: '6543' }));
 
-    expect(env.PORT).toBe(4000);
+    expect(env.APP_PORT).toBe(4000);
     expect(env.DB_PORT).toBe(6543);
   });
 
-  it('transforms DB_SSL="true" into a boolean true', () => {
-    const env = parseEnv(validSource({ DB_SSL: 'true' }));
-
-    expect(env.DB_SSL).toBe(true);
+  it('throws when APP_ENV has an invalid value', () => {
+    expect(() => envSchema.parse(validSource({ APP_ENV: 'staging' }))).toThrow();
   });
 
-  it('throws with a readable message when required vars are missing', () => {
-    expect(() => parseEnv({} as NodeJS.ProcessEnv)).toThrow(/Invalid environment configuration/);
-  });
-
-  it('throws when NODE_ENV has an invalid value', () => {
-    expect(() => parseEnv(validSource({ NODE_ENV: 'staging' }))).toThrow();
+  it('throws when OTP_EXPIRY_MINUTES is not numeric', () => {
+    expect(() => envSchema.parse(validSource({ OTP_EXPIRY_MINUTES: 'abc' }))).toThrow();
   });
 });

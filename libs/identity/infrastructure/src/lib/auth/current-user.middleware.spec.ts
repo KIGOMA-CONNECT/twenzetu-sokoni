@@ -1,58 +1,34 @@
-import { AsyncLocalCurrentUserStore } from '@abms/core-security';
-import type { JwtService } from '@nestjs/jwt';
-import type { NextFunction, Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { CurrentUserMiddleware } from './current-user.middleware';
 
-function fakeRequest(authHeader?: string): Request {
-  return { header: (name: string) => (name === 'authorization' ? authHeader : undefined) } as unknown as Request;
+function fakeRequest(user?: Record<string, unknown>): Request {
+  const req = { user } as unknown as Record<string, unknown>;
+  return req as unknown as Request;
 }
 
 describe('CurrentUserMiddleware', () => {
-  it('decodes the bearer token and runs next() inside that user context', () => {
-    const store = new AsyncLocalCurrentUserStore();
-    const jwtService = { decode: jest.fn().mockReturnValue({ sub: 'user-a' }) } as unknown as JwtService;
-    const middleware = new CurrentUserMiddleware(store, jwtService);
+  it('copies an authenticated user onto currentUser and calls next()', () => {
+    const middleware = new CurrentUserMiddleware();
+    const next = jest.fn();
+    const user = { userId: 'user-a', tenantId: 't1', role: 'CEO', phoneNumber: '+255712345678' };
 
-    let observedUserId: string | undefined;
-    const next: NextFunction = () => {
-      observedUserId = store.getCurrentUserId();
-    };
+    const req = fakeRequest(user);
 
-    middleware.use(fakeRequest('Bearer some.jwt.token'), {} as Response, next);
+    middleware.use(req, {} as Response, next);
 
-    expect(jwtService.decode).toHaveBeenCalledWith('some.jwt.token');
-    expect(observedUserId).toBe('user-a');
-    expect(store.getCurrentUserId()).toBeUndefined();
+    expect((req as unknown as Record<string, unknown>)['currentUser']).toEqual(user);
+    expect(next).toHaveBeenCalledTimes(1);
   });
 
-  it('runs next() with no current user when the Authorization header is missing', () => {
-    const store = new AsyncLocalCurrentUserStore();
-    const jwtService = { decode: jest.fn() } as unknown as JwtService;
-    const middleware = new CurrentUserMiddleware(store, jwtService);
+  it('leaves currentUser unset when there is no authenticated user', () => {
+    const middleware = new CurrentUserMiddleware();
+    const next = jest.fn();
 
-    let observedUserId: string | undefined = 'sentinel';
-    const next: NextFunction = () => {
-      observedUserId = store.getCurrentUserId();
-    };
+    const req = fakeRequest(undefined);
 
-    middleware.use(fakeRequest(undefined), {} as Response, next);
+    middleware.use(req, {} as Response, next);
 
-    expect(jwtService.decode).not.toHaveBeenCalled();
-    expect(observedUserId).toBeUndefined();
-  });
-
-  it('runs next() with no current user when the token cannot be decoded', () => {
-    const store = new AsyncLocalCurrentUserStore();
-    const jwtService = { decode: jest.fn().mockReturnValue(null) } as unknown as JwtService;
-    const middleware = new CurrentUserMiddleware(store, jwtService);
-
-    let observedUserId: string | undefined = 'sentinel';
-    const next: NextFunction = () => {
-      observedUserId = store.getCurrentUserId();
-    };
-
-    middleware.use(fakeRequest('Bearer garbage'), {} as Response, next);
-
-    expect(observedUserId).toBeUndefined();
+    expect((req as unknown as Record<string, unknown>)['currentUser']).toBeUndefined();
+    expect(next).toHaveBeenCalledTimes(1);
   });
 });

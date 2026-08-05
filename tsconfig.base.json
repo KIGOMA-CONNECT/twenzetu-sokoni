@@ -41,7 +41,6 @@
       "@afri-market/database": ["./libs/database/src/index"],
       "@afri-market/identity-domain": ["./libs/identity/domain/src/index"],
       "@afri-market/identity-infrastructure": ["./libs/identity/infrastructure/src/index"],
-      "@afri-market/identity-application": ["./libs/identity/application/src/index"],
       "@afri-market/identity-api": ["./libs/identity/api/src/index"],
       "@afri-market/marketplace-domain": ["./libs/marketplace/domain/src/index"],
       "@afri-market/marketplace-infrastructure": ["./libs/marketplace/infrastructure/src/index"],

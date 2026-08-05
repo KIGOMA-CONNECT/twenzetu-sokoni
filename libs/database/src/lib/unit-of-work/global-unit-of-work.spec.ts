@@ -1,5 +1,6 @@
 import type { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { GlobalUnitOfWork } from './global-unit-of-work';
+import { TypeOrmTransactionContext } from './transaction-context';
 
 function fakeQueryRunner(): jest.Mocked<QueryRunner> {
   return {
@@ -35,7 +36,7 @@ describe('GlobalUnitOfWork', () => {
     const unitOfWork = new GlobalUnitOfWork(fakeDataSource(queryRunner));
 
     const result = await unitOfWork.withTransaction(async (ctx) => {
-      expect(ctx.manager).toBe(queryRunner.manager);
+      expect((ctx as TypeOrmTransactionContext).manager).toBe(queryRunner.manager);
       return 'work-result';
     });
 

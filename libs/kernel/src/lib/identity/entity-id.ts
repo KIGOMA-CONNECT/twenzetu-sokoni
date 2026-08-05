@@ -22,7 +22,7 @@ export class EntityId extends Identifier<string> {
     return this.value === other.value;
   }
 
-  public toString(): string {
+  public override toString(): string {
     return this.value;
   }
 }

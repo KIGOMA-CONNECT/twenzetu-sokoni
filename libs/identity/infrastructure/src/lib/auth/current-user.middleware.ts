@@ -12,9 +12,9 @@ export interface CurrentUserContext {
 export class CurrentUserMiddleware implements NestMiddleware {
   public use(req: Request, _res: Response, next: NextFunction): void {
     const reqRecord = req as unknown as Record<string, unknown>;
-    const user = reqRecord.user as CurrentUserContext | undefined;
+    const user = reqRecord['user'] as CurrentUserContext | undefined;
     if (user) {
-      reqRecord.currentUser = user;
+      reqRecord['currentUser'] = user;
     }
     next();
   }

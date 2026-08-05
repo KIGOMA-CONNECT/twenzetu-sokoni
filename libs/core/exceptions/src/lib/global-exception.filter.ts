@@ -1,6 +1,12 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AppLoggerService } from '@afri-market/core-logger';
+import {
+  BusinessRuleViolationException,
+  DomainException,
+  NotFoundException,
+  ValidationDomainException,
+} from '@afri-market/kernel';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -12,17 +18,42 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
-    let message = 'Internal server error';
-    let code = 'INTERNAL_ERROR';
+    let message = 'An unexpected error occurred.';
+    let code = 'INTERNAL.UNEXPECTED_ERROR';
 
-    if (exception instanceof HttpException) {
+    if (exception instanceof DomainException) {
+      message = exception.message;
+      code = exception.code;
+      if (exception instanceof NotFoundException) {
+        status = HttpStatus.NOT_FOUND;
+      } else if (exception instanceof ValidationDomainException) {
+        status = HttpStatus.BAD_REQUEST;
+      } else if (exception instanceof BusinessRuleViolationException) {
+        status = HttpStatus.CONFLICT;
+      } else if (exception.code.startsWith('AUTH.')) {
+        status = HttpStatus.UNAUTHORIZED;
+      } else {
+        status = HttpStatus.BAD_REQUEST;
+      }
+      this.logger.warn(`${request.method} ${request.url} - ${message}`, GlobalExceptionFilter.name);
+    } else if (exception instanceof HttpException) {
       status = exception.getStatus();
       const exResponse = exception.getResponse();
-      message = typeof exResponse === 'string' ? exResponse : (exResponse as Record<string, unknown>).message as string || message;
-      code = `HTTP_${status}`;
+      if (typeof exResponse === 'string') {
+        message = exResponse;
+      } else {
+        const exRecord = exResponse as Record<string, unknown>;
+        if (typeof exRecord['message'] === 'string') {
+          message = exRecord['message'];
+        }
+      }
+      code = `HTTP.${status}`;
     } else if (exception instanceof Error) {
-      message = exception.message;
-      this.logger.error(`${request.method} ${request.url} - ${message}`, exception.stack, 'ExceptionFilter');
+      this.logger.error(
+        `${request.method} ${request.url} - ${exception.message}`,
+        exception.stack,
+        GlobalExceptionFilter.name,
+      );
     }
 
     response.status(status).json({

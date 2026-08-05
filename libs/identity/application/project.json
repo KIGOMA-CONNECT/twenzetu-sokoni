@@ -1,7 +1,0 @@
-{
-  "name": "@afri-market/identity-application",
-  "sourceRoot": "libs/identity/application/src",
-  "projectType": "library",
-  "tags": ["scope:identity", "type:application"],
-  "targets": {}
-}

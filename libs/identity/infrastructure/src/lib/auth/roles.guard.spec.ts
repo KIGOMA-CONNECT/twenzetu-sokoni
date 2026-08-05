@@ -1,9 +1,12 @@
 import { ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AuthenticatedRequestUser } from './jwt-payload.interface';
 import { RolesGuard } from './roles.guard';
 
-function fakeContext(user: AuthenticatedRequestUser | undefined): ExecutionContext {
+interface AuthUser {
+  role: string;
+}
+
+function fakeContext(user: AuthUser | undefined): ExecutionContext {
   return {
     getHandler: () => ({}),
     getClass: () => ({}),
@@ -23,31 +26,35 @@ describe('RolesGuard', () => {
   });
 
   it('allows the request when the user has a required role', () => {
-    const guard = new RolesGuard(fakeReflector(['CEO']));
-    const user: AuthenticatedRequestUser = {
-      userId: 'u1',
-      tenantId: 't1',
-      role: 'CEO',
-      email: 'ceo@afribiz.co.tz',
-    };
+    const guard = new RolesGuard(fakeReflector(['admin']));
+    const user: AuthUser = { role: 'admin' };
+
+    expect(guard.canActivate(fakeContext(user))).toBe(true);
+  });
+
+  it('allows any admin role when the admin role is required', () => {
+    const guard = new RolesGuard(fakeReflector(['admin']));
+    const user: AuthUser = { role: 'finance_admin' };
+
+    expect(guard.canActivate(fakeContext(user))).toBe(true);
+  });
+
+  it('always allows a super_admin', () => {
+    const guard = new RolesGuard(fakeReflector(['support_admin']));
+    const user: AuthUser = { role: 'super_admin' };
 
     expect(guard.canActivate(fakeContext(user))).toBe(true);
   });
 
   it('rejects the request when the user has a different role', () => {
-    const guard = new RolesGuard(fakeReflector(['CEO']));
-    const user: AuthenticatedRequestUser = {
-      userId: 'u1',
-      tenantId: 't1',
-      role: 'TEAM_MEMBER',
-      email: 'member@afribiz.co.tz',
-    };
+    const guard = new RolesGuard(fakeReflector(['admin']));
+    const user: AuthUser = { role: 'customer' };
 
     expect(guard.canActivate(fakeContext(user))).toBe(false);
   });
 
   it('rejects the request when there is no authenticated user', () => {
-    const guard = new RolesGuard(fakeReflector(['CEO']));
+    const guard = new RolesGuard(fakeReflector(['admin']));
 
     expect(guard.canActivate(fakeContext(undefined))).toBe(false);
   });

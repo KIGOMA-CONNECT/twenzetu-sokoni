@@ -1,4 +1,4 @@
-import { BusinessRuleViolationException, EntityId } from '@abms/kernel';
+import { EntityId } from '@afri-market/kernel';
 import { Tenant } from './tenant.aggregate';
 
 describe('Tenant.create', () => {
@@ -10,7 +10,7 @@ describe('Tenant.create', () => {
   });
 
   it('rejects an empty name', () => {
-    expect(() => Tenant.create({ name: '' })).toThrow(BusinessRuleViolationException);
+    expect(() => Tenant.create({ name: '' })).toThrow('name must not be empty');
   });
 });
 
@@ -26,7 +26,7 @@ describe('Tenant mutators', () => {
   it('rename() rejects an empty name', () => {
     const tenant = Tenant.create({ name: 'Afribiz Holdings Ltd' });
 
-    expect(() => tenant.rename('')).toThrow(BusinessRuleViolationException);
+    expect(() => tenant.rename('')).toThrow('name must not be empty');
   });
 
   it('suspend()/reactivate() toggle status', () => {

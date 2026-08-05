@@ -1,66 +1,99 @@
 import { AppConfigService } from './app-config.service';
 
-function validSource(overrides: Partial<NodeJS.ProcessEnv> = {}): NodeJS.ProcessEnv {
-  return {
-    NODE_ENV: 'production',
-    PORT: '8080',
+const ORIGINAL_ENV = { ...process.env };
+
+function setEnv(overrides: Record<string, string> = {}): void {
+  const values: Record<string, string> = {
+    APP_PORT: '8080',
+    APP_NAME: 'afriMarket',
+    APP_ENV: 'production',
     DB_HOST: 'db.internal',
     DB_PORT: '5432',
-    DB_NAME: 'abms',
-    DB_SSL: 'true',
-    DB_POOL_MAX: '50',
-    DB_OWNER_USER: 'abms_owner',
+    DB_NAME: 'afri_market',
+    DB_BOOTSTRAP_USER: 'postgres',
+    DB_BOOTSTRAP_PASSWORD: 'bootstrap-secret',
+    DB_OWNER_USER: 'afri_owner',
     DB_OWNER_PASSWORD: 'owner-secret',
-    DB_RUNTIME_USER: 'abms_runtime',
+    DB_RUNTIME_USER: 'afri_runtime',
     DB_RUNTIME_PASSWORD: 'runtime-secret',
-    LOG_LEVEL: 'warn',
-    LOG_PRETTY: 'false',
-    JWT_SECRET: 'b'.repeat(32),
-    JWT_EXPIRES_IN: '2h',
+    JWT_SECRET: 'my-jwt-secret',
+    JWT_EXPIRY: '7d',
+    JWT_REFRESH_EXPIRY: '30d',
+    OTP_EXPIRY_MINUTES: '5',
+    OTP_LENGTH: '6',
+    SMS_DEFAULT_COUNTRY: 'TZ',
+    DEFAULT_CURRENCY: 'TZS',
+    CORS_ORIGINS: 'http://localhost:3000',
     ...overrides,
-  } as NodeJS.ProcessEnv;
+  };
+  for (const [key, value] of Object.entries(values)) {
+    process.env[key] = value;
+  }
 }
+
+afterEach(() => {
+  process.env = { ...ORIGINAL_ENV };
+});
 
 describe('AppConfigService', () => {
   it('exposes app config derived from the environment', () => {
-    const service = new AppConfigService(validSource());
+    setEnv({ APP_ENV: 'production', APP_PORT: '8080' });
+    const service = new AppConfigService();
 
-    expect(service.app).toEqual({
-      nodeEnv: 'production',
-      port: 8080,
-      isProduction: true,
-    });
+    expect(service.app).toEqual({ port: 8080, name: 'afriMarket', env: 'production' });
   });
 
-  it('exposes database config with both the owner and runtime roles', () => {
-    const service = new AppConfigService(validSource());
+  it('exposes database config with the bootstrap, owner and runtime roles', () => {
+    setEnv({});
+    const service = new AppConfigService();
 
-    expect(service.database).toEqual({
+    expect(service.db).toEqual({
       host: 'db.internal',
       port: 5432,
-      name: 'abms',
-      ssl: true,
-      poolMax: 50,
-      ownerUser: 'abms_owner',
+      bootstrapUser: 'postgres',
+      bootstrapPassword: 'bootstrap-secret',
+      name: 'afri_market',
+      ownerUser: 'afri_owner',
       ownerPassword: 'owner-secret',
-      runtimeUser: 'abms_runtime',
+      runtimeUser: 'afri_runtime',
       runtimePassword: 'runtime-secret',
     });
   });
 
-  it('exposes logging config', () => {
-    const service = new AppConfigService(validSource());
+  it('exposes jwt config', () => {
+    setEnv({ JWT_SECRET: 'my-jwt-secret', JWT_EXPIRY: '2h', JWT_REFRESH_EXPIRY: '15d' });
+    const service = new AppConfigService();
 
-    expect(service.logging).toEqual({ level: 'warn', pretty: false });
+    expect(service.jwt).toEqual({ secret: 'my-jwt-secret', expiry: '2h', refreshExpiry: '15d' });
   });
 
-  it('exposes auth config', () => {
-    const service = new AppConfigService(validSource());
+  it('exposes sms, currency and otp config', () => {
+    setEnv({
+      SMS_DEFAULT_COUNTRY: 'KE',
+      DEFAULT_CURRENCY: 'KES',
+      OTP_EXPIRY_MINUTES: '10',
+      OTP_LENGTH: '4',
+    });
+    const service = new AppConfigService();
 
-    expect(service.auth).toEqual({ jwtSecret: 'b'.repeat(32), jwtExpiresIn: '2h' });
+    expect(service.sms).toEqual({ defaultCountry: 'KE' });
+    expect(service.currency).toEqual({ defaultCurrency: 'KES' });
+    expect(service.otp).toEqual({ expiryMinutes: 10, length: 4 });
   });
 
-  it('throws at construction time when the environment is invalid', () => {
-    expect(() => new AppConfigService({} as NodeJS.ProcessEnv)).toThrow();
+  it('splits CORS origins into a trimmed list', () => {
+    setEnv({ CORS_ORIGINS: 'http://localhost:4200, https://app.example.com' });
+    const service = new AppConfigService();
+
+    expect(service.cors.origins).toEqual(['http://localhost:4200', 'https://app.example.com']);
+  });
+
+  it('applies defaults for unset variables', () => {
+    delete process.env['APP_PORT'];
+    delete process.env['APP_NAME'];
+    delete process.env['APP_ENV'];
+    const service = new AppConfigService();
+
+    expect(service.app).toEqual({ port: 3000, name: 'afriMarket', env: 'development' });
   });
 });

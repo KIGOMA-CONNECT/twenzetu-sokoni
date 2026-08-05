@@ -1,7 +1,8 @@
-import { AsyncLocalTenantContextStore } from '@abms/tenancy';
+import { AsyncLocalTenantContextStore } from '@afri-market/tenancy';
 import type { DataSource, EntityManager, QueryRunner } from 'typeorm';
 import { TenantContextMissingException } from './tenant-context-missing.exception';
 import { TenantAwareUnitOfWork } from './tenant-aware-unit-of-work';
+import { TypeOrmTransactionContext } from './transaction-context';
 
 function fakeQueryRunner(): jest.Mocked<QueryRunner> {
   return {
@@ -55,7 +56,7 @@ describe('TenantAwareUnitOfWork', () => {
 
     const result = await tenantContext.run('tenant-a', () =>
       unitOfWork.withTransaction(async (ctx) => {
-        expect(ctx.manager).toBe(queryRunner.manager);
+        expect((ctx as TypeOrmTransactionContext).manager).toBe(queryRunner.manager);
         return 'work-result';
       }),
     );

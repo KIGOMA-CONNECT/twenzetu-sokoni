@@ -3,9 +3,7 @@ import { RegisterTenantDto } from './register-tenant.dto';
 
 function validDto(overrides: Partial<RegisterTenantDto> = {}): RegisterTenantDto {
   const dto = new RegisterTenantDto();
-  dto.businessName = 'Afribiz Holdings Ltd';
-  dto.ceoEmail = 'ceo@afribiz.co.tz';
-  dto.ceoPassword = 'StrongPass1';
+  dto.name = 'Afribiz Holdings Ltd';
   return Object.assign(dto, overrides);
 }
 
@@ -16,21 +14,15 @@ describe('RegisterTenantDto', () => {
     expect(errors).toHaveLength(0);
   });
 
-  it('rejects an invalid email', async () => {
-    const errors = await validate(validDto({ ceoEmail: 'not-an-email' }));
+  it('rejects an empty name', async () => {
+    const errors = await validate(validDto({ name: '' }));
 
-    expect(errors.some((error) => error.property === 'ceoEmail')).toBe(true);
+    expect(errors.some((error) => error.property === 'name')).toBe(true);
   });
 
-  it('rejects a weak password', async () => {
-    const errors = await validate(validDto({ ceoPassword: 'weak' }));
+  it('rejects a non-string name', async () => {
+    const errors = await validate(validDto({ name: 42 as unknown as string }));
 
-    expect(errors.some((error) => error.property === 'ceoPassword')).toBe(true);
-  });
-
-  it('rejects an empty businessName', async () => {
-    const errors = await validate(validDto({ businessName: '' }));
-
-    expect(errors.some((error) => error.property === 'businessName')).toBe(true);
+    expect(errors.some((error) => error.property === 'name')).toBe(true);
   });
 });

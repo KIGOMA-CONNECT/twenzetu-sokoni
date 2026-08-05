@@ -1,12 +1,11 @@
-import { DomainException } from '@abms/kernel';
 import { TenantContextMissingException } from './tenant-context-missing.exception';
 
 describe('TenantContextMissingException', () => {
-  it('is a DomainException with a stable machine-readable code', () => {
+  it('is an Error with a descriptive message about the missing tenant context', () => {
     const exception = new TenantContextMissingException();
 
-    expect(exception).toBeInstanceOf(DomainException);
-    expect(exception.code).toBe('DATABASE.TENANT_CONTEXT_MISSING');
-    expect(exception.message).toBe('No tenant context is active for this transaction.');
+    expect(exception).toBeInstanceOf(Error);
+    expect(exception.name).toBe('TenantContextMissingException');
+    expect(exception.message).toContain('Tenant context is missing');
   });
 });

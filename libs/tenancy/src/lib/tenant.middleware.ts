@@ -17,7 +17,8 @@ export class TenantMiddleware implements NestMiddleware {
     if (!tenantId) {
       throw new TenantResolutionException('Unable to resolve tenant from request');
     }
-    this.store.setTenantId(tenantId);
-    next();
+    await this.store.run(tenantId, async () => {
+      next();
+    });
   }
 }

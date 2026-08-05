@@ -6,12 +6,12 @@ export class AppLoggerService implements LoggerService {
   private readonly logger: pino.Logger;
 
   constructor() {
+    const isProduction = process.env['APP_ENV'] === 'production';
     this.logger = pino({
-      level: process.env.APP_ENV === 'production' ? 'info' : 'debug',
-      transport:
-        process.env.APP_ENV !== 'production'
-          ? { target: 'pino-pretty', options: { colorize: true } }
-          : undefined,
+      level: isProduction ? 'info' : 'debug',
+      transport: !isProduction
+        ? { target: 'pino-pretty', options: { colorize: true } }
+        : undefined,
     });
   }
 

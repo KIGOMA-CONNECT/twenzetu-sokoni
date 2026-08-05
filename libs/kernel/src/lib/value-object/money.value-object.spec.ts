@@ -1,132 +1,112 @@
-import { ValidationDomainException } from '../errors/validation-domain.exception';
-import { CurrencyCode } from './currency-code.value-object';
 import { Money } from './money.value-object';
 
 describe('Money', () => {
-  const usd = CurrencyCode.create('USD').getValue();
+  it('creates from a valid non-negative decimal amount', () => {
+    const money = Money.create(1250.5, 'USD');
 
-  it('creates successfully from a valid non-negative decimal amount', () => {
-    const result = Money.create('1250.5', usd);
-
-    expect(result.isSuccess).toBe(true);
-    expect(result.getValue().amount).toBe('1250.5');
-    expect(result.getValue().currency.value).toBe('USD');
+    expect(money.amount).toBe(1250.5);
+    expect(money.currency).toBe('USD');
   });
 
-  it('accepts a whole-number amount with no fraction', () => {
-    const result = Money.create('100', usd);
+  it('defaults the currency to TZS', () => {
+    const money = Money.create(100);
 
-    expect(result.isSuccess).toBe(true);
+    expect(money.currency).toBe('TZS');
   });
 
-  it('fails for a negative amount', () => {
-    const result = Money.create('-5.00', usd);
+  it('normalizes currency to uppercase', () => {
+    const money = Money.create(100, 'usd');
 
-    expect(result.isFailure).toBe(true);
-    expect(result.getError()).toBeInstanceOf(ValidationDomainException);
+    expect(money.currency).toBe('USD');
   });
 
-  it('fails for more than 4 fraction digits', () => {
-    const result = Money.create('1.23456', usd);
+  it('rounds amounts to 2 decimal places', () => {
+    const money = Money.create(10.005, 'USD');
 
-    expect(result.isFailure).toBe(true);
+    expect(money.amount).toBe(10.01);
   });
 
-  it('fails for a non-numeric amount', () => {
-    const result = Money.create('abc', usd);
-
-    expect(result.isFailure).toBe(true);
+  it('throws for a negative amount', () => {
+    expect(() => Money.create(-5, 'USD')).toThrow('Money amount cannot be negative');
   });
 
-  it('two Money instances with equal amount and equal-but-distinct CurrencyCode instances are equal', () => {
-    const a = Money.create('100.00', CurrencyCode.create('TZS').getValue()).getValue();
-    const b = Money.create('100.00', CurrencyCode.create('TZS').getValue()).getValue();
+  it('throws for an empty currency', () => {
+    expect(() => Money.create(100, '')).toThrow('Currency cannot be empty');
+  });
+
+  it('two Money instances with equal amount and currency are equal', () => {
+    const a = Money.create(100, 'TZS');
+    const b = Money.create(100, 'TZS');
 
     expect(a.equals(b)).toBe(true);
   });
 
   it('two Money instances with different currencies are not equal', () => {
-    const a = Money.create('100.00', CurrencyCode.create('TZS').getValue()).getValue();
-    const b = Money.create('100.00', CurrencyCode.create('KES').getValue()).getValue();
+    const a = Money.create(100, 'TZS');
+    const b = Money.create(100, 'KES');
+
+    expect(a.equals(b)).toBe(false);
+  });
+
+  it('two Money instances with different amounts are not equal', () => {
+    const a = Money.create(100, 'TZS');
+    const b = Money.create(200, 'TZS');
 
     expect(a.equals(b)).toBe(false);
   });
 
   describe('add', () => {
     it('sums two Money values of the same currency', () => {
-      const a = Money.create('100.25', usd).getValue();
-      const b = Money.create('50.10', usd).getValue();
+      const a = Money.create(100.25, 'USD');
+      const b = Money.create(50.1, 'USD');
 
       const result = a.add(b);
 
-      expect(result.isSuccess).toBe(true);
-      expect(result.getValue().amount).toBe('150.3500');
+      expect(result.amount).toBe(150.35);
+      expect(result.currency).toBe('USD');
     });
 
-    it('fails when currencies differ', () => {
-      const a = Money.create('100', usd).getValue();
-      const b = Money.create('50', CurrencyCode.create('TZS').getValue()).getValue();
+    it('throws when currencies differ', () => {
+      const a = Money.create(100, 'USD');
+      const b = Money.create(50, 'TZS');
 
-      const result = a.add(b);
-
-      expect(result.isFailure).toBe(true);
+      expect(() => a.add(b)).toThrow('different currencies');
     });
   });
 
   describe('subtract', () => {
     it('subtracts two Money values of the same currency', () => {
-      const a = Money.create('100', usd).getValue();
-      const b = Money.create('30.5', usd).getValue();
+      const a = Money.create(100, 'USD');
+      const b = Money.create(30.5, 'USD');
 
       const result = a.subtract(b);
 
-      expect(result.isSuccess).toBe(true);
-      expect(result.getValue().amount).toBe('69.5000');
+      expect(result.amount).toBe(69.5);
     });
 
-    it('fails rather than going negative', () => {
-      const a = Money.create('10', usd).getValue();
-      const b = Money.create('20', usd).getValue();
+    it('throws rather than going negative', () => {
+      const a = Money.create(10, 'USD');
+      const b = Money.create(20, 'USD');
 
-      const result = a.subtract(b);
-
-      expect(result.isFailure).toBe(true);
+      expect(() => a.subtract(b)).toThrow('Money amount cannot be negative');
     });
   });
 
-  describe('percentageOf', () => {
-    it('computes an exact percentage via basis points with no float error', () => {
-      const a = Money.create('1000000', usd).getValue();
+  describe('percentage', () => {
+    it('computes a percentage of the amount', () => {
+      const a = Money.create(200, 'USD');
 
-      const eightPercent = a.percentageOf(800);
+      const tenPercent = a.percentage(10);
 
-      expect(eightPercent.amount).toBe('80000.0000');
+      expect(tenPercent.amount).toBe(20);
     });
 
-    it('rounds down fractional results deterministically', () => {
-      const a = Money.create('10', usd).getValue();
+    it('rounds fractional results', () => {
+      const a = Money.create(10, 'USD');
 
-      const oneThird = a.percentageOf(3333);
+      const oneThird = a.percentage(33.33);
 
-      expect(oneThird.amount).toBe('3.3330');
-    });
-  });
-
-  describe('isGreaterThan / isZero', () => {
-    it('compares amounts of the same currency', () => {
-      const a = Money.create('100', usd).getValue();
-      const b = Money.create('50', usd).getValue();
-
-      expect(a.isGreaterThan(b)).toBe(true);
-      expect(b.isGreaterThan(a)).toBe(false);
-    });
-
-    it('detects a zero amount', () => {
-      const zero = Money.create('0', usd).getValue();
-      const nonZero = Money.create('0.0001', usd).getValue();
-
-      expect(zero.isZero()).toBe(true);
-      expect(nonZero.isZero()).toBe(false);
+      expect(oneThird.amount).toBe(3.33);
     });
   });
 });

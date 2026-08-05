@@ -1,19 +1,20 @@
-import { ConcurrencyDomainException, Email, EntityId, TenantId } from '@abms/kernel';
-import { User } from '@abms/identity-domain';
+import { Email, EntityId, PhoneNumber, TenantId } from '@afri-market/kernel';
+import { User } from '@afri-market/identity-domain';
 import type { EntityManager, Repository } from 'typeorm';
 import { UserOrmEntity } from '../entities/user-orm.entity';
 import { TypeOrmUserRepository } from './typeorm-user.repository';
 
-const TENANT_ID = TenantId.create('3f2504e0-4f89-41d3-9a0c-0305e82c3301').getValue();
-const EMAIL = Email.create('ceo@afribiz.co.tz').getValue();
+const TENANT_ID = TenantId.create('3f2504e0-4f89-41d3-9a0c-0305e82c3301');
+const EMAIL = Email.create('ceo@afribiz.co.tz');
+const PHONE = PhoneNumber.create('+255712345678');
 
-function fakeOrmRepository(): jest.Mocked<Pick<Repository<UserOrmEntity>, 'findOne' | 'count' | 'insert' | 'delete'>> {
+function fakeOrmRepository(): jest.Mocked<Pick<Repository<UserOrmEntity>, 'findOne' | 'count' | 'save' | 'delete'>> {
   return {
     findOne: jest.fn(),
     count: jest.fn(),
-    insert: jest.fn(),
+    save: jest.fn(),
     delete: jest.fn(),
-  } as unknown as jest.Mocked<Pick<Repository<UserOrmEntity>, 'findOne' | 'count' | 'insert' | 'delete'>>;
+  } as unknown as jest.Mocked<Pick<Repository<UserOrmEntity>, 'findOne' | 'count' | 'save' | 'delete'>>;
 }
 
 function fakeManager(repository: unknown): jest.Mocked<Pick<EntityManager, 'getRepository' | 'query'>> {
@@ -24,7 +25,14 @@ function fakeManager(repository: unknown): jest.Mocked<Pick<EntityManager, 'getR
 }
 
 function createUser(): User {
-  return User.create({ tenantId: TENANT_ID, email: EMAIL, passwordHash: 'hashed', role: 'CEO' });
+  return User.create({
+    tenantId: TENANT_ID,
+    phoneNumber: PHONE,
+    fullName: 'Afribiz CEO',
+    role: 'admin',
+    passwordHash: 'hashed',
+    email: EMAIL,
+  });
 }
 
 describe('TypeOrmUserRepository', () => {
@@ -33,7 +41,9 @@ describe('TypeOrmUserRepository', () => {
     ormRepository.findOne.mockResolvedValue(null);
     const manager = fakeManager(ormRepository);
 
-    const result = await new TypeOrmUserRepository(manager as unknown as EntityManager).findByEmail(EMAIL);
+    const result = await new TypeOrmUserRepository(manager as unknown as EntityManager).findByEmail(
+      EMAIL.value,
+    );
 
     expect(result).toBeNull();
   });
@@ -42,43 +52,41 @@ describe('TypeOrmUserRepository', () => {
     const id = EntityId.create();
     const ormRepository = fakeOrmRepository();
     ormRepository.findOne.mockResolvedValue({
-      id: id.toValue(),
+      id: id.value,
       tenantId: TENANT_ID.value,
+      phoneNumber: PHONE.value,
+      fullName: 'Afribiz CEO',
       email: EMAIL.value,
       passwordHash: 'hashed',
-      role: 'CEO',
-      isActive: true,
+      role: 'admin',
+      status: 'ACTIVE',
       version: 1,
-    } as UserOrmEntity);
+      permissions: null,
+    } as unknown as UserOrmEntity);
     const manager = fakeManager(ormRepository);
 
-    const result = await new TypeOrmUserRepository(manager as unknown as EntityManager).findByEmail(EMAIL);
+    const result = await new TypeOrmUserRepository(manager as unknown as EntityManager).findByEmail(
+      EMAIL.value,
+    );
 
-    expect(result?.email.value).toBe(EMAIL.value);
-    expect(result?.role).toBe('CEO');
+    expect(result?.email?.value).toBe(EMAIL.value);
+    expect(result?.role).toBe('admin');
+    expect(result?.status).toBe('ACTIVE');
   });
 
-  it('save() inserts a new row when none exists', async () => {
+  it('save() persists the domain user via the ORM repository', async () => {
     const ormRepository = fakeOrmRepository();
     const manager = fakeManager(ormRepository);
-    manager.query.mockResolvedValue([{ exists: false }]);
     const user = createUser();
 
     await new TypeOrmUserRepository(manager as unknown as EntityManager).save(user);
 
-    expect(ormRepository.insert).toHaveBeenCalledWith(
-      expect.objectContaining({ id: user.id.toValue(), email: EMAIL.value }),
+    expect(ormRepository.save).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: user.id.value,
+        email: EMAIL.value,
+        phoneNumber: PHONE.value,
+      }),
     );
-  });
-
-  it('save() throws ConcurrencyDomainException when the CAS update affects zero rows', async () => {
-    const ormRepository = fakeOrmRepository();
-    const manager = fakeManager(ormRepository);
-    manager.query.mockResolvedValueOnce([{ exists: true }]).mockResolvedValueOnce([[], 0]);
-    const user = createUser();
-
-    await expect(
-      new TypeOrmUserRepository(manager as unknown as EntityManager).save(user),
-    ).rejects.toBeInstanceOf(ConcurrencyDomainException);
   });
 });

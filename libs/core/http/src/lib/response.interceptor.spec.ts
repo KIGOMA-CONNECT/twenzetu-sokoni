@@ -15,6 +15,6 @@ describe('ResponseInterceptor', () => {
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual({ id: 42 });
-    expect(result.meta.timestamp).toEqual(expect.any(String));
+    expect(result.timestamp).toEqual(expect.any(String));
   });
 });

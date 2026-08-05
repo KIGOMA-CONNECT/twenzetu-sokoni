@@ -1,83 +1,68 @@
-import { DatabaseConfig } from '@abms/core-config';
 import { buildDataSourceOptions } from './build-data-source-options';
 
-function fakeDatabaseConfig(overrides: Partial<DatabaseConfig> = {}): DatabaseConfig {
-  return {
-    host: 'localhost',
-    port: 5432,
-    name: 'abms',
-    ssl: false,
-    poolMax: 20,
-    ownerUser: 'abms_owner',
-    ownerPassword: 'owner-secret',
-    runtimeUser: 'abms_runtime',
-    runtimePassword: 'runtime-secret',
-    ...overrides,
-  };
-}
-
 describe('buildDataSourceOptions', () => {
-  it('builds postgres connection options from the given role credentials', () => {
-    const options = buildDataSourceOptions(fakeDatabaseConfig(), {
-      username: 'abms_runtime',
-      password: 'runtime-secret',
-    });
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it('defaults to localhost postgres with the afri_owner dev credentials', () => {
+    delete process.env['DB_HOST'];
+    delete process.env['DB_PORT'];
+    delete process.env['DB_NAME'];
+
+    const options = buildDataSourceOptions();
 
     expect(options).toMatchObject({
       type: 'postgres',
       host: 'localhost',
       port: 5432,
-      database: 'abms',
-      username: 'abms_runtime',
-      password: 'runtime-secret',
-      ssl: false,
-      poolSize: 20,
-      synchronize: false,
-      migrationsRun: false,
+      database: 'afri_market',
+      username: 'afri_owner',
+      password: 'afri_owner_dev_password',
     });
   });
 
-  it('enables ssl with a relaxed CA check when the config requests it', () => {
-    const options = buildDataSourceOptions(fakeDatabaseConfig({ ssl: true }), {
-      username: 'abms_owner',
-      password: 'owner-secret',
-    });
+  it('reads connection settings from the environment when present', () => {
+    process.env['DB_HOST'] = 'db.example.com';
+    process.env['DB_PORT'] = '5433';
+    process.env['DB_NAME'] = 'afri_market_prod';
+    process.env['DB_OWNER_USER'] = 'prod_owner';
+    process.env['DB_OWNER_PASSWORD'] = 'prod-secret';
 
-    if (options.type !== 'postgres') {
-      throw new Error('expected postgres data source options');
-    }
-    expect(options.ssl).toEqual({ rejectUnauthorized: false });
+    const options = buildDataSourceOptions();
+
+    expect(options).toMatchObject({
+      host: 'db.example.com',
+      port: 5433,
+      database: 'afri_market_prod',
+      username: 'prod_owner',
+      password: 'prod-secret',
+    });
   });
 
-  it('never enables synchronize, regardless of config', () => {
-    const options = buildDataSourceOptions(fakeDatabaseConfig(), {
-      username: 'abms_owner',
-      password: 'owner-secret',
-    });
-
-    expect(options.synchronize).toBe(false);
-  });
-
-  it('defaults to no entities and the database library\'s own migrations glob', () => {
-    const options = buildDataSourceOptions(fakeDatabaseConfig(), {
-      username: 'abms_owner',
-      password: 'owner-secret',
-    });
+  it('defaults to no entities and no migrations', () => {
+    const options = buildDataSourceOptions();
 
     expect(options.entities).toEqual([]);
-    expect(options.migrations).toEqual(['libs/database/src/lib/migrations/*.migration.ts']);
+    expect(options.migrations).toEqual([]);
   });
 
-  it('lets a composition root override entities and migrations', () => {
-    class FakeEntity {}
+  it('synchronizes only in development or when explicitly enabled', () => {
+    process.env['APP_ENV'] = 'development';
+    delete process.env['DB_SYNCHRONIZE'];
 
-    const options = buildDataSourceOptions(
-      fakeDatabaseConfig(),
-      { username: 'abms_owner', password: 'owner-secret' },
-      { entities: [FakeEntity], migrations: ['libs/modules/organization/**/*.migration.ts'] },
-    );
+    expect(buildDataSourceOptions().synchronize).toBe(true);
 
-    expect(options.entities).toEqual([FakeEntity]);
-    expect(options.migrations).toEqual(['libs/modules/organization/**/*.migration.ts']);
+    process.env['APP_ENV'] = 'production';
+    delete process.env['DB_SYNCHRONIZE'];
+
+    expect(buildDataSourceOptions().synchronize).toBe(false);
+
+    process.env['APP_ENV'] = 'production';
+    process.env['DB_SYNCHRONIZE'] = 'true';
+
+    expect(buildDataSourceOptions().synchronize).toBe(true);
   });
 });

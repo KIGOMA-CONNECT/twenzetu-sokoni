@@ -1,26 +1,26 @@
 import { AsyncLocalTenantContextStore } from './async-local-tenant-context.store';
 
 describe('AsyncLocalTenantContextStore', () => {
-  it('returns undefined outside of any run()', () => {
+  it('returns null outside of any run()', () => {
     const store = new AsyncLocalTenantContextStore();
 
-    expect(store.getTenantId()).toBeUndefined();
+    expect(store.getTenantId()).toBeNull();
   });
 
-  it('exposes the tenant id inside run()', () => {
+  it('exposes the tenant id inside run()', async () => {
     const store = new AsyncLocalTenantContextStore();
 
-    const result = store.run('tenant-a', () => store.getTenantId());
+    const result = await store.run('tenant-a', async () => store.getTenantId());
 
     expect(result).toBe('tenant-a');
   });
 
-  it('does not leak the tenant id outside of run()', () => {
+  it('does not leak the tenant id outside of run()', async () => {
     const store = new AsyncLocalTenantContextStore();
 
-    store.run('tenant-a', () => undefined);
+    await store.run('tenant-a', async () => undefined);
 
-    expect(store.getTenantId()).toBeUndefined();
+    expect(store.getTenantId()).toBeNull();
   });
 
   it('propagates the tenant id across an async continuation', async () => {

@@ -1,4 +1,4 @@
-import { AggregateRoot, EntityId } from '@abms/kernel';
+import { AggregateRoot, EntityId } from '@afri-market/kernel';
 import type { EntityManager, ObjectLiteral, Repository } from 'typeorm';
 import { TypeOrmRepository } from './typeorm.repository.base';
 

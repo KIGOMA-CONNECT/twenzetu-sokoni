@@ -1,81 +1,63 @@
-import { AppConfigService } from '@abms/core-config';
-import type pino from 'pino';
+const mockLogger = {
+  info: jest.fn(),
+  error: jest.fn(),
+  warn: jest.fn(),
+  debug: jest.fn(),
+  trace: jest.fn(),
+};
+
+jest.mock('pino', () => ({
+  __esModule: true,
+  default: jest.fn(() => mockLogger),
+}));
+
 import { AppLoggerService } from './app-logger.service';
 
-function fakeConfig(): AppConfigService {
-  return {
-    logging: { level: 'info', pretty: false },
-  } as unknown as AppConfigService;
-}
-
-function fakePinoLogger(): jest.Mocked<pino.Logger> {
-  return {
-    info: jest.fn(),
-    error: jest.fn(),
-    warn: jest.fn(),
-    debug: jest.fn(),
-    trace: jest.fn(),
-    fatal: jest.fn(),
-  } as unknown as jest.Mocked<pino.Logger>;
-}
-
 describe('AppLoggerService', () => {
-  it('routes log() through pino.info with the message', () => {
-    const logger = fakePinoLogger();
-    const service = new AppLoggerService(fakeConfig(), logger);
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('routes log() through pino.info with the message and context', () => {
+    const service = new AppLoggerService();
 
     service.log('hello world', 'TestContext');
 
-    expect(logger.info).toHaveBeenCalledWith({ context: 'TestContext' }, 'hello world');
+    expect(mockLogger.info).toHaveBeenCalledWith({ context: 'TestContext' }, 'hello world');
   });
 
   it('routes error() through pino.error including the stack trace', () => {
-    const logger = fakePinoLogger();
-    const service = new AppLoggerService(fakeConfig(), logger);
+    const service = new AppLoggerService();
 
     service.error('boom', 'stack-trace-text', 'TestContext');
 
-    expect(logger.error).toHaveBeenCalledWith(
+    expect(mockLogger.error).toHaveBeenCalledWith(
       { context: 'TestContext', trace: 'stack-trace-text' },
       'boom',
     );
   });
 
-  it('stringifies non-string messages', () => {
-    const logger = fakePinoLogger();
-    const service = new AppLoggerService(fakeConfig(), logger);
+  it('routes warn() through pino.warn', () => {
+    const service = new AppLoggerService();
 
-    service.log({ orderId: 42 });
+    service.warn('w', 'WarnContext');
 
-    expect(logger.info).toHaveBeenCalledWith({}, JSON.stringify({ orderId: 42 }));
+    expect(mockLogger.warn).toHaveBeenCalledWith({ context: 'WarnContext' }, 'w');
   });
 
-  it('merges fields from every registered context enricher', () => {
-    const logger = fakePinoLogger();
-    const service = new AppLoggerService(fakeConfig(), logger);
+  it('routes debug() through pino.debug', () => {
+    const service = new AppLoggerService();
 
-    service.registerContextEnricher(() => ({ tenantId: 'tenant-a' }));
-    service.registerContextEnricher(() => ({ requestId: 'req-1' }));
-    service.log('hello');
+    service.debug('d', 'DebugContext');
 
-    expect(logger.info).toHaveBeenCalledWith(
-      { tenantId: 'tenant-a', requestId: 'req-1' },
-      'hello',
-    );
+    expect(mockLogger.debug).toHaveBeenCalledWith({ context: 'DebugContext' }, 'd');
   });
 
-  it('routes warn/debug/verbose/fatal to their pino equivalents', () => {
-    const logger = fakePinoLogger();
-    const service = new AppLoggerService(fakeConfig(), logger);
+  it('routes verbose() through pino.trace', () => {
+    const service = new AppLoggerService();
 
-    service.warn('w');
-    service.debug('d');
-    service.verbose('v');
-    service.fatal('f');
+    service.verbose('v', 'VerboseContext');
 
-    expect(logger.warn).toHaveBeenCalledWith({}, 'w');
-    expect(logger.debug).toHaveBeenCalledWith({}, 'd');
-    expect(logger.trace).toHaveBeenCalledWith({}, 'v');
-    expect(logger.fatal).toHaveBeenCalledWith({}, 'f');
+    expect(mockLogger.trace).toHaveBeenCalledWith({ context: 'VerboseContext' }, 'v');
   });
 });
