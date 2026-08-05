@@ -74,7 +74,7 @@ services:
       AZAMPAY_ENVIRONMENT: ${AZAMPAY_ENVIRONMENT:-sandbox}
       AZAMPAY_CALLBACK_URL: ${AZAMPAY_CALLBACK_URL:-https://yourdomain.com/api/webhooks/azampay}
       METRICS_SECRET: ${METRICS_SECRET:-}
-      depends_on:
+    depends_on:
       postgres:
         condition: service_healthy
       redis:
