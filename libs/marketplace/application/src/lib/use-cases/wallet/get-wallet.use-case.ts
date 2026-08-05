@@ -15,7 +15,7 @@ export class GetWalletUseCase {
     ownerId: string,
     currency?: string,
   ): Promise<{ id: string; balance: number; pendingBalance: number; currency: string }> {
-    let wallet = await this.walletRepo.findByOwnerId(ownerId);
+    let wallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
     if (!wallet) {
       wallet = Wallet.create({
         tenantId: TenantId.create(tenantId),

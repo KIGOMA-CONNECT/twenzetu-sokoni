@@ -29,7 +29,7 @@ export class CreditWalletUseCase {
       throw new BadRequestException('Amount must be positive');
     }
 
-    let wallet = await this.walletRepo.findByOwnerId(ownerId);
+    let wallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
     const balanceBefore = wallet ? wallet.balance.amount : 0;
 
     if (!wallet) {

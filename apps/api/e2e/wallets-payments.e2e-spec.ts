@@ -16,7 +16,7 @@ import {
   ListPaymentsUseCase,
   GetPaymentByOrderUseCase,
 } from '@afri-market/marketplace-application';
-import { MOCK_JWT_PAYLOAD } from './test-helper';
+import { MOCK_ADMIN_JWT_PAYLOAD, MOCK_JWT_PAYLOAD } from './test-helper';
 
 describe('Wallets E2E', () => {
   let app: INestApplication;
@@ -55,7 +55,7 @@ describe('Wallets E2E', () => {
     })
       .overrideGuard(AuthGuard('jwt'))
       .useValue({ canActivate: (ctx: ExecutionContext) => {
-        ctx.switchToHttp().getRequest().user = MOCK_JWT_PAYLOAD;
+        ctx.switchToHttp().getRequest().user = MOCK_ADMIN_JWT_PAYLOAD;
         return true;
       } })
       .compile();

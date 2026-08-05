@@ -1,5 +1,5 @@
-import { BadRequestException, Inject, Injectable, Optional } from '@nestjs/common';
-import { EntityId, Money, TenantId } from '@afri-market/kernel';
+import { BadRequestException, ForbiddenException, Inject, Injectable, Optional } from '@nestjs/common';
+import { Money, TenantId } from '@afri-market/kernel';
 import {
   Delivery,
   CustomerPoints,
@@ -23,8 +23,16 @@ import {
 import { IDeliveryRepository } from './create-delivery.use-case';
 
 export interface ICompleteDeliveryRepository extends IDeliveryRepository {
+  findByIdAndTenant(id: string, tenantId: string): Promise<Delivery | null>;
   findByOrderId(orderId: string): Promise<Delivery | null>;
   save(delivery: Delivery): Promise<void>;
+}
+
+const ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
+
+export interface CompleteDeliveryActor {
+  driverId: string;
+  role?: string;
 }
 
 @Injectable()
@@ -43,7 +51,7 @@ export class CompleteDeliveryUseCase {
     deliveryId: string;
     driverEarnings: number;
     deliveryOtp?: string;
-  }): Promise<{
+  }, actor?: CompleteDeliveryActor): Promise<{
     deliveryId: string;
     orderId: string;
     status: string;
@@ -54,8 +62,13 @@ export class CompleteDeliveryUseCase {
     driverAmountCredited: number;
     otpVerified: boolean;
   }> {
-    const delivery = await this.deliveryRepo.findById(EntityId.from(params.deliveryId));
+    const delivery = await this.deliveryRepo.findByIdAndTenant(params.deliveryId, tenantId);
     if (!delivery) throw new Error('Delivery not found');
+
+    const isAdmin = actor ? ADMIN_ROLES.includes(actor.role ?? '') : false;
+    if (!actor || (!isAdmin && actor.driverId !== delivery.driverId.value)) {
+      throw new ForbiddenException('You can only complete deliveries assigned to you');
+    }
 
     const order = await this.orderRepo.findById(delivery.orderId);
     if (!order) throw new Error('Order not found');
@@ -98,7 +111,7 @@ export class CompleteDeliveryUseCase {
         const vendorNet = payment.vendorNet.amount;
         const driverNet = payment.driverNet.amount;
 
-        let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value);
+        let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value, tenantId);
         const vendorBalanceBefore = vendorWallet ? vendorWallet.balance.amount : 0;
         if (!vendorWallet) {
           vendorWallet = Wallet.create({
@@ -107,10 +120,8 @@ export class CompleteDeliveryUseCase {
             ownerType: 'vendor',
             currency: payment.amount.currency,
           });
-          vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
-        } else {
-          vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
         }
+        vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
         await this.walletRepo.save(vendorWallet);
 
         if (this.txRepo) {
@@ -130,13 +141,13 @@ export class CompleteDeliveryUseCase {
         }
 
         if (driverNet > 0) {
-          let driverWallet = await this.walletRepo.findByOwnerId(delivery.driverId.value);
+          let driverWallet = await this.walletRepo.findByOwnerId(delivery.driverId.value, tenantId);
           const driverBalanceBefore = driverWallet ? driverWallet.balance.amount : 0;
           if (!driverWallet) {
             driverWallet = Wallet.create({
               tenantId: TenantId.create(tenantId),
               ownerId: delivery.driverId,
-              ownerType: 'vendor',
+              ownerType: 'driver',
               currency: payment.amount.currency,
             });
           }
@@ -147,7 +158,7 @@ export class CompleteDeliveryUseCase {
             const dtx = WalletTransaction.create({
               tenantId: TenantId.create(tenantId),
               ownerId: delivery.driverId,
-              ownerType: 'vendor',
+              ownerType: 'driver',
               type: 'CREDIT',
               amount: Money.create(driverNet, payment.amount.currency),
               balanceBefore: driverBalanceBefore,

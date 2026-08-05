@@ -88,6 +88,10 @@ export class WalletsController {
     @CurrentUser() user: JwtPayload,
     @Body() body: WalletCreditDto,
   ) {
+    const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'compliance_admin'];
+    if (!adminRoles.includes(user.role)) {
+      throw new ForbiddenException('Only finance/admin users can credit wallets');
+    }
     const wallet = await this.creditWallet.execute(
       user.tenantId, await this.resolveWalletOwner(user), body.amount,
       body.description ?? 'Wallet top-up',

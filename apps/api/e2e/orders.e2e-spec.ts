@@ -9,7 +9,9 @@ import {
   UpdateOrderStatusUseCase,
   FindOrdersUseCase,
   CancelOrderUseCase,
+  FindVendorsUseCase,
 } from '@afri-market/marketplace-application';
+import { ForbiddenException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { MOCK_JWT_PAYLOAD } from './test-helper';
 
@@ -22,7 +24,13 @@ describe('Orders E2E', () => {
     }),
   };
   const mockUpdateStatus = {
-    execute: jest.fn().mockResolvedValue({ orderId: 'o-1', status: 'CONFIRMED' }),
+    execute: jest.fn().mockImplementation((tenantId: string, command: { orderId: string; status: string }, actor?: { role: string }) => {
+      const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
+      if (!actor || (actor.role !== 'vendor' && !adminRoles.includes(actor.role))) {
+        throw new ForbiddenException('Only vendors or admins can update order status');
+      }
+      return { orderId: command.orderId, status: command.status };
+    }),
   };
   const mockFindOrders = {
     findByCustomer: jest.fn().mockResolvedValue([
@@ -47,6 +55,7 @@ describe('Orders E2E', () => {
         { provide: CancelOrderUseCase, useValue: mockCancelOrder },
         { provide: EntityManager, useValue: { query: jest.fn().mockResolvedValue([]) } },
         { provide: NotificationsService, useValue: { create: jest.fn().mockResolvedValue(undefined) } },
+        { provide: FindVendorsUseCase, useValue: { findByUserId: jest.fn().mockResolvedValue({ id: { value: 'v-1' } }) } },
       ],
     })
       .overrideGuard(AuthGuard('jwt'))
@@ -124,12 +133,12 @@ describe('Orders E2E', () => {
   });
 
   describe('PATCH /api/orders/:id/status', () => {
-    it('should update order status', async () => {
+    it('should reject customers updating order status', async () => {
       const res = await request(app.getHttpServer())
         .patch('/api/orders/00000000-0000-0000-0000-000000000001/status')
         .send({ status: 'CONFIRMED' })
-        .expect(200);
-      expect(res.body.status).toBe('CONFIRMED');
+        .expect(403);
+      expect(res.body.message).toBeDefined();
     });
   });
 });

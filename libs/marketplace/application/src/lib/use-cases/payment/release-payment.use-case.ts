@@ -42,7 +42,7 @@ export class ReleasePaymentUseCase {
     payment.release(`release-${orderId}`);
     await this.paymentRepo.save(payment);
 
-    let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value);
+    let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value, tenantId);
     const vendorBalanceBefore = vendorWallet ? vendorWallet.balance.amount : 0;
     if (!vendorWallet) {
       vendorWallet = Wallet.create({
@@ -51,10 +51,8 @@ export class ReleasePaymentUseCase {
         ownerType: 'vendor',
         currency: payment.amount.currency,
       });
-      vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
-    } else {
-      vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
     }
+    vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
     await this.walletRepo.save(vendorWallet);
 
     const tx = WalletTransaction.create({

@@ -6,6 +6,7 @@ describe('CompleteDeliveryUseCase', () => {
   let useCase: CompleteDeliveryUseCase;
   let mockDeliveryRepo: {
     findById: jest.Mock;
+    findByIdAndTenant: jest.Mock;
     save: jest.Mock;
     findByOrderId: jest.Mock;
     findByDriverId: jest.Mock;
@@ -87,6 +88,7 @@ describe('CompleteDeliveryUseCase', () => {
 
     mockDeliveryRepo = {
       findById: jest.fn(),
+      findByIdAndTenant: jest.fn(),
       save: jest.fn(),
       findByOrderId: jest.fn(),
       findByDriverId: jest.fn(),
@@ -129,14 +131,14 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder();
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
 
     await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(delivery.status).toBe('DELIVERED');
     expect(delivery.driverEarnings.amount).toBe(2500);
@@ -147,14 +149,14 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder();
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
 
     await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(order.status).toBe('DELIVERED');
     expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
@@ -164,14 +166,14 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder(500000);
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.loyaltyPointsEarned).toBe(5000);
     expect(result.status).toBe('DELIVERED');
@@ -203,14 +205,14 @@ describe('CompleteDeliveryUseCase', () => {
       version: 1,
     });
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(existingPoints);
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.loyaltyPointsEarned).toBe(5000);
     expect(mockPointsRepo.save).toHaveBeenCalledTimes(1);
@@ -220,7 +222,7 @@ describe('CompleteDeliveryUseCase', () => {
   });
 
   it('should throw if delivery not found', async () => {
-    mockDeliveryRepo.findById.mockResolvedValue(null);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(null);
 
     await expect(
       useCase.execute(TENANT_ID, {
@@ -234,14 +236,14 @@ describe('CompleteDeliveryUseCase', () => {
   it('should throw if order not found', async () => {
     const delivery = createTestDelivery();
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(null);
 
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
         driverEarnings: 2500,
-      }),
+      }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Order not found');
     expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
   });
@@ -250,14 +252,14 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder(100000);
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
       driverEarnings: 3000,
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result).toEqual({
       deliveryId: DELIVERY_ID,
@@ -276,7 +278,7 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder(500000, '1234');
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPaymentRepo.findByOrderId.mockResolvedValue(null);
@@ -286,7 +288,7 @@ describe('CompleteDeliveryUseCase', () => {
         deliveryId: DELIVERY_ID,
         driverEarnings: 2500,
         deliveryOtp: '9999',
-      }),
+      }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Invalid delivery confirmation code');
 
     expect(delivery.status).toBe('IN_TRANSIT');
@@ -301,7 +303,7 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder(500000, '1234');
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
 
@@ -309,7 +311,7 @@ describe('CompleteDeliveryUseCase', () => {
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
         driverEarnings: 2500,
-      }),
+      }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Invalid delivery confirmation code');
     expect(mockOrderRepo.save).not.toHaveBeenCalled();
   });
@@ -318,7 +320,7 @@ describe('CompleteDeliveryUseCase', () => {
     const delivery = createTestDelivery();
     const order = createTestOrder(500000, '1234');
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPaymentRepo.findByOrderId.mockResolvedValue(null);
@@ -327,7 +329,7 @@ describe('CompleteDeliveryUseCase', () => {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
       deliveryOtp: '1234',
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.status).toBe('DELIVERED');
     expect(result.otpVerified).toBe(true);
@@ -354,7 +356,7 @@ describe('CompleteDeliveryUseCase', () => {
     });
     payment.confirmEscrow();
 
-    mockDeliveryRepo.findById.mockResolvedValue(delivery);
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
     mockOrderRepo.findById.mockResolvedValue(order);
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPaymentRepo.findByOrderId.mockResolvedValue(payment);
@@ -363,10 +365,69 @@ describe('CompleteDeliveryUseCase', () => {
       deliveryId: DELIVERY_ID,
       driverEarnings: 2500,
       deliveryOtp: '1234',
-    });
+    }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.otpVerified).toBe(true);
     expect(payment.status).toBe('RELEASED');
     expect(mockPaymentRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should reject completion by a different driver', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+    mockPaymentRepo.findByOrderId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        deliveryId: DELIVERY_ID,
+        driverEarnings: 2500,
+        deliveryOtp: '1234',
+      }, { driverId: 'other-driver', role: 'driver' }),
+    ).rejects.toThrow('You can only complete deliveries assigned to you');
+
+    expect(delivery.status).toBe('IN_TRANSIT');
+    expect(order.status).toBe('OUT_FOR_DELIVERY');
+    expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+    expect(mockPaymentRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should reject completion without an actor', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000);
+
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        deliveryId: DELIVERY_ID,
+        driverEarnings: 2500,
+      }),
+    ).rejects.toThrow('You can only complete deliveries assigned to you');
+    expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should allow an admin to complete any delivery', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000);
+
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+    mockPaymentRepo.findByOrderId.mockResolvedValue(null);
+
+    const result = await useCase.execute(TENANT_ID, {
+      deliveryId: DELIVERY_ID,
+      driverEarnings: 2500,
+    }, { driverId: 'ops-user', role: 'operations_admin' });
+
+    expect(result.status).toBe('DELIVERED');
+    expect(order.status).toBe('DELIVERED');
   });
 });

@@ -14,7 +14,7 @@ import {
   RedeemPointsUseCase,
   GetMyLoyaltyUseCase,
 } from '@afri-market/marketplace-application';
-import { MOCK_JWT_PAYLOAD } from './test-helper';
+import { MOCK_JWT_PAYLOAD, MOCK_ADMIN_JWT_PAYLOAD } from './test-helper';
 
 describe('Used Goods E2E', () => {
   let app: INestApplication;
@@ -123,7 +123,7 @@ describe('Loyalty E2E', () => {
     })
       .overrideGuard(AuthGuard('jwt'))
       .useValue({ canActivate: (ctx: ExecutionContext) => {
-        ctx.switchToHttp().getRequest().user = MOCK_JWT_PAYLOAD;
+        ctx.switchToHttp().getRequest().user = MOCK_ADMIN_JWT_PAYLOAD;
         return true;
       } })
       .compile();
@@ -161,6 +161,53 @@ describe('Loyalty E2E', () => {
       const res = await request(app.getHttpServer()).get('/api/loyalty/me').expect(200);
       expect(res.body.data.tier).toBe('BRONZE');
       expect(res.body.data.totalPoints).toBe(110);
+    });
+  });
+});
+
+describe('Loyalty Earn Authorization', () => {
+  let app: INestApplication;
+
+  const mockEarn = { execute: jest.fn().mockResolvedValue({ customerId: 'c1', pointsEarned: 50, newBalance: 110, tier: 'BRONZE' }) };
+  const mockRedeem = { execute: jest.fn() };
+  const mockGetLoyalty = {
+    getPoints: jest.fn(),
+    getTier: jest.fn(),
+  };
+
+  beforeAll(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      controllers: [LoyaltyController],
+      providers: [
+        { provide: EarnPointsUseCase, useValue: mockEarn },
+        { provide: RedeemPointsUseCase, useValue: mockRedeem },
+        { provide: GetMyLoyaltyUseCase, useValue: mockGetLoyalty },
+        { provide: CACHE_MANAGER, useValue: { get: jest.fn(), set: jest.fn(), del: jest.fn(), reset: jest.fn() } },
+        { provide: AuditLoggerService, useValue: { log: jest.fn() } },
+      ],
+    })
+      .overrideGuard(AuthGuard('jwt'))
+      .useValue({ canActivate: (ctx: ExecutionContext) => {
+        ctx.switchToHttp().getRequest().user = MOCK_JWT_PAYLOAD;
+        return true;
+      } })
+      .compile();
+
+    app = module.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }));
+    app.setGlobalPrefix('api');
+    await app.init();
+  });
+
+  afterAll(async () => { await app.close(); });
+
+  describe('POST /api/loyalty/earn', () => {
+    it('should return 403 for non-admin customers', async () => {
+      await request(app.getHttpServer())
+        .post('/api/loyalty/earn')
+        .send({ orderId: 'o1', orderTotal: 5000 })
+        .expect(403);
+      expect(mockEarn.execute).not.toHaveBeenCalled();
     });
   });
 });

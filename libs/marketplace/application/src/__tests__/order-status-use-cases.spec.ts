@@ -1,5 +1,7 @@
 import { CancelOrderUseCase } from '../lib/use-cases/order/cancel-order.use-case';
 import { VendorUpdateOrderStatusUseCase } from '../lib/use-cases/vendor/vendor-update-order-status.use-case';
+import { UpdateOrderStatusUseCase } from '../lib/use-cases/order/update-order-status.use-case';
+import { UpdateOrderStatusCommand } from '../lib/commands/update-order-status.command';
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
 import { Order, OrderStatus } from '@afri-market/marketplace-domain';
 
@@ -143,5 +145,90 @@ describe('VendorUpdateOrderStatusUseCase', () => {
     mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
 
     await expect(useCase.execute(TENANT_ID, ORDER_ID, 'other-vendor', 'CONFIRMED')).rejects.toThrow('only update orders assigned');
+  });
+});
+
+describe('UpdateOrderStatusUseCase', () => {
+  let useCase: UpdateOrderStatusUseCase;
+  let mockOrderRepo: Record<string, jest.Mock>;
+
+  const TENANT_ID = 'test-tenant';
+  const ORDER_ID = 'order-123';
+  const VENDOR_ID = 'vendor-789';
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockOrderRepo = { findByIdAndTenant: jest.fn(), save: jest.fn().mockResolvedValue(undefined) };
+    useCase = new UpdateOrderStatusUseCase(mockOrderRepo);
+  });
+
+  const createOrder = (status: string) =>
+    Order.reconstitute({
+      id: EntityId.from(ORDER_ID),
+      tenantId: TenantId.create(TENANT_ID),
+      customerId: EntityId.from('customer-456'),
+      vendorId: EntityId.from(VENDOR_ID),
+      driverId: undefined,
+      type: 'food',
+      status: status as OrderStatus,
+      subtotal: Money.create(5000),
+      deliveryFee: Money.create(1000),
+      systemCommission: Money.create(500),
+      totalAmount: Money.create(6000),
+      deliveryAddress: '123 Main St',
+      deliveryLatitude: undefined,
+      deliveryLongitude: undefined,
+      specialInstructions: undefined,
+      OTPCode: undefined,
+      OTPVerified: false,
+      version: 1,
+    });
+
+  it('should allow owning vendor to transition order', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
+
+    const result = await useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED'), { role: 'vendor', vendorId: VENDOR_ID });
+
+    expect(result.status).toBe('CONFIRMED');
+    expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should allow admins to transition order', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
+
+    const result = await useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED'), { role: 'admin' });
+
+    expect(result.status).toBe('CONFIRMED');
+  });
+
+  it('should reject customers with no vendor ownership', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
+
+    await expect(useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED'), { role: 'customer' }))
+      .rejects.toThrow('only update orders assigned');
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should reject a vendor updating another shop order', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
+
+    await expect(useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED'), { role: 'vendor', vendorId: 'other-vendor' }))
+      .rejects.toThrow('only update orders assigned');
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should reject requests without an actor', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(createOrder('PLACED'));
+
+    await expect(useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED')))
+      .rejects.toThrow('only update orders assigned');
+  });
+
+  it('should enforce tenant scoping', async () => {
+    mockOrderRepo.findByIdAndTenant.mockResolvedValue(null);
+
+    await expect(useCase.execute(TENANT_ID, new UpdateOrderStatusCommand(ORDER_ID, 'CONFIRMED'), { role: 'admin' }))
+      .rejects.toThrow('Order not found');
+    expect(mockOrderRepo.findByIdAndTenant).toHaveBeenCalledWith(expect.anything(), TENANT_ID);
   });
 });

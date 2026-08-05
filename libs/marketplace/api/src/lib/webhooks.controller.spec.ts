@@ -233,13 +233,24 @@ describe('WebhooksController', () => {
       delete process.env.PAYMENT_CONFIRM_SECRET;
     });
 
+    it('should reject when the provided secret is wrong', async () => {
+      process.env.PAYMENT_CONFIRM_SECRET = 'topsecret';
+
+      await expect(
+        controller.handleInternalTopupConfirm({ 'x-webhook-secret': 'wrong' }, { checkoutRequestId: 'card-1' }),
+      ).rejects.toThrow();
+
+      delete process.env.PAYMENT_CONFIRM_SECRET;
+    });
+
     it('should complete a pending card/bank top-up and credit the wallet', async () => {
+      process.env.PAYMENT_CONFIRM_SECRET = 'topsecret';
       dataSource.query.mockResolvedValueOnce([
         { tenant_id: 't1', user_id: 'u1', amount: 20000, provider: 'card' },
       ]);
 
       const result = await controller.handleInternalTopupConfirm(
-        {},
+        { 'x-webhook-secret': 'topsecret' },
         { checkoutRequestId: 'card-1', receiptNumber: 'card-receipt-1' },
       );
 
@@ -249,12 +260,21 @@ describe('WebhooksController', () => {
         ['card-receipt-1', 'card-1'],
       );
       expect(creditWallet.execute).toHaveBeenCalledWith('t1', 'u1', 20000, expect.stringContaining('card'), 'card-receipt-1', 'card_topup');
+
+      delete process.env.PAYMENT_CONFIRM_SECRET;
     });
 
     it('should throw NotFound when no pending top-up exists', async () => {
+      process.env.PAYMENT_CONFIRM_SECRET = 'topsecret';
+
       await expect(
-        controller.handleInternalTopupConfirm({}, { checkoutRequestId: 'card-2' }),
+        controller.handleInternalTopupConfirm(
+          { 'x-webhook-secret': 'topsecret' },
+          { checkoutRequestId: 'card-2' },
+        ),
       ).rejects.toThrow();
+
+      delete process.env.PAYMENT_CONFIRM_SECRET;
     });
   });
 });

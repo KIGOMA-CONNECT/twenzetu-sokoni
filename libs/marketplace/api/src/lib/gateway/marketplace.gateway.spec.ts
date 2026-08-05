@@ -1,15 +1,32 @@
 import { MarketplaceGateway } from './marketplace.gateway';
+import { sign } from 'jsonwebtoken';
+
+const TEST_SECRET = 'test-secret';
+
+function validToken(overrides: Record<string, unknown> = {}): string {
+  return sign(
+    { sub: 'u1', tenantId: 't1', role: 'customer', phoneNumber: '+255712345678', sid: 's1', tokenType: 'access', ...overrides },
+    TEST_SECRET,
+    { expiresIn: '1h' },
+  );
+}
 
 describe('MarketplaceGateway', () => {
   let gateway: MarketplaceGateway;
   let mockServer: { to: jest.Mock; emit: jest.Mock };
-  let mockClient: { id: string; join: jest.Mock; leave: jest.Mock; emit: jest.Mock };
+  let mockClient: { id: string; join: jest.Mock; leave: jest.Mock; emit: jest.Mock; handshake: { auth: { token?: string } } };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    gateway = new MarketplaceGateway();
+    gateway = new MarketplaceGateway({ jwt: { secret: TEST_SECRET } } as never);
     mockServer = { to: jest.fn().mockReturnThis(), emit: jest.fn() };
-    mockClient = { id: 'client-1', join: jest.fn(), leave: jest.fn(), emit: jest.fn() };
+    mockClient = {
+      id: 'client-1',
+      join: jest.fn(),
+      leave: jest.fn(),
+      emit: jest.fn(),
+      handshake: { auth: {} },
+    };
     (gateway as unknown as { server: typeof mockServer }).server = mockServer;
   });
 
@@ -22,6 +39,21 @@ describe('MarketplaceGateway', () => {
       gateway.handleConnection(mockClient as never);
       expect(mockClient.join).not.toHaveBeenCalled();
     });
+
+    it('should authenticate and join rooms when a valid token is provided', () => {
+      mockClient.handshake.auth.token = validToken();
+      gateway.handleConnection(mockClient as never);
+      expect(mockClient.join).toHaveBeenCalledWith('tenant:t1');
+      expect(mockClient.join).toHaveBeenCalledWith('user:u1');
+      expect(mockClient.emit).toHaveBeenCalledWith('authenticated', { success: true });
+    });
+
+    it('should not join rooms when an invalid token is provided', () => {
+      mockClient.handshake.auth.token = 'not-a-token';
+      gateway.handleConnection(mockClient as never);
+      expect(mockClient.join).not.toHaveBeenCalled();
+      expect(mockClient.emit).not.toHaveBeenCalledWith('authenticated', { success: true });
+    });
   });
 
   describe('handleDisconnect', () => {
@@ -32,21 +64,43 @@ describe('MarketplaceGateway', () => {
   });
 
   describe('handleAuthenticate', () => {
-    it('should join tenant and user rooms and emit authenticated', () => {
+    it('should join tenant and user rooms and emit authenticated with a valid token', () => {
       gateway.handleConnection(mockClient as never);
-      gateway.handleAuthenticate(mockClient as never, { userId: 'u1', tenantId: 't1' });
+      gateway.handleAuthenticate(mockClient as never, { token: validToken() });
       expect(mockClient.join).toHaveBeenCalledWith('tenant:t1');
       expect(mockClient.join).toHaveBeenCalledWith('user:u1');
       expect(mockClient.emit).toHaveBeenCalledWith('authenticated', { success: true });
     });
+
+    it('should reject an invalid token', () => {
+      gateway.handleConnection(mockClient as never);
+      gateway.handleAuthenticate(mockClient as never, { token: 'garbage' });
+      expect(mockClient.join).not.toHaveBeenCalled();
+      expect(mockClient.emit).toHaveBeenCalledWith('authenticated', { success: false, message: 'Invalid token' });
+    });
+
+    it('should reject a refresh token (wrong tokenType)', () => {
+      gateway.handleConnection(mockClient as never);
+      gateway.handleAuthenticate(mockClient as never, { token: validToken({ tokenType: 'refresh' }) });
+      expect(mockClient.join).not.toHaveBeenCalled();
+      expect(mockClient.emit).toHaveBeenCalledWith('authenticated', { success: false, message: 'Invalid token' });
+    });
   });
 
   describe('handleTrackOrder', () => {
-    it('should join order room and emit tracking', () => {
+    it('should join order room and emit tracking when authenticated', () => {
       gateway.handleConnection(mockClient as never);
+      gateway.handleAuthenticate(mockClient as never, { token: validToken() });
       gateway.handleTrackOrder(mockClient as never, { orderId: 'o1' });
       expect(mockClient.join).toHaveBeenCalledWith('order:o1');
       expect(mockClient.emit).toHaveBeenCalledWith('tracking', { orderId: 'o1', tracking: true });
+    });
+
+    it('should reject tracking without authentication', () => {
+      gateway.handleConnection(mockClient as never);
+      gateway.handleTrackOrder(mockClient as never, { orderId: 'o1' });
+      expect(mockClient.join).not.toHaveBeenCalledWith('order:o1');
+      expect(mockClient.emit).toHaveBeenCalledWith('error', { message: 'Authentication required' });
     });
   });
 

@@ -9,6 +9,14 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Injectable, Logger } from '@nestjs/common';
+import { verify } from 'jsonwebtoken';
+import { AppConfigService } from '@afri-market/core-config';
+import { JwtPayload } from '@afri-market/identity-infrastructure';
+
+interface ConnectedClient {
+  userId?: string;
+  tenantId?: string;
+}
 
 @WebSocketGateway({
   cors: { origin: '*' },
@@ -19,13 +27,42 @@ import { Injectable, Logger } from '@nestjs/common';
 export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
-  
+
   private readonly logger = new Logger(MarketplaceGateway.name);
-  private readonly connectedClients = new Map<string, { userId?: string; tenantId?: string }>();
+  private readonly connectedClients = new Map<string, ConnectedClient>();
+
+  constructor(private readonly config: AppConfigService) {}
+
+  private verifyClientToken(token?: string): ConnectedClient | null {
+    if (!token || typeof token !== 'string') {
+      return null;
+    }
+    try {
+      const payload = verify(token, this.config.jwt.secret) as JwtPayload;
+      if (!payload.sub || !payload.tenantId || payload.tokenType !== 'access') {
+        return null;
+      }
+      return { userId: payload.sub, tenantId: payload.tenantId };
+    } catch {
+      return null;
+    }
+  }
 
   handleConnection(client: Socket): void {
+    const token =
+      typeof client.handshake.auth === 'object' && client.handshake.auth !== null
+        ? (client.handshake.auth as { token?: string }).token
+        : undefined;
+    const identity = this.verifyClientToken(token);
+    if (identity) {
+      this.connectedClients.set(client.id, identity);
+      client.join(`tenant:${identity.tenantId}`);
+      client.join(`user:${identity.userId}`);
+      client.emit('authenticated', { success: true });
+    } else {
+      this.connectedClients.set(client.id, {});
+    }
     this.logger.log(`Client connected: ${client.id}`);
-    this.connectedClients.set(client.id, {});
   }
 
   handleDisconnect(client: Socket): void {
@@ -36,15 +73,16 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
   @SubscribeMessage('authenticate')
   handleAuthenticate(
     @ConnectedSocket() client: Socket,
-    @MessageBody() data: { userId: string; tenantId: string },
+    @MessageBody() data: { token?: string },
   ): void {
-    const info = this.connectedClients.get(client.id);
-    if (info) {
-      info.userId = data.userId;
-      info.tenantId = data.tenantId;
+    const identity = this.verifyClientToken(data?.token);
+    if (!identity) {
+      client.emit('authenticated', { success: false, message: 'Invalid token' });
+      return;
     }
-    client.join(`tenant:${data.tenantId}`);
-    client.join(`user:${data.userId}`);
+    this.connectedClients.set(client.id, identity);
+    client.join(`tenant:${identity.tenantId}`);
+    client.join(`user:${identity.userId}`);
     client.emit('authenticated', { success: true });
   }
 
@@ -53,6 +91,11 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
     @ConnectedSocket() client: Socket,
     @MessageBody() data: { orderId: string },
   ): void {
+    const info = this.connectedClients.get(client.id);
+    if (!info?.userId) {
+      client.emit('error', { message: 'Authentication required' });
+      return;
+    }
     client.join(`order:${data.orderId}`);
     client.emit('tracking', { orderId: data.orderId, tracking: true });
   }

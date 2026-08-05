@@ -1,7 +1,7 @@
 import { EarnPointsUseCase } from '../lib/use-cases/loyalty/earn-points.use-case';
 import { RedeemPointsUseCase } from '../lib/use-cases/loyalty/redeem-points.use-case';
-import { EntityId, TenantId } from '@afri-market/kernel';
-import { CustomerPoints } from '@afri-market/marketplace-domain';
+import { EntityId, Money, TenantId } from '@afri-market/kernel';
+import { CustomerPoints, Order } from '@afri-market/marketplace-domain';
 
 describe('EarnPointsUseCase', () => {
   let useCase: EarnPointsUseCase;
@@ -13,10 +13,33 @@ describe('EarnPointsUseCase', () => {
     delete: jest.Mock;
     exists: jest.Mock;
   };
+  let mockOrderRepo: { findById: jest.Mock };
 
   const TENANT_ID = 'test-tenant';
   const CUSTOMER_ID = 'customer-1';
   const ORDER_ID = 'order-1';
+
+  const createOrder = (totalAmount: number) =>
+    Order.reconstitute({
+      id: EntityId.from(ORDER_ID),
+      tenantId: TenantId.create(TENANT_ID),
+      customerId: EntityId.from(CUSTOMER_ID),
+      vendorId: EntityId.from('vendor-1'),
+      driverId: undefined,
+      type: 'food',
+      status: 'DELIVERED',
+      subtotal: Money.create(totalAmount),
+      deliveryFee: Money.create(0),
+      systemCommission: Money.create(0),
+      totalAmount: Money.create(totalAmount),
+      deliveryAddress: '123 Main St',
+      deliveryLatitude: undefined,
+      deliveryLongitude: undefined,
+      specialInstructions: undefined,
+      OTPCode: undefined,
+      OTPVerified: false,
+      version: 1,
+    });
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -30,12 +53,15 @@ describe('EarnPointsUseCase', () => {
       exists: jest.fn(),
     };
 
-    useCase = new EarnPointsUseCase(mockPointsRepo);
+    mockOrderRepo = { findById: jest.fn() };
+
+    useCase = new EarnPointsUseCase(mockPointsRepo, mockOrderRepo);
   });
 
   it('should create new points profile and earn points', async () => {
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPointsRepo.save.mockResolvedValue(undefined);
+    mockOrderRepo.findById.mockResolvedValue(createOrder(500000));
 
     const result = await useCase.execute(TENANT_ID, {
       customerId: CUSTOMER_ID,
@@ -72,6 +98,7 @@ describe('EarnPointsUseCase', () => {
     });
     mockPointsRepo.findByCustomerId.mockResolvedValue(existingPoints);
     mockPointsRepo.save.mockResolvedValue(undefined);
+    mockOrderRepo.findById.mockResolvedValue(createOrder(500000));
 
     const result = await useCase.execute(TENANT_ID, {
       customerId: CUSTOMER_ID,
@@ -88,6 +115,7 @@ describe('EarnPointsUseCase', () => {
   it('should calculate points earned as floor(orderTotal / 100)', async () => {
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPointsRepo.save.mockResolvedValue(undefined);
+    mockOrderRepo.findById.mockResolvedValue(createOrder(35000));
 
     const result = await useCase.execute(TENANT_ID, {
       customerId: CUSTOMER_ID,
@@ -116,6 +144,7 @@ describe('EarnPointsUseCase', () => {
     });
     mockPointsRepo.findByCustomerId.mockResolvedValue(nearGoldPoints);
     mockPointsRepo.save.mockResolvedValue(undefined);
+    mockOrderRepo.findById.mockResolvedValue(createOrder(500000));
 
     const result = await useCase.execute(TENANT_ID, {
       customerId: CUSTOMER_ID,
@@ -129,6 +158,7 @@ describe('EarnPointsUseCase', () => {
   it('should return zero points for small order total', async () => {
     mockPointsRepo.findByCustomerId.mockResolvedValue(null);
     mockPointsRepo.save.mockResolvedValue(undefined);
+    mockOrderRepo.findById.mockResolvedValue(createOrder(50));
 
     const result = await useCase.execute(TENANT_ID, {
       customerId: CUSTOMER_ID,
@@ -139,6 +169,53 @@ describe('EarnPointsUseCase', () => {
     expect(result.pointsEarned).toBe(0);
     expect(result.newTotal).toBe(0);
     expect(result.tier).toBe('BRONZE');
+  });
+
+  it('should throw if order not found', async () => {
+    mockOrderRepo.findById.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        customerId: CUSTOMER_ID,
+        orderId: ORDER_ID,
+        orderTotal: 500000,
+      }),
+    ).rejects.toThrow('Order not found');
+    expect(mockPointsRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should throw if order belongs to a different customer', async () => {
+    mockOrderRepo.findById.mockResolvedValue(
+      Order.reconstitute({
+        id: EntityId.from(ORDER_ID),
+        tenantId: TenantId.create(TENANT_ID),
+        customerId: EntityId.from('other-customer'),
+        vendorId: EntityId.from('vendor-1'),
+        driverId: undefined,
+        type: 'food',
+        status: 'DELIVERED',
+        subtotal: Money.create(500000),
+        deliveryFee: Money.create(0),
+        systemCommission: Money.create(0),
+        totalAmount: Money.create(500000),
+        deliveryAddress: '123 Main St',
+        deliveryLatitude: undefined,
+        deliveryLongitude: undefined,
+        specialInstructions: undefined,
+        OTPCode: undefined,
+        OTPVerified: false,
+        version: 1,
+      }),
+    );
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        customerId: CUSTOMER_ID,
+        orderId: ORDER_ID,
+        orderTotal: 500000,
+      }),
+    ).rejects.toThrow('You can only earn points for your own orders');
+    expect(mockPointsRepo.save).not.toHaveBeenCalled();
   });
 });
 

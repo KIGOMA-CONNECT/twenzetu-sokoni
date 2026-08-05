@@ -1,5 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class EarnPointsDto {
   @ApiProperty({ description: 'Order ID that earned these points' })
@@ -11,4 +11,9 @@ export class EarnPointsDto {
   @IsNumber()
   @Min(0)
   orderTotal!: number;
+
+  @ApiPropertyOptional({ description: 'Customer to credit (defaults to current user)' })
+  @IsString()
+  @IsOptional()
+  customerId?: string;
 }

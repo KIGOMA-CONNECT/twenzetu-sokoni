@@ -9,11 +9,12 @@ import {
   IVendorRepository,
   IOrderRepository,
   IPaymentRepository,
+  IProductRepository,
   OrderType,
   DeliveryFareCalculator,
 } from '@afri-market/marketplace-domain';
 import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, InitiateStkPushParams, getCurrencyForPhone } from '@afri-market/integrations';
-import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
+import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, PRODUCT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
 import { CreateOrderCommand } from '../../commands/create-order.command';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class CreateOrderUseCase {
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
+    @Inject(PRODUCT_REPOSITORY) private readonly productRepo: IProductRepository,
     @InjectDataSource() private readonly ds: DataSource,
     @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyNewOrder(vendorId: string, order: Record<string, unknown>): void } | undefined,
     @Optional() @Inject(SMS_SERVICE) private readonly smsService?: ISmsService,
@@ -51,6 +53,21 @@ export class CreateOrderUseCase {
     Guard.assert(vendor, 'Vendor not found');
     Guard.assert(vendor!.status === 'ACTIVE', 'Vendor is not active');
 
+    const validatedItems: Array<{ productId: string; productName: string; quantity: number; unitPrice: number }> = [];
+    for (const item of command.items) {
+      const product = await this.productRepo.findById(EntityId.from(item.productId));
+      Guard.assert(product, `Product ${item.productName} is no longer available`);
+      Guard.assert(product!.status === 'ACTIVE', `Product ${item.productName} is not available`);
+      Guard.assert(product!.vendorId.value === vendor!.id.value, `Product ${item.productName} does not belong to this vendor`);
+      Guard.assert(product!.stockQuantity >= item.quantity, `Insufficient stock for ${item.productName}`);
+      validatedItems.push({
+        productId: product!.id.value,
+        productName: product!.name,
+        quantity: item.quantity,
+        unitPrice: product!.price.amount,
+      });
+    }
+
     const currency = command.currency ?? getCurrencyForPhone(command.customerPhone ?? '');
 
     let deliveryFee = 0;
@@ -71,7 +88,7 @@ export class CreateOrderUseCase {
     }
 
     const commissionSplit = CommissionEngine.calculate({
-      items: command.items.map((i) => ({
+      items: validatedItems.map((i) => ({
         unitPrice: i.unitPrice,
         quantity: i.quantity,
       })),
@@ -102,12 +119,20 @@ export class CreateOrderUseCase {
 
     await this.orderRepo.save(order);
 
-    for (const item of command.items) {
+    for (const item of validatedItems) {
       await this.ds.query(
         `INSERT INTO order_items (id, tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
          VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
         [tenantId, order.id.value, item.productId, item.productName, item.quantity, item.unitPrice, item.unitPrice * item.quantity, currency],
       );
+    }
+
+    for (const item of validatedItems) {
+      const product = await this.productRepo.findById(EntityId.from(item.productId));
+      if (product) {
+        product.reduceStock(item.quantity);
+        await this.productRepo.save(product);
+      }
     }
 
     const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'cash') || 'mpesa';

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Headers, Logger, HttpCode, BadRequestException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Controller, Post, Body, Headers, Logger, HttpCode, BadRequestException, UnauthorizedException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeController } from '@nestjs/swagger';
@@ -158,12 +158,13 @@ export class WebhooksController {
     @Body() body: { checkoutRequestId?: string; receiptNumber?: string },
   ) {
     const secret = process.env.PAYMENT_CONFIRM_SECRET || process.env.WEBHOOK_INTERNAL_SECRET;
-    if (secret) {
-      const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
-      const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-      if (provided !== secret) {
-        throw new UnauthorizedException('Invalid webhook secret');
-      }
+    if (!secret) {
+      throw new ServiceUnavailableException('Webhook secret is not configured');
+    }
+    const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
+    const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;
+    if (provided !== secret) {
+      throw new UnauthorizedException('Invalid webhook secret');
     }
 
     const checkoutRequestId = body.checkoutRequestId;

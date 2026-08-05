@@ -8,7 +8,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { CheckoutCartDto } from './dto/checkout-cart.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { CancelOrderDto } from './dto/cancel-order.dto';
-import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand, CheckoutCartUseCase } from '@afri-market/marketplace-application';
+import { CreateOrderUseCase, UpdateOrderStatusUseCase, FindOrdersUseCase, CancelOrderUseCase, CreateOrderCommand, UpdateOrderStatusCommand, CheckoutCartUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { getCurrencyForPhone } from '@afri-market/integrations';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
@@ -28,6 +28,7 @@ export class OrdersController {
     private readonly entityManager: EntityManager,
     private readonly notifService: NotificationsService,
     private readonly orderNotifier: OrderNotifierService,
+    private readonly findVendors: FindVendorsUseCase,
   ) {}
 
   @Post()
@@ -183,8 +184,13 @@ export class OrdersController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateStatusEndpoint(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateOrderStatusDto, @CurrentUser() user: JwtPayload) {
+    let vendorId: string | undefined;
+    if (user.role === 'vendor') {
+      const vendor = await this.findVendors.findByUserId(user.sub);
+      vendorId = vendor?.id.value;
+    }
     const command = new UpdateOrderStatusCommand(id, dto.status);
-    const result = await this.updateStatus.execute(user.tenantId, command);
+    const result = await this.updateStatus.execute(user.tenantId, command, { role: user.role, vendorId });
     this.orderNotifier.notifyCustomerStatusChanged({
       tenantId: user.tenantId,
       orderId: id,

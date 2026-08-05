@@ -27,7 +27,7 @@ export class DebitWalletUseCase {
       throw new BadRequestException('Amount must be positive');
     }
 
-    const wallet = await this.walletRepo.findByOwnerId(ownerId);
+    const wallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
     if (!wallet) {
       throw new NotFoundException('Wallet not found');
     }

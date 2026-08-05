@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -34,8 +34,12 @@ export class LoyaltyController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async earn(@Body() dto: EarnPointsDto, @CurrentUser() user: JwtPayload) {
+    const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'compliance_admin'];
+    if (!adminRoles.includes(user.role)) {
+      throw new ForbiddenException('Only finance/admin users can credit loyalty points');
+    }
     return this.earnPoints.execute(user.tenantId, {
-      customerId: user.sub,
+      customerId: dto.customerId ?? user.sub,
       orderId: dto.orderId,
       orderTotal: dto.orderTotal,
     });

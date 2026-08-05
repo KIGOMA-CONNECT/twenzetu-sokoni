@@ -226,22 +226,17 @@ describe('LoanReminderService', () => {
 
 describe('PayoutSettlementService', () => {
   let service: PayoutSettlementService;
-  let qb: { select: jest.Mock; from: jest.Mock; where: jest.Mock; getRawMany: jest.Mock };
-  let dataSource: { createQueryBuilder: jest.Mock; query: jest.Mock };
+  let dataSource: { query: jest.Mock; transaction: jest.Mock };
+  let managerQuery: jest.Mock;
   let logSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    qb = {
-      select: jest.fn().mockReturnThis(),
-      from: jest.fn().mockReturnThis(),
-      where: jest.fn().mockReturnThis(),
-      getRawMany: jest.fn().mockResolvedValue([]),
-    };
+    managerQuery = jest.fn().mockResolvedValue([{ id: 'tx-1' }]);
     dataSource = {
-      createQueryBuilder: jest.fn().mockReturnValue(qb),
-      query: jest.fn().mockResolvedValue([{ id: 'tx-1' }]),
-    } as unknown as { createQueryBuilder: jest.Mock; query: jest.Mock };
+      query: jest.fn().mockResolvedValue([]),
+      transaction: jest.fn().mockImplementation(async (cb: (manager: { query: jest.Mock }) => Promise<unknown>) => cb({ query: managerQuery })),
+    } as unknown as { query: jest.Mock; transaction: jest.Mock };
     service = new PayoutSettlementService(dataSource as unknown as DataSource);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
   });
@@ -249,9 +244,9 @@ describe('PayoutSettlementService', () => {
   afterEach(() => logSpy.mockRestore());
 
   it('should log wallets with positive balance', async () => {
-    qb.getRawMany.mockResolvedValue([
-      { owner_type: 'vendor', owner_id: 'v1', balance: 15000, tenant_id: 't1' },
-      { owner_type: 'vendor', owner_id: 'v2', balance: 7500, tenant_id: 't1' },
+    dataSource.query.mockResolvedValue([
+      { id: 'w1', tenant_id: 't1', owner_id: 'v1', owner_type: 'vendor', balance: 15000 },
+      { id: 'w2', tenant_id: 't1', owner_id: 'v2', owner_type: 'vendor', balance: 7500 },
     ]);
 
     await service.handlePayoutSettlement();
@@ -273,11 +268,33 @@ describe('PayoutSettlementService', () => {
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Settled'));
   });
 
-  it('should query wallets with balance > 0', async () => {
+  it('should query only vendor and driver earning wallets with balance > 0', async () => {
     await service.handlePayoutSettlement();
 
-    expect(dataSource.createQueryBuilder).toHaveBeenCalled();
-    expect(qb.from).toHaveBeenCalledWith('wallets', 'w');
-    expect(qb.where).toHaveBeenCalledWith('w.balance > 0');
+    expect(dataSource.query).toHaveBeenCalledWith(expect.stringContaining('w.balance > 0'));
+    expect(dataSource.query).toHaveBeenCalledWith(expect.stringContaining('u.role'));
+    expect(dataSource.query).toHaveBeenCalledWith(expect.stringContaining('role = \'driver\''));
+  });
+
+  it('should record settlement audit withdrawals and transactions', async () => {
+    dataSource.query.mockResolvedValue([
+      { id: 'w1', tenant_id: 't1', owner_id: 'v1', owner_type: 'vendor', balance: 5000 },
+    ]);
+
+    await service.handlePayoutSettlement();
+
+    expect(dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(managerQuery).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE wallets SET balance = 0'),
+      ['w1'],
+    );
+    expect(managerQuery).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO wallet_withdrawals'),
+      ['t1', 'v1', 5000],
+    );
+    expect(managerQuery).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO wallet_transactions'),
+      ['v1', 'vendor', 5000, 't1'],
+    );
   });
 });

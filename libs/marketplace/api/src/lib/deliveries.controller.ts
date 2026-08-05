@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -64,7 +64,12 @@ export class DeliveriesController {
   @ApiParam({ name: 'driverId', description: 'Driver ID' })
   @ApiOperation({ summary: 'List deliveries by driver' })
   @ApiResponse({ status: 200, description: 'Success' })
-  public async findByDriver(@Param('driverId', ParseUUIDPipe) driverId: string) {
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  public async findByDriver(@Param('driverId', ParseUUIDPipe) driverId: string, @CurrentUser() user: JwtPayload) {
+    const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'compliance_admin', 'support_admin', 'marketing_admin'];
+    if (user.sub !== driverId && !adminRoles.includes(user.role)) {
+      throw new ForbiddenException('You can only view your own deliveries');
+    }
     const deliveries = await this.findDeliveries.findByDriver(driverId);
     return { data: deliveries.map(d => d.toDto()) };
   }
@@ -157,6 +162,9 @@ export class DeliveriesController {
       deliveryId: id,
       driverEarnings: body.driverEarnings ?? 0,
       deliveryOtp: body.deliveryOtp,
+    }, {
+      driverId: user.sub,
+      role: user.role,
     });
     this.orderNotifier.notifyCustomerStatusChanged({
       tenantId: user.tenantId,
@@ -180,8 +188,11 @@ export class DeliveriesController {
   @ApiResponse({ status: 200, description: 'Tracking info returned' })
   @ApiResponse({ status: 404, description: 'Not Found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async getTracking(@Param('orderId', ParseUUIDPipe) orderId: string) {
-    const tracking = await this.getDeliveryTracking.execute(orderId);
+  public async getTracking(
+    @Param('orderId', ParseUUIDPipe) orderId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const tracking = await this.getDeliveryTracking.execute(orderId, { userId: user.sub, role: user.role });
     return { data: tracking };
   }
 }

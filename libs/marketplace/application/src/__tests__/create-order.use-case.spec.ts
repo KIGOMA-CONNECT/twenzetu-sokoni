@@ -1,7 +1,7 @@
 import { CreateOrderUseCase } from '../lib/use-cases/order/create-order.use-case';
 import { CreateOrderCommand } from '../lib/commands/create-order.command';
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
-import { Vendor } from '@afri-market/marketplace-domain';
+import { Vendor, Product } from '@afri-market/marketplace-domain';
 import { CommissionEngine } from '@afri-market/integrations';
 
 jest.mock('@afri-market/integrations', () => ({
@@ -35,6 +35,10 @@ describe('CreateOrderUseCase', () => {
   let mockPaymentRepo: {
     save: jest.Mock;
     findByOrderId: jest.Mock;
+  };
+  let mockProductRepo: {
+    findById: jest.Mock;
+    save: jest.Mock;
   };
   let mockSmsService: {
     send: jest.Mock;
@@ -75,6 +79,20 @@ describe('CreateOrderUseCase', () => {
       findByOrderId: jest.fn().mockResolvedValue(null),
     };
 
+    mockProductRepo = {
+      findById: jest.fn().mockImplementation((id: { value: string } | string) => {
+        const key = typeof id === 'object' && id !== null ? id.value : String(id);
+        if (key === 'p1') {
+          return Promise.resolve(createProduct('p1', 'Pizza', 500));
+        }
+        if (key === 'p2') {
+          return Promise.resolve(createProduct('p2', 'Soda', 200));
+        }
+        return Promise.resolve(null);
+      }),
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+
     mockSmsService = {
       send: jest.fn().mockResolvedValue({ success: true }),
       sendOtp: jest.fn().mockResolvedValue({ success: true }),
@@ -85,11 +103,29 @@ describe('CreateOrderUseCase', () => {
       mockOrderRepo,
       mockVendorRepo,
       mockPaymentRepo,
+      mockProductRepo,
       { query: jest.fn().mockResolvedValue([]) } as never,
       undefined,
       mockSmsService,
     );
   });
+
+  const createProduct = (id: string, name: string, price: number) =>
+    Product.reconstitute({
+      id: EntityId.from(id),
+      tenantId: TenantId.create(TENANT_ID),
+      vendorId: EntityId.from(VENDOR_ID),
+      name,
+      description: '',
+      price: Money.create(price),
+      type: 'regular',
+      categoryId: undefined,
+      imageUrl: undefined,
+      stockQuantity: 100,
+      unit: 'piece',
+      status: 'ACTIVE',
+      version: 1,
+    });
 
   const createActiveVendor = () =>
     Vendor.reconstitute({
@@ -270,5 +306,156 @@ describe('CreateOrderUseCase', () => {
       result.otpCode,
       result.orderId,
     );
+  });
+
+  it('should use server-side product price instead of client-supplied price', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+
+    (CommissionEngine.calculate as jest.Mock).mockReturnValue({
+      itemsSubtotal: Money.create(1000),
+      systemCommission: Money.create(100),
+      vendorNet: Money.create(900),
+      deliveryFee: Money.create(0),
+      driverNet: Money.create(0),
+      totalPaid: Money.create(1000),
+    });
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'p1', productName: 'Pizza', quantity: 2, unitPrice: 1 }],
+      'cash',
+    );
+
+    await useCase.execute(TENANT_ID, command);
+
+    expect(CommissionEngine.calculate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        items: [{ unitPrice: 500, quantity: 2 }],
+      }),
+    );
+  });
+
+  it('should throw if a product is not available', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+    mockProductRepo.findById.mockResolvedValue(null);
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'missing', productName: 'Ghost', quantity: 1, unitPrice: 100 }],
+      'cash',
+    );
+
+    await expect(useCase.execute(TENANT_ID, command)).rejects.toThrow(
+      'no longer available',
+    );
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should throw if product does not belong to the vendor', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+    mockProductRepo.findById.mockResolvedValue(
+      Product.reconstitute({
+        id: EntityId.from('p-other'),
+        tenantId: TenantId.create(TENANT_ID),
+        vendorId: EntityId.from('other-vendor'),
+        name: 'Foreign',
+        description: '',
+        price: Money.create(100),
+        type: 'regular',
+        categoryId: undefined,
+        imageUrl: undefined,
+        stockQuantity: 10,
+        unit: 'piece',
+        status: 'ACTIVE',
+        version: 1,
+      }),
+    );
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'p-other', productName: 'Foreign', quantity: 1, unitPrice: 100 }],
+      'cash',
+    );
+
+    await expect(useCase.execute(TENANT_ID, command)).rejects.toThrow(
+      'does not belong to this vendor',
+    );
+  });
+
+  it('should throw if stock is insufficient', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+    mockProductRepo.findById.mockResolvedValue(
+      Product.reconstitute({
+        id: EntityId.from('p1'),
+        tenantId: TenantId.create(TENANT_ID),
+        vendorId: EntityId.from(VENDOR_ID),
+        name: 'Pizza',
+        description: '',
+        price: Money.create(500),
+        type: 'regular',
+        categoryId: undefined,
+        imageUrl: undefined,
+        stockQuantity: 1,
+        unit: 'piece',
+        status: 'ACTIVE',
+        version: 1,
+      }),
+    );
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'p1', productName: 'Pizza', quantity: 5, unitPrice: 500 }],
+      'cash',
+    );
+
+    await expect(useCase.execute(TENANT_ID, command)).rejects.toThrow(
+      'Insufficient stock',
+    );
+    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+  });
+
+  it('should reduce stock after creating the order', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+
+    (CommissionEngine.calculate as jest.Mock).mockReturnValue({
+      itemsSubtotal: Money.create(1000),
+      systemCommission: Money.create(100),
+      vendorNet: Money.create(900),
+      deliveryFee: Money.create(0),
+      driverNet: Money.create(0),
+      totalPaid: Money.create(1000),
+    });
+
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'food',
+      '123 Main St',
+      [{ productId: 'p1', productName: 'Pizza', quantity: 2, unitPrice: 500 }],
+      'cash',
+    );
+
+    await useCase.execute(TENANT_ID, command);
+
+    expect(mockProductRepo.save).toHaveBeenCalled();
+    const savedProduct = mockProductRepo.save.mock.calls[0][0];
+    expect(savedProduct.stockQuantity).toBe(98);
   });
 });
