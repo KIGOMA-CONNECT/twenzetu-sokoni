@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
@@ -108,12 +108,14 @@ export class WalletsController {
 
   @Post('debit')
   @UseInterceptors(CacheInvalidationInterceptor)
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
   @ApiOperation({ summary: 'Debit wallet (payment / withdrawal)' })
   @ApiBody({ type: WalletDebitDto })
   @ApiResponse({ status: 201, description: 'Wallet debited' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden: admin only' })
   public async debit(
     @CurrentUser() user: JwtPayload,
     @Body() body: WalletDebitDto,
