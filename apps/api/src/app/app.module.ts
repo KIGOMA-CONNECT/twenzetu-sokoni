@@ -67,6 +67,7 @@ export class AppModule implements NestModule {
         { path: 'auth/verify-otp', method: RequestMethod.ALL },
         { path: 'auth/refresh', method: RequestMethod.ALL },
         { path: 'auth/logout', method: RequestMethod.ALL },
+        { path: 'webhooks/*path', method: RequestMethod.ALL },
         { path: 'ussd/*path', method: RequestMethod.ALL },
       )
       .forRoutes('*path');
