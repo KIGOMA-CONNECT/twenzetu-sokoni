@@ -12,6 +12,7 @@ import { Request, Response, NextFunction } from 'express';
 import { join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
 import { AppModule } from './app/app.module';
+import helmet from 'helmet';
 
 const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
 let webIndex: string | null = null;
@@ -32,6 +33,23 @@ async function bootstrap(): Promise<void> {
   console.log('[Bootstrap] AppLoggerService retrieved');
   app.useLogger(logger);
   console.log('[Bootstrap] Logger set');
+
+  // Apply standard HTTP security headers (helmet)
+  // NOTE: Adjust CSP directives to match your frontend requirements.
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", 'data:'],
+        objectSrc: ["'none'"],
+      },
+    },
+  }));
+  if ((config.app.env ?? process.env.NODE_ENV ?? 'development') === 'production') {
+    app.use(helmet.hsts({ maxAge: 60 * 60 * 24 * 365, includeSubDomains: true, preload: true }));
+  }
 
   applySecurityHardening(app, config);
   console.log('[Bootstrap] Security hardening applied');
@@ -72,9 +90,8 @@ async function bootstrap(): Promise<void> {
   app.enableShutdownHooks();
   console.log('[Bootstrap] Pipes, filters, interceptors configured');
 
-  const nodeEnv = config.app.env ?? process.env.NODE_ENV ?? 'development';
-  const swaggerEnabled =
-    nodeEnv !== 'production' && (process.env.SWAGGER_ENABLED === undefined || process.env.SWAGGER_ENABLED === 'true');
+  // Require an explicit opt-in to enable Swagger in non-local environments
+  const swaggerEnabled = process.env.SWAGGER_ENABLED === 'true';
   if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('afriMarket API')
@@ -107,17 +124,16 @@ async function bootstrap(): Promise<void> {
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
-    console.log(`[Bootstrap] Swagger UI available at /docs (disabled in production)`);
+    console.log('[Bootstrap] Swagger UI setup done (SWAGGER_ENABLED=true)');
   } else {
-    console.log('[Bootstrap] Swagger disabled');
+    console.log('[Bootstrap] Swagger disabled by default');
   }
 
   console.log('[Bootstrap] Starting to listen on port', config.app.port);
   await app.listen(config.app.port);
   console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
+  console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
+  console.log(`[Bootstrap] Swagger docs at http://localhost:${config.app.port}/docs`);
 }
 
-bootstrap().catch((err) => {
-  console.error('[Bootstrap FATAL]', err);
-  process.exit(1);
-});
+bootstrap().catch(err => { console.error('[Bootstrap FATAL]', err); process.exit(1); });

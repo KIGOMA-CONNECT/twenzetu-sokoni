@@ -10,4 +10,3 @@ chmod 644 "$DST/fullchain.pem"
 chmod 600 "$DST/privkey.pem"
 /www/server/nginx/sbin/nginx -t >/dev/null 2>&1 && /www/server/nginx/sbin/nginx -s reload
 echo "$(date '+%F %T') copied $1 -> $DST and reloaded nginx"
-
