@@ -296,24 +296,27 @@ async function seed(): Promise<void> {
     console.log('\n========================================');
     console.log('Seed complete! (Pan-African / multi-currency)');
     console.log('========================================');
-    console.log(`\nLogin password for ALL users: "${DEFAULT_PASSWORD}"\n`);
-    console.log('Demo accounts:');
-    console.log('  Super Admin: +255754100000');
-    console.log('  Admin:       +255754100001');
-    console.log('  Vendor:      +255754100002 (Dar Fresh Market, TZS)');
-    console.log('  Customer:    +255754100003 (Hassan, TZS)');
-    console.log('  Driver:      +255754100004 (Juma, TZS)');
-    console.log('  Customer:    +254712345678 (Wanjiku, KES)');
-    console.log('  Customer:    +2348034567890 (Chidi, NGN)');
-    console.log('  Customer:    +233201234567 (Ama, GHS)');
-    console.log('  Customer:    +250788123456 (Uwase, RWF)');
-    console.log('  Customer:    +27821234567 (Thabo, ZAR)');
-    console.log('  Vendor:      +254711234567 (Nairobi Fresh Market, KES)');
-    console.log('  Vendor:      +2348098765432 (Lagos Groceries Hub, NGN)');
-    console.log('  Vendor:      +233244567890 (Accra Marketplace, GHS)');
-    console.log('  Vendor:      +250789654321 (Kigali Farm Produce, RWF)');
-    console.log('  Vendor:      +27719876543 (Jo\'burg Wholesale, ZAR)');
-    console.log('\nAll data in single "afriMarket Global Hub" tenant (currency per phone country)');
+    if (process.env.SEED_VERBOSE === 'true') {
+      console.log(`\nLogin password for ALL seeded users: "${DEFAULT_PASSWORD}"\n`);
+      console.log('(seeded users — dev/test convenience only; never reuse in production)');
+      console.log('Demo accounts:');
+      console.log('  Super Admin: +255754100000');
+      console.log('  Admin:       +255754100001');
+      console.log('  Vendor:      +255754100002 (Dar Fresh Market, TZS)');
+      console.log('  Customer:    +255754100003 (Hassan, TZS)');
+      console.log('  Driver:      +255754100004 (Juma, TZS)');
+      console.log('  Customer:    +254712345678 (Wanjiku, KES)');
+      console.log('  Customer:    +2348034567890 (Chidi, NGN)');
+      console.log('  Customer:    +233201234567 (Ama, GHS)');
+      console.log('  Customer:    +250788123456 (Uwase, RWF)');
+      console.log('  Customer:    +27821234567 (Thabo, ZAR)');
+      console.log('  Vendor:      +254711234567 (Nairobi Fresh Market, KES)');
+      console.log('  Vendor:      +2348098765432 (Lagos Groceries Hub, NGN)');
+      console.log('  Vendor:      +233244567890 (Accra Marketplace, GHS)');
+      console.log('  Vendor:      +250789654321 (Kigali Farm Produce, RWF)');
+      console.log("  Vendor:      +27719876543 (Jo'burg Wholesale, ZAR)");
+      console.log('\nAll data in single "afriMarket Global Hub" tenant (currency per phone country)');
+    }
   } catch (error) {
     console.error('Seed failed:', error);
     process.exit(1);
