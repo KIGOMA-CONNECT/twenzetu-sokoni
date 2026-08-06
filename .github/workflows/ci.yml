@@ -162,10 +162,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # Use the prebuilt gitleaks image instead of gitleaks/gitleaks@v8.21.2:
+      # that action builds gitleaks from source and fails with exit 128 on
+      # `git describe --tags` when the action repo is checked out without tags.
       - name: Run gitleaks detect
-        uses: gitleaks/gitleaks@v8.21.2
-        with:
-          args: detect --source . --no-banner --exit-code=1
+        run: |
+          docker run --rm \
+            -v "$PWD:/repo:ro" \
+            zricethezav/gitleaks:v8.21.2 \
+            detect --source /repo --no-banner --exit-code=1
 
   audit:
     name: npm audit (report high/critical)
