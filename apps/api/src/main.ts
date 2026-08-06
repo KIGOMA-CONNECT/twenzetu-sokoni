@@ -73,7 +73,8 @@ async function bootstrap(): Promise<void> {
   console.log('[Bootstrap] Pipes, filters, interceptors configured');
 
   const nodeEnv = config.app.env ?? process.env.NODE_ENV ?? 'development';
-  const swaggerEnabled = nodeEnv !== 'production' || process.env.SWAGGER_ENABLED === 'true';
+  const swaggerEnabled =
+    nodeEnv !== 'production' && (process.env.SWAGGER_ENABLED === undefined || process.env.SWAGGER_ENABLED === 'true');
   if (swaggerEnabled) {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('afriMarket API')
@@ -106,16 +107,17 @@ async function bootstrap(): Promise<void> {
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
-    console.log('[Bootstrap] Swagger UI setup done');
+    console.log(`[Bootstrap] Swagger UI available at /docs (disabled in production)`);
   } else {
-    console.log('[Bootstrap] Swagger disabled in production');
+    console.log('[Bootstrap] Swagger disabled');
   }
 
   console.log('[Bootstrap] Starting to listen on port', config.app.port);
   await app.listen(config.app.port);
   console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
-  console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
-  console.log(`[Bootstrap] Swagger docs at http://localhost:${config.app.port}/docs`);
 }
 
-bootstrap().catch(err => { console.error('[Bootstrap FATAL]', err); process.exit(1); });
+bootstrap().catch((err) => {
+  console.error('[Bootstrap FATAL]', err);
+  process.exit(1);
+});
