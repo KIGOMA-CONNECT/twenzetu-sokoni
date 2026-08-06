@@ -267,7 +267,7 @@ export class MpesaProvider implements IPaymentProvider {
       CommandID: 'BusinessPayment',
       Amount: Math.round(params.amount),
       PartyA: this.config.shortcode,
-      PartyB: params.phoneNumber,
+      PartyB: this.formatPhoneNumber(params.phoneNumber),
       Remarks: params.description ?? 'Vendor wallet withdrawal',
       QueueTimeOutURL: `${this.config.callbackUrl}/b2c-timeout`,
       ResultURL: `${this.config.callbackUrl}/b2c-result`,

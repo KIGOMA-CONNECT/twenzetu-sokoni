@@ -98,13 +98,14 @@ export class AzamPayProvider implements IPaymentProvider {
     const provider = AZAMPAY_PROVIDER_MAP[params.provider ?? 'mpesa'] ?? 'M-Pesa';
 
     if (!this.isConfigured) {
-      this.logger.warn('AzamPay not configured. Simulating initiation.', 'AzamPayProvider');
+      const message = 'AzamPay is not configured. Failing closed instead of simulating a checkout.';
+      this.logger.error(message, 'AzamPayProvider');
       return {
-        reference: `azp_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-        success: true,
-        status: 'INITIATED',
+        reference: params.accountReference,
+        success: false,
+        status: 'FAILED',
         provider,
-        message: 'Sandbox mode - simulated AzamPay checkout',
+        message,
       };
     }
 
@@ -159,8 +160,9 @@ export class AzamPayProvider implements IPaymentProvider {
 
   public async reversePayment(transactionId: string, amount: number, reason: string): Promise<ReversePaymentResult> {
     if (!this.isConfigured) {
-      this.logger.warn('AzamPay not configured. Simulating reversal.', 'AzamPayProvider');
-      return { success: true };
+      const message = 'AzamPay is not configured. Failing closed instead of simulating a reversal.';
+      this.logger.error(message, 'AzamPayProvider');
+      return { success: false, message };
     }
 
     try {
@@ -189,8 +191,9 @@ export class AzamPayProvider implements IPaymentProvider {
     const provider = AZAMPAY_PROVIDER_MAP[params.provider ?? 'mpesa'] ?? 'M-Pesa';
 
     if (!this.isConfigured) {
-      this.logger.warn('AzamPay not configured. Simulating disbursement.', 'AzamPayProvider');
-      return { success: true, message: 'Sandbox mode - simulated AzamPay disbursement' };
+      const message = 'AzamPay is not configured. Failing closed instead of simulating a disbursement.';
+      this.logger.error(message, 'AzamPayProvider');
+      return { success: false, message };
     }
 
     try {
