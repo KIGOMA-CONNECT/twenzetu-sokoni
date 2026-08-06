@@ -20,4 +20,10 @@ export interface IPaymentRepository extends IRepository<Payment, EntityId> {
   sumRevenue(tenantId: string, filters?: PaymentRevenueFilters): Promise<{ total: number; count: number }>;
   sumVendorNet(tenantId: string, filters?: PaymentRevenueFilters): Promise<number>;
   findByTransactionRef(transactionRef: string): Promise<Payment | null>;
+  transitionStatus(
+    id: string,
+    fromStatus: string,
+    toStatus: string,
+    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt'>>,
+  ): Promise<boolean>;
 }

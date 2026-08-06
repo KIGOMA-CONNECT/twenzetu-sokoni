@@ -161,14 +161,32 @@ export class CheckoutCartUseCase {
       );
     }
 
-    for (const item of cart!.items) {
-      const product = await this.productRepo.findById(item.productId);
-      if (product) {
-        product.reduceStock(item.quantity);
-        await this.productRepo.save(product);
+    // Atomic stock reservation: only succeeds while sufficient stock remains,
+    // preventing concurrent checkouts from overselling the same product.
+    const reserved: { productId: string; quantity: number }[] = [];
+    for (const item of validated) {
+      const result = await this.ds.query(
+        `UPDATE products SET stock_quantity = stock_quantity - $1, updated_at = NOW()
+         WHERE id = $2 AND stock_quantity >= $1 AND status = 'ACTIVE'
+         RETURNING id`,
+        [item.quantity, item.productId],
+      );
+      if (result.length === 0) {
+        for (const r of reserved) {
+          await this.ds.query(
+            `UPDATE products SET stock_quantity = stock_quantity + $1, updated_at = NOW()
+             WHERE id = $2`,
+            [r.quantity, r.productId],
+          );
+        }
+        await this.orderRepo.delete(order.id);
+        await this.paymentRepo.delete(payment.id);
+        Guard.assert(false, `Insufficient stock for ${item.productName}`);
       }
+      reserved.push({ productId: item.productId, quantity: item.quantity });
     }
 
+    let paymentInitiated = false;
     if (input.customerPhone) {
       this.smsService?.sendDeliveryOtp(input.customerPhone, otpCode, order.id.value);
     }
@@ -185,6 +203,7 @@ export class CheckoutCartUseCase {
     if (input.paymentMethod === 'cash') {
       payment.confirmEscrow();
       await this.paymentRepo.save(payment);
+      paymentInitiated = true;
     } else if (input.customerPhone) {
       try {
         const stkResult = await this.mobileMoneyService?.initiateStkPush({
@@ -197,11 +216,30 @@ export class CheckoutCartUseCase {
         if (stkResult?.checkoutRequestId) {
           payment.setTransactionRef(stkResult.checkoutRequestId);
           await this.paymentRepo.save(payment);
+          paymentInitiated = true;
         }
       } catch {
+        // fall through to failure handling below
+      }
+      if (!paymentInitiated) {
         payment.fail();
         await this.paymentRepo.save(payment);
       }
+    }
+
+    if (!paymentInitiated) {
+      // The order stays PLACED but stock was reserved: restore it so the
+      // failed payment doesn't permanently lock inventory.
+      for (const r of reserved) {
+        await this.ds.query(
+          `UPDATE products SET stock_quantity = stock_quantity + $1, updated_at = NOW()
+           WHERE id = $2`,
+          [r.quantity, r.productId],
+        );
+      }
+      await this.orderRepo.delete(order.id);
+      await this.paymentRepo.delete(payment.id);
+      Guard.assert(false, 'Payment initiation failed; order cancelled and stock restored');
     }
 
     this.gateway?.notifyNewOrder(cart!.vendorId.value, {

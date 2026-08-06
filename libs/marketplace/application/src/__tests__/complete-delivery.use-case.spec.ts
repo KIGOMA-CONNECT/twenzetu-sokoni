@@ -117,6 +117,7 @@ describe('CompleteDeliveryUseCase', () => {
     mockPaymentRepo = {
       findByOrderId: jest.fn().mockResolvedValue(null),
       save: jest.fn(),
+      transitionStatus: jest.fn().mockResolvedValue(true),
     };
 
     useCase = new CompleteDeliveryUseCase(

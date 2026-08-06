@@ -73,9 +73,16 @@ describe('CheckoutCartUseCase', () => {
       save: jest.fn().mockResolvedValue(undefined),
     };
     const vendorRepo = { findById: jest.fn().mockResolvedValue(vendor) };
-    const orderRepo = { save: jest.fn().mockResolvedValue(undefined) };
-    const paymentRepo = { save: jest.fn().mockResolvedValue(undefined) };
-    const ds = { query: jest.fn().mockResolvedValue([]) };
+    const orderRepo = { save: jest.fn().mockResolvedValue(undefined), delete: jest.fn().mockResolvedValue(undefined) };
+    const paymentRepo = { save: jest.fn().mockResolvedValue(undefined), delete: jest.fn().mockResolvedValue(undefined) };
+    const ds = {
+      query: jest.fn((sql: string) => {
+        if (sql.includes('UPDATE products')) {
+          return Promise.resolve([{ id: 'prod-1' }]);
+        }
+        return Promise.resolve([]);
+      }),
+    };
     const mobileMoneyService = {
       initiateStkPush: jest.fn().mockResolvedValue({ checkoutRequestId: 'ws-123', responseCode: '0' }),
     };
@@ -116,8 +123,13 @@ describe('CheckoutCartUseCase', () => {
       expect.arrayContaining(['t-1', 'prod-1', 'Product prod-1', 2, 4000, 8000, 'TZS']),
     );
 
-    const savedProduct = productRepo.save.mock.calls[0][0] as Product;
-    expect(savedProduct.stockQuantity).toBe(8);
+    const savedProduct = productRepo.save.mock.calls[0]?.[0] as Product | undefined;
+    expect(savedProduct).toBeUndefined();
+
+    expect(ds.query).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE products'),
+      expect.arrayContaining([2, 'prod-1']),
+    );
 
     expect(cart.status).toBe('CHECKED_OUT');
     expect(cartRepo.save).toHaveBeenCalledWith(cart);

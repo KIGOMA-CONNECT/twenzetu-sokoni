@@ -103,6 +103,7 @@ import { FailPaymentUseCase } from './use-cases/payment/fail-payment.use-case';
 import { CancelOrderUseCase } from './use-cases/order/cancel-order.use-case';
 import { FindMyDisputesUseCase, GetDisputeDetailUseCase } from './use-cases/dispute/find-disputes.use-case';
 import { FindReviewsByVendorUseCase } from './use-cases/review/find-reviews-by-vendor.use-case';
+import { FindMyReviewedOrdersUseCase } from './use-cases/review/find-my-reviewed-orders.use-case';
 import { CreateSurgeRuleUseCase, ListSurgeRulesUseCase } from './use-cases/surge/list-surge-rules.use-case';
 import { GetMyKycStatusUseCase, ListPendingKycUseCase } from './use-cases/kyc/get-kyc-status.use-case';
 import { ListMyLoansUseCase } from './use-cases/finance/list-my-loans.use-case';
@@ -135,6 +136,7 @@ import { ListCategoriesUseCase } from './use-cases/category/list-categories.use-
 import { CreateAddressUseCase } from './use-cases/address/create-address.use-case';
 import { ListAddressesUseCase } from './use-cases/address/list-addresses.use-case';
 import { DeleteAddressUseCase } from './use-cases/address/delete-address.use-case';
+import { SetDefaultAddressUseCase } from './use-cases/address/set-default-address.use-case';
 import { CreateMenuUseCase } from './use-cases/menu/create-menu.use-case';
 import { ListMenusUseCase } from './use-cases/menu/list-menus.use-case';
 import { CreateCouponUseCase } from './use-cases/promotion/create-coupon.use-case';
@@ -254,6 +256,7 @@ const USE_CASES = [
   FindMyDisputesUseCase,
   GetDisputeDetailUseCase,
   FindReviewsByVendorUseCase,
+  FindMyReviewedOrdersUseCase,
   CreateSurgeRuleUseCase,
   ListSurgeRulesUseCase,
   GetMyKycStatusUseCase,
@@ -285,9 +288,10 @@ const USE_CASES = [
   GetDeliveryTrackingUseCase,
   CreateCategoryUseCase,
   ListCategoriesUseCase,
-  CreateAddressUseCase,
-  ListAddressesUseCase,
-  DeleteAddressUseCase,
+CreateAddressUseCase,
+ListAddressesUseCase,
+DeleteAddressUseCase,
+SetDefaultAddressUseCase,
   CreateMenuUseCase,
   ListMenusUseCase,
   CreateCouponUseCase,

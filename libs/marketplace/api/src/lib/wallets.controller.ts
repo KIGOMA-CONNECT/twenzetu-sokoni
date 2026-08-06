@@ -225,31 +225,7 @@ export class WalletsController {
     const currency = defaultCurrency();
     const ownerId = await this.resolveWalletOwner(user);
 
-    const wallet = await this.getWallet.execute(user.tenantId, ownerId, getCurrencyForPhone(user.phoneNumber));
-    if (wallet.balance < body.amount) {
-      throw new BadRequestException(
-        `Insufficient wallet balance. Available: ${wallet.balance} ${wallet.currency}`,
-      );
-    }
-
     const reference = `withdrawal_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
-    const disburseResult = await this.mobileMoney.disburse({
-      phoneNumber: body.phoneNumber,
-      amount: body.amount,
-      reference,
-      description: body.description ?? `Wallet withdrawal ${body.amount} ${currency} (${providerLabel(body.provider)})`,
-      provider: body.provider,
-      currency,
-    });
-
-    if (!disburseResult.success) {
-      await this.ds.query(
-        `INSERT INTO wallet_withdrawals (tenant_id, user_id, amount, phone_number, provider, reference, status, message)
-         VALUES ($1, $2, $3, $4, $5, $6, 'FAILED', $7)`,
-        [user.tenantId, user.sub, body.amount, body.phoneNumber, body.provider, reference, disburseResult.message ?? 'Disbursement failed'],
-      );
-      throw new BadRequestException(disburseResult.message || 'Failed to initiate withdrawal');
-    }
 
     let balance: number;
     try {
@@ -264,7 +240,40 @@ export class WalletsController {
       balance = debited.balance;
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      throw new BadRequestException(`Withdrawal failed: ${message}`);
+      throw new BadRequestException(`Insufficient wallet balance: ${message}`);
+    }
+
+    const disburseResult = await this.mobileMoney.disburse({
+      phoneNumber: body.phoneNumber,
+      amount: body.amount,
+      reference,
+      description: body.description ?? `Wallet withdrawal ${body.amount} ${currency} (${providerLabel(body.provider)})`,
+      provider: body.provider,
+      currency,
+    });
+
+    if (!disburseResult.success) {
+      // Refund the reserved funds so a failed payout never leaves the wallet debited.
+      try {
+        await this.creditWallet.execute(
+          user.tenantId,
+          ownerId,
+          body.amount,
+          `Withdrawal refund (disbursement failed): ${reference}`,
+          reference,
+          'withdrawal_refund',
+        );
+        balance = (await this.getWallet.execute(user.tenantId, ownerId, getCurrencyForPhone(user.phoneNumber))).balance;
+      } catch (refundError) {
+        const refundMessage = refundError instanceof Error ? refundError.message : String(refundError);
+        this.logger.error(`Refund failed for withdrawal ${reference}: ${refundMessage}`);
+      }
+      await this.ds.query(
+        `INSERT INTO wallet_withdrawals (tenant_id, user_id, amount, phone_number, provider, reference, status, message)
+         VALUES ($1, $2, $3, $4, $5, $6, 'FAILED', $7)`,
+        [user.tenantId, user.sub, body.amount, body.phoneNumber, body.provider, reference, disburseResult.message ?? 'Disbursement failed'],
+      );
+      throw new BadRequestException(disburseResult.message || 'Failed to initiate withdrawal');
     }
 
     await this.ds.query(

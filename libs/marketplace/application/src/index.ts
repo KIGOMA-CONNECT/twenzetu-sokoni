@@ -57,6 +57,7 @@ export * from './lib/use-cases/delivery/update-driver-location.use-case';
 // Use Cases - Review
 export * from './lib/use-cases/review/create-review.use-case';
 export * from './lib/use-cases/review/find-reviews-by-vendor.use-case';
+export * from './lib/use-cases/review/find-my-reviewed-orders.use-case';
 
 // Use Cases - Procurement
 export * from './lib/use-cases/procurement/create-procurement.use-case';
@@ -161,6 +162,7 @@ export * from './lib/use-cases/category/list-categories.use-case';
 export * from './lib/use-cases/address/create-address.use-case';
 export * from './lib/use-cases/address/list-addresses.use-case';
 export * from './lib/use-cases/address/delete-address.use-case';
+export * from './lib/use-cases/address/set-default-address.use-case';
 
 // Use Cases - Menu
 export * from './lib/use-cases/menu/create-menu.use-case';

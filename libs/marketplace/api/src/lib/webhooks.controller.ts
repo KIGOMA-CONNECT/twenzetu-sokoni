@@ -69,25 +69,19 @@ export class WebhooksController {
     }
 
     const receipt = receiptNumber || queryResult.receiptNumber || '';
-    const topup = await this.ds.query(`SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1 AND status = 'PENDING'`, [checkoutRequestId]);
-    if (topup.length > 0) {
-      const req = topup[0];
-      await this.ds.query(
-        `UPDATE wallet_topup_requests SET status = 'COMPLETED', receipt_number = $1, updated_at = NOW() WHERE checkout_request_id = $2`,
-        [receipt, checkoutRequestId],
-      );
-      await this.creditWallet.execute(
-        req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
-        `M-Pesa top-up: ${receipt}`,
-        receipt, 'mpesa_topup',
-      );
-      this.logger.log(`Wallet top-up completed: user=${req.user_id} amount=${req.amount}`);
-    } else {
-      await this.confirmPayment.execute({
-        transactionRef: checkoutRequestId,
-        receiptNumber: receipt,
-      });
+    const claimed = await this.claimPendingTopUp(checkoutRequestId, receipt, 'mpesa_topup');
+    if (claimed) {
+      this.logger.log(`Wallet top-up completed: user=${claimed.user_id} amount=${claimed.amount}`);
+      return { ResultCode: 0, ResultDesc: 'Success' };
     }
+    if (await this.topUpExists(checkoutRequestId)) {
+      this.logger.log(`Top-up ${checkoutRequestId} already processed; skipping duplicate credit`);
+      return { ResultCode: 0, ResultDesc: 'Success' };
+    }
+    await this.confirmPayment.execute({
+      transactionRef: checkoutRequestId,
+      receiptNumber: receipt,
+    });
 
     return { ResultCode: 0, ResultDesc: 'Success' };
   }
@@ -117,28 +111,19 @@ export class WebhooksController {
     }
 
     if (status === 'SUCCESS') {
-      const topup = await this.ds.query(
-        `SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1 AND status = 'PENDING'`,
-        [transactionId],
-      );
-      if (topup.length > 0) {
-        const req = topup[0];
-        await this.ds.query(
-          `UPDATE wallet_topup_requests SET status = 'COMPLETED', receipt_number = $1, updated_at = NOW() WHERE checkout_request_id = $2`,
-          [receipt, transactionId],
-        );
-        await this.creditWallet.execute(
-          req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
-          `${String(body.provider ?? 'AzamPay')} top-up: ${receipt}`,
-          receipt || transactionId, 'momo_topup',
-        );
-        this.logger.log(`Wallet top-up completed via AzamPay: user=${req.user_id} amount=${req.amount}`);
-      } else {
-        await this.confirmPayment.execute({
-          transactionRef: transactionId,
-          receiptNumber: receipt || undefined,
-        });
+      const claimed = await this.claimPendingTopUp(transactionId, receipt || transactionId, 'momo_topup');
+      if (claimed) {
+        this.logger.log(`Wallet top-up completed via AzamPay: user=${claimed.user_id} amount=${claimed.amount}`);
+        return { success: true, message: 'Success' };
       }
+      if (await this.topUpExists(transactionId)) {
+        this.logger.log(`Top-up ${transactionId} already processed; skipping duplicate credit`);
+        return { success: true, message: 'Success' };
+      }
+      await this.confirmPayment.execute({
+        transactionRef: transactionId,
+        receiptNumber: receipt || undefined,
+      });
     } else {
       this.logger.warn(`AzamPay callback non-success status: ${status}`);
       await this.failTopUpOrPayment(transactionId, `AzamPay status: ${status}`);
@@ -172,25 +157,15 @@ export class WebhooksController {
       throw new BadRequestException('checkoutRequestId is required');
     }
 
-    const topup = await this.ds.query(
-      `SELECT * FROM wallet_topup_requests WHERE checkout_request_id = $1 AND status = 'PENDING'`,
-      [checkoutRequestId],
+    const req = await this.claimPendingTopUp(
+      checkoutRequestId,
+      body.receiptNumber || checkoutRequestId,
+      `${String((await this.ds.query(`SELECT provider FROM wallet_topup_requests WHERE checkout_request_id = $1`, [checkoutRequestId]))?.[0]?.provider ?? 'manual')}_topup`,
     );
-    if (topup.length === 0) {
+    if (!req) {
       throw new NotFoundException('No pending top-up found');
     }
 
-    const req = topup[0];
-    const receipt = body.receiptNumber || checkoutRequestId;
-    await this.ds.query(
-      `UPDATE wallet_topup_requests SET status = 'COMPLETED', receipt_number = $1, updated_at = NOW() WHERE checkout_request_id = $2`,
-      [receipt, checkoutRequestId],
-    );
-    await this.creditWallet.execute(
-      req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
-      `${String(req.provider ?? 'manual')} top-up: ${receipt}`,
-      receipt, `${req.provider ?? 'manual'}_topup`,
-    );
     this.logger.log(`Wallet top-up completed manually: user=${req.user_id} amount=${req.amount}`);
 
     return { success: true, checkoutRequestId };
@@ -276,5 +251,36 @@ export class WebhooksController {
     } else {
       await this.failPayment.execute({ transactionRef: reference, reason });
     }
+  }
+
+  private async topUpExists(checkoutRequestId: string): Promise<boolean> {
+    const rows = await this.ds.query(
+      `SELECT 1 FROM wallet_topup_requests WHERE checkout_request_id = $1`,
+      [checkoutRequestId],
+    );
+    return rows.length > 0;
+  }
+
+  private async claimPendingTopUp(
+    checkoutRequestId: string,
+    receipt: string,
+    kind: string,
+  ): Promise<{ tenant_id: string; user_id: string; amount: number } | null> {
+    const claimed = await this.ds.query(
+      `UPDATE wallet_topup_requests SET status = 'COMPLETED', receipt_number = $1, updated_at = NOW()
+       WHERE checkout_request_id = $2 AND status = 'PENDING'
+       RETURNING id, tenant_id, user_id, amount`,
+      [receipt, checkoutRequestId],
+    );
+    if (claimed.length === 0) {
+      return null;
+    }
+    const req = claimed[0];
+    await this.creditWallet.execute(
+      req.tenant_id, await this.resolveWalletOwner(req.user_id), Number(req.amount),
+      `${kind} top-up: ${receipt}`,
+      receipt, kind,
+    );
+    return { tenant_id: req.tenant_id, user_id: req.user_id, amount: Number(req.amount) };
   }
 }

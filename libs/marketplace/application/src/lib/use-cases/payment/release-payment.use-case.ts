@@ -50,6 +50,18 @@ export class ReleasePaymentUseCase {
     const vendorNet = payment.vendorNet.amount;
     const commission = payment.systemCommission.amount;
 
+    // Atomic guarded transition: only one concurrent caller can move the
+    // payment from ESCROW_HELD to RELEASED, preventing a double payout.
+    const released = await this.paymentRepo.transitionStatus(
+      payment.id.value,
+      'ESCROW_HELD',
+      'RELEASED',
+      { transactionRef: `release-${orderId}`, confirmedAt: new Date() },
+    );
+    if (!released) {
+      throw new BadRequestException('Payment was already released');
+    }
+
     payment.release(`release-${orderId}`);
     await this.paymentRepo.save(payment);
 

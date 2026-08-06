@@ -52,6 +52,31 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
     await this.repository.delete(id.value);
   }
 
+  public async transitionStatus(
+    id: string,
+    fromStatus: string,
+    toStatus: string,
+    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt'>>,
+  ): Promise<boolean> {
+    const update: Record<string, unknown> = {
+      status: toStatus,
+      updated_at: new Date(),
+    };
+    if (extra?.transactionRef !== undefined) {
+      update.transaction_ref = extra.transactionRef;
+    }
+    if (extra?.confirmedAt !== undefined) {
+      update.confirmed_at = extra.confirmedAt;
+    }
+    const result = await this.repository
+      .createQueryBuilder()
+      .update(PaymentOrmEntity)
+      .set(update)
+      .where('id = :id AND status = :fromStatus', { id, fromStatus })
+      .execute();
+    return Number(result.affected ?? 0) > 0;
+  }
+
   public async search(tenantId: string, filters: PaymentSearchFilters): Promise<{ data: Payment[]; total: number }> {
     const qb = this.repository.createQueryBuilder('p')
       .where('p.tenant_id = :tenantId', { tenantId });

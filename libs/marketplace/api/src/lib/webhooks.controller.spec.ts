@@ -205,9 +205,12 @@ describe('WebhooksController', () => {
     });
 
     it('should complete a wallet top-up when it matches the transaction id', async () => {
-      dataSource.query.mockResolvedValueOnce([
-        { tenant_id: 't1', user_id: 'u1', amount: 5000, provider: 'TigoPesa' },
-      ]);
+      dataSource.query = jest.fn((sql: string) => {
+        if (sql.includes('UPDATE wallet_topup_requests')) {
+          return Promise.resolve([{ tenant_id: 't1', user_id: 'u1', amount: 5000 }]);
+        }
+        return Promise.resolve([]);
+      });
 
       await controller.handleAzamPayCallback(
         {},
@@ -215,8 +218,8 @@ describe('WebhooksController', () => {
       );
 
       expect(dataSource.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE wallet_topup_requests SET status ='),
-        ['receipt-2', 'azp-2'],
+        expect.stringContaining('UPDATE wallet_topup_requests SET status'),
+        expect.arrayContaining(['receipt-2', 'azp-2']),
       );
       expect(creditWallet.execute).toHaveBeenCalledWith('t1', 'u1', 5000, expect.stringContaining('top-up'), 'receipt-2', 'momo_topup');
       expect(confirmPayment.execute).not.toHaveBeenCalled();
@@ -257,9 +260,15 @@ describe('WebhooksController', () => {
 
     it('should complete a pending card/bank top-up and credit the wallet', async () => {
       process.env.PAYMENT_CONFIRM_SECRET = 'topsecret';
-      dataSource.query.mockResolvedValueOnce([
-        { tenant_id: 't1', user_id: 'u1', amount: 20000, provider: 'card' },
-      ]);
+      dataSource.query = jest.fn((sql: string) => {
+        if (sql.includes('SELECT provider FROM wallet_topup_requests')) {
+          return Promise.resolve([{ provider: 'card' }]);
+        }
+        if (sql.includes('UPDATE wallet_topup_requests')) {
+          return Promise.resolve([{ tenant_id: 't1', user_id: 'u1', amount: 20000 }]);
+        }
+        return Promise.resolve([]);
+      });
 
       const result = await controller.handleInternalTopupConfirm(
         { 'x-webhook-secret': 'topsecret' },
@@ -268,8 +277,8 @@ describe('WebhooksController', () => {
 
       expect(result).toEqual({ success: true, checkoutRequestId: 'card-1' });
       expect(dataSource.query).toHaveBeenCalledWith(
-        expect.stringContaining('UPDATE wallet_topup_requests SET status ='),
-        ['card-receipt-1', 'card-1'],
+        expect.stringContaining('UPDATE wallet_topup_requests SET status'),
+        expect.arrayContaining(['card-receipt-1', 'card-1']),
       );
       expect(creditWallet.execute).toHaveBeenCalledWith('t1', 'u1', 20000, expect.stringContaining('card'), 'card-receipt-1', 'card_topup');
 

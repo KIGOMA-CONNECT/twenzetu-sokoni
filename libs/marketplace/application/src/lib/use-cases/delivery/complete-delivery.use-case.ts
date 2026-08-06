@@ -104,77 +104,85 @@ export class CompleteDeliveryUseCase {
 
     const payment = await this.paymentRepo.findByOrderId(order.id.value);
     if (payment && payment.status === 'ESCROW_HELD') {
-      payment.release(`delivery-${order.id.value}`);
-      await this.paymentRepo.save(payment);
+      const released = await this.paymentRepo.transitionStatus(
+        payment.id.value,
+        'ESCROW_HELD',
+        'RELEASED',
+        { transactionRef: `delivery-${order.id.value}`, confirmedAt: new Date() },
+      );
+      if (released) {
+        payment.release(`delivery-${order.id.value}`);
+        await this.paymentRepo.save(payment);
 
-      if (this.walletRepo) {
-        const vendorNet = payment.vendorNet.amount;
-        const driverNet = payment.driverNet.amount;
+        if (this.walletRepo) {
+          const vendorNet = payment.vendorNet.amount;
+          const driverNet = payment.driverNet.amount;
 
-        let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value, tenantId);
-        const vendorBalanceBefore = vendorWallet ? vendorWallet.balance.amount : 0;
-        if (!vendorWallet) {
-          vendorWallet = Wallet.create({
-            tenantId: TenantId.create(tenantId),
-            ownerId: payment.vendorId,
-            ownerType: 'vendor',
-            currency: payment.amount.currency,
-          });
-        }
-        vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
-        await this.walletRepo.save(vendorWallet);
-
-        if (this.txRepo) {
-          const vtx = WalletTransaction.create({
-            tenantId: TenantId.create(tenantId),
-            ownerId: payment.vendorId,
-            ownerType: 'vendor',
-            type: 'CREDIT',
-            amount: Money.create(vendorNet, payment.amount.currency),
-            balanceBefore: vendorBalanceBefore,
-            balanceAfter: vendorWallet.balance.amount,
-            description: `Payment auto-release for order ${order.id.value}`,
-            referenceId: payment.id.value,
-            referenceType: 'payment',
-          });
-          await this.txRepo.save(vtx);
-        }
-
-        if (driverNet > 0) {
-          let driverWallet = await this.walletRepo.findByOwnerId(delivery.driverId.value, tenantId);
-          const driverBalanceBefore = driverWallet ? driverWallet.balance.amount : 0;
-          if (!driverWallet) {
-            driverWallet = Wallet.create({
+          let vendorWallet = await this.walletRepo.findByOwnerId(payment.vendorId.value, tenantId);
+          const vendorBalanceBefore = vendorWallet ? vendorWallet.balance.amount : 0;
+          if (!vendorWallet) {
+            vendorWallet = Wallet.create({
               tenantId: TenantId.create(tenantId),
-              ownerId: delivery.driverId,
-              ownerType: 'driver',
+              ownerId: payment.vendorId,
+              ownerType: 'vendor',
               currency: payment.amount.currency,
             });
           }
-          driverWallet.credit(Money.create(driverNet, payment.amount.currency));
-          await this.walletRepo.save(driverWallet);
+          vendorWallet.credit(Money.create(vendorNet, payment.amount.currency));
+          await this.walletRepo.save(vendorWallet);
 
           if (this.txRepo) {
-            const dtx = WalletTransaction.create({
+            const vtx = WalletTransaction.create({
               tenantId: TenantId.create(tenantId),
-              ownerId: delivery.driverId,
-              ownerType: 'driver',
+              ownerId: payment.vendorId,
+              ownerType: 'vendor',
               type: 'CREDIT',
-              amount: Money.create(driverNet, payment.amount.currency),
-              balanceBefore: driverBalanceBefore,
-              balanceAfter: driverWallet.balance.amount,
-              description: `Driver earnings for order ${order.id.value}`,
+              amount: Money.create(vendorNet, payment.amount.currency),
+              balanceBefore: vendorBalanceBefore,
+              balanceAfter: vendorWallet.balance.amount,
+              description: `Payment auto-release for order ${order.id.value}`,
               referenceId: payment.id.value,
               referenceType: 'payment',
             });
-            await this.txRepo.save(dtx);
+            await this.txRepo.save(vtx);
           }
 
-          driverAmountCredited = driverNet;
-        }
+          if (driverNet > 0) {
+            let driverWallet = await this.walletRepo.findByOwnerId(delivery.driverId.value, tenantId);
+            const driverBalanceBefore = driverWallet ? driverWallet.balance.amount : 0;
+            if (!driverWallet) {
+              driverWallet = Wallet.create({
+                tenantId: TenantId.create(tenantId),
+                ownerId: delivery.driverId,
+                ownerType: 'driver',
+                currency: payment.amount.currency,
+              });
+            }
+            driverWallet.credit(Money.create(driverNet, payment.amount.currency));
+            await this.walletRepo.save(driverWallet);
 
-        vendorAmountCredited = vendorNet;
-        paymentReleased = true;
+            if (this.txRepo) {
+              const dtx = WalletTransaction.create({
+                tenantId: TenantId.create(tenantId),
+                ownerId: delivery.driverId,
+                ownerType: 'driver',
+                type: 'CREDIT',
+                amount: Money.create(driverNet, payment.amount.currency),
+                balanceBefore: driverBalanceBefore,
+                balanceAfter: driverWallet.balance.amount,
+                description: `Driver earnings for order ${order.id.value}`,
+                referenceId: payment.id.value,
+                referenceType: 'payment',
+              });
+              await this.txRepo.save(dtx);
+            }
+
+            driverAmountCredited = driverNet;
+          }
+
+          vendorAmountCredited = vendorNet;
+          paymentReleased = true;
+        }
       }
     }
 

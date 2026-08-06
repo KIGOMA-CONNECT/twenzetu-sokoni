@@ -18,6 +18,7 @@ describe('ReleasePaymentUseCase', () => {
     mockPaymentRepo = {
       findByOrderId: jest.fn(),
       save: jest.fn().mockResolvedValue(undefined),
+      transitionStatus: jest.fn().mockResolvedValue(true),
     };
     mockWalletRepo = {
       findByOwnerId: jest.fn(),
