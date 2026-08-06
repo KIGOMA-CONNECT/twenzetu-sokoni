@@ -55,6 +55,13 @@ backups/
 docker/nginx/ssl/
 web-static/
 *.bak
+sites/*.pem
+sites/*.key
+*.pem
+*.key
+!.env.example
+.npmrc
+secrets/
 
 # runtime logs
 *.log

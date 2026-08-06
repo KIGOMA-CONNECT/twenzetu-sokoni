@@ -94,3 +94,10 @@ And join the Nx community:
 - [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
 - [Our Youtube channel](https://www.youtube.com/@nxdevtools)
 - [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Security & environment notes
+
+- **Swagger UI** (`/docs`) is served whenever `APP_ENV` is not `production` and `SWAGGER_ENABLED` is not `'false'`. It is **never** exposed in production. To disable it in a non-production deployment (e.g. staging), set `SWAGGER_ENABLED=false`.
+- **Startup secret validation**: the API exits immediately on boot when running as `production` unless `JWT_SECRET`, `PAYMENT_CONFIRM_SECRET`, `WEBHOOK_INTERNAL_SECRET`, and `METRICS_SECRET` are all set. Use `docker-compose.prod.yml` with a populated `.env` (see `.env.example`).
+- **CI hardening**: the GitHub Actions workflow runs a full monorepo lint+test scan, a gitleaks secret scan (hard fail), `npm audit` (report-only), an SBOM generation step, and CodeQL analysis. Never commit `.env`, certs, or keys — see `.gitignore`.
+
