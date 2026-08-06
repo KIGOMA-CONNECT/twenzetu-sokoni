@@ -36,6 +36,26 @@ async function bootstrap(): Promise<void> {
   applySecurityHardening(app, config);
   console.log('[Bootstrap] Security hardening applied');
 
+  const isProduction = (config.app.env ?? process.env.NODE_ENV ?? 'development') === 'production';
+  if (isProduction) {
+    const requiredEnvs: Record<string, string | undefined> = {
+      JWT_SECRET: process.env.JWT_SECRET,
+      PAYMENT_CONFIRM_SECRET: process.env.PAYMENT_CONFIRM_SECRET,
+      WEBHOOK_INTERNAL_SECRET: process.env.WEBHOOK_INTERNAL_SECRET,
+      METRICS_SECRET: process.env.METRICS_SECRET,
+    };
+    const missing = Object.entries(requiredEnvs)
+      .filter(([, v]) => !v)
+      .map(([k]) => k);
+    if (missing.length) {
+      const msg = `[Bootstrap FATAL] Missing critical production secrets: ${missing.join(', ')}`;
+      console.error(msg);
+      await app.close();
+      process.exit(1);
+    }
+    console.log('[Bootstrap] Production secret validation passed');
+  }
+
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/docs') || req.path.startsWith('/swagger')) {
       return next();

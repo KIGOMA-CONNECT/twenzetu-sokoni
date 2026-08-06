@@ -1,0 +1,17 @@
+# Code owners for critical paths. PRs touching these files require
+# an approved review from the listed owners.
+
+# Backend API and core logic
+apps/api/                @KIGOMA-CONNECT/backend
+libs/core/               @KIGOMA-CONNECT/backend
+libs/marketplace/        @KIGOMA-CONNECT/backend
+
+# Frontend
+apps/web/                @KIGOMA-CONNECT/frontend
+
+# Infrastructure, CI/CD, and secrets (must always be reviewed)
+docker/                  @KIGOMA-CONNECT/devops
+docker-compose*.yml      @KIGOMA-CONNECT/devops
+.github/workflows/       @KIGOMA-CONNECT/devops
+deploy.sh                @KIGOMA-CONNECT/devops
+*.sh                     @KIGOMA-CONNECT/devops
