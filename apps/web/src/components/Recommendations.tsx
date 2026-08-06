@@ -31,10 +31,26 @@ interface RecommendationsProps {
   vendorMap?: Record<string, string>;
 }
 
+interface RecommendationItem {
+  id: string;
+  name?: string;
+  price?: number | string;
+  old_price?: number | string | null;
+  image_url?: string | null;
+  imageUrl?: string | null;
+  vendor_id?: string;
+  vendor_name?: string;
+  rating?: number | null;
+  averageRating?: number | null;
+  stock_quantity?: number | null;
+  stockQuantity?: number | null;
+  unit?: string | null;
+}
+
 export function Recommendations({ title = 'Recommended', endpoint, vendorMap = {} }: RecommendationsProps) {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [items, setItems] = useState<any[]>([]);
+  const [items, setItems] = useState<RecommendationItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -59,17 +75,17 @@ export function Recommendations({ title = 'Recommended', endpoint, vendorMap = {
         {title}
       </h3>
       <div style={styles.grid}>
-        {items.slice(0, 6).map((item: any) => (
+        {items.slice(0, 6).map((item) => (
           <ProductCard
             key={item.id}
             name={item.name}
-            price={Number(item.price)}
+            price={Number(item.price ?? 0)}
             oldPrice={item.old_price != null ? Number(item.old_price) : undefined}
-            imageUrl={item.image_url || item.imageUrl}
-            vendor={vendorMap[item.vendor_id] || item.vendor_name}
-            rating={item.rating ?? item.averageRating}
-            stockQuantity={item.stock_quantity ?? item.stockQuantity}
-            unit={item.unit}
+            imageUrl={item.image_url || item.imageUrl || undefined}
+            vendor={vendorMap[item.vendor_id ?? ''] || item.vendor_name}
+            rating={item.rating ?? item.averageRating ?? undefined}
+            stockQuantity={item.stock_quantity ?? item.stockQuantity ?? undefined}
+            unit={item.unit ?? undefined}
             actionLabel={t('product.placeOrder')}
             onClick={() => navigate(`/vendors/${item.vendor_id}/products`)}
           />
