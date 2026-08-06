@@ -21,7 +21,7 @@ const buildUser = (overrides: Partial<User> = {}): User =>
 
 describe('AuthService', () => {
   const userRepo = { findByPhoneNumber: jest.fn(), findById: jest.fn(), save: jest.fn() };
-  const tenantRepo = { save: jest.fn() };
+  const tenantRepo = { save: jest.fn(), findById: jest.fn() };
   const otpRepo = { invalidateAll: jest.fn(), create: jest.fn(), findValid: jest.fn(), markUsed: jest.fn() };
   const sessionRepo = {} as never;
   const sessionService = {
@@ -97,6 +97,7 @@ describe('AuthService', () => {
   describe('registerUser', () => {
     it('creates and verifies a new user', async () => {
       userRepo.findByPhoneNumber.mockResolvedValue(null);
+      tenantRepo.findById.mockResolvedValue({});
       const result = await service.registerUser(
         '22222222-2222-2222-2222-222222222222',
         '+255754100005',
