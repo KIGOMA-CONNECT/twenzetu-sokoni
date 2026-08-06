@@ -1,0 +1,15 @@
+# To get started with Dependabot version updates, see:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: "deps"
+    reviewers:
+      - "MAWENI"
+    labels:
+      - "dependencies"
