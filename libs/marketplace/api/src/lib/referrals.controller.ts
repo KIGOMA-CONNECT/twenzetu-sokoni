@@ -6,7 +6,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nes
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { randomInt } from 'crypto';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 
 import { IsString, IsNotEmpty, IsOptional, Length } from 'class-validator';
 
@@ -204,8 +204,13 @@ export class ReferralsController {
   }
 
   @Post(':id/complete')
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Mark a referral as completed (called when referred user places first order)' })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Complete a referral and award the reward (admin only)' })
+  @ApiResponse({ status: 201, description: 'Referral completed' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden: admin only' })
   async completeReferral(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     const referral = await this.ds.query(
       `SELECT * FROM referrals WHERE id = $1 AND tenant_id = $2`,
@@ -213,6 +218,11 @@ export class ReferralsController {
     );
     if (referral.length === 0) {
       throw new NotFoundException('Referral not found');
+    }
+
+    const ref = referral[0];
+    if (ref.status === 'COMPLETED') {
+      throw new BadRequestException('Referral is already completed');
     }
 
     const rewardAmount = 5000;
