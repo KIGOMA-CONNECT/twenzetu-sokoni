@@ -1,9 +1,9 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateAddressDto } from './dto/create-address.dto';
-import { CreateAddressUseCase, ListAddressesUseCase, DeleteAddressUseCase } from '@afri-market/marketplace-application';
+import { CreateAddressUseCase, ListAddressesUseCase, DeleteAddressUseCase, SetDefaultAddressUseCase } from '@afri-market/marketplace-application';
 
 @ApiTags('Addresses')
 @Controller('addresses')
@@ -14,6 +14,7 @@ export class AddressesController {
     private readonly createAddress: CreateAddressUseCase,
     private readonly listAddresses: ListAddressesUseCase,
     private readonly deleteAddress: DeleteAddressUseCase,
+    private readonly setDefaultAddress: SetDefaultAddressUseCase,
   ) {}
 
   @Get('me')
@@ -45,5 +46,14 @@ export class AddressesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     return this.deleteAddress.execute(id, user.sub);
+  }
+
+  @Patch(':id/default')
+  @ApiOperation({ summary: 'Set an address as default' })
+  @ApiParam({ name: 'id', description: 'Address ID' })
+  @ApiResponse({ status: 200, description: 'Address set as default' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async setDefault(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return this.setDefaultAddress.execute(id, user.sub);
   }
 }

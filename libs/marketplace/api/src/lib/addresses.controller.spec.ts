@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AddressesController } from './addresses.controller';
-import { CreateAddressUseCase, ListAddressesUseCase, DeleteAddressUseCase } from '@afri-market/marketplace-application';
+import { CreateAddressUseCase, ListAddressesUseCase, DeleteAddressUseCase, SetDefaultAddressUseCase } from '@afri-market/marketplace-application';
 import { AuthGuard } from '@nestjs/passport';
 
 describe('AddressesController', () => {
@@ -8,6 +8,7 @@ describe('AddressesController', () => {
   let createAddress: jest.Mocked<CreateAddressUseCase>;
   let listAddresses: jest.Mocked<ListAddressesUseCase>;
   let deleteAddress: jest.Mocked<DeleteAddressUseCase>;
+  let setDefaultAddress: jest.Mocked<SetDefaultAddressUseCase>;
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -20,6 +21,9 @@ describe('AddressesController', () => {
     deleteAddress = {
       execute: jest.fn().mockResolvedValue({ deleted: true }),
     } as unknown as jest.Mocked<DeleteAddressUseCase>;
+    setDefaultAddress = {
+      execute: jest.fn().mockResolvedValue({ updated: true }),
+    } as unknown as jest.Mocked<SetDefaultAddressUseCase>;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AddressesController],
@@ -27,6 +31,7 @@ describe('AddressesController', () => {
         { provide: CreateAddressUseCase, useValue: createAddress },
         { provide: ListAddressesUseCase, useValue: listAddresses },
         { provide: DeleteAddressUseCase, useValue: deleteAddress },
+        { provide: SetDefaultAddressUseCase, useValue: setDefaultAddress },
       ],
     })
       .overrideGuard(AuthGuard('jwt'))
@@ -62,6 +67,14 @@ describe('AddressesController', () => {
       const result = await controller.remove('addr-1', { sub: 'user-1' } as never);
       expect(result).toEqual({ deleted: true });
       expect(deleteAddress.execute).toHaveBeenCalledWith('addr-1', 'user-1');
+    });
+  });
+
+  describe('setDefault', () => {
+    it('should set an address as default', async () => {
+      const result = await controller.setDefault('addr-1', { sub: 'user-1' } as never);
+      expect(result).toEqual({ updated: true });
+      expect(setDefaultAddress.execute).toHaveBeenCalledWith('addr-1', 'user-1');
     });
   });
 });

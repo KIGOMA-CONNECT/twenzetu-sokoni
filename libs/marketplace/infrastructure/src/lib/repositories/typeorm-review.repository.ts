@@ -27,6 +27,14 @@ export class TypeOrmReviewRepository extends TypeOrmRepository<Review, ReviewOrm
     return entities.map(e => this.toDomain(e));
   }
 
+  public async findReviewedOrderIdsByCustomer(customerId: string): Promise<string[]> {
+    const entities = await this.repository.find({
+      where: { customerId },
+      select: { orderId: true },
+    });
+    return entities.map(e => e.orderId);
+  }
+
   public async save(entity: Review): Promise<void> {
     const orm = this.toOrm(entity);
     const existing = await this.repository.findOne({ where: { id: entity.id.value } });

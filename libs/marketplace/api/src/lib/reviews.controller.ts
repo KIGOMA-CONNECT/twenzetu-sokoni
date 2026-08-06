@@ -6,7 +6,7 @@ import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { IReviewRepository, IOrderRepository } from '@afri-market/marketplace-domain';
 import { REVIEW_REPOSITORY, ORDER_REPOSITORY } from '@afri-market/marketplace-application';
 import { CreateReviewDto } from './dto/create-review.dto';
-import { CreateReviewUseCase, CreateReviewCommand, FindReviewsByVendorUseCase } from '@afri-market/marketplace-application';
+import { CreateReviewUseCase, CreateReviewCommand, FindReviewsByVendorUseCase, FindMyReviewedOrdersUseCase } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 
 @ApiTags('Reviews')
@@ -16,6 +16,7 @@ export class ReviewsController {
   constructor(
     private readonly createReview: CreateReviewUseCase,
     private readonly findReviewsByVendor: FindReviewsByVendorUseCase,
+    private readonly findMyReviewedOrders: FindMyReviewedOrdersUseCase,
     @Inject(REVIEW_REPOSITORY) private readonly reviewRepo: IReviewRepository,
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
   ) {}
@@ -37,6 +38,14 @@ export class ReviewsController {
       dto.comment,
     );
     return this.createReview.execute(user.tenantId, command);
+  }
+
+  @Get('me/orders')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Get the set of order IDs the current user has already reviewed' })
+  @ApiResponse({ status: 200, description: 'Reviewed order IDs' })
+  public async findMyReviewedOrdersEndpoint(@CurrentUser() user: JwtPayload) {
+    return this.findMyReviewedOrders.execute(user.sub);
   }
 
   @Get('order/:orderId')
