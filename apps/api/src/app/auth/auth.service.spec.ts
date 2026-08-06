@@ -175,20 +175,20 @@ describe('AuthService', () => {
   describe('suspend / unsuspend', () => {
     it('suspends the user and force-logouts every session', async () => {
       userRepo.findById.mockResolvedValue(buildUser());
-      const result = await service.suspend('11111111-1111-1111-1111-111111111111');
+      const result = await service.suspend('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
       expect(sessionService.revokeAllForUser).toHaveBeenCalledWith('11111111-1111-1111-1111-111111111111');
       expect(result.status).toBe('SUSPENDED');
     });
 
     it('reactivates a suspended user', async () => {
       userRepo.findById.mockResolvedValue(buildUser({ status: 'SUSPENDED' }));
-      const result = await service.unsuspend('11111111-1111-1111-1111-111111111111');
+      const result = await service.unsuspend('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222');
       expect(result.status).toBe('ACTIVE');
     });
 
     it('throws NotFound for unknown users', async () => {
       userRepo.findById.mockResolvedValue(null);
-      await expect(service.suspend('11111111-1111-1111-1111-111111111111')).rejects.toBeInstanceOf(
+      await expect(service.suspend('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')).rejects.toBeInstanceOf(
         NotFoundException,
       );
     });
