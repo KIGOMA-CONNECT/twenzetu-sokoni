@@ -76,6 +76,11 @@ jobs:
           DATABASE_USER: postgres
           DB_USERNAME: postgres
           DATABASE_USERNAME: postgres
+          # POSgres client envs
+          PGUSER: postgres
+          PGPASSWORD: postgres
+          # single DATABASE_URL for libs that prefer connection string
+          DATABASE_URL: postgres://postgres:postgres@localhost:5432/afri_market_test
           JWT_SECRET: ci-jwt-secret
           REDIS_URL: redis://localhost:6379
 
