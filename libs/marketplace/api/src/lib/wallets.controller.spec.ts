@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Reflector } from '@nestjs/core';
 import { ExecutionContext } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { WalletsController } from './wallets.controller';
 import { RolesGuard, ROLES_KEY } from '@afri-market/identity-infrastructure';
@@ -51,6 +52,7 @@ describe('WalletsController', () => {
         { provide: MobileMoneyService, useValue: mobileMoney },
         { provide: FindVendorsUseCase, useValue: findVendors },
         { provide: getDataSourceToken(), useValue: dataSource },
+        { provide: CACHE_MANAGER, useValue: { reset: jest.fn().mockResolvedValue(undefined) } },
         RolesGuard,
         { provide: Reflector, useValue: new Reflector() },
       ],
