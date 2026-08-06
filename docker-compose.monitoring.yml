@@ -33,7 +33,11 @@ services:
       - afri-market-grafana-data:/var/lib/grafana
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
-      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:-admin123}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set GRAFANA_ADMIN_PASSWORD — must not be default 'admin123'}
+      GF_SECURITY_ADMIN_PASSWORD_FILE: ${GRAFANA_ADMIN_PASSWORD_FILE:-}
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:-localhost}
+      GF_SERVER_ROOT_URL: ${GRAFANA_ROOT_URL:-https://monitoring.localhost}
       GF_INSTALL_PLUGINS: grafana-piechart-panel
     depends_on:
       prometheus:

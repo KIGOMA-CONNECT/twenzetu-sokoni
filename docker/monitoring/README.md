@@ -11,7 +11,7 @@ docker compose -f docker-compose.prod.yml -f docker-compose.monitoring.yml up -d
 | Service         | Port  | Default Credentials           |
 |-----------------|-------|-------------------------------|
 | Prometheus      | 9090  | —                             |
-| Grafana         | 3001  | admin / admin123              |
+| Grafana         | 3001  | Set `GRAFANA_ADMIN_PASSWORD` in your environment — **do not reuse default credentials in production**. After first login, rotate from **Settings > Users > admin**. |
 | Node Exporter   | 9100  | —                             |
 | Postgres Exporter | 9187 | —                           |
 
