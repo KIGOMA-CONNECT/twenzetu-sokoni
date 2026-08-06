@@ -101,3 +101,5 @@ And join the Nx community:
 - **Startup secret validation**: the API exits immediately on boot when running as `production` unless `JWT_SECRET`, `PAYMENT_CONFIRM_SECRET`, `WEBHOOK_INTERNAL_SECRET`, and `METRICS_SECRET` are all set. Use `docker-compose.prod.yml` with a populated `.env` (see `.env.example`).
 - **CI hardening**: the GitHub Actions workflow runs a full monorepo lint+test scan, a gitleaks secret scan (hard fail), `npm audit` (report-only), an SBOM generation step, and CodeQL analysis. Never commit `.env`, certs, or keys — see `.gitignore`.
 
+> **Tracked follow-up — dependency upgrades**: `react-router` 7.18.1 has a HIGH RSC-CSRF advisory (GHSA) that is only fixed in the breaking 8.x line; deliberately deferred to a dedicated upgrade PR (touches all web routing). `js-yaml@5.2.1` via `@nestjs/swagger` is also flagged HIGH but has no production exposure since Swagger is disabled in production. All other open `npm audit` findings are dev/build-tooling only. Re-enable the audit job as a hard gate once these upgrades land.
+
