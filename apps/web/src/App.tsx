@@ -44,6 +44,23 @@ import ConsumerServices from './pages/consumer/ConsumerServices';
 import VendorServices from './pages/vendor/VendorServices';
 import CartPage from './pages/consumer/CartPage';
 import CheckoutPage from './pages/consumer/CheckoutPage';
+import AdminHrDashboard from './pages/admin/hr/AdminHrDashboard';
+import AdminOrgUnits from './pages/admin/hr/AdminOrgUnits';
+import AdminOrgTypes from './pages/admin/hr/AdminOrgTypes';
+import AdminOrgProfile from './pages/admin/hr/AdminOrgProfile';
+import AdminWorkflows from './pages/admin/hr/AdminWorkflows';
+import AdminHrPositions from './pages/admin/hr/AdminHrPositions';
+import AdminHrEmployees from './pages/admin/hr/AdminHrEmployees';
+import AdminHrEmployeeDetail from './pages/admin/hr/AdminHrEmployeeDetail';
+import AdminHrLeave from './pages/admin/hr/AdminHrLeave';
+import AdminHrPayroll from './pages/admin/hr/AdminHrPayroll';
+import AdminHrRecruitment from './pages/admin/hr/AdminHrRecruitment';
+import AdminHrPerformance from './pages/admin/hr/AdminHrPerformance';
+import AdminHrCompensation from './pages/admin/hr/AdminHrCompensation';
+import AdminHrLearning from './pages/admin/hr/AdminHrLearning';
+import AdminHrSuccession from './pages/admin/hr/AdminHrSuccession';
+import AdminHrOffboarding from './pages/admin/hr/AdminHrOffboarding';
+import AdminHrCompliance from './pages/admin/hr/AdminHrCompliance';
 
 const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
@@ -85,6 +102,23 @@ function AppRoutes() {
         <Route path="/admin/manage-admins" element={<ProtectedRoute roles={['super_admin']}><AdminManageAdmins /></ProtectedRoute>} />
         <Route path="/admin/reconciliation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminReconciliation /></ProtectedRoute>} />
         <Route path="/admin/audit-log" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminAuditLog /></ProtectedRoute>} />
+        <Route path="/admin/hr" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrDashboard /></ProtectedRoute>} />
+        <Route path="/admin/org/units" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminOrgUnits /></ProtectedRoute>} />
+        <Route path="/admin/org/types" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminOrgTypes /></ProtectedRoute>} />
+        <Route path="/admin/org/profile" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminOrgProfile /></ProtectedRoute>} />
+        <Route path="/admin/workflows" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminWorkflows /></ProtectedRoute>} />
+        <Route path="/admin/hr/positions" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrPositions /></ProtectedRoute>} />
+        <Route path="/admin/hr/employees" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrEmployees /></ProtectedRoute>} />
+        <Route path="/admin/hr/employees/:id" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrEmployeeDetail /></ProtectedRoute>} />
+        <Route path="/admin/hr/leave" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrLeave /></ProtectedRoute>} />
+        <Route path="/admin/hr/payroll" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrPayroll /></ProtectedRoute>} />
+        <Route path="/admin/hr/recruitment" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrRecruitment /></ProtectedRoute>} />
+        <Route path="/admin/hr/performance" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrPerformance /></ProtectedRoute>} />
+        <Route path="/admin/hr/compensation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrCompensation /></ProtectedRoute>} />
+        <Route path="/admin/hr/learning" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrLearning /></ProtectedRoute>} />
+        <Route path="/admin/hr/succession" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrSuccession /></ProtectedRoute>} />
+        <Route path="/admin/hr/offboarding" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrOffboarding /></ProtectedRoute>} />
+        <Route path="/admin/hr/compliance" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrCompliance /></ProtectedRoute>} />
         <Route path="/vendor/onboarding" element={<VendorOnboarding />} />
         <Route path="/terms" element={<LegalPage />} />
         <Route path="/privacy" element={<LegalPage />} />

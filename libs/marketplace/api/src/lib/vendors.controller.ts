@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -59,8 +58,6 @@ export class VendorsController {
   }
 
   @Get()
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(60)
   @ApiOperation({ summary: 'List/search vendors' })
   @ApiQuery({ name: 'search', required: false })
   @ApiQuery({ name: 'category', required: false })
@@ -163,8 +160,6 @@ export class VendorsController {
   }
 
   @Get(':id')
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(60)
   @ApiOperation({ summary: 'Get vendor by ID' })
   @ApiParam({ name: 'id', description: 'Vendor ID' })
   @ApiResponse({ status: 200, description: 'Success' })

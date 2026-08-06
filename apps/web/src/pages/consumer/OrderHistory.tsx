@@ -35,16 +35,19 @@ function OrderHistory() {
 
   useEffect(() => {
     if (!orders) return;
-    (orders || [])
-      .filter((o) => o.status === 'DELIVERED')
-      .forEach((o) => {
-        api.get(`/reviews/order/${o.id}`)
-          .then((res) => {
-            const rev = res.data?.data?.data;
-            if (rev) setReviewedOrders((m) => ({ ...m, [o.id]: true }));
-          })
-          .catch(() => { /* ignore */ });
-      });
+    let cancelled = false;
+    api.get('/reviews/me/orders')
+      .then((res) => {
+        if (cancelled) return;
+        const orderIds = res.data?.data?.orderIds ?? res.data?.orderIds ?? [];
+        setReviewedOrders((m) => {
+          const next = { ...m };
+          (orderIds as string[]).forEach((id) => { next[id] = true; });
+          return next;
+        });
+      })
+      .catch(() => { /* ignore */ });
+    return () => { cancelled = true; };
   }, [orders]);
 
   const allOrders = orders || [];

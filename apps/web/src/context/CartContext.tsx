@@ -22,7 +22,7 @@ interface CartContextType {
   mutation: boolean;
   error: string | null;
   itemCount: number;
-  setActiveVendor: (vendorId: string) => Promise<void>;
+  setActiveVendor: (vendorId: string) => void;
   refresh: () => Promise<void>;
   addItem: (productId: string, quantity?: number) => Promise<void>;
   updateItem: (productId: string, quantity: number) => Promise<void>;
@@ -82,20 +82,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     refresh();
   }, [refresh]);
 
-  const setActiveVendor = useCallback(async (vendorId: string) => {
+  const setActiveVendor = useCallback((vendorId: string) => {
     localStorage.setItem(ACTIVE_VENDOR_KEY, vendorId);
     setActiveVendorIdState(vendorId);
-    if (!localStorage.getItem('accessToken')) return;
-    setLoading(true);
-    try {
-      const res = await api.get(`/carts?vendorId=${vendorId}`);
-      setCart(unwrap<Cart>(res));
-      setError(null);
-    } catch (err) {
-      setError(errorMessage(err));
-    } finally {
-      setLoading(false);
-    }
+    setError(null);
   }, []);
 
   const runMutation = useCallback(async (fn: () => Promise<{ data: unknown }>) => {

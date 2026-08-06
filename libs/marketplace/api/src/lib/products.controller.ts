@@ -1,5 +1,4 @@
 import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
-import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { EntityId } from '@afri-market/kernel';
@@ -47,8 +46,6 @@ export class ProductsController {
   }
 
   @Get()
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(60)
   @ApiOperation({ summary: 'Search or list products' })
   @ApiQuery({ name: 'vendorId', required: false, description: 'Filter by vendor ID' })
   @ApiQuery({ name: 'search', required: false, description: 'Full-text search on name/description' })
@@ -85,8 +82,6 @@ export class ProductsController {
   }
 
   @Get(':id')
-  @UseInterceptors(CacheInterceptor)
-  @CacheTTL(60)
   @ApiParam({ name: 'id', description: 'Product ID' })
   @ApiOperation({ summary: 'Get product by ID' })
   @ApiResponse({ status: 200, description: 'Success' })

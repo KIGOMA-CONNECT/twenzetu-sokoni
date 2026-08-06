@@ -199,21 +199,7 @@ export default function AddressPage() {
 
   const setDefault = async (address: Address) => {
     try {
-      await api.post('/addresses', {
-        label: address.label,
-        fullAddress: address.fullAddress,
-        latitude: address.latitude ?? 0,
-        longitude: address.longitude ?? 0,
-        isDefault: true,
-        country: address.country || 'TZ',
-        region: address.region,
-        city: address.city,
-        district: address.district,
-        street: address.street,
-        landmark: address.landmark,
-        postalCode: address.postalCode,
-        notes: address.notes,
-      });
+      await api.patch(`/addresses/${address.id}/default`);
       await refetch();
     } catch {
       alert('Failed to set default address.');
