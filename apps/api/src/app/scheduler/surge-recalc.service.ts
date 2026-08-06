@@ -9,7 +9,7 @@ export class SurgeRecalcService {
 
   constructor(private readonly dataSource: DataSource) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { waitForCompletion: true })
   async handleSurgeRecalc(): Promise<void> {
     const repo = this.dataSource.getRepository(SurgeRuleOrmEntity);
 

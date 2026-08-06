@@ -8,7 +8,7 @@ export class PayoutSettlementService {
 
   constructor(private readonly dataSource: DataSource) {}
 
-  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT, { waitForCompletion: true })
   async handlePayoutSettlement(): Promise<void> {
     const wallets = await this.dataSource.query(
       `SELECT w.id, w.tenant_id, w.owner_id, w.owner_type, w.balance
@@ -17,7 +17,9 @@ export class PayoutSettlementService {
          AND (
            EXISTS (SELECT 1 FROM vendors v WHERE v.id = w.owner_id AND v.tenant_id = w.tenant_id)
            OR EXISTS (SELECT 1 FROM users u WHERE u.id = w.owner_id AND u.role = 'driver' AND u.tenant_id = w.tenant_id)
-         )`,
+         )
+       ORDER BY w.updated_at ASC
+       LIMIT 500`,
     );
 
     if (wallets.length === 0) {

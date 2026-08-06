@@ -25,43 +25,47 @@ function createMockDataSource(repo: ReturnType<typeof createMockRepo>) {
 
 describe('StaleOrderService', () => {
   let service: StaleOrderService;
-  let mockRepo: ReturnType<typeof createMockRepo>;
+  let mockDataSource: { query: jest.Mock; getRepository: jest.Mock };
   let logSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRepo = createMockRepo();
-    service = new StaleOrderService(createMockDataSource(mockRepo));
+    mockDataSource = {
+      query: jest.fn().mockResolvedValue([]),
+      getRepository: jest.fn().mockReturnValue(createMockRepo()),
+    } as unknown as { query: jest.Mock; getRepository: jest.Mock };
+    service = new StaleOrderService(mockDataSource as unknown as DataSource);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
   });
 
   afterEach(() => logSpy.mockRestore());
 
-  it('should find PLACED orders older than 24h and update status to CANCELLED', async () => {
-    const staleOrders = [
-      { id: 'order-1', status: 'PLACED', createdAt: new Date('2020-01-01'), version: 1 },
-      { id: 'order-2', status: 'PLACED', createdAt: new Date('2020-01-02'), version: 3 },
-    ];
-    mockRepo.find.mockResolvedValue(staleOrders);
+  it('should cancel PLACED orders older than 24h via a guarded bulk UPDATE', async () => {
+    mockDataSource.query.mockResolvedValue([{ id: 'order-1' }, { id: 'order-2' }]);
 
     await service.handleStaleOrders();
 
-    expect(mockRepo.find).toHaveBeenCalledWith({
-      where: expect.objectContaining({ status: 'PLACED' }),
-    });
-    expect(mockRepo.save).toHaveBeenCalledTimes(2);
-    expect(staleOrders[0].status).toBe('CANCELLED');
-    expect(staleOrders[0].version).toBe(2);
-    expect(staleOrders[1].status).toBe('CANCELLED');
-    expect(staleOrders[1].version).toBe(4);
+    expect(mockDataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE orders SET status = \'CANCELLED\''),
+      expect.arrayContaining([expect.any(Date)]),
+    );
+    expect(mockDataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('WHERE status = \'PLACED\' AND created_at < $1'),
+      expect.anything(),
+    );
+    expect(mockDataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('RETURNING id'),
+      expect.anything(),
+    );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Auto-cancelled 2 stale order(s)'));
   });
 
-  it('should not call save when no stale orders found', async () => {
-    mockRepo.find.mockResolvedValue([]);
+  it('should not log when no stale orders found', async () => {
+    mockDataSource.query.mockResolvedValue([]);
 
     await service.handleStaleOrders();
 
-    expect(mockRepo.save).not.toHaveBeenCalled();
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Auto-cancelled'));
   });
 });
 

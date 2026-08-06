@@ -34,7 +34,7 @@ export class AutoDispatchService {
     private readonly gateway: MarketplaceGateway,
   ) {}
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE, { waitForCompletion: true })
   async handleDispatch(): Promise<void> {
     try {
       const candidates = await this.findCandidates();
@@ -67,10 +67,12 @@ export class AutoDispatchService {
        )
          AND o.status IN ('PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP')
          AND o.created_at <= NOW() - INTERVAL '15 minutes'
-         AND EXISTS (
-           SELECT 1 FROM payments p
-           WHERE p.order_id = o.id AND p.status IN ('ESCROW_HELD', 'RELEASED')
-         )`,
+          AND EXISTS (
+            SELECT 1 FROM payments p
+            WHERE p.order_id = o.id AND p.status IN ('ESCROW_HELD', 'RELEASED')
+          )
+       ORDER BY o.created_at ASC
+       LIMIT 20`,
     );
     return rows as DispatchCandidate[];
   }
@@ -79,6 +81,20 @@ export class AutoDispatchService {
     const driver = await this.pickDriver(order.tenantId);
     if (!driver) {
       this.logger.warn(`Auto-dispatch: no available driver for order ${order.id} in tenant ${order.tenantId}`);
+      return;
+    }
+
+    // Atomically claim the order: only one dispatch wins, so the same order can
+    // never be assigned to two drivers by overlapping runs.
+    const claimed = await this.dataSource.query(
+      `UPDATE orders
+       SET status = 'READY_FOR_PICKUP', driver_id = $1, version = version + 1, updated_at = NOW()
+       WHERE id = $2 AND status IN ('PLACED', 'CONFIRMED', 'PREPARING')
+       RETURNING id`,
+      [driver.driverId, order.id],
+    );
+    if (claimed.length === 0) {
+      this.logger.warn(`Auto-dispatch: order ${order.id} was already dispatched; skipping`);
       return;
     }
 
@@ -101,11 +117,6 @@ export class AutoDispatchService {
         order.deliveryLongitude,
         Number(order.deliveryFee || 0),
       ],
-    );
-
-    await this.dataSource.query(
-      `UPDATE orders SET status = 'READY_FOR_PICKUP', driver_id = $1, version = version + 1, updated_at = NOW() WHERE id = $2`,
-      [driver.driverId, order.id],
     );
 
     const delivery = { deliveryId: (deliveryId[0] as { id: string }).id, orderId: order.id, status: 'PENDING' };

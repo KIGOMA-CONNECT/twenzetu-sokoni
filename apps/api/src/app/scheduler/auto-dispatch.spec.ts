@@ -62,23 +62,23 @@ describe('AutoDispatchService', () => {
     expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('eligible for dispatch'));
   });
 
-  it('should dispatch each eligible order with delivery insert, order update, notification and socket emit', async () => {
+  it('should dispatch each eligible order with order claim, delivery insert, notification and socket emit', async () => {
     dataSource.query
       .mockResolvedValueOnce([CANDIDATE])
       .mockResolvedValueOnce([DRIVER])
-      .mockResolvedValueOnce([{ id: 'delivery-1' }])
-      .mockResolvedValueOnce([]);
+      .mockResolvedValueOnce([{ id: 'order-1' }])
+      .mockResolvedValueOnce([{ id: 'delivery-1' }]);
     const { notifService, gateway } = createMocks();
     service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never);
 
     await service.handleDispatch();
 
     expect(dataSource.query).toHaveBeenCalledWith(
-      expect.stringContaining('INSERT INTO deliveries'),
-      expect.anything(),
+      expect.stringContaining(`SET status = 'READY_FOR_PICKUP'`),
+      expect.arrayContaining([DRIVER.driverId, CANDIDATE.id]),
     );
     expect(dataSource.query).toHaveBeenCalledWith(
-      expect.stringContaining(`UPDATE orders SET status = 'READY_FOR_PICKUP'`),
+      expect.stringContaining('INSERT INTO deliveries'),
       expect.anything(),
     );
     expect(dataSource.query).toHaveBeenCalledWith(
@@ -120,8 +120,8 @@ describe('AutoDispatchService', () => {
       .mockResolvedValueOnce([CANDIDATE])
       .mockResolvedValueOnce([])
       .mockResolvedValueOnce([DRIVER])
-      .mockResolvedValueOnce([{ id: 'delivery-1' }])
-      .mockResolvedValueOnce([]);
+      .mockResolvedValueOnce([{ id: 'order-1' }])
+      .mockResolvedValueOnce([{ id: 'delivery-1' }]);
     const { notifService, gateway } = createMocks();
     service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never);
 

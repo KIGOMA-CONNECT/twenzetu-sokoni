@@ -17,7 +17,7 @@ export class PaymentTimeoutService {
     @Inject(MOBILE_MONEY_SERVICE) private readonly mobileMoney: IMobileMoneyService,
   ) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_5_MINUTES, { waitForCompletion: true })
   async handlePaymentTimeouts(): Promise<void> {
     this.logger.log('Checking for timed-out STK push payments...');
 
@@ -42,8 +42,7 @@ export class PaymentTimeoutService {
       try {
         if (age >= PaymentTimeoutService.MAX_RETRY_MS) {
           this.logger.warn(`Payment ${payment.id.value} timed out after ${Math.round(age / 1000)}s. Failing.`);
-          payment.fail();
-          await this.paymentRepo.save(payment);
+          await this.paymentRepo.transitionStatus(payment.id.value, 'PENDING', 'FAILED');
           continue;
         }
 
@@ -51,13 +50,18 @@ export class PaymentTimeoutService {
         this.logger.log(`Status for ${payment.id.value}: ${result.status}`);
 
         if (result.status === 'SUCCESS') {
-          payment.confirmEscrow();
-          await this.paymentRepo.save(payment);
-          this.logger.log(`Payment ${payment.id.value} confirmed via status query.`);
+          const confirmed = await this.paymentRepo.transitionStatus(
+            payment.id.value,
+            'PENDING',
+            'ESCROW_HELD',
+            { confirmedAt: new Date() },
+          );
+          if (confirmed) {
+            this.logger.log(`Payment ${payment.id.value} confirmed via status query.`);
+          }
         } else if (result.status === 'FAILED') {
-          payment.fail();
-          await this.paymentRepo.save(payment);
-          this.logger.log(`Payment ${payment.id.value} failed per M-Pesa query.`);
+          await this.paymentRepo.transitionStatus(payment.id.value, 'PENDING', 'FAILED');
+          this.logger.log(`Payment ${payment.id.value} failed per provider query.`);
         }
       } catch (error: unknown) {
         const message = error instanceof Error ? error.message : String(error);
