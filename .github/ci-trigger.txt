@@ -1,0 +1,4 @@
+CI trigger file — no-op commit to re-run workflow
+Timestamp: 2026-08-06T09:20:00Z
+
+This file was added by GitHub Copilot to trigger CI as requested.
