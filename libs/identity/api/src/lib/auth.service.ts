@@ -15,7 +15,7 @@ import {
   TENANT_REPOSITORY,
   JwtPayload,
 } from '@afri-market/identity-infrastructure';
-import { SmsService, EmailService } from '@afri-market/integrations';
+import { SmsService, EmailService, normalizeE164 } from '@afri-market/integrations';
 
 export interface TokenBundle {
   accessToken: string;
@@ -76,18 +76,19 @@ export class AuthService {
     password: string,
     email?: string,
   ): Promise<{ userId: string }> {
+    const canonicalPhone = this.canonicalizePhone(phoneNumber);
     const tenant = await this.tenantRepo.findById(EntityId.from(tenantId));
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
-    const existing = await this.userRepo.findByPhoneNumber(phoneNumber);
+    const existing = await this.userRepo.findByPhoneNumber(canonicalPhone);
     if (existing) {
       throw new ConflictException('Phone number already registered');
     }
     const passwordHash = await this.hasher.hash(password);
     const user = User.create({
       tenantId: TenantId.create(tenantId),
-      phoneNumber: PhoneNumber.create(phoneNumber),
+      phoneNumber: PhoneNumber.create(canonicalPhone),
       fullName,
       role,
       passwordHash,
@@ -104,7 +105,7 @@ export class AuthService {
     password: string,
     metadata: SessionMetadata = {},
   ): Promise<TokenBundle & { user: Record<string, unknown> }> {
-    const user = await this.userRepo.findByPhoneNumber(phoneNumber);
+    const user = await this.userRepo.findByPhoneNumber(this.canonicalizePhone(phoneNumber));
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -148,16 +149,17 @@ export class AuthService {
   }
 
   public async sendOtp(phoneNumber: string): Promise<{ message: string }> {
-    if (!this.otpSendLimiter.isAllowed(`send:${phoneNumber}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
+    const canonicalPhone = this.canonicalizePhone(phoneNumber);
+    if (!this.otpSendLimiter.isAllowed(`send:${canonicalPhone}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
       throw new UnauthorizedException('Too many OTP requests for this phone number. Try again later.');
     }
-    await this.otpRepo.invalidateAll(phoneNumber);
+    await this.otpRepo.invalidateAll(canonicalPhone);
     const code = this.generateOtpCode();
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + this.config.otp.expiryMinutes);
-    await this.otpRepo.create(phoneNumber, code, expiresAt);
-    await this.smsService.sendOtp(phoneNumber, code);
-    return { message: `OTP sent to ${phoneNumber}` };
+    await this.otpRepo.create(canonicalPhone, code, expiresAt);
+    await this.smsService.sendOtp(canonicalPhone, code);
+    return { message: `OTP sent to ${canonicalPhone}` };
   }
 
   /**
@@ -174,16 +176,16 @@ export class AuthService {
     | { verified: true; registered: false }
     | { verified: false; registered: false }
   > {
-    if (!this.otpVerifyLimiter.isAllowed(`verify:${phoneNumber}`, OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW_MS)) {
+    const canonicalPhone = this.canonicalizePhone(phoneNumber);
+    if (!this.otpVerifyLimiter.isAllowed(`verify:${canonicalPhone}`, OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW_MS)) {
       return { verified: false, registered: false };
     }
-    const otp = await this.otpRepo.findValid(phoneNumber, code);
+    const otp = await this.otpRepo.consume(canonicalPhone, code);
     if (!otp) {
       return { verified: false, registered: false };
     }
-    await this.otpRepo.markUsed(otp.id);
 
-    const user = await this.userRepo.findByPhoneNumber(phoneNumber);
+    const user = await this.userRepo.findByPhoneNumber(canonicalPhone);
     if (!user) {
       return { verified: true, registered: false };
     }
@@ -310,6 +312,15 @@ export class AuthService {
       email: user.email?.value ?? null,
       permissions: user.permissions,
     };
+  }
+
+  private canonicalizePhone(phone: string): string {
+    if (!phone) return phone;
+    try {
+      return normalizeE164(phone).e164;
+    } catch {
+      return phone.trim();
+    }
   }
 
   private generateOtpCode(): string {

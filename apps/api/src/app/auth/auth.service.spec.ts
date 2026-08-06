@@ -22,7 +22,7 @@ const buildUser = (overrides: Partial<User> = {}): User =>
 describe('AuthService', () => {
   const userRepo = { findByPhoneNumber: jest.fn(), findById: jest.fn(), save: jest.fn() };
   const tenantRepo = { save: jest.fn(), findById: jest.fn() };
-  const otpRepo = { invalidateAll: jest.fn(), create: jest.fn(), findValid: jest.fn(), markUsed: jest.fn() };
+  const otpRepo = { invalidateAll: jest.fn(), create: jest.fn(), consume: jest.fn() };
   const sessionRepo = {} as never;
   const sessionService = {
     issueSession: jest.fn(),
@@ -126,25 +126,25 @@ describe('AuthService', () => {
     });
 
     it('returns a token bundle for a registered ACTIVE user', async () => {
-      otpRepo.findValid.mockResolvedValue({ id: 'otp-1' });
+      otpRepo.consume.mockResolvedValue({ id: 'otp-1' });
       userRepo.findByPhoneNumber.mockResolvedValue(buildUser());
       sessionService.issueSession.mockResolvedValue({ sessionId: 's-1', refreshToken: 'refresh' });
 
       const result = await service.verifyOtp('+255754100003', '1234');
 
-      expect(otpRepo.markUsed).toHaveBeenCalledWith('otp-1');
+      expect(otpRepo.consume).toHaveBeenCalledWith('+255754100003', '1234');
       expect(result).toMatchObject({ verified: true, registered: true, refreshToken: 'refresh' });
     });
 
     it('signals registration needed for an unknown number', async () => {
-      otpRepo.findValid.mockResolvedValue({ id: 'otp-2' });
+      otpRepo.consume.mockResolvedValue({ id: 'otp-2' });
       userRepo.findByPhoneNumber.mockResolvedValue(null);
       const result = await service.verifyOtp('+255700000000', '1234');
       expect(result).toEqual({ verified: true, registered: false });
     });
 
     it('does not issue tokens for a suspended user', async () => {
-      otpRepo.findValid.mockResolvedValue({ id: 'otp-3' });
+      otpRepo.consume.mockResolvedValue({ id: 'otp-3' });
       userRepo.findByPhoneNumber.mockResolvedValue(buildUser({ status: 'SUSPENDED' }));
       await expect(service.verifyOtp('+255754100003', '1234')).rejects.toBeInstanceOf(UnauthorizedException);
     });
