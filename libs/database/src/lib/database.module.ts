@@ -11,14 +11,14 @@ export class DatabaseModule {
     const dbUser:
       | string
       | undefined =
-      process.env.DB_RUNTIME_USER ??
-      process.env.DB_USER ??
-      process.env.DB_USERNAME ??
-      process.env.DATABASE_USER ??
-      process.env.DATABASE_USERNAME ??
-      process.env.PGUSER ??
+      process.env['DB_RUNTIME_USER'] ??
+      process.env['DB_USER'] ??
+      process.env['DB_USERNAME'] ??
+      process.env['DATABASE_USER'] ??
+      process.env['DATABASE_USERNAME'] ??
+      process.env['PGUSER'] ??
       (() => {
-        const url = process.env.DATABASE_URL;
+        const url = process.env['DATABASE_URL'];
         if (!url) return 'postgres';
         try {
           return new URL(url).username || 'postgres';
@@ -30,12 +30,12 @@ export class DatabaseModule {
     const dbPassword:
       | string
       | undefined =
-      process.env.DB_RUNTIME_PASSWORD ??
-      process.env.DB_PASSWORD ??
-      process.env.DATABASE_PASSWORD ??
-      process.env.PGPASSWORD ??
+      process.env['DB_RUNTIME_PASSWORD'] ??
+      process.env['DB_PASSWORD'] ??
+      process.env['DATABASE_PASSWORD'] ??
+      process.env['PGPASSWORD'] ??
       (() => {
-        const url = process.env.DATABASE_URL;
+        const url = process.env['DATABASE_URL'];
         if (!url) return 'postgres';
         try {
           return new URL(url).password || 'postgres';

@@ -11,6 +11,8 @@ describe('buildDataSourceOptions', () => {
     delete process.env['DB_HOST'];
     delete process.env['DB_PORT'];
     delete process.env['DB_NAME'];
+    delete process.env['DB_OWNER_USER'];
+    delete process.env['DB_OWNER_PASSWORD'];
 
     const options = buildDataSourceOptions();
 
