@@ -71,6 +71,11 @@ jobs:
           DB_OWNER_PASSWORD: postgres
           DB_RUNTIME_USER: postgres
           DB_RUNTIME_PASSWORD: postgres
+          # additional env aliases to avoid falling back to 'root'
+          DB_USER: postgres
+          DATABASE_USER: postgres
+          DB_USERNAME: postgres
+          DATABASE_USERNAME: postgres
           JWT_SECRET: ci-jwt-secret
           REDIS_URL: redis://localhost:6379
 
