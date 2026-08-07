@@ -85,7 +85,13 @@ export class AdminUsersController {
     if (id === caller.sub) {
       return { success: false, message: 'Cannot change your own role' };
     }
-    await this.userRepo.update(id, { role: body.role });
+    const updated = await this.userRepo.update(
+      { id, tenantId: caller.tenantId },
+      { role: body.role },
+    );
+    if (!updated.affected) {
+      return { success: false, message: 'User not found' };
+    }
     return { success: true };
   }
 
@@ -94,9 +100,10 @@ export class AdminUsersController {
   @ApiResponse({ status: 200, description: 'Permissions updated' })
   public async updatePermissions(
     @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() caller: JwtPayload,
     @Body() dto: { permissions: string[] },
   ) {
-    const user = await this.userRepo.findOne({ where: { id } });
+    const user = await this.userRepo.findOne({ where: { id, tenantId: caller.tenantId } });
     if (!user) {
       return { success: false, message: 'User not found' };
     }
@@ -118,7 +125,10 @@ export class AdminUsersController {
     if (id === caller.sub) {
       return { success: false, message: 'Cannot delete your own account' };
     }
-    await this.userRepo.delete(id);
+    const deleted = await this.userRepo.delete({ id, tenantId: caller.tenantId });
+    if (!deleted.affected) {
+      return { success: false, message: 'User not found' };
+    }
     return { success: true };
   }
 }

@@ -117,6 +117,18 @@ export class CheckoutCartUseCase {
       currency,
     });
 
+    // Atomically claim the cart so a double-submit can never create two orders:
+    // both requests pass the reads above, but only one guarded UPDATE wins.
+    const claimed = await this.ds.query(
+      `UPDATE carts SET status = 'CHECKED_OUT', updated_at = NOW()
+       WHERE id = $1 AND user_id = $2 AND tenant_id = $3 AND status = 'ACTIVE'
+       RETURNING id`,
+      [cart!.id.value, input.userId, input.tenantId],
+    );
+    if (claimed.length === 0) {
+      Guard.assert(false, 'Cart has already been checked out');
+    }
+
     const order = Order.create({
       tenantId: TenantId.create(input.tenantId),
       customerId: EntityId.from(input.userId),
@@ -179,6 +191,10 @@ export class CheckoutCartUseCase {
             [r.quantity, r.productId],
           );
         }
+        await this.ds.query(
+          `UPDATE carts SET status = 'ACTIVE', updated_at = NOW() WHERE id = $1`,
+          [input.cartId],
+        );
         await this.orderRepo.delete(order.id);
         await this.paymentRepo.delete(payment.id);
         Guard.assert(false, `Insufficient stock for ${item.productName}`);
@@ -229,7 +245,8 @@ export class CheckoutCartUseCase {
 
     if (!paymentInitiated) {
       // The order stays PLACED but stock was reserved: restore it so the
-      // failed payment doesn't permanently lock inventory.
+      // failed payment doesn't permanently lock inventory, and re-open the
+      // cart so the customer can retry the checkout.
       for (const r of reserved) {
         await this.ds.query(
           `UPDATE products SET stock_quantity = stock_quantity + $1, updated_at = NOW()
@@ -237,6 +254,10 @@ export class CheckoutCartUseCase {
           [r.quantity, r.productId],
         );
       }
+      await this.ds.query(
+        `UPDATE carts SET status = 'ACTIVE', updated_at = NOW() WHERE id = $1`,
+        [input.cartId],
+      );
       await this.orderRepo.delete(order.id);
       await this.paymentRepo.delete(payment.id);
       Guard.assert(false, 'Payment initiation failed; order cancelled and stock restored');

@@ -80,6 +80,9 @@ describe('CheckoutCartUseCase', () => {
         if (sql.includes('UPDATE products')) {
           return Promise.resolve([{ id: 'prod-1' }]);
         }
+        if (sql.includes('UPDATE carts')) {
+          return Promise.resolve([{ id: 'cart-1' }]);
+        }
         return Promise.resolve([]);
       }),
     };
@@ -174,5 +177,21 @@ describe('CheckoutCartUseCase', () => {
     expect(mobileMoneyService.initiateStkPush).toHaveBeenCalledWith(
       expect.objectContaining({ provider: 'tigo_pesa', amount: 8000, accountReference: result.orderId }),
     );
+  });
+
+  it('rejects a second concurrent checkout for the same cart', async () => {
+    const { useCase, ds, orderRepo } = build();
+    ds.query.mockImplementation((sql: string) => {
+      if (sql.includes('UPDATE products')) {
+        return Promise.resolve([{ id: 'prod-1' }]);
+      }
+      if (sql.includes('UPDATE carts')) {
+        return Promise.resolve([]);
+      }
+      return Promise.resolve([]);
+    });
+
+    await expect(useCase.execute(baseInput)).rejects.toThrow('Cart has already been checked out');
+    expect(orderRepo.save).not.toHaveBeenCalled();
   });
 });
