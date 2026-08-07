@@ -38,6 +38,19 @@ const CATEGORY_BG: Record<string, string> = {
 
 const PRODUCE_NAMES = new Set(['Mboga na Matunda', 'Fresh Produce']);
 
+const CATEGORY_ORDER: Record<string, number> = {
+  'Fresh Produce': 10,
+  'Mboga na Matunda': 20,
+  'Mchele na Maharage': 30,
+  'Chakula Kilicho Tayari': 40,
+  'Kupikiwa Nyumbani (Wapishi)': 50,
+  'Ufuaji na Usafishaji Nguo': 60,
+  'Usafi Nyumbani na Bustani': 70,
+  'Electronics': 80,
+  'Electronics na Bidhaa Nyingine': 80,
+  'Vitu vya Used': 90,
+};
+
 function categoryIcon(category: Category): string {
   return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
 }
@@ -70,10 +83,6 @@ function ConsumerDashboard() {
             What would you like <span className="hero-gradient">today?</span>
           </h1>
           <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem' }}>{t('app.welcomeBack')}</p>
-          <div className="flex gap-2 wrap">
-            <button className="btn btn-accent" onClick={() => navigate('/catalog')}>🛒 {t('catalog.title')}</button>
-            <button className="btn btn-outline" onClick={() => navigate('/vendors')}>🏪 {t('app.browseVendors')}</button>
-          </div>
         </div>
       </section>
 
@@ -143,7 +152,10 @@ function ConsumerDashboard() {
                 <div className="cat-name">{t('app.cargoLogistics')}</div>
                 <div className="cat-sub" style={{ fontSize: '0.68rem', color: 'var(--muted)', lineHeight: 1.2 }}>{t('app.cargoLogisticsSub')}</div>
               </div>
-              {(categories ?? []).map((category) => {
+              {(categories ?? [])
+                .slice()
+                .sort((a, b) => (CATEGORY_ORDER[a.name] ?? 999) - (CATEGORY_ORDER[b.name] ?? 999))
+                .map((category) => {
                 const icon = categoryIcon(category);
                 const produce = PRODUCE_NAMES.has(category.name);
                 return (
@@ -156,6 +168,11 @@ function ConsumerDashboard() {
                   </div>
                 );
               })}
+            </div>
+
+            <div className="flex gap-2 wrap" style={{ marginTop: '1.25rem' }}>
+              <button className="btn btn-accent" onClick={() => navigate('/catalog')}>🛒 {t('catalog.title')}</button>
+              <button className="btn btn-outline" onClick={() => navigate('/vendors')}>🏪 {t('app.browseVendors')}</button>
             </div>
           </div>
 
