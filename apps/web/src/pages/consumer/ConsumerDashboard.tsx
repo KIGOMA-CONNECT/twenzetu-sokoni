@@ -42,6 +42,7 @@ const CATEGORY_ORDER: Record<string, number> = {
   'Fresh Produce': 10,
   'Mboga na Matunda': 20,
   'Mchele na Maharage': 30,
+  'Groceries': 30,
   'Chakula Kilicho Tayari': 40,
   'Kupikiwa Nyumbani (Wapishi)': 50,
   'Ufuaji na Usafishaji Nguo': 60,
