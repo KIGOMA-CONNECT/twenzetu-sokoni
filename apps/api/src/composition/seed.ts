@@ -51,8 +51,7 @@ const CATEGORIES = [
   { id: 'd0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, name: 'Usafi Nyumbani na Bustani', type: 'general' },
   { id: 'd0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, name: 'Kupikiwa Nyumbani (Wapishi)', type: 'general' },
   { id: 'd0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, name: 'Vitu vya Used', type: 'secondhand' },
-  { id: 'd0000000-0000-0000-0000-000000000019', tenantId: TENANT_DAR, name: 'Electronics na Bidhaa Nyingine', type: 'electronics' },
-  { id: 'd0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, name: 'Groceries', type: 'grocery' },
+  { id: 'd0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, name: 'Ushonaji na Tailoring', type: 'tailoring' },
 ];
 
 const PRODUCTS = [

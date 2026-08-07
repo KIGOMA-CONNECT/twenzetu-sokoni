@@ -34,6 +34,7 @@ const CATEGORIES: Record<string, { id: string; label: string }[]> = {
   ],
   general: [
     { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
+    { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
   ],
   secondhand: [
     { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
@@ -46,6 +47,7 @@ const CATEGORIES: Record<string, { id: string; label: string }[]> = {
     { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
     { id: 'd0000000-0000-0000-0000-000000000016', label: 'Usafi Nyumbani na Bustani' },
     { id: 'd0000000-0000-0000-0000-000000000017', label: 'Kupikiwa Nyumbani (Wapishi)' },
+    { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
     { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
     { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
   ],

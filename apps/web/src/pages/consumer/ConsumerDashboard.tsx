@@ -29,6 +29,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Electronics na Bidhaa Nyingine': '📱',
   'Fresh Produce': '🥕',
   'Electronics': '📱',
+  'Ushonaji na Tailoring': '🧵',
 };
 
 const CATEGORY_BG: Record<string, string> = {
@@ -42,13 +43,12 @@ const CATEGORY_ORDER: Record<string, number> = {
   'Fresh Produce': 10,
   'Mboga na Matunda': 20,
   'Mchele na Maharage': 30,
-  'Groceries': 30,
   'Chakula Kilicho Tayari': 40,
   'Kupikiwa Nyumbani (Wapishi)': 50,
   'Ufuaji na Usafishaji Nguo': 60,
   'Usafi Nyumbani na Bustani': 70,
+  'Ushonaji na Tailoring': 75,
   'Electronics': 80,
-  'Electronics na Bidhaa Nyingine': 80,
   'Vitu vya Used': 90,
 };
 
