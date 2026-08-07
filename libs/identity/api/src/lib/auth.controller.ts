@@ -38,7 +38,7 @@ export class AuthController {
   }
 
   @Post('register')
-  @Throttle({ default: { limit: 3, ttl: 60000 } })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new user within a tenant' })
   @ApiBody({ type: RegisterUserDto })
   @ApiResponse({ status: 201, description: 'User registered successfully' })
