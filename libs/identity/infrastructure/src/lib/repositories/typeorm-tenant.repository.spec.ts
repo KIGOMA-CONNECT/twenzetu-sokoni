@@ -40,6 +40,7 @@ describe('TypeOrmTenantRepository', () => {
       id: id.value,
       name: 'Afribiz Holdings Ltd',
       status: 'ACTIVE',
+      isDefault: true,
     } as TenantOrmEntity);
     const manager = fakeManager(ormRepository);
 
@@ -47,6 +48,43 @@ describe('TypeOrmTenantRepository', () => {
 
     expect(result?.name).toBe('Afribiz Holdings Ltd');
     expect(result?.status).toBe('ACTIVE');
+    expect(result?.isDefault).toBe(true);
+  });
+
+  it('findDefault returns the active default tenant', async () => {
+    const id = EntityId.create();
+    const ormRepository = fakeOrmRepository();
+    ormRepository.findOne.mockResolvedValue({
+      id: id.value,
+      name: 'Afribiz Holdings Ltd',
+      status: 'ACTIVE',
+      isDefault: true,
+    } as TenantOrmEntity);
+    const manager = fakeManager(ormRepository);
+
+    const result = await new TypeOrmTenantRepository(manager as unknown as EntityManager).findDefault();
+
+    expect(result?.id.value).toBe(id.value);
+    expect(ormRepository.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { isDefault: true, status: 'ACTIVE' } }),
+    );
+  });
+
+  it('findDefault falls back to the first active tenant when none is flagged', async () => {
+    const ormRepository = fakeOrmRepository();
+    ormRepository.findOne.mockResolvedValueOnce(null);
+    ormRepository.findOne.mockResolvedValueOnce({
+      id: EntityId.create().value,
+      name: 'Afribiz Holdings Ltd',
+      status: 'ACTIVE',
+      isDefault: false,
+    } as TenantOrmEntity);
+    const manager = fakeManager(ormRepository);
+
+    const result = await new TypeOrmTenantRepository(manager as unknown as EntityManager).findDefault();
+
+    expect(result?.isDefault).toBe(false);
+    expect(ormRepository.findOne).toHaveBeenCalledTimes(2);
   });
 
   it('save() upserts the row', async () => {
@@ -57,7 +95,7 @@ describe('TypeOrmTenantRepository', () => {
     await new TypeOrmTenantRepository(manager as unknown as EntityManager).save(tenant);
 
     expect(ormRepository.save).toHaveBeenCalledWith(
-      expect.objectContaining({ id: tenant.id.value, name: 'Afribiz Holdings Ltd', status: 'ACTIVE' }),
+      expect.objectContaining({ id: tenant.id.value, name: 'Afribiz Holdings Ltd', status: 'ACTIVE', isDefault: false }),
     );
   });
 });

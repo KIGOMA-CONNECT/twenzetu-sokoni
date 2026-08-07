@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
+import { AiVerificationService } from './verification.service';
 import { IDENTITY_ENTITIES } from '@afri-market/identity-infrastructure';
 import { IDENTITY_REPOSITORIES } from '@afri-market/identity-infrastructure';
 import { JwtStrategy } from '@afri-market/identity-infrastructure';
@@ -29,6 +30,7 @@ import { AppLoggerService } from '@afri-market/core-logger';
   controllers: [AuthController],
   providers: [
     AuthService,
+    AiVerificationService,
     JwtStrategy,
     OtpCacheService,
     SessionService,

@@ -4,6 +4,7 @@ import { randomInt } from 'crypto';
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { User, Tenant, UserRole } from '@afri-market/identity-domain';
 import { IUserRepository, ITenantRepository } from '@afri-market/identity-domain';
+import { AiVerificationService } from './verification.service';
 import { AppConfigService } from '@afri-market/core-config';
 import { IPasswordHasher } from '@afri-market/identity-infrastructure';
 import {
@@ -60,6 +61,7 @@ export class AuthService {
     @Inject('IPasswordHasher') private readonly hasher: IPasswordHasher,
     private readonly smsService: SmsService,
     private readonly emailService: EmailService,
+    private readonly aiVerification: AiVerificationService,
   ) {}
 
   public async registerTenant(name: string): Promise<{ tenantId: string }> {
@@ -68,16 +70,26 @@ export class AuthService {
     return { tenantId: tenant.id.value };
   }
 
+  public async getDefaultTenant(): Promise<{ tenantId: string }> {
+    const tenant = await this.tenantRepo.findDefault();
+    if (!tenant) {
+      throw new NotFoundException('No active tenant is configured');
+    }
+    return { tenantId: tenant.id.value };
+  }
+
   public async registerUser(
-    tenantId: string,
+    tenantId: string | undefined,
     phoneNumber: string,
     fullName: string,
     role: UserRole,
     password: string,
     email?: string,
+    realInfo: { businessName?: string; ninOrRegNo?: string; city?: string } = {},
   ): Promise<{ userId: string }> {
     const canonicalPhone = this.canonicalizePhone(phoneNumber);
-    const tenant = await this.tenantRepo.findById(EntityId.from(tenantId));
+    const resolvedTenantId = tenantId ?? (await this.getDefaultTenant()).tenantId;
+    const tenant = await this.tenantRepo.findById(EntityId.from(resolvedTenantId));
     if (!tenant) {
       throw new NotFoundException('Tenant not found');
     }
@@ -86,18 +98,75 @@ export class AuthService {
       throw new ConflictException('Phone number already registered');
     }
     const passwordHash = await this.hasher.hash(password);
+
+    const verification = await this.aiVerification.evaluate({
+      role,
+      fullName,
+      businessName: realInfo.businessName,
+      ninOrRegNo: realInfo.ninOrRegNo,
+      city: realInfo.city,
+    });
+
     const user = User.create({
-      tenantId: TenantId.create(tenantId),
+      tenantId: TenantId.create(resolvedTenantId),
       phoneNumber: PhoneNumber.create(canonicalPhone),
       fullName,
       role,
       passwordHash,
       email: email ? Email.create(email) : undefined,
+      businessName: realInfo.businessName,
+      ninOrRegNo: realInfo.ninOrRegNo,
+      city: realInfo.city,
+      verificationRiskScore: verification.riskScore,
+      verificationDocumentStatus: verification.documentStatus,
     });
-    user.verify();
+
+    // Marketplace roles that require documents start in the pending/rejected
+    // states and must be approved by an admin. Everyone else is verified on
+    // registration as before.
+    const requiresApproval = role === 'vendor' || role === 'driver';
+    if (!requiresApproval || verification.documentStatus === 'APPROVED') {
+      user.verify();
+    }
+
     await this.userRepo.save(user);
     this.emailService.sendWelcome(email ?? '', fullName).catch(() => {});
     return { userId: user.id.value };
+  }
+
+  public async listPendingVerifications(tenantId?: string): Promise<Record<string, unknown>[]> {
+    const users = await this.userRepo.findPendingVerifications(tenantId);
+    return users.map((user) => this.toUserDto(user));
+  }
+
+  public async approveVerification(userId: string, callerTenantId: string): Promise<Record<string, unknown>> {
+    const user = await this.userRepo.findById(EntityId.from(userId));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.tenantId.value !== callerTenantId) {
+      throw new NotFoundException('User not found');
+    }
+    user.approveVerification();
+    await this.userRepo.save(user);
+    return this.toUserDto(user);
+  }
+
+  public async rejectVerification(
+    userId: string,
+    callerTenantId: string,
+    reason: string,
+  ): Promise<Record<string, unknown>> {
+    const user = await this.userRepo.findById(EntityId.from(userId));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.tenantId.value !== callerTenantId) {
+      throw new NotFoundException('User not found');
+    }
+    user.rejectVerification(reason);
+    await this.userRepo.save(user);
+    return this.toUserDto(user);
   }
 
   public async login(
@@ -311,6 +380,13 @@ export class AuthService {
       status: user.status,
       email: user.email?.value ?? null,
       permissions: user.permissions,
+      businessName: user.businessName ?? null,
+      ninOrRegNo: user.ninOrRegNo ?? null,
+      city: user.city ?? null,
+      verificationRiskScore: user.verificationRiskScore ?? null,
+      verificationDocumentStatus: user.verificationDocumentStatus ?? null,
+      rejectionReason: user.rejectionReason ?? null,
+      verifiedAt: user.verifiedAt ?? null,
     };
   }
 

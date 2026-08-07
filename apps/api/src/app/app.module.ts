@@ -62,6 +62,7 @@ export class AppModule implements NestModule {
         { path: 'metrics', method: RequestMethod.ALL },
         { path: 'auth/register-tenant', method: RequestMethod.ALL },
         { path: 'auth/register', method: RequestMethod.ALL },
+        { path: 'auth/default-tenant', method: RequestMethod.ALL },
         { path: 'auth/login', method: RequestMethod.ALL },
         { path: 'auth/send-otp', method: RequestMethod.ALL },
         { path: 'auth/verify-otp', method: RequestMethod.ALL },

@@ -1,5 +1,6 @@
 export type UserRole = 'super_admin' | 'admin' | 'finance_admin' | 'operations_admin' | 'support_admin' | 'compliance_admin' | 'marketing_admin' | 'vendor' | 'customer' | 'driver' | 'market_captain';
-export type UserStatus = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED';
+export type UserStatus = 'PENDING_VERIFICATION' | 'ACTIVE' | 'SUSPENDED' | 'REJECTED';
+export type VerificationDocumentStatus = 'NOT_REQUIRED' | 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export interface User {
   id: string;
@@ -10,6 +11,13 @@ export interface User {
   status: UserStatus;
   email?: string;
   permissions?: string[];
+  businessName?: string | null;
+  ninOrRegNo?: string | null;
+  city?: string | null;
+  verificationRiskScore?: number | null;
+  verificationDocumentStatus?: VerificationDocumentStatus | null;
+  rejectionReason?: string | null;
+  verifiedAt?: string | null;
 }
 
 export interface AuthResponse {

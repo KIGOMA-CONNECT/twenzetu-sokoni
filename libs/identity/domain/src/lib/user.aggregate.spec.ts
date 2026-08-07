@@ -34,6 +34,25 @@ describe('User.create', () => {
     expect(user.permissions).toContain('manage_orders');
   });
 
+  it('carries real-info and AI verification fields', () => {
+    const user = User.create({
+      ...createProps(),
+      businessName: 'Kigali Market Fresh Ltd',
+      ninOrRegNo: '120199123456789',
+      city: 'Kigali',
+      verificationRiskScore: 15,
+      verificationDocumentStatus: 'APPROVED',
+    });
+
+    expect(user.businessName).toBe('Kigali Market Fresh Ltd');
+    expect(user.ninOrRegNo).toBe('120199123456789');
+    expect(user.city).toBe('Kigali');
+    expect(user.verificationRiskScore).toBe(15);
+    expect(user.verificationDocumentStatus).toBe('APPROVED');
+    expect(user.rejectionReason).toBeUndefined();
+    expect(user.verifiedAt).toBeUndefined();
+  });
+
   it('rejects an empty passwordHash', () => {
     expect(() => User.create({ ...createProps(), passwordHash: '' })).toThrow(
       'passwordHash must not be empty',
@@ -44,6 +63,53 @@ describe('User.create', () => {
     expect(() => User.create({ ...createProps(), fullName: ' ' })).toThrow(
       'fullName must not be empty',
     );
+  });
+});
+
+describe('User verification workflow', () => {
+  it('recordAiVerification() stores risk score and document status', () => {
+    const user = User.create(createProps());
+
+    user.recordAiVerification(55, 'PENDING');
+
+    expect(user.verificationRiskScore).toBe(55);
+    expect(user.verificationDocumentStatus).toBe('PENDING');
+  });
+
+  it('recordAiVerification() rejects out-of-range risk scores', () => {
+    const user = User.create(createProps());
+
+    expect(() => user.recordAiVerification(101, 'PENDING')).toThrow(
+      'verificationRiskScore must be between 0 and 100',
+    );
+  });
+
+  it('approveVerification() activates the account and clears rejection', () => {
+    const user = User.create(createProps());
+    user.rejectVerification('Suspicious documents');
+
+    user.approveVerification();
+
+    expect(user.status).toBe('ACTIVE');
+    expect(user.verificationDocumentStatus).toBe('APPROVED');
+    expect(user.rejectionReason).toBeUndefined();
+    expect(user.verifiedAt).toBeInstanceOf(Date);
+  });
+
+  it('rejectVerification() marks the account REJECTED with a reason', () => {
+    const user = User.create(createProps());
+
+    user.rejectVerification('ID number could not be verified');
+
+    expect(user.status).toBe('REJECTED');
+    expect(user.verificationDocumentStatus).toBe('REJECTED');
+    expect(user.rejectionReason).toBe('ID number could not be verified');
+  });
+
+  it('rejectVerification() requires a reason', () => {
+    const user = User.create(createProps());
+
+    expect(() => user.rejectVerification('')).toThrow('rejectionReason must not be empty');
   });
 });
 

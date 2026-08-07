@@ -28,6 +28,15 @@ export class AuthController {
     return this.authService.registerTenant(dto.name);
   }
 
+  @Get('default-tenant')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
+  @ApiOperation({ summary: 'Resolve the default marketplace tenant for public registration' })
+  @ApiResponse({ status: 200, description: 'Default tenant resolved' })
+  @ApiResponse({ status: 404, description: 'No active tenant configured' })
+  public async getDefaultTenant() {
+    return this.authService.getDefaultTenant();
+  }
+
   @Post('register')
   @Throttle({ default: { limit: 3, ttl: 60000 } })
   @ApiOperation({ summary: 'Register a new user within a tenant' })
@@ -42,6 +51,7 @@ export class AuthController {
       dto.role,
       dto.password,
       dto.email,
+      { businessName: dto.businessName, ninOrRegNo: dto.ninOrRegNo, city: dto.city },
     );
   }
 
@@ -147,6 +157,48 @@ export class AuthController {
     @CurrentUser() caller: JwtPayload,
   ) {
     return this.authService.unsuspend(id, caller.tenantId);
+  }
+
+  @Get('admin/verifications')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List vendors/drivers awaiting verification approval' })
+  @ApiResponse({ status: 200, description: 'Pending verifications' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async listPendingVerifications(@CurrentUser() caller: JwtPayload) {
+    return this.authService.listPendingVerifications(caller.tenantId);
+  }
+
+  @Post('admin/verifications/:id/approve')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiOperation({ summary: 'Approve a vendor/driver verification' })
+  @ApiResponse({ status: 201, description: 'Verification approved' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async approveVerification(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() caller: JwtPayload,
+  ) {
+    return this.authService.approveVerification(id, caller.tenantId);
+  }
+
+  @Post('admin/verifications/:id/reject')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin', 'super_admin')
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'User ID' })
+  @ApiOperation({ summary: 'Reject a vendor/driver verification' })
+  @ApiResponse({ status: 201, description: 'Verification rejected' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async rejectVerification(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() caller: JwtPayload,
+    @Body() body: { reason: string },
+  ) {
+    return this.authService.rejectVerification(id, caller.tenantId, body.reason);
   }
 
   private extractMetadata(req: Request): SessionMetadata {

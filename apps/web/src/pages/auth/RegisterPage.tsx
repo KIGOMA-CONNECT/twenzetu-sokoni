@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../../api/client';
 
@@ -35,17 +35,37 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('customer');
+  const [businessName, setBusinessName] = useState('');
+  const [ninOrRegNo, setNinOrRegNo] = useState('');
+  const [city, setCity] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [defaultTenantId, setDefaultTenantId] = useState<string | null>(null);
+
+  useEffect(() => {
+    api
+      .get('/auth/default-tenant')
+      .then((res) => setDefaultTenantId(res.data?.data?.tenantId ?? res.data?.tenantId ?? null))
+      .catch(() => setDefaultTenantId(null));
+  }, []);
 
   const handleRegister = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
     try {
-      const tenantId = 'a0000000-0000-0000-0000-000000000002';
-      await api.post('/auth/register', { tenantId, phoneNumber: phone.trim(), fullName: name, role, password });
+      const payload: Record<string, string> = {
+        phoneNumber: phone.trim(),
+        fullName: name,
+        role,
+        password,
+      };
+      if (defaultTenantId) payload.tenantId = defaultTenantId;
+      if (businessName.trim()) payload.businessName = businessName.trim();
+      if (ninOrRegNo.trim()) payload.ninOrRegNo = ninOrRegNo.trim();
+      if (city.trim()) payload.city = city.trim();
+      await api.post('/auth/register', payload);
       setMsg('Account created successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
@@ -91,6 +111,29 @@ export default function RegisterPage() {
                 <option value="driver">Driver — make deliveries</option>
               </select>
             </div>
+
+            {(role === 'vendor' || role === 'driver') && (
+              <>
+                {role === 'vendor' && (
+                  <div className="field">
+                    <label className="field-label">Business Name</label>
+                    <input className="input" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g. Kigali Market Fresh Ltd" required />
+                  </div>
+                )}
+                <div className="field">
+                  <label className="field-label">{role === 'vendor' ? 'Business Registration Number' : 'National ID (NIN)'}</label>
+                  <input className="input" value={ninOrRegNo} onChange={e => setNinOrRegNo(e.target.value)} placeholder={role === 'vendor' ? 'e.g. RDB-123456789' : 'e.g. 120199123456789'} required />
+                </div>
+                <div className="field">
+                  <label className="field-label">City / Trading Area</label>
+                  <input className="input" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Kigali" required />
+                </div>
+                <div className="alert alert-info mb-2">
+                  <span>🛡️</span>
+                  <span>Your details are verified before your account is activated. This usually takes less than 24 hours.</span>
+                </div>
+              </>
+            )}
 
             <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
               {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Creating account...</> : 'Create account'}

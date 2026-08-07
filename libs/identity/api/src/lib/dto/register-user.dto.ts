@@ -3,10 +3,14 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '@afri-market/identity-domain';
 
 export class RegisterUserDto {
-  @ApiProperty({ example: 'uuid-of-tenant' })
+  @ApiPropertyOptional({
+    example: 'uuid-of-tenant',
+    description: 'Tenant UUID. Omitted for the public marketplace flow — the default tenant is resolved server-side.',
+  })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  tenantId!: string;
+  tenantId?: string;
 
   @ApiProperty({ example: '+250788123456' })
   @IsString()
@@ -34,4 +38,22 @@ export class RegisterUserDto {
   @IsOptional()
   @IsString()
   email?: string;
+
+  @ApiPropertyOptional({ example: 'Kigali Market Fresh Ltd', description: 'Business name (required for vendors)' })
+  @IsOptional()
+  @IsString()
+  businessName?: string;
+
+  @ApiPropertyOptional({
+    example: '120199123456789',
+    description: 'National ID (NIN) for drivers or business registration number for vendors',
+  })
+  @IsOptional()
+  @IsString()
+  ninOrRegNo?: string;
+
+  @ApiPropertyOptional({ example: 'Kigali' })
+  @IsOptional()
+  @IsString()
+  city?: string;
 }

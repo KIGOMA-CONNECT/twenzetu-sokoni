@@ -16,6 +16,21 @@ export class TypeOrmTenantRepository extends TypeOrmRepository<Tenant, TenantOrm
     return entity ? this.toDomain(entity) : null;
   }
 
+  public async findDefault(): Promise<Tenant | null> {
+    const defaultEntity = await this.repository.findOne({
+      where: { isDefault: true, status: 'ACTIVE' },
+      order: { createdAt: 'ASC' },
+    });
+    if (defaultEntity) {
+      return this.toDomain(defaultEntity);
+    }
+    const firstActive = await this.repository.findOne({
+      where: { status: 'ACTIVE' },
+      order: { createdAt: 'ASC' },
+    });
+    return firstActive ? this.toDomain(firstActive) : null;
+  }
+
   public async save(entity: Tenant): Promise<void> {
     await this.repository.save(this.toOrm(entity));
   }
@@ -34,6 +49,7 @@ export class TypeOrmTenantRepository extends TypeOrmRepository<Tenant, TenantOrm
       id: EntityId.from(entity.id),
       name: entity.name,
       status: entity.status as TenantStatus,
+      isDefault: entity.isDefault ?? false,
     });
   }
 
@@ -42,6 +58,7 @@ export class TypeOrmTenantRepository extends TypeOrmRepository<Tenant, TenantOrm
       id: entity.id.value,
       name: entity.name,
       status: entity.status,
+      isDefault: entity.isDefault,
     };
   }
 }

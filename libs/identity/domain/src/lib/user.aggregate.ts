@@ -3,6 +3,8 @@ import { PhoneNumber } from '@afri-market/kernel';
 import { UserRole, AdminPermission, defaultPermissionsForRole } from './user-role';
 import { UserStatus } from './user-status';
 
+export type VerificationDocumentStatus = 'NOT_REQUIRED' | 'PENDING' | 'APPROVED' | 'REJECTED';
+
 export interface CreateUserProps {
   readonly tenantId: TenantId;
   readonly phoneNumber: PhoneNumber;
@@ -11,6 +13,11 @@ export interface CreateUserProps {
   readonly passwordHash: string;
   readonly email?: Email;
   readonly permissions?: AdminPermission[];
+  readonly businessName?: string;
+  readonly ninOrRegNo?: string;
+  readonly city?: string;
+  readonly verificationRiskScore?: number;
+  readonly verificationDocumentStatus?: VerificationDocumentStatus;
 }
 
 export interface ReconstituteUserProps {
@@ -24,6 +31,13 @@ export interface ReconstituteUserProps {
   readonly status: UserStatus;
   readonly version: number;
   readonly permissions?: AdminPermission[];
+  readonly businessName?: string;
+  readonly ninOrRegNo?: string;
+  readonly city?: string;
+  readonly verificationRiskScore?: number;
+  readonly verificationDocumentStatus?: VerificationDocumentStatus;
+  readonly rejectionReason?: string;
+  readonly verifiedAt?: Date;
 }
 
 export class User extends AggregateRoot<EntityId> {
@@ -38,6 +52,13 @@ export class User extends AggregateRoot<EntityId> {
     private _status: UserStatus,
     private readonly _version: number,
     private _permissions: AdminPermission[] = [],
+    private _businessName: string | undefined,
+    private _ninOrRegNo: string | undefined,
+    private _city: string | undefined,
+    private _verificationRiskScore: number | undefined,
+    private _verificationDocumentStatus: VerificationDocumentStatus | undefined,
+    private _rejectionReason: string | undefined,
+    private _verifiedAt: Date | undefined,
   ) {
     super(id);
   }
@@ -59,6 +80,13 @@ export class User extends AggregateRoot<EntityId> {
       'PENDING_VERIFICATION',
       1,
       permissions,
+      props.businessName,
+      props.ninOrRegNo,
+      props.city,
+      props.verificationRiskScore,
+      props.verificationDocumentStatus,
+      undefined,
+      undefined,
     );
   }
 
@@ -67,6 +95,13 @@ export class User extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.phoneNumber, props.fullName,
       props.role, props.passwordHash, props.email, props.status, props.version,
       props.permissions ?? [],
+      props.businessName,
+      props.ninOrRegNo,
+      props.city,
+      props.verificationRiskScore,
+      props.verificationDocumentStatus,
+      props.rejectionReason,
+      props.verifiedAt,
     );
   }
 
@@ -79,6 +114,15 @@ export class User extends AggregateRoot<EntityId> {
   public get status(): UserStatus { return this._status; }
   public get version(): number { return this._version; }
   public get permissions(): AdminPermission[] { return this._permissions; }
+  public get businessName(): string | undefined { return this._businessName; }
+  public get ninOrRegNo(): string | undefined { return this._ninOrRegNo; }
+  public get city(): string | undefined { return this._city; }
+  public get verificationRiskScore(): number | undefined { return this._verificationRiskScore; }
+  public get verificationDocumentStatus(): VerificationDocumentStatus | undefined {
+    return this._verificationDocumentStatus;
+  }
+  public get rejectionReason(): string | undefined { return this._rejectionReason; }
+  public get verifiedAt(): Date | undefined { return this._verifiedAt; }
 
   public changePasswordHash(newHash: string): void {
     Guard.assert(Guard.againstEmptyString(newHash, 'passwordHash'));
@@ -88,7 +132,32 @@ export class User extends AggregateRoot<EntityId> {
   public changeRole(newRole: UserRole): void { this._role = newRole; }
   public activate(): void { this._status = 'ACTIVE'; }
   public suspend(): void { this._status = 'SUSPENDED'; }
-  public verify(): void { this._status = 'ACTIVE'; }
+  public verify(): void {
+    this._status = 'ACTIVE';
+    this._verifiedAt = new Date();
+    this._verificationDocumentStatus = this._verificationDocumentStatus ?? 'APPROVED';
+  }
+
+  public recordAiVerification(riskScore: number, documentStatus: VerificationDocumentStatus): void {
+    Guard.inRange(riskScore, 0, 100, 'verificationRiskScore');
+    this._verificationRiskScore = riskScore;
+    this._verificationDocumentStatus = documentStatus;
+  }
+
+  public approveVerification(): void {
+    this._status = 'ACTIVE';
+    this._verificationDocumentStatus = 'APPROVED';
+    this._verifiedAt = new Date();
+    this._rejectionReason = undefined;
+  }
+
+  public rejectVerification(reason: string): void {
+    Guard.assert(Guard.againstEmptyString(reason, 'rejectionReason'));
+    this._status = 'REJECTED';
+    this._verificationDocumentStatus = 'REJECTED';
+    this._rejectionReason = reason;
+  }
+
   public updateFullName(newName: string): void { this._fullName = newName; }
   public updateEmail(newEmail: Email | undefined): void { this._email = newEmail; }
   public setPermissions(permissions: AdminPermission[]): void { this._permissions = permissions; }

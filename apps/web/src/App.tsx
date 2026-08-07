@@ -31,6 +31,7 @@ import AdminDrivers from './pages/admin/AdminDrivers';
 import AdminManageAdmins from './pages/admin/AdminManageAdmins';
 import AdminReconciliation from './pages/admin/AdminReconciliation';
 import AdminAuditLog from './pages/admin/AdminAuditLog';
+import AdminVerifications from './pages/admin/AdminVerifications';
 import { NotificationProvider } from './context/NotificationContext';
 import { CartProvider } from './context/CartContext';
 import NotificationsPage from './pages/NotificationsPage';
@@ -102,6 +103,7 @@ function AppRoutes() {
         <Route path="/admin/manage-admins" element={<ProtectedRoute roles={['super_admin']}><AdminManageAdmins /></ProtectedRoute>} />
         <Route path="/admin/reconciliation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminReconciliation /></ProtectedRoute>} />
         <Route path="/admin/audit-log" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminAuditLog /></ProtectedRoute>} />
+        <Route path="/admin/verifications" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVerifications /></ProtectedRoute>} />
         <Route path="/admin/hr" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminHrDashboard /></ProtectedRoute>} />
         <Route path="/admin/org/units" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminOrgUnits /></ProtectedRoute>} />
         <Route path="/admin/org/types" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminOrgTypes /></ProtectedRoute>} />

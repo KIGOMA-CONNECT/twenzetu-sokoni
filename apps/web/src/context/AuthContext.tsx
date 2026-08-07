@@ -24,7 +24,7 @@ function persistTokens(payload: AuthResponse) {
   localStorage.setItem('accessToken', payload.accessToken);
   localStorage.setItem('refreshToken', payload.refreshToken);
   localStorage.setItem('user', JSON.stringify(payload.user));
-  localStorage.setItem('tenantId', 'a0000000-0000-0000-0000-000000000002');
+  localStorage.setItem('tenantId', payload.user?.tenantId ?? '');
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

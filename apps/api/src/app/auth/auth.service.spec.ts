@@ -1,7 +1,7 @@
 import { UnauthorizedException, NotFoundException, ConflictException } from '@nestjs/common';
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { User } from '@afri-market/identity-domain';
-import { AuthService } from '@afri-market/identity-api';
+import { AuthService, AiVerificationService } from '@afri-market/identity-api';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigService } from '@afri-market/core-config';
 
@@ -38,6 +38,9 @@ describe('AuthService', () => {
   const hasher = { hash: jest.fn(async (p: string) => `hashed:${p}`), verify: jest.fn() };
   const smsService = { sendOtp: jest.fn(), sendOrderConfirmation: jest.fn() };
   const emailService = { sendWelcome: jest.fn(async () => undefined), sendEmail: jest.fn() };
+  const aiVerification = {
+    evaluate: jest.fn(async () => ({ riskScore: 10, documentStatus: 'APPROVED', notes: [] })),
+  };
 
   let service: AuthService;
 
@@ -54,6 +57,7 @@ describe('AuthService', () => {
       hasher as never,
       smsService as never,
       emailService as never,
+      aiVerification as never,
     );
   });
 
@@ -114,6 +118,67 @@ describe('AuthService', () => {
       await expect(
         service.registerUser('t', '+255754100003', 'Dup', 'customer', 'x'),
       ).rejects.toBeInstanceOf(ConflictException);
+    });
+
+    it('leaves a high-risk vendor pending for admin approval', async () => {
+      userRepo.findByPhoneNumber.mockResolvedValue(null);
+      tenantRepo.findById.mockResolvedValue({ id: { value: '22222222-2222-2222-2222-222222222222' } });
+      aiVerification.evaluate.mockResolvedValue({ riskScore: 75, documentStatus: 'REJECTED', notes: [] });
+
+      const result = await service.registerUser(
+        '22222222-2222-2222-2222-222222222222',
+        '+255754100005',
+        'New Vendor',
+        'vendor',
+        'password123',
+        undefined,
+        { businessName: 'Shop', ninOrRegNo: 'x', city: 'Dar' },
+      );
+
+      const saved = userRepo.save.mock.calls[0][0] as User;
+      expect(saved.status).toBe('PENDING_VERIFICATION');
+      expect(saved.verificationRiskScore).toBe(75);
+      expect(saved.verificationDocumentStatus).toBe('REJECTED');
+      expect(result.userId).toBeTruthy();
+    });
+
+    it('auto-verifies a driver whose documents pass AI checks', async () => {
+      userRepo.findByPhoneNumber.mockResolvedValue(null);
+      tenantRepo.findById.mockResolvedValue({ id: { value: '22222222-2222-2222-2222-222222222222' } });
+      aiVerification.evaluate.mockResolvedValue({ riskScore: 10, documentStatus: 'APPROVED', notes: [] });
+
+      const result = await service.registerUser(
+        '22222222-2222-2222-2222-222222222222',
+        '+255754100006',
+        'New Driver',
+        'driver',
+        'password123',
+        undefined,
+        { ninOrRegNo: 'NIN-12345678', city: 'Dar' },
+      );
+
+      const saved = userRepo.save.mock.calls[0][0] as User;
+      expect(saved.status).toBe('ACTIVE');
+      expect(saved.verificationDocumentStatus).toBe('APPROVED');
+      expect(result.userId).toBeTruthy();
+    });
+
+    it('resolves the default tenant when tenantId is omitted', async () => {
+      userRepo.findByPhoneNumber.mockResolvedValue(null);
+      const tenantRepoMock = tenantRepo as unknown as { findDefault: jest.Mock; findById: jest.Mock };
+      tenantRepoMock.findDefault = jest.fn().mockResolvedValue({ id: { value: '22222222-2222-2222-2222-222222222222' } });
+      tenantRepo.findById.mockResolvedValue({ id: { value: '22222222-2222-2222-2222-222222222222' } });
+
+      const result = await service.registerUser(
+        undefined,
+        '+255754100007',
+        'New Customer',
+        'customer',
+        'password123',
+      );
+
+      expect(tenantRepoMock.findDefault).toHaveBeenCalled();
+      expect(result.userId).toBeTruthy();
     });
   });
 

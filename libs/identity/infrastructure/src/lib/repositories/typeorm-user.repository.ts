@@ -1,8 +1,15 @@
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
-import { EntityManager } from 'typeorm';
-import { User, IUserRepository, UserRole, UserStatus, AdminPermission } from '@afri-market/identity-domain';
+import { EntityManager, In } from 'typeorm';
+import {
+  User,
+  IUserRepository,
+  UserRole,
+  UserStatus,
+  AdminPermission,
+  VerificationDocumentStatus,
+} from '@afri-market/identity-domain';
 import { UserOrmEntity } from '../entities/user-orm.entity';
 
 @Injectable()
@@ -30,6 +37,14 @@ export class TypeOrmUserRepository extends TypeOrmRepository<User, UserOrmEntity
     return this.repository.count({ where: { tenantId } });
   }
 
+  public async findPendingVerifications(tenantId?: string): Promise<User[]> {
+    const where = tenantId
+      ? { tenantId, status: In(['PENDING_VERIFICATION', 'REJECTED']) }
+      : { status: In(['PENDING_VERIFICATION', 'REJECTED']) };
+    const entities = await this.repository.find({ where, order: { createdAt: 'ASC' } });
+    return entities.map((entity) => this.toDomain(entity));
+  }
+
   public async save(entity: User): Promise<void> {
     await this.repository.save(this.toOrm(entity));
   }
@@ -55,6 +70,13 @@ export class TypeOrmUserRepository extends TypeOrmRepository<User, UserOrmEntity
       status: entity.status as UserStatus,
       version: entity.version,
       permissions: entity.permissions ? entity.permissions.split(',').filter(Boolean) as AdminPermission[] : [],
+      businessName: entity.businessName ?? undefined,
+      ninOrRegNo: entity.ninOrRegNo ?? undefined,
+      city: entity.city ?? undefined,
+      verificationRiskScore: entity.verificationRiskScore ?? undefined,
+      verificationDocumentStatus: (entity.verificationDocumentStatus ?? undefined) as VerificationDocumentStatus | undefined,
+      rejectionReason: entity.rejectionReason ?? undefined,
+      verifiedAt: entity.verifiedAt ?? undefined,
     });
   }
 
@@ -70,6 +92,13 @@ export class TypeOrmUserRepository extends TypeOrmRepository<User, UserOrmEntity
       status: entity.status,
       version: entity.version,
       permissions: entity.permissions.length > 0 ? entity.permissions.join(',') : null,
+      businessName: entity.businessName ?? null,
+      ninOrRegNo: entity.ninOrRegNo ?? null,
+      city: entity.city ?? null,
+      verificationRiskScore: entity.verificationRiskScore ?? null,
+      verificationDocumentStatus: entity.verificationDocumentStatus ?? null,
+      rejectionReason: entity.rejectionReason ?? null,
+      verifiedAt: entity.verifiedAt ?? null,
     };
   }
 }

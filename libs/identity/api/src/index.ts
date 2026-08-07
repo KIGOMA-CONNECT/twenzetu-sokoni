@@ -1,5 +1,6 @@
 export * from './lib/auth.controller';
 export * from './lib/auth.service';
+export * from './lib/verification.service';
 export * from './lib/dto/login.dto';
 export * from './lib/dto/logout.dto';
 export * from './lib/dto/refresh-token.dto';

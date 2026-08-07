@@ -11,22 +11,22 @@ const TENANT_DAR = 'a0000000-0000-0000-0000-000000000002';
 const USERS = [
   { id: 'b0000000-0000-0000-0000-000000000009', tenantId: TENANT_DAR, phone: '+255754100000', name: 'Super Admin', role: 'super_admin', status: 'ACTIVE', permissions: 'manage_admins,manage_vendors,manage_disputes,manage_drivers,manage_promotions,view_analytics,manage_orders,manage_finance,manage_settings' },
   { id: 'b0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, phone: '+255754100001', name: 'Admin User', role: 'admin', status: 'ACTIVE', permissions: 'manage_vendors,manage_disputes,manage_drivers,manage_promotions,view_analytics,manage_orders,manage_finance,manage_settings' },
-  { id: 'b0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, phone: '+255754100002', name: 'Amina Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, phone: '+255754100002', name: 'Amina Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Dar Fresh Market', ninOrRegNo: 'TZ-REG-2019-0001', city: 'Dar es Salaam' },
   { id: 'b0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, phone: '+255754100003', name: 'Hassan Customer', role: 'customer', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, phone: '+255754100004', name: 'Juma Driver', role: 'driver', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, phone: '+255754100005', name: 'Bakari Vendor', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, phone: '+255754100006', name: 'Rehema Cleaning', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, phone: '+255754100007', name: 'Saada Fashion', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, phone: '+255754100004', name: 'Juma Driver', role: 'driver', status: 'ACTIVE', ninOrRegNo: 'NIN-19870912-5521', city: 'Dar es Salaam' },
+  { id: 'b0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, phone: '+255754100005', name: 'Bakari Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Kariakoo Electronics', ninOrRegNo: 'TZ-REG-2020-0042', city: 'Dar es Salaam' },
+  { id: 'b0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, phone: '+255754100006', name: 'Rehema Cleaning', role: 'vendor', status: 'ACTIVE', businessName: 'Mama Rehema Cleaning', ninOrRegNo: 'TZ-REG-2021-0078', city: 'Dar es Salaam' },
+  { id: 'b0000000-0000-0000-0000-000000000016', tenantId: TENANT_DAR, phone: '+255754100007', name: 'Saada Fashion', role: 'vendor', status: 'ACTIVE', businessName: 'Saada Fashion Tailors', ninOrRegNo: 'TZ-REG-2021-0119', city: 'Dar es Salaam' },
   { id: 'b0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, phone: '+254712345678', name: 'Wanjiku Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, phone: '+2348034567890', name: 'Chidi Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000019', tenantId: TENANT_DAR, phone: '+233201234567', name: 'Ama Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000020', tenantId: TENANT_DAR, phone: '+250788123456', name: 'Uwase Customer', role: 'customer', status: 'ACTIVE' },
   { id: 'b0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, phone: '+27821234567', name: 'Thabo Customer', role: 'customer', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, phone: '+254711234567', name: 'Njeri Vendor', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, phone: '+2348098765432', name: 'Emeka Vendor', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, phone: '+233244567890', name: 'Kwame Vendor', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, phone: '+250789654321', name: 'Jean Vendor', role: 'vendor', status: 'ACTIVE' },
-  { id: 'b0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, phone: '+27719876543', name: 'Naledi Vendor', role: 'vendor', status: 'ACTIVE' },
+  { id: 'b0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, phone: '+254711234567', name: 'Njeri Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Nairobi Fresh Market', ninOrRegNo: 'KE-BRN-2018-3341', city: 'Nairobi' },
+  { id: 'b0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, phone: '+2348098765432', name: 'Emeka Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Lagos Groceries Hub', ninOrRegNo: 'NG-RC-2017-8801', city: 'Lagos' },
+  { id: 'b0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, phone: '+233244567890', name: 'Kwame Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Accra Marketplace', ninOrRegNo: 'GH-RBD-2016-2203', city: 'Accra' },
+  { id: 'b0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, phone: '+250789654321', name: 'Jean Vendor', role: 'vendor', status: 'ACTIVE', businessName: 'Kigali Farm Produce', ninOrRegNo: 'RW-RDB-2019-5567', city: 'Kigali' },
+  { id: 'b0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, phone: '+27719876543', name: 'Naledi Vendor', role: 'vendor', status: 'ACTIVE', businessName: "Jo'burg Wholesale", ninOrRegNo: 'ZA-CIPC-2015-9912', city: 'Johannesburg' },
 ];
 
 const VENDORS = [
@@ -133,19 +133,20 @@ async function seed(): Promise<void> {
 
     // Tenant
     await ds.query(
-      `INSERT INTO tenants (id, name, status, created_at, updated_at)
-       VALUES ($1, $2, 'ACTIVE', NOW(), NOW()) ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name`,
+      `INSERT INTO tenants (id, name, status, is_default, created_at, updated_at)
+       VALUES ($1, $2, 'ACTIVE', true, NOW(), NOW())
+       ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, is_default = true`,
       [TENANT_DAR, 'afriMarket Global Hub'],
     );
-    console.log('  Tenant seeded');
+    console.log('  Tenant seeded (default)');
 
     // Users
     for (const u of USERS) {
       await ds.query(
-        `INSERT INTO users (id, tenant_id, phone_number, full_name, role, password_hash, status, permissions, version, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 1, NOW(), NOW())
+        `INSERT INTO users (id, tenant_id, phone_number, full_name, role, password_hash, status, permissions, business_name, nin_or_reg_no, city, verification_document_status, version, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'APPROVED', 1, NOW(), NOW())
          ON CONFLICT (id) DO UPDATE SET permissions = EXCLUDED.permissions`,
-        [u.id, u.tenantId, u.phone, u.name, u.role, passwordHash, u.status, u.permissions ?? null],
+        [u.id, u.tenantId, u.phone, u.name, u.role, passwordHash, u.status, u.permissions ?? null, u.businessName ?? null, u.ninOrRegNo ?? null, u.city ?? null],
       );
     }
     console.log('  Users seeded');
