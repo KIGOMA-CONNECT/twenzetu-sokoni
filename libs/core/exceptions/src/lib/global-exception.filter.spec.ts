@@ -133,6 +133,28 @@ describe('GlobalExceptionFilter', () => {
     );
   });
 
+  it('joins array messages from class-validator so validation errors are not lost', () => {
+    const logger = fakeLogger();
+    const filter = new GlobalExceptionFilter(logger);
+    const response = fakeResponse();
+
+    filter.catch(
+      new BadRequestException({
+        message: ['phoneNumber should not be empty', 'password must contain an uppercase letter'],
+      }),
+      fakeHost(response),
+    );
+
+    expect(response.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({
+          message: 'phoneNumber should not be empty; password must contain an uppercase letter',
+        }),
+      }),
+    );
+  });
+
   it('maps an unknown error to a generic 500 without leaking internal details', () => {
     const logger = fakeLogger();
     const filter = new GlobalExceptionFilter(logger);

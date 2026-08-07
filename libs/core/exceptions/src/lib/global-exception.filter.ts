@@ -45,6 +45,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         const exRecord = exResponse as Record<string, unknown>;
         if (typeof exRecord['message'] === 'string') {
           message = exRecord['message'];
+        } else if (Array.isArray(exRecord['message'])) {
+          const parts = (exRecord['message'] as unknown[]).filter((m): m is string => typeof m === 'string');
+          if (parts.length > 0) {
+            message = parts.join('; ');
+          }
         }
       }
       code = `HTTP.${status}`;

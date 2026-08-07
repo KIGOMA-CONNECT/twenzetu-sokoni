@@ -47,6 +47,13 @@ export async function refreshAccessToken(): Promise<string | null> {
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
+    const data = error.response?.data as Record<string, unknown> | undefined;
+    const nestedMessage = data?.error && typeof data.error === 'object'
+      ? (data.error as Record<string, unknown>).message
+      : undefined;
+    if (typeof nestedMessage === 'string' && data && typeof data.message === 'undefined') {
+      data.message = nestedMessage;
+    }
     const original = error.config as RetryableRequest | undefined;
     const onLoginPage = window.location.pathname.startsWith('/login');
     if (error.response?.status === 401 && original && !original._retry && !onLoginPage) {

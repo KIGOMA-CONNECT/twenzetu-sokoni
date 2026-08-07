@@ -69,7 +69,7 @@ export default function RegisterPage() {
       setMsg('Account created successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {
-      setError(err.response?.data?.message || err.message || 'Registration failed');
+      setError(err.response?.data?.error?.message || err.response?.data?.message || err.message || 'Registration failed');
     } finally {
       setSubmitting(false);
     }
@@ -101,7 +101,8 @@ export default function RegisterPage() {
             </div>
             <div className="field">
               <label className="field-label">Password</label>
-              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters" minLength={8} required />
+              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters with upper, lower & number" minLength={8} required />
+              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>At least 8 characters with an uppercase letter, lowercase letter, and a number.</p>
             </div>
             <div className="field">
               <label className="field-label">I want to join as</label>
