@@ -23,22 +23,25 @@ const PRODUCT_UNITS = ['pcs', 'kg', 'bundle', 'hour', 'day', 'person'];
 
 const CATEGORIES: Record<string, { id: string; label: string }[]> = {
   food: [
-    { id: 'd0000000-0000-0000-0000-000000000001', label: 'Fresh Produce' },
-    { id: 'd0000000-0000-0000-0000-000000000003', label: 'Food & Groceries' },
-    { id: 'd0000000-0000-0000-0000-000000000012', label: 'Chakula Kilicho Tayari' },
     { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
+    { id: 'd0000000-0000-0000-0000-000000000012', label: 'Chakula Kilicho Tayari' },
   ],
   grocery: [
-    { id: 'd0000000-0000-0000-0000-000000000003', label: 'Food & Groceries' },
     { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
   ],
+  electronics: [
+    { id: 'd0000000-0000-0000-0000-000000000011', label: 'Electronics' },
+  ],
   general: [
-    { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
     { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
   ],
   secondhand: [
-    { id: 'd0000000-0000-0000-0000-000000000002', label: 'Electronics' },
     { id: 'd0000000-0000-0000-0000-000000000018', label: 'Vitu vya Used' },
+    { id: 'd0000000-0000-0000-0000-000000000022', label: 'Nguo za Used' },
+    { id: 'd0000000-0000-0000-0000-000000000023', label: 'Electronics za Used' },
+    { id: 'd0000000-0000-0000-0000-000000000024', label: 'Mitambo na Machine' },
+    { id: 'd0000000-0000-0000-0000-000000000025', label: 'Tools na Zana' },
+    { id: 'd0000000-0000-0000-0000-000000000026', label: 'Fanicha za Used' },
   ],
   laundry: [
     { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
@@ -48,8 +51,6 @@ const CATEGORIES: Record<string, { id: string; label: string }[]> = {
     { id: 'd0000000-0000-0000-0000-000000000016', label: 'Usafi Nyumbani na Bustani' },
     { id: 'd0000000-0000-0000-0000-000000000017', label: 'Kupikiwa Nyumbani (Wapishi)' },
     { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
-    { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
-    { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
   ],
 };
 

@@ -42,7 +42,6 @@ const VENDORS = [
 ];
 
 const CATEGORIES = [
-  { id: 'd0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, name: 'Fresh Produce', type: 'food' },
   { id: 'd0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, name: 'Electronics', type: 'electronics' },
   { id: 'd0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, name: 'Chakula Kilicho Tayari', type: 'food' },
   { id: 'd0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, name: 'Mboga na Matunda', type: 'food' },
@@ -52,12 +51,17 @@ const CATEGORIES = [
   { id: 'd0000000-0000-0000-0000-000000000017', tenantId: TENANT_DAR, name: 'Kupikiwa Nyumbani (Wapishi)', type: 'general' },
   { id: 'd0000000-0000-0000-0000-000000000018', tenantId: TENANT_DAR, name: 'Vitu vya Used', type: 'secondhand' },
   { id: 'd0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, name: 'Ushonaji na Tailoring', type: 'tailoring' },
+  { id: 'd0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, name: 'Nguo za Used', type: 'secondhand', parentId: 'd0000000-0000-0000-0000-000000000018' },
+  { id: 'd0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, name: 'Electronics za Used', type: 'secondhand', parentId: 'd0000000-0000-0000-0000-000000000018' },
+  { id: 'd0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, name: 'Mitambo na Machine', type: 'secondhand', parentId: 'd0000000-0000-0000-0000-000000000018' },
+  { id: 'd0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, name: 'Tools na Zana', type: 'secondhand', parentId: 'd0000000-0000-0000-0000-000000000018' },
+  { id: 'd0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, name: 'Fanicha za Used', type: 'secondhand', parentId: 'd0000000-0000-0000-0000-000000000018' },
 ];
 
 const PRODUCTS = [
-  { id: 'e0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Wali Wa Nazi (Coconut Rice)', price: 4000, categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 80 },
-  { id: 'e0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Nyama Choma (1kg)', price: 15000, categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 30 },
-  { id: 'e0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Mchicha (Spinach Bundle)', price: 1000, categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 150 },
+  { id: 'e0000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Wali Wa Nazi (Coconut Rice)', price: 4000, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 80 },
+  { id: 'e0000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Nyama Choma (1kg)', price: 15000, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 30 },
+  { id: 'e0000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Mchicha (Spinach Bundle)', price: 1000, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 150 },
   { id: 'e0000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000011', name: 'Samsung Galaxy A15', price: 450000, categoryId: 'd0000000-0000-0000-0000-000000000011', stock: 20 },
   { id: 'e0000000-0000-0000-0000-000000000014', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000011', name: 'Phone Charger USB-C', price: 8000, categoryId: 'd0000000-0000-0000-0000-000000000011', stock: 200 },
   { id: 'e0000000-0000-0000-0000-000000000015', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000010', name: 'Nyanya (Tomatoes 1kg)', price: 1500, categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 100 },
@@ -69,16 +73,16 @@ const PRODUCTS = [
   { id: 'e0000000-0000-0000-0000-000000000021', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000012', name: 'Usafi wa Nyumbani (kwa Saa)', price: 8000, categoryId: 'd0000000-0000-0000-0000-000000000016', stock: 100 },
   { id: 'e0000000-0000-0000-0000-000000000022', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Ushonaji Nguo', price: 10000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
   { id: 'e0000000-0000-0000-0000-000000000023', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000013', name: 'Kufua na Kubandika Nguo', price: 6000, categoryId: 'd0000000-0000-0000-0000-000000000015', stock: 100 },
-  { id: 'e0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Kale (1kg)', price: 60, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 200 },
-  { id: 'e0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Beef (1kg)', price: 550, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 50 },
-  { id: 'e0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Avocado (each)', price: 40, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 300 },
+  { id: 'e0000000-0000-0000-0000-000000000024', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Kale (1kg)', price: 60, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 200 },
+  { id: 'e0000000-0000-0000-0000-000000000025', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Beef (1kg)', price: 550, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 50 },
+  { id: 'e0000000-0000-0000-0000-000000000026', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000020', name: 'Avocado (each)', price: 40, currency: 'KES', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 300 },
   { id: 'e0000000-0000-0000-0000-000000000027', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Rice (1kg)', price: 1500, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 250 },
-  { id: 'e0000000-0000-0000-0000-000000000028', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Tomatoes (1kg)', price: 1200, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 120 },
-  { id: 'e0000000-0000-0000-0000-000000000029', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Plantain (bunch)', price: 800, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 90 },
-  { id: 'e0000000-0000-0000-0000-000000000030', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Yam (1kg)', price: 15, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 150 },
-  { id: 'e0000000-0000-0000-0000-000000000031', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Kenkey (piece)', price: 8, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 100 },
-  { id: 'e0000000-0000-0000-0000-000000000032', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Irish Potatoes (1kg)', price: 900, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 180 },
-  { id: 'e0000000-0000-0000-0000-000000000033', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Cabbage (head)', price: 1200, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000010', stock: 120 },
+  { id: 'e0000000-0000-0000-0000-000000000028', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Tomatoes (1kg)', price: 1200, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 120 },
+  { id: 'e0000000-0000-0000-0000-000000000029', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000021', name: 'Plantain (bunch)', price: 800, currency: 'NGN', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 90 },
+  { id: 'e0000000-0000-0000-0000-000000000030', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Yam (1kg)', price: 15, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 150 },
+  { id: 'e0000000-0000-0000-0000-000000000031', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000022', name: 'Kenkey (piece)', price: 8, currency: 'GHS', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 100 },
+  { id: 'e0000000-0000-0000-0000-000000000032', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Irish Potatoes (1kg)', price: 900, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 180 },
+  { id: 'e0000000-0000-0000-0000-000000000033', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000023', name: 'Cabbage (head)', price: 1200, currency: 'RWF', categoryId: 'd0000000-0000-0000-0000-000000000013', stock: 120 },
   { id: 'e0000000-0000-0000-0000-000000000034', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000024', name: 'Whole Wheat Bread (loaf)', price: 25, currency: 'ZAR', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 100 },
   { id: 'e0000000-0000-0000-0000-000000000035', tenantId: TENANT_DAR, vendorId: 'c0000000-0000-0000-0000-000000000024', name: 'Milk (1L)', price: 22, currency: 'ZAR', categoryId: 'd0000000-0000-0000-0000-000000000014', stock: 140 },
 ];
@@ -164,9 +168,9 @@ async function seed(): Promise<void> {
     // Categories
     for (const c of CATEGORIES) {
       await ds.query(
-        `INSERT INTO product_categories (id, tenant_id, name, type, is_active, created_at, updated_at)
-         VALUES ($1, $2, $3, $4, true, NOW(), NOW()) ON CONFLICT DO NOTHING`,
-        [c.id, c.tenantId, c.name, c.type],
+        `INSERT INTO product_categories (id, tenant_id, name, type, parent_id, is_active, created_at, updated_at)
+         VALUES ($1, $2, $3, $4, $5, true, NOW(), NOW()) ON CONFLICT DO NOTHING`,
+        [c.id, c.tenantId, c.name, c.type, c.parentId ?? null],
       );
     }
     console.log('  Categories seeded');

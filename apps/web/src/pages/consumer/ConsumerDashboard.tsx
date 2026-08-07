@@ -27,21 +27,25 @@ const CATEGORY_ICONS: Record<string, string> = {
   'Kupikiwa Nyumbani (Wapishi)': '👩‍🍳',
   'Vitu vya Used': '♻️',
   'Electronics na Bidhaa Nyingine': '📱',
-  'Fresh Produce': '🥕',
   'Electronics': '📱',
   'Ushonaji na Tailoring': '🧵',
+  'Nguo za Used': '👕',
+  'Electronics za Used': '📱',
+  'Mitambo na Machine': '⚙️',
+  'Tools na Zana': '🔧',
+  'Fanicha za Used': '🛋️',
 };
 
 const CATEGORY_BG: Record<string, string> = {
   '🍲': '#ccfbf1', '🥬': '#dcfce7', '🍚': '#fef9c3', '🧵': '#fbcfe8',
-  '🧹': '#e0f2fe', '👩‍🍳': '#ffedd5', '♻️': '#fde68a', '📱': '#ddd6fe', '🥕': '#ffedd5',
+  '🧹': '#e0f2fe', '👩‍🍳': '#ffedd5', '♻️': '#fde68a', '📱': '#ddd6fe',
+  '👕': '#fbcfe8', '⚙️': '#e2e8f0', '🔧': '#d1fae5', '🛋️': '#fef3c7',
 };
 
-const PRODUCE_NAMES = new Set(['Mboga na Matunda', 'Fresh Produce']);
+const PRODUCE_NAMES = new Set(['Mboga na Matunda']);
 
 const CATEGORY_ORDER: Record<string, number> = {
-  'Fresh Produce': 10,
-  'Mboga na Matunda': 20,
+  'Mboga na Matunda': 10,
   'Mchele na Maharage': 30,
   'Chakula Kilicho Tayari': 40,
   'Kupikiwa Nyumbani (Wapishi)': 50,
@@ -50,7 +54,14 @@ const CATEGORY_ORDER: Record<string, number> = {
   'Ushonaji na Tailoring': 75,
   'Electronics': 80,
   'Vitu vya Used': 90,
+  'Nguo za Used': 91,
+  'Electronics za Used': 92,
+  'Mitambo na Machine': 93,
+  'Tools na Zana': 94,
+  'Fanicha za Used': 95,
 };
+
+const USED_PARENT_ID = 'd0000000-0000-0000-0000-000000000018';
 
 function categoryIcon(category: Category): string {
   return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
@@ -157,14 +168,33 @@ function ConsumerDashboard() {
                 .slice()
                 .sort((a, b) => (CATEGORY_ORDER[a.name] ?? 999) - (CATEGORY_ORDER[b.name] ?? 999))
                 .map((category) => {
+                if (category.parentId === USED_PARENT_ID) return null;
                 const icon = categoryIcon(category);
                 const produce = PRODUCE_NAMES.has(category.name);
+                const usedChildren = (categories ?? []).filter((c) => c.parentId === category.id);
                 return (
                   <div key={category.id} className="cat-tile" onClick={() => navigate(`/vendors?category=${encodeURIComponent(category.type)}`)}>
                     <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
                     <div className="cat-name">{category.name}</div>
                     {produce && (
                       <div className="cat-sub" style={{ fontSize: '0.62rem', color: '#16a34a', lineHeight: 1.2, fontWeight: 700 }}>{t('app.freshSokoSub')}</div>
+                    )}
+                    {usedChildren.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
+                        {usedChildren.map((child) => (
+                          <span
+                            key={child.id}
+                            onClick={(e) => { e.stopPropagation(); navigate(`/vendors?category=${encodeURIComponent(child.type)}`); }}
+                            style={{
+                              fontSize: '0.6rem', fontWeight: 700, padding: '0.18rem 0.45rem',
+                              borderRadius: '999px', background: '#fef3c7', color: '#92400e',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {categoryIcon(child)} {child.name}
+                          </span>
+                        ))}
+                      </div>
                     )}
                   </div>
                 );

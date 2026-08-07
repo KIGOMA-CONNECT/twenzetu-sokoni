@@ -90,7 +90,7 @@ export class UssdEngine {
       message: [
         'Select Category:',
         '',
-        '1. Fresh Produce',
+        '1. Mboga na Matunda',
         '2. Electronics',
         '3. General Goods',
         '4. Laundry Services',
@@ -130,7 +130,7 @@ export class UssdEngine {
     input: string,
   ): Promise<UssdResponse> {
     const categories: Record<string, string> = {
-      '1': 'Fresh Produce',
+      '1': 'Mboga na Matunda',
       '2': 'Electronics',
       '3': 'General Goods',
       '4': 'Laundry Services',
