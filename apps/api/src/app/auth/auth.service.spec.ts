@@ -1,7 +1,7 @@
 import { UnauthorizedException, NotFoundException, ConflictException } from '@nestjs/common';
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
 import { User } from '@afri-market/identity-domain';
-import { AuthService, AiVerificationService } from '@afri-market/identity-api';
+import { AuthService } from '@afri-market/identity-api';
 import { JwtService } from '@nestjs/jwt';
 import { AppConfigService } from '@afri-market/core-config';
 
