@@ -47,7 +47,11 @@
       "@afri-market/marketplace-application": ["./libs/marketplace/application/src/index"],
       "@afri-market/marketplace-api": ["./libs/marketplace/api/src/index"],
       "@afri-market/integrations": ["./libs/integrations/src/index"],
-      "@afri-market/ussd": ["./libs/ussd/src/index"]
+      "@afri-market/ussd": ["./libs/ussd/src/index"],
+      "@afri-market/core-queue": ["./libs/core-queue/src/index"],
+      "@afri-market/core-audit": ["./libs/core-audit/src/index"],
+      "@afri-market/core-resilience": ["./libs/core-resilience/src/index"],
+      "@afri-market/core-tracing": ["./libs/core-tracing/src/index"]
     }
   },
   "exclude": ["node_modules", "tmp", "**/__tests__/**", "**/*.spec.ts"]

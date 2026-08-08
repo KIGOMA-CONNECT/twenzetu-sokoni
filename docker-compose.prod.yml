@@ -15,6 +15,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - afri-market
 
@@ -22,7 +30,7 @@ services:
     image: redis:7-alpine
     container_name: afri-market-redis
     restart: unless-stopped
-    command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production}
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production} --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
     volumes:
       - afri-market-redis-data:/data
     healthcheck:
@@ -30,6 +38,14 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
     networks:
       - afri-market
 
@@ -85,6 +101,14 @@ services:
       timeout: 5s
       retries: 5
       start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
     networks:
       - afri-market
 
@@ -96,6 +120,20 @@ services:
     restart: unless-stopped
     ports:
       - '127.0.0.1:3301:80'
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:80']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
     networks:
       - afri-market
 
@@ -115,6 +153,20 @@ services:
     depends_on:
       - api
       - web
+    healthcheck:
+      test: ['CMD', 'wget', '-q', '-O-', 'http://localhost:80/health']
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 64M
     networks:
       - afri-market
 

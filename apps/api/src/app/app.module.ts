@@ -13,6 +13,10 @@ import { MARKETPLACE_ENTITIES } from '@afri-market/marketplace-infrastructure';
 import { CurrentUserMiddleware } from '@afri-market/identity-infrastructure';
 import { TenantMiddleware } from '@afri-market/tenancy';
 import { UssdModule, UssdSessionEntity } from '@afri-market/ussd';
+import { QueueModule } from '@afri-market/core-queue';
+import { AuditModule, AuditLogEntity } from '@afri-market/core-audit';
+import { ResilienceModule } from '@afri-market/core-resilience';
+import { TracingModule } from '@afri-market/core-tracing';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { HealthModule } from './health/health.module';
@@ -40,7 +44,12 @@ import { SchedulerModule } from './scheduler/scheduler.module';
       ...IDENTITY_ENTITIES,
       ...MARKETPLACE_ENTITIES,
       UssdSessionEntity,
+      AuditLogEntity,
     ]),
+    QueueModule,
+    AuditModule,
+    ResilienceModule,
+    TracingModule,
     HealthModule,
     MetricsModule,
     IdentityModule,

@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/core-audit",
+  "sourceRoot": "libs/core-audit/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:lib"],
+  "targets": {}
+}
