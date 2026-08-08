@@ -1,0 +1,7 @@
+{
+  "name": "@afri-market/core-tracing",
+  "sourceRoot": "libs/core-tracing/src",
+  "projectType": "library",
+  "tags": ["scope:core", "type:lib"],
+  "targets": {}
+}
