@@ -97,12 +97,12 @@ function ConsumerDashboard() {
     <div className="page">
       {/* Hero welcome */}
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem' }}>
-        <div style={{ maxWidth: 700, padding: '2.25rem 2rem', position: 'relative', zIndex: 1 }}>
+        <div style={{ maxWidth: 700, margin: '0 auto', padding: '2.25rem 2rem', position: 'relative', zIndex: 1, textAlign: 'center' }}>
           <span className="hero-badge" style={{ marginBottom: '0.9rem' }}>🎉 Karibu, {firstName}!</span>
           <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
             What would you like <span className="hero-gradient">today?</span>
           </h1>
-          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem', fontSize: '1.05rem' }}>Welcome back to afriMarket</p>
+          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 0', fontSize: '1.05rem' }}>Welcome back to afriMarket</p>
         </div>
       </section>
 
