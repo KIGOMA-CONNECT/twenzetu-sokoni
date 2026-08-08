@@ -1,31 +1,31 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
-import { PaymentJobData } from '../queue.service';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { DataSource } from 'typeorm';
 
 @Processor('payments')
 export class PaymentProcessor extends WorkerHost {
   private readonly logger = new Logger(PaymentProcessor.name);
 
-  async process(job: Job<PaymentJobData>): Promise<void> {
-    this.logger.debug(`Processing payment job ${job.id}: ${job.data.action} for payment ${job.data.paymentId}`);
+  constructor(
+    @InjectDataSource() private readonly ds: DataSource,
+  ) {
+    super();
+  }
+
+  async process(job: Job): Promise<void> {
+    this.logger.debug(`Processing payment job ${job.id}: ${job.name}`);
 
     try {
-      switch (job.data.action) {
-        case 'initiated':
-          await this.handlePaymentInitiated(job.data);
-          break;
-        case 'confirmed':
+      switch (job.name) {
+        case 'payment-confirmed':
           await this.handlePaymentConfirmed(job.data);
           break;
-        case 'failed':
-          await this.handlePaymentFailed(job.data);
-          break;
-        case 'refunded':
-          await this.handlePaymentRefunded(job.data);
+        case 'process-payment':
+          await this.handleProcessPayment(job.data);
           break;
       }
-
       this.logger.debug(`Payment job ${job.id} completed`);
     } catch (error) {
       this.logger.error(`Payment job ${job.id} failed: ${error}`);
@@ -33,31 +33,43 @@ export class PaymentProcessor extends WorkerHost {
     }
   }
 
-  private async handlePaymentInitiated(data: PaymentJobData): Promise<void> {
-    // TODO: Log payment attempt
-    // TODO: Send notification to customer
-    this.logger.debug(`Payment ${data.paymentId} initiated for order ${data.orderId}`);
+  private async handlePaymentConfirmed(event: {
+    paymentId: string;
+    orderId: string;
+    tenantId: string;
+    vendorId: string;
+    amount: number;
+    currency: string;
+    receiptNumber?: string;
+  }): Promise<void> {
+    this.logger.debug(`Handling payment confirmed: ${event.paymentId}`);
+
+    // Look up vendor phone and send payment notification
+    if (event.vendorId) {
+      const vendorUser = await this.ds.query(
+        `SELECT u.phone_number AS "phoneNumber" FROM users u
+         JOIN vendors v ON v.user_id = u.id
+         WHERE v.id = $1`,
+        [event.vendorId],
+      );
+      const vendorPhone = vendorUser?.[0]?.phoneNumber as string | undefined;
+      if (vendorPhone) {
+        await this.sendSms(vendorPhone, `Payment of ${event.currency} ${event.amount} confirmed for order ${event.orderId}. Funds held in escrow.`);
+      }
+    }
   }
 
-  private async handlePaymentConfirmed(data: PaymentJobData): Promise<void> {
-    // TODO: Update order status to paid
-    // TODO: Update escrow wallet
-    // TODO: Send confirmation SMS/push
-    // TODO: Notify vendor
-    this.logger.debug(`Payment ${data.paymentId} confirmed - updating order ${data.orderId}`);
+  private async handleProcessPayment(event: Record<string, unknown>): Promise<void> {
+    this.logger.debug(`Processing payment: ${event.paymentId}`);
+    // Additional payment processing logic can be added here
   }
 
-  private async handlePaymentFailed(data: PaymentJobData): Promise<void> {
-    // TODO: Update order status
-    // TODO: Notify customer of failure
-    // TODO: Allow retry
-    this.logger.debug(`Payment ${data.paymentId} failed for order ${data.orderId}`);
-  }
-
-  private async handlePaymentRefunded(data: PaymentJobData): Promise<void> {
-    // TODO: Process refund to customer
-    // TODO: Update escrow wallet
-    // TODO: Send refund confirmation
-    this.logger.debug(`Payment ${data.paymentId} refunded for order ${data.orderId}`);
+  private async sendSms(phone: string, message: string): Promise<void> {
+    try {
+      // TODO: Integrate with actual SMS provider
+      this.logger.debug(`SMS to ${phone}: ${message}`);
+    } catch (error) {
+      this.logger.error(`Failed to send SMS to ${phone}: ${error}`);
+    }
   }
 }

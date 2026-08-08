@@ -1,8 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { Inject } from '@nestjs/common';
+import { Inject, Optional } from '@nestjs/common';
 import { IOrderRepository } from '@afri-market/marketplace-domain';
 import { ORDER_REPOSITORY } from '../../tokens';
 import { UpdateOrderStatusCommand } from '../../commands/update-order-status.command';
+import { IEventDispatcher } from '../../events/event-types';
+import { NoOpEventDispatcher } from '../../events/noop-event-dispatcher';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   PLACED: ['CONFIRMED', 'CANCELLED'],
@@ -24,9 +26,14 @@ export interface UpdateOrderStatusActor {
 
 @Injectable()
 export class UpdateOrderStatusUseCase {
+  private readonly eventDispatcher: IEventDispatcher;
+
   constructor(
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
-  ) {}
+    @Optional() eventDispatcher?: IEventDispatcher,
+  ) {
+    this.eventDispatcher = eventDispatcher ?? new NoOpEventDispatcher();
+  }
 
   public async execute(
     tenantId: string,
@@ -53,6 +60,8 @@ export class UpdateOrderStatusUseCase {
       );
     }
 
+    const oldStatus = order.status;
+
     switch (command.status) {
       case 'CONFIRMED':
         order.confirm();
@@ -77,6 +86,16 @@ export class UpdateOrderStatusUseCase {
     }
 
     await this.orderRepo.save(order);
+
+    // Dispatch async event for customer notification
+    this.eventDispatcher.dispatchOrderStatusChanged({
+      orderId: order.id.value,
+      tenantId,
+      customerId: order.customerId.value,
+      vendorId: order.vendorId.value,
+      oldStatus,
+      newStatus: order.status,
+    });
 
     return { orderId: order.id.value, status: order.status };
   }

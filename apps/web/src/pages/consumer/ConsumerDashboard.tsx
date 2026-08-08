@@ -102,7 +102,7 @@ function ConsumerDashboard() {
           <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
             What would you like <span className="hero-gradient">today?</span>
           </h1>
-          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem' }}>{t('app.welcomeBack')}</p>
+          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem', fontSize: '1.05rem' }}>Welcome back to afriMarket</p>
         </div>
       </section>
 
