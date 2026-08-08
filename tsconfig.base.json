@@ -51,7 +51,8 @@
       "@afri-market/core-queue": ["./libs/core-queue/src/index"],
       "@afri-market/core-audit": ["./libs/core-audit/src/index"],
       "@afri-market/core-resilience": ["./libs/core-resilience/src/index"],
-      "@afri-market/core-tracing": ["./libs/core-tracing/src/index"]
+      "@afri-market/core-tracing": ["./libs/core-tracing/src/index"],
+      "@afri-market/core-finance": ["./libs/core-finance/src/index"]
     }
   },
   "exclude": ["node_modules", "tmp", "**/__tests__/**", "**/*.spec.ts"]

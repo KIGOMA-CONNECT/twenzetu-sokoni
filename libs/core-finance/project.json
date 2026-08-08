@@ -1,0 +1,18 @@
+{
+  "name": "@afri-market/core-finance",
+  "sourceRoot": "libs/core-finance/src",
+  "projectType": "library",
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "options": {
+        "outputPath": "dist/libs/core-finance",
+        "main": "libs/core-finance/src/index.ts",
+        "tsConfig": "libs/core-finance/tsconfig.lib.json"
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

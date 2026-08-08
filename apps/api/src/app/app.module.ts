@@ -17,6 +17,7 @@ import { QueueModule } from '@afri-market/core-queue';
 import { AuditModule, AuditLogEntity } from '@afri-market/core-audit';
 import { ResilienceModule } from '@afri-market/core-resilience';
 import { TracingModule } from '@afri-market/core-tracing';
+import { FinanceModule, FINANCE_ENTITIES } from '@afri-market/core-finance';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { HealthModule } from './health/health.module';
@@ -43,6 +44,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     DatabaseModule.forRoot([
       ...IDENTITY_ENTITIES,
       ...MARKETPLACE_ENTITIES,
+      ...FINANCE_ENTITIES,
       UssdSessionEntity,
       AuditLogEntity,
     ]),
@@ -50,6 +52,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     AuditModule,
     ResilienceModule,
     TracingModule,
+    FinanceModule,
     HealthModule,
     MetricsModule,
     IdentityModule,
