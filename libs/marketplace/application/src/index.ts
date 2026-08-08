@@ -4,6 +4,11 @@ export * from './lib/marketplace-application.module';
 // Tokens
 export * from './lib/tokens';
 
+// Events
+export * from './lib/events/event-types';
+export * from './lib/events/noop-event-dispatcher';
+export * from './lib/events/queue-event-dispatcher';
+
 // Commands
 export * from './lib/commands/create-vendor.command';
 export * from './lib/commands/create-product.command';
