@@ -450,7 +450,7 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .float-tile .tile-desc { font-size: 0.75rem; color: var(--muted); }
 
 /* ============================ Category tile ============================ */
-.cat-scroll { display: flex; gap: 0.9rem; overflow-x: auto; padding: 0.25rem 0.25rem 1rem; scroll-snap-type: x mandatory; }
+.cat-scroll { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.9rem; padding: 0.25rem 0.25rem 1rem; }
 .cat-scroll::-webkit-scrollbar { height: 0; }
 .cat-tile {
   scroll-snap-align: start;
