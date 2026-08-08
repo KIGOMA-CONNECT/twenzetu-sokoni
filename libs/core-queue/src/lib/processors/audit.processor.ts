@@ -3,7 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { AuditLogEntity } from '@afri-market/core-audit';
+import { AuditLogEntity } from '../entities/audit-log.entity';
 import { AuditJobData } from '../queue.service';
 
 @Processor('audit')

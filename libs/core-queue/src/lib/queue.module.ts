@@ -6,7 +6,7 @@ import { OrderProcessor } from './processors/order.processor';
 import { PaymentProcessor } from './processors/payment.processor';
 import { NotificationProcessor } from './processors/notification.processor';
 import { AuditProcessor } from './processors/audit.processor';
-import { AuditLogEntity } from '@afri-market/core-audit';
+import { AuditLogEntity } from './entities/audit-log.entity';
 
 const REDIS_URL = process.env['REDIS_URL'] || 'redis://localhost:6379';
 
