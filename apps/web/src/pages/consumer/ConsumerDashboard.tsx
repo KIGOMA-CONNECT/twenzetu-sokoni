@@ -99,7 +99,6 @@ function ConsumerDashboard() {
   const isSmallPhone = device.phoneSize === 'small';
   const heroMinHeight = isSmallPhone ? '160px' : isPhone ? '180px' : '220px';
   const heroPadding = isSmallPhone ? '1.5rem 1rem' : isPhone ? '1.75rem 1.25rem' : '2rem';
-  const categoryCols = isSmallPhone ? 3 : isPhone ? 4 : device.type === 'tablet' ? 5 : 6;
 
   return (
     <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
