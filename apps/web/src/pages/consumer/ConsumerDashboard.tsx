@@ -10,71 +10,114 @@ import { Recommendations } from '../../components/Recommendations';
 import { SectionTitle } from '../../components/ui';
 import type { Order, Category } from '../../types';
 
-const TYPE_ICONS: Record<string, string> = {
-  food: '🍲',
-  grocery: '🍚',
-  electronics: '📱',
-  general: '🧵',
-  secondhand: '♻️',
-  laundry: '🧺',
+// ── New parent category IDs ──
+const PARENT_IDS = {
+  FOOD_SERVICES:  'd0000000-0000-0000-0000-000000000030',
+  FRESH_PRODUCE:  'd0000000-0000-0000-0000-000000000031',
+  HOME_GARDEN:    'd0000000-0000-0000-0000-000000000032',
+  LAUNDRY:        'd0000000-0000-0000-0000-000000000033',
+  TAILORING:      'd0000000-0000-0000-0000-000000000034',
+  GENERAL:        'd0000000-0000-0000-0000-000000000035',
+  CARGO:          'd0000000-0000-0000-0000-000000000036',
+  USED:           'd0000000-0000-0000-0000-000000000018',
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  'Chakula Kilicho Tayari': '🍲',
-  'Mboga na Matunda': '🥬',
-  'Mchele na Maharage': '🍚',
-  'Ufuaji na Usafishaji Nguo': '🧵',
-  'Usafi Nyumbani na Bustani': '🧹',
+  // Parents
+  [PARENT_IDS.FOOD_SERVICES]: '🍲',
+  [PARENT_IDS.FRESH_PRODUCE]: '🥬',
+  [PARENT_IDS.HOME_GARDEN]:   '🧹',
+  [PARENT_IDS.LAUNDRY]:       '🧺',
+  [PARENT_IDS.TAILORING]:     '✂️',
+  [PARENT_IDS.GENERAL]:       '🛍️',
+  [PARENT_IDS.CARGO]:         '🚚',
+  [PARENT_IDS.USED]:          '♻️',
+  // Food subcategories
+  'Chakula Kilicho Tayari':   '🍲',
+  'Wali na Nyama Choma':      '🍖',
+  'Ugali na Samaki':          '🐟',
+  'Mihogo na Kuku':           '🍗',
+  'Chipsi na Maji':           '🍟',
+  'Supu na Mboga':            '🥣',
+  'Pilau na Biryani':         '🍚',
   'Kupikiwa Nyumbani (Wapishi)': '👩‍🍳',
-  'Vitu vya Used': '♻️',
-  'Electronics na Bidhaa Nyingine': '📱',
-  'Electronics': '📱',
-  'Ushonaji na Tailoring': '🧵',
-  'Nguo za Used': '👕',
-  'Electronics za Used': '📱',
-  'Mitambo na Machine': '⚙️',
-  'Tools na Zana': '🔧',
-  'Fanicha za Used': '🛋️',
+  // Fresh produce
+  'Mboga na Matunda':         '🥬',
+  'Mboga':                    '🥬',
+  'Matunda':                  '🍎',
+  'Mchele na Maharage':       '🍚',
+  'Hoho na Karoti':           '🌶️',
+  'Vitunguu na Mboga Kavu':   '🧅',
+  'Nyama na Samaki Fresh':    '🥩',
+  'Milk na Dairy Products':   '🥛',
+  // Laundry
+  'Ufuaji na Usafishaji Nguo': '🧺',
+  'Mama Fua':                 '👩‍🔧',
+  'Kufuliwa Nyumbani':        '🏠',
+  // Home & Garden
+  'Usafi Nyumbani na Bustani': '🧹',
+  // Tailoring
+  'Ushonaji na Tailoring':    '✂️',
+  'Nguo za Kiume':            '👔',
+  'Nguo za Kike':             '👗',
+  'Vazi la Harusi':           '👰',
+  'Uniforms na Workwear':     '🦺',
+  // General
+  'Electronics':              '📱',
+  'Vifaa vya Nyumbani':       '🏠',
+  'Fanicha':                  '🛋️',
+  'Vyombo vya Usafiri':       '🚗',
+  'Vifaa vya Ujenzi (Hardware)': '🔨',
+  'Mitandao na Simu':         '📡',
+  'Vifaa vya Michezo':        '⚽',
+  'Vitabu na Vifaa vya Masomo': '📚',
+  // Used goods
+  'Nguo za Used':             '👕',
+  'Electronics za Used':      '📱',
+  'Mitambo na Machine':       '⚙️',
+  'Tools na Zana':            '🔧',
+  'Fanicha za Used':          '🛋️',
+  // Cargo
+  'Cargo ya Ndani':           '📦',
+  'Express Delivery':         '⚡',
+  'Logistics ya Biashara':    '🏢',
+  'Kukodisha Lori/Cherehe':   '🚛',
 };
 
 const CATEGORY_BG: Record<string, string> = {
-  '🍲': '#ccfbf1', '🥬': '#dcfce7', '🍚': '#fef9c3', '🧵': '#fbcfe8',
-  '🧹': '#e0f2fe', '👩‍🍳': '#ffedd5', '♻️': '#fde68a', '📱': '#ddd6fe',
-  '👕': '#fbcfe8', '⚙️': '#e2e8f0', '🔧': '#d1fae5', '🛋️': '#fef3c7',
+  '🍲': '#ccfbf1', '🥬': '#dcfce7', '🍚': '#fef9c3', '✂️': '#fce7f3',
+  '🧹': '#e0f2fe', '🧺': '#dbeafe', '🛍️': '#ddd6fe', '🚚': '#fef3c7',
+  '♻️': '#fde68a', '🍖': '#fecaca', '🐟': '#bae6fd', '🍗': '#fed7aa',
+  '🍟': '#fef9c3', '🥣': '#e0f2fe', '👩‍🍳': '#ffedd5',
+  '🍎': '#fecdd3', '🌶️': '#fee2e2', '🧅': '#fef3c7', '🥩': '#fecaca', '🥛': '#f0f9ff',
+  '👩‍🔧': '#dbeafe', '🏠': '#e0f2fe',
+  '👔': '#dbeafe', '👗': '#fce7f3', '👰': '#fef3c7', '🦺': '#fef9c3',
+  '📱': '#ddd6fe', '🛋️': '#fef3c7', '🚗': '#dbeafe', '🔨': '#d1fae5',
+  '📡': '#e0e7ff', '⚽': '#dcfce7', '📚': '#fef9c3',
+  '👕': '#fbcfe8', '⚙️': '#e2e8f0', '🔧': '#d1fae5',
+  '📦': '#fef9c3', '⚡': '#fef3c7', '🏢': '#e0e7ff', '🚛': '#dbeafe',
 };
 
-const PRODUCE_NAMES = new Set(['Mboga na Matunda']);
-
-const CATEGORY_ORDER: Record<string, number> = {
-  'Mboga na Matunda': 10,
-  'Mchele na Maharage': 30,
-  'Chakula Kilicho Tayari': 40,
-  'Kupikiwa Nyumbani (Wapishi)': 50,
-  'Ufuaji na Usafishaji Nguo': 60,
-  'Usafi Nyumbani na Bustani': 70,
-  'Ushonaji na Tailoring': 75,
-  'Electronics': 80,
-  'Vitu vya Used': 90,
-  'Nguo za Used': 91,
-  'Electronics za Used': 92,
-  'Mitambo na Machine': 93,
-  'Tools na Zana': 94,
-  'Fanicha za Used': 95,
+const PARENT_ORDER: Record<string, number> = {
+  [PARENT_IDS.FOOD_SERVICES]: 10,
+  [PARENT_IDS.FRESH_PRODUCE]: 20,
+  [PARENT_IDS.LAUNDRY]:       30,
+  [PARENT_IDS.HOME_GARDEN]:   40,
+  [PARENT_IDS.TAILORING]:     50,
+  [PARENT_IDS.GENERAL]:       60,
+  [PARENT_IDS.USED]:          70,
+  [PARENT_IDS.CARGO]:         80,
 };
 
-const USED_PARENT_ID = 'd0000000-0000-0000-0000-000000000018';
-
-const USED_SUBCATEGORY_IDS = new Set([
-  'd0000000-0000-0000-0000-000000000022',
-  'd0000000-0000-0000-0000-000000000023',
-  'd0000000-0000-0000-0000-000000000024',
-  'd0000000-0000-0000-0000-000000000025',
-  'd0000000-0000-0000-0000-000000000026',
-]);
-
-function categoryIcon(category: Category): string {
-  return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
-}
+const SUBCATEGORY_HINTS: Record<string, string> = {
+  [PARENT_IDS.FOOD_SERVICES]: 'Wali · Nyama Choma · Ugali · Samaki · Chipsi · Pilau',
+  [PARENT_IDS.FRESH_PRODUCE]: 'Mboga · Matunda · Mchele · Hoho · Karoti · Vitunguu',
+  [PARENT_IDS.LAUNDRY]:       'Mama Fua · Kufuliwa Nyumbani',
+  [PARENT_IDS.TAILORING]:     'Nguo za Kiume · Kike · Harusi · Uniforms',
+  [PARENT_IDS.GENERAL]:       'Electronics · Vifaa · Fanicha · Vyombo · Hardware',
+  [PARENT_IDS.USED]:          'Nguo · Electronics · Mitambo · Tools · Fanicha',
+  [PARENT_IDS.CARGO]:         'Cargo · Express · Logistics · Kukodisha Lori',
+};
 
 function ConsumerDashboard() {
   const { user } = useAuth();
@@ -100,6 +143,25 @@ function ConsumerDashboard() {
   const heroMinHeight = isSmallPhone ? '160px' : isPhone ? '180px' : '220px';
   const heroPadding = isSmallPhone ? '1.5rem 1rem' : isPhone ? '1.75rem 1.25rem' : '2rem';
 
+  // Only show parent categories (no parentId) that are active
+  const parentCategories = (categories ?? [])
+    .filter((c) => c.isActive && !c.parentId)
+    .sort((a, b) => (PARENT_ORDER[a.id] ?? 999) - (PARENT_ORDER[b.id] ?? 999));
+
+  function handleCategoryClick(cat: Category) {
+    if (cat.id === PARENT_IDS.USED) {
+      navigate('/used-goods');
+    } else if (cat.id === PARENT_IDS.TAILORING) {
+      navigate('/tailoring');
+    } else if (cat.id === PARENT_IDS.CARGO) {
+      navigate('/cargo');
+    } else if (cat.id === PARENT_IDS.GENERAL) {
+      navigate('/general-products');
+    } else {
+      navigate(`/vendors?category=${encodeURIComponent(cat.type)}&parentId=${cat.id}`);
+    }
+  }
+
   return (
     <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
       {/* Hero welcome */}
@@ -119,33 +181,15 @@ function ConsumerDashboard() {
       <div className="section">
         <SectionTitle title={t('app.categories')} emoji="🛍️" />
         <div className="cat-scroll">
-          <div className="cat-tile" onClick={() => navigate('/services')}>
-            <div className="cat-emoji" style={{ background: 'var(--brand-soft)' }}>🧰</div>
-            <div className="cat-name">Services</div>
-          </div>
-          <div className="cat-tile" onClick={() => navigate('/services')}>
-            <div className="cat-emoji" style={{ background: '#e0f2fe' }}>🚚</div>
-            <div className="cat-name">{t('app.cargoLogistics')}</div>
-            <div className="cat-sub" style={{ fontSize: '0.68rem', color: 'var(--muted)', lineHeight: 1.2 }}>{t('app.cargoLogisticsSub')}</div>
-          </div>
-          {(categories ?? [])
-            .filter((c) => !USED_SUBCATEGORY_IDS.has(c.id))
-            .slice()
-            .sort((a, b) => (CATEGORY_ORDER[a.name] ?? 999) - (CATEGORY_ORDER[b.name] ?? 999))
-            .map((category) => {
-            const icon = categoryIcon(category);
-            const produce = PRODUCE_NAMES.has(category.name);
-            const hasChildren = (categories ?? []).some((c) => c.parentId === category.id);
-            const isUsed = category.id === USED_PARENT_ID;
+          {parentCategories.map((cat) => {
+            const icon = CATEGORY_ICONS[cat.id] ?? '🛍️';
+            const hint = SUBCATEGORY_HINTS[cat.id];
             return (
-              <div key={category.id} className="cat-tile" onClick={() => navigate(isUsed ? '/used-goods' : `/vendors?category=${encodeURIComponent(category.type)}`)}>
+              <div key={cat.id} className="cat-tile" onClick={() => handleCategoryClick(cat)}>
                 <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
-                <div className="cat-name">{category.name}</div>
-                {produce && (
-                  <div className="cat-sub" style={{ fontSize: '0.62rem', color: '#16a34a', lineHeight: 1.2, fontWeight: 700 }}>{t('app.freshSokoSub')}</div>
-                )}
-                {hasChildren && (
-                  <div className="cat-sub" style={{ fontSize: '0.6rem', color: 'var(--muted)', lineHeight: 1.2, fontWeight: 700 }}>Nguo · Electronics · Mitambo · Tools · Fanicha ›</div>
+                <div className="cat-name">{cat.name}</div>
+                {hint && (
+                  <div className="cat-sub" style={{ fontSize: '0.58rem', color: 'var(--muted)', lineHeight: 1.2 }}>{hint}</div>
                 )}
               </div>
             );
@@ -158,10 +202,10 @@ function ConsumerDashboard() {
         </div>
       </div>
 
-      {/* AI Custom Request / RFQ banner */}
+      {/* AI Smart Shopping List */}
       <button
         className="btn"
-        onClick={() => navigate('/vendors?category=procurement')}
+        onClick={() => navigate('/general-products')}
         style={{
           width: '100%',
           textAlign: 'left',
@@ -181,13 +225,13 @@ function ConsumerDashboard() {
         <span style={{ fontSize: '1.8rem' }}>🤖</span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: 'block', fontWeight: 800, fontSize: '1.05rem' }}>
-            {t('app.customRequestTitle')} {t('app.customRequestSub')}
+            Smart Shopping List
           </span>
           <span style={{ display: 'block', opacity: 0.85, fontSize: '0.85rem', marginTop: '0.15rem' }}>
-            🛍️ AI Procurement Engine · Custom Request / Sauti / Picha
+            🛍️ AI Assistant · Eleza unachohitaji, tupa orodha yako
           </span>
         </span>
-        <span style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', fontWeight: 700 }}>{t('app.customRequestCta')} →</span>
+        <span style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', fontWeight: 700 }}>Anza →</span>
       </button>
 
       {loading && <LoadingSpinner />}

@@ -17,23 +17,42 @@ interface NewProduct {
   unit: string;
 }
 
-const PRODUCT_TYPES = ['food', 'grocery', 'secondhand', 'general', 'laundry', 'service'];
+const PRODUCT_TYPES = ['food', 'grocery', 'secondhand', 'general', 'laundry', 'service', 'tailoring', 'cargo'];
 
-const PRODUCT_UNITS = ['pcs', 'kg', 'bundle', 'hour', 'day', 'person'];
+const PRODUCT_UNITS = ['pcs', 'kg', 'bundle', 'hour', 'day', 'person', 'set', 'meter'];
 
 const CATEGORIES: Record<string, { id: string; label: string }[]> = {
   food: [
-    { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
     { id: 'd0000000-0000-0000-0000-000000000012', label: 'Chakula Kilicho Tayari' },
+    { id: 'd0000000-0000-0000-0000-000000000040', label: 'Wali na Nyama Choma' },
+    { id: 'd0000000-0000-0000-0000-000000000041', label: 'Ugali na Samaki' },
+    { id: 'd0000000-0000-0000-0000-000000000042', label: 'Mihogo na Kuku' },
+    { id: 'd0000000-0000-0000-0000-000000000043', label: 'Chipsi na Maji' },
+    { id: 'd0000000-0000-0000-0000-000000000044', label: 'Supu na Mboga' },
+    { id: 'd0000000-0000-0000-0000-000000000045', label: 'Pilau na Biryani' },
+    { id: 'd0000000-0000-0000-0000-000000000017', label: 'Kupikiwa Nyumbani (Wapishi)' },
   ],
   grocery: [
-    { id: 'd0000000-0000-0000-0000-000000000014', label: 'Mchele na Maharage' },
+    { id: 'd0000000-0000-0000-0000-000000000013', label: 'Mboga na Matunda' },
+    { id: 'd0000000-0000-0000-0000-000000000050', label: 'Mboga' },
+    { id: 'd0000000-0000-0000-0000-000000000051', label: 'Matunda' },
+    { id: 'd0000000-0000-0000-0000-000000000052', label: 'Mchele na Maharage' },
+    { id: 'd0000000-0000-0000-0000-000000000053', label: 'Hoho na Karoti' },
+    { id: 'd0000000-0000-0000-0000-000000000054', label: 'Vitunguu na Mboga Kavu' },
+    { id: 'd0000000-0000-0000-0000-000000000055', label: 'Nyama na Samaki Fresh' },
+    { id: 'd0000000-0000-0000-0000-000000000056', label: 'Milk na Dairy Products' },
   ],
   electronics: [
-    { id: 'd0000000-0000-0000-0000-000000000011', label: 'Electronics' },
+    { id: 'd0000000-0000-0000-0000-000000000080', label: 'Electronics' },
+    { id: 'd0000000-0000-0000-0000-000000000085', label: 'Mitandao na Simu' },
   ],
   general: [
-    { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
+    { id: 'd0000000-0000-0000-0000-000000000081', label: 'Vifaa vya Nyumbani' },
+    { id: 'd0000000-0000-0000-0000-000000000082', label: 'Fanicha' },
+    { id: 'd0000000-0000-0000-0000-000000000083', label: 'Vyombo vya Usafiri' },
+    { id: 'd0000000-0000-0000-0000-000000000084', label: 'Vifaa vya Ujenzi (Hardware)' },
+    { id: 'd0000000-0000-0000-0000-000000000086', label: 'Vifaa vya Michezo' },
+    { id: 'd0000000-0000-0000-0000-000000000087', label: 'Vitabu na Vifaa vya Masomo' },
   ],
   secondhand: [
     { id: 'd0000000-0000-0000-0000-000000000018', label: 'Vitu vya Used' },
@@ -45,12 +64,24 @@ const CATEGORIES: Record<string, { id: string; label: string }[]> = {
   ],
   laundry: [
     { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
+    { id: 'd0000000-0000-0000-0000-000000000060', label: 'Mama Fua' },
+    { id: 'd0000000-0000-0000-0000-000000000061', label: 'Kufuliwa Nyumbani' },
   ],
   service: [
-    { id: 'd0000000-0000-0000-0000-000000000015', label: 'Ufuaji na Usafishaji Nguo' },
     { id: 'd0000000-0000-0000-0000-000000000016', label: 'Usafi Nyumbani na Bustani' },
-    { id: 'd0000000-0000-0000-0000-000000000017', label: 'Kupikiwa Nyumbani (Wapishi)' },
+  ],
+  tailoring: [
     { id: 'd0000000-0000-0000-0000-000000000021', label: 'Ushonaji na Tailoring' },
+    { id: 'd0000000-0000-0000-0000-000000000070', label: 'Nguo za Kiume' },
+    { id: 'd0000000-0000-0000-0000-000000000071', label: 'Nguo za Kike' },
+    { id: 'd0000000-0000-0000-0000-000000000072', label: 'Vazi la Harusi' },
+    { id: 'd0000000-0000-0000-0000-000000000073', label: 'Uniforms na Workwear' },
+  ],
+  cargo: [
+    { id: 'd0000000-0000-0000-0000-000000000090', label: 'Cargo ya Ndani' },
+    { id: 'd0000000-0000-0000-0000-000000000091', label: 'Express Delivery' },
+    { id: 'd0000000-0000-0000-0000-000000000092', label: 'Logistics ya Biashara' },
+    { id: 'd0000000-0000-0000-0000-000000000093', label: 'Kukodisha Lori/Cherehe' },
   ],
 };
 
