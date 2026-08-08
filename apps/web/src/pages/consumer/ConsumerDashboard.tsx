@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useDevice } from '../../hooks/useDevice';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
@@ -82,6 +83,7 @@ function ConsumerDashboard() {
   const { formatCurrency } = useCurrency();
   const { data: orders, loading, error } = useApi<Order[]>('/orders', []);
   const { data: categories } = useApi<Category[]>('/categories', []);
+  const device = useDevice();
 
   const activeOrders = (orders || []).filter((o) =>
     ['PLACED', 'CONFIRMED', 'ESCROW_HELD'].includes(o.status)
@@ -93,16 +95,24 @@ function ConsumerDashboard() {
   const loyaltyPoints = Math.floor(totalSpent / 1000);
   const firstName = user?.fullName?.split(' ')[0] || 'there';
 
+  const isPhone = device.type === 'phone';
+  const isSmallPhone = device.phoneSize === 'small';
+  const heroMinHeight = isSmallPhone ? '160px' : isPhone ? '180px' : '220px';
+  const heroPadding = isSmallPhone ? '1.5rem 1rem' : isPhone ? '1.75rem 1.25rem' : '2rem';
+  const categoryCols = isSmallPhone ? 3 : isPhone ? 4 : device.type === 'tablet' ? 5 : 6;
+
   return (
-    <div className="page">
+    <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
       {/* Hero welcome */}
-      <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '220px' }}>
-        <div style={{ maxWidth: 700, padding: '2.25rem 2rem', position: 'relative', zIndex: 1, textAlign: 'center' }}>
-          <span className="hero-badge" style={{ marginBottom: '0.9rem' }}>🎉 Karibu, {firstName}!</span>
-          <h1 style={{ fontSize: 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
-            What would you like <span className="hero-gradient">today?</span>
-          </h1>
-          <p style={{ color: 'var(--muted)', margin: '0.6rem 0 0', fontSize: '1.05rem' }}>Welcome back to afriMarket</p>
+      <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: isPhone ? '1rem' : '1.5rem', width: '100%' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: heroMinHeight, padding: heroPadding, textAlign: 'center' }}>
+          <div>
+            <span className="hero-badge" style={{ marginBottom: '0.9rem' }}>🎉 Karibu, {firstName}!</span>
+            <h1 style={{ fontSize: isSmallPhone ? '1.4rem' : 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
+              What would you like <span className="hero-gradient">today?</span>
+            </h1>
+            <p style={{ color: 'var(--muted)', margin: '0.6rem 0 0', fontSize: isSmallPhone ? '0.9rem' : '1.05rem' }}>Welcome back to afriMarket</p>
+          </div>
         </div>
       </section>
 
