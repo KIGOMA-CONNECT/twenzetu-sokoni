@@ -6,6 +6,7 @@ import HomePage from './pages/landing/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
 import ConsumerDashboard from './pages/consumer/ConsumerDashboard';
+import UsedGoodsPage from './pages/consumer/UsedGoodsPage';
 import VendorList from './pages/consumer/VendorList';
 import ProductList from './pages/consumer/ProductList';
 import OrderHistory from './pages/consumer/OrderHistory';
@@ -87,6 +88,8 @@ function AppRoutes() {
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
+        <Route path="/used-goods" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><UsedGoodsPage /></ProtectedRoute>} />
+        <Route path="/used-goods/:categoryId" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><UsedGoodsPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><SmartCatalog /></ProtectedRoute>} />
         <Route path="/services" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ConsumerServices /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />

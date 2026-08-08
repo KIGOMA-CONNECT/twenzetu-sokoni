@@ -63,6 +63,14 @@ const CATEGORY_ORDER: Record<string, number> = {
 
 const USED_PARENT_ID = 'd0000000-0000-0000-0000-000000000018';
 
+const USED_SUBCATEGORY_IDS = new Set([
+  'd0000000-0000-0000-0000-000000000022',
+  'd0000000-0000-0000-0000-000000000023',
+  'd0000000-0000-0000-0000-000000000024',
+  'd0000000-0000-0000-0000-000000000025',
+  'd0000000-0000-0000-0000-000000000026',
+]);
+
 function categoryIcon(category: Category): string {
   return CATEGORY_ICONS[category.name] ?? TYPE_ICONS[category.type] ?? '🛍️';
 }
@@ -97,6 +105,49 @@ function ConsumerDashboard() {
           <p style={{ color: 'var(--muted)', margin: '0.6rem 0 1.25rem' }}>{t('app.welcomeBack')}</p>
         </div>
       </section>
+
+      {/* Categories — right after hero */}
+      <div className="section">
+        <SectionTitle title={t('app.categories')} emoji="🛍️" />
+        <div className="cat-scroll">
+          <div className="cat-tile" onClick={() => navigate('/services')}>
+            <div className="cat-emoji" style={{ background: 'var(--brand-soft)' }}>🧰</div>
+            <div className="cat-name">Services</div>
+          </div>
+          <div className="cat-tile" onClick={() => navigate('/services')}>
+            <div className="cat-emoji" style={{ background: '#e0f2fe' }}>🚚</div>
+            <div className="cat-name">{t('app.cargoLogistics')}</div>
+            <div className="cat-sub" style={{ fontSize: '0.68rem', color: 'var(--muted)', lineHeight: 1.2 }}>{t('app.cargoLogisticsSub')}</div>
+          </div>
+          {(categories ?? [])
+            .filter((c) => !USED_SUBCATEGORY_IDS.has(c.id))
+            .slice()
+            .sort((a, b) => (CATEGORY_ORDER[a.name] ?? 999) - (CATEGORY_ORDER[b.name] ?? 999))
+            .map((category) => {
+            const icon = categoryIcon(category);
+            const produce = PRODUCE_NAMES.has(category.name);
+            const hasChildren = (categories ?? []).some((c) => c.parentId === category.id);
+            const isUsed = category.id === USED_PARENT_ID;
+            return (
+              <div key={category.id} className="cat-tile" onClick={() => navigate(isUsed ? '/used-goods' : `/vendors?category=${encodeURIComponent(category.type)}`)}>
+                <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
+                <div className="cat-name">{category.name}</div>
+                {produce && (
+                  <div className="cat-sub" style={{ fontSize: '0.62rem', color: '#16a34a', lineHeight: 1.2, fontWeight: 700 }}>{t('app.freshSokoSub')}</div>
+                )}
+                {hasChildren && (
+                  <div className="cat-sub" style={{ fontSize: '0.6rem', color: 'var(--muted)', lineHeight: 1.2, fontWeight: 700 }}>Nguo · Electronics · Mitambo · Tools · Fanicha ›</div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="flex gap-2 wrap" style={{ marginTop: '1.25rem' }}>
+          <button className="btn btn-accent" onClick={() => navigate('/catalog')}>🛒 {t('catalog.title')}</button>
+          <button className="btn btn-outline" onClick={() => navigate('/vendors')}>🏪 {t('app.browseVendors')}</button>
+        </div>
+      </div>
 
       {/* AI Custom Request / RFQ banner */}
       <button
@@ -148,62 +199,6 @@ function ConsumerDashboard() {
             <div className="stat-card violet">
               <div className="stat-label">{t('app.loyaltyPoints')}</div>
               <div className="stat-value">{loyaltyPoints} ⭐</div>
-            </div>
-          </div>
-
-          {/* Categories */}
-          <div className="section">
-            <SectionTitle title={t('app.categories')} emoji="🛍️" />
-            <div className="cat-scroll">
-              <div className="cat-tile" onClick={() => navigate('/services')}>
-                <div className="cat-emoji" style={{ background: 'var(--brand-soft)' }}>🧰</div>
-                <div className="cat-name">Services</div>
-              </div>
-              <div className="cat-tile" onClick={() => navigate('/services')}>
-                <div className="cat-emoji" style={{ background: '#e0f2fe' }}>🚚</div>
-                <div className="cat-name">{t('app.cargoLogistics')}</div>
-                <div className="cat-sub" style={{ fontSize: '0.68rem', color: 'var(--muted)', lineHeight: 1.2 }}>{t('app.cargoLogisticsSub')}</div>
-              </div>
-              {(categories ?? [])
-                .slice()
-                .sort((a, b) => (CATEGORY_ORDER[a.name] ?? 999) - (CATEGORY_ORDER[b.name] ?? 999))
-                .map((category) => {
-                if (category.parentId === USED_PARENT_ID) return null;
-                const icon = categoryIcon(category);
-                const produce = PRODUCE_NAMES.has(category.name);
-                const usedChildren = (categories ?? []).filter((c) => c.parentId === category.id);
-                return (
-                  <div key={category.id} className="cat-tile" onClick={() => navigate(`/vendors?category=${encodeURIComponent(category.type)}`)}>
-                    <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
-                    <div className="cat-name">{category.name}</div>
-                    {produce && (
-                      <div className="cat-sub" style={{ fontSize: '0.62rem', color: '#16a34a', lineHeight: 1.2, fontWeight: 700 }}>{t('app.freshSokoSub')}</div>
-                    )}
-                    {usedChildren.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.4rem' }}>
-                        {usedChildren.map((child) => (
-                          <span
-                            key={child.id}
-                            onClick={(e) => { e.stopPropagation(); navigate(`/vendors?category=${encodeURIComponent(child.type)}`); }}
-                            style={{
-                              fontSize: '0.6rem', fontWeight: 700, padding: '0.18rem 0.45rem',
-                              borderRadius: '999px', background: '#fef3c7', color: '#92400e',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {categoryIcon(child)} {child.name}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="flex gap-2 wrap" style={{ marginTop: '1.25rem' }}>
-              <button className="btn btn-accent" onClick={() => navigate('/catalog')}>🛒 {t('catalog.title')}</button>
-              <button className="btn btn-outline" onClick={() => navigate('/vendors')}>🏪 {t('app.browseVendors')}</button>
             </div>
           </div>
 
