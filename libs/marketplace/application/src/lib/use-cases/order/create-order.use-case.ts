@@ -16,9 +16,13 @@ import {
 import { CommissionEngine, ISmsService, IEmailService, IMobileMoneyService, InitiateStkPushParams, getCurrencyForPhone } from '@afri-market/integrations';
 import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, PRODUCT_REPOSITORY, MARKETPLACE_GATEWAY, SMS_SERVICE, EMAIL_SERVICE, MOBILE_MONEY_SERVICE } from '../../tokens';
 import { CreateOrderCommand } from '../../commands/create-order.command';
+import { IEventDispatcher } from '../../events/event-types';
+import { NoOpEventDispatcher } from '../../events/noop-event-dispatcher';
 
 @Injectable()
 export class CreateOrderUseCase {
+  private readonly eventDispatcher: IEventDispatcher;
+
   constructor(
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
@@ -29,7 +33,10 @@ export class CreateOrderUseCase {
     @Optional() @Inject(SMS_SERVICE) private readonly smsService?: ISmsService,
     @Optional() @Inject(EMAIL_SERVICE) private readonly emailService?: IEmailService,
     @Optional() @Inject(MOBILE_MONEY_SERVICE) private readonly mobileMoneyService?: IMobileMoneyService,
-  ) {}
+    @Optional() eventDispatcher?: IEventDispatcher,
+  ) {
+    this.eventDispatcher = eventDispatcher ?? new NoOpEventDispatcher();
+  }
 
   public async execute(
     tenantId: string,
@@ -154,18 +161,21 @@ export class CreateOrderUseCase {
     const customerPhone = command.customerPhone;
     const customerEmail = command.customerEmail;
 
-    if (customerPhone) {
-      this.smsService?.sendDeliveryOtp(customerPhone, otpCode, order.id.value);
-    }
-
-    if (customerEmail) {
-      this.emailService?.sendOrderConfirmation(
-        customerEmail,
-        order.id.value,
-        commissionSplit.totalPaid.amount,
-        currency,
-      );
-    }
+    // Dispatch event for async notification processing (SMS, email, etc.)
+    // This decouples notification delivery from order creation for resilience
+    this.eventDispatcher.dispatchOrderCreated({
+      orderId: order.id.value,
+      tenantId,
+      customerId: command.customerId,
+      vendorId: command.vendorId,
+      total: commissionSplit.totalPaid.amount,
+      currency,
+      otpCode,
+      customerPhone,
+      customerEmail,
+      vendorPhone: vendor?.userId ? undefined : undefined,
+      paymentMethod,
+    });
 
     if (paymentMethod === 'cash') {
       payment.confirmEscrow();
@@ -196,16 +206,8 @@ export class CreateOrderUseCase {
       vendorId: command.vendorId,
     });
 
-    if (vendor?.userId) {
-      const vendorUser = await this.ds.query(
-        `SELECT phone_number AS "phoneNumber" FROM users WHERE id = $1`,
-        [vendor.userId.value],
-      );
-      const vendorPhone = vendorUser?.[0]?.phoneNumber as string | undefined;
-      if (vendorPhone) {
-        this.smsService?.sendVendorNewOrder(vendorPhone, order.id.value, commissionSplit.totalPaid.amount, currency);
-      }
-    }
+    // Vendor phone lookup and SMS is now handled by the event dispatcher
+    // The dispatchOrderCreated event includes vendorId for async vendor notification
 
     return {
       orderId: order.id.value,

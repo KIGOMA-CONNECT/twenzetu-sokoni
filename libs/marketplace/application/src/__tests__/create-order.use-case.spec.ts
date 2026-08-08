@@ -45,6 +45,12 @@ describe('CreateOrderUseCase', () => {
     sendOtp: jest.Mock;
     sendDeliveryOtp: jest.Mock;
   };
+  let mockEventDispatcher: {
+    dispatchOrderCreated: jest.Mock;
+    dispatchPaymentConfirmed: jest.Mock;
+    dispatchOrderStatusChanged: jest.Mock;
+    dispatchDeliveryCompleted: jest.Mock;
+  };
 
   const TENANT_ID = 'test-tenant';
   const VENDOR_ID = 'vendor-123';
@@ -99,6 +105,13 @@ describe('CreateOrderUseCase', () => {
       sendDeliveryOtp: jest.fn().mockResolvedValue({ success: true }),
     };
 
+    mockEventDispatcher = {
+      dispatchOrderCreated: jest.fn(),
+      dispatchPaymentConfirmed: jest.fn(),
+      dispatchOrderStatusChanged: jest.fn(),
+      dispatchDeliveryCompleted: jest.fn(),
+    };
+
     useCase = new CreateOrderUseCase(
       mockOrderRepo,
       mockVendorRepo,
@@ -107,6 +120,9 @@ describe('CreateOrderUseCase', () => {
       { query: jest.fn().mockResolvedValue([]) } as never,
       undefined,
       mockSmsService,
+      undefined,
+      undefined,
+      mockEventDispatcher,
     );
   });
 
@@ -272,7 +288,7 @@ describe('CreateOrderUseCase', () => {
     expect(savedOrder.vendorId.value).toBe(VENDOR_ID);
   });
 
-  it('should send the delivery OTP via SMS when a customer phone is provided', async () => {
+  it('should dispatch order-created event with OTP when a customer phone is provided', async () => {
     const vendor = createActiveVendor();
     mockVendorRepo.findById.mockResolvedValue(vendor);
 
@@ -300,12 +316,11 @@ describe('CreateOrderUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, command);
 
-    expect(mockSmsService.sendDeliveryOtp).toHaveBeenCalledTimes(1);
-    expect(mockSmsService.sendDeliveryOtp).toHaveBeenCalledWith(
-      '+255754100003',
-      result.otpCode,
-      result.orderId,
-    );
+    expect(mockEventDispatcher.dispatchOrderCreated).toHaveBeenCalledTimes(1);
+    const dispatchedEvent = (mockEventDispatcher.dispatchOrderCreated as jest.Mock).mock.calls[0][0];
+    expect(dispatchedEvent.customerPhone).toBe('+255754100003');
+    expect(dispatchedEvent.otpCode).toBe(result.otpCode);
+    expect(dispatchedEvent.orderId).toBe(result.orderId);
   });
 
   it('should use server-side product price instead of client-supplied price', async () => {
