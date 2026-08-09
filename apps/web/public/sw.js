@@ -1,8 +1,13 @@
 /* global self, caches, fetch, Response */
-const CACHE_NAME = 'afrimarket-v2';
+const CACHE_NAME = 'afrimarket-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
+  '/icons/icon.svg',
+  '/icons/icon-192.png',
+  '/icons/icon-512.png',
+  '/icons/icon-maskable-512.png',
+  '/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {

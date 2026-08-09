@@ -1,17 +1,60 @@
 {
+  "id": "/",
   "name": "afriMarket",
   "short_name": "afriMarket",
-  "description": "African e-commerce marketplace - order food, groceries, and more",
+  "description": "African e-commerce marketplace - order food, groceries, and more delivered fast.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
+  "lang": "en",
+  "dir": "ltr",
   "orientation": "portrait-primary",
+  "categories": ["shopping", "food", "lifestyle", "business"],
+  "shortcuts": [
+    {
+      "name": "Order Food",
+      "short_name": "Order",
+      "url": "/products?category=food",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Wallet",
+      "short_name": "Wallet",
+      "url": "/wallet",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Fintech",
+      "short_name": "Finance",
+      "url": "/fintech",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
   "icons": [
     {
-      "src": "/icons/icon.svg",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/svg+xml"
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }
