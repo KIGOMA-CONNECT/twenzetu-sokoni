@@ -2,6 +2,19 @@ plugins {
     id 'com.android.application'
 }
 
+def gitCommitCount = {
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', '--count', 'HEAD'
+            standardOutput = stdout
+        }
+        return stdout.toString().trim().toInteger()
+    } catch (Exception e) {
+        return 1
+    }
+}.call()
+
 android {
     namespace 'com.twenzetusokoni.app'
     compileSdk 35
@@ -10,7 +23,7 @@ android {
         applicationId 'com.twenzetusokoni.app'
         minSdk 23
         targetSdk 35
-        versionCode 1
+        versionCode gitCommitCount
         versionName '1.0.0'
 
         resValue "string", "appName", "afriMarket"
