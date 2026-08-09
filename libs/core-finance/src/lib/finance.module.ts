@@ -1,4 +1,4 @@
-import { Module, Global } from '@nestjs/common';
+import { Module, Global, OnModuleInit, Logger } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CommissionLogEntity } from './entities/commission-log.entity';
 import { VendorSubscriptionTierEntity } from './entities/vendor-subscription-tier.entity';
@@ -30,4 +30,18 @@ export const FINANCE_ENTITIES = [
   providers: [CommissionService, SavingsService, LoanService, VendorSubscriptionService],
   exports: [CommissionService, SavingsService, LoanService, VendorSubscriptionService],
 })
-export class FinanceModule {}
+export class FinanceModule implements OnModuleInit {
+  private readonly logger = new Logger(FinanceModule.name);
+
+  constructor(private readonly subs: VendorSubscriptionService) {}
+
+  public async onModuleInit(): Promise<void> {
+    try {
+      await this.subs.seedDefaultTiers();
+      this.logger.log('Vendor subscription tiers ready');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Skipping subscription tier seed: ${message}`);
+    }
+  }
+}

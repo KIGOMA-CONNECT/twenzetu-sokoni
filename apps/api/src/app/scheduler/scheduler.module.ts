@@ -11,6 +11,7 @@ import { LoanReminderService } from './loan-reminder.service';
 import { PayoutSettlementService } from './payout-settlement.service';
 import { PaymentTimeoutService } from './payment-timeout.service';
 import { AutoDispatchService } from './auto-dispatch.service';
+import { FixedDepositMaturityService } from './fixed-deposit-maturity.service';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { AutoDispatchService } from './auto-dispatch.service';
     PayoutSettlementService,
     PaymentTimeoutService,
     AutoDispatchService,
+    FixedDepositMaturityService,
     NotificationsService,
   ],
 })

@@ -1,9 +1,12 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
+import { ADMIN_ROLES } from '@afri-market/identity-domain';
 import { LoanService } from '@afri-market/core-finance';
 import { IsNumber, IsOptional, IsString, Min } from 'class-validator';
+
+const FINANCE_ADMIN_ROLES = ADMIN_ROLES.filter((r) => r !== 'support_admin' && r !== 'marketing_admin');
 
 class ApplyLoanDto {
   @IsNumber()
@@ -90,4 +93,23 @@ export class FintechLoansController {
   public async repay(@Param('id', ParseUUIDPipe) id: string, @Body() body: RepayLoanDto) {
     return this.loans.makeRepayment(id, body.amount);
   }
+
+  @Post(':id/approve')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(...FINANCE_ADMIN_ROLES)
+  @ApiOperation({ summary: 'Approve a pending loan (admin)' })
+  @ApiParam({ name: 'id', description: 'Loan ID' })
+  public async approve(@Param('id', ParseUUIDPipe) id: string) {
+    return this.loans.approveLoan(id);
+  }
+
+  @Post(':id/disburse')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(...FINANCE_ADMIN_ROLES)
+  @ApiOperation({ summary: 'Disburse an approved loan (admin)' })
+  @ApiParam({ name: 'id', description: 'Loan ID' })
+  public async disburse(@Param('id', ParseUUIDPipe) id: string) {
+    return this.loans.disburseLoan(id);
+  }
 }
+

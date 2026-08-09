@@ -132,6 +132,46 @@ export class SavingsService {
     });
   }
 
+  async matureDueDeposits(): Promise<number> {
+    const now = new Date();
+    const due = await this.fdRepo.find({
+      where: { status: 'active' },
+    });
+    let matured = 0;
+
+    for (const fd of due) {
+      if (fd.maturityDate > now) continue;
+
+      const account = await this.savingsRepo.findOne({ where: { id: fd.accountId } });
+      if (!account) continue;
+
+      // Release the frozen principal back and credit the maturity amount
+      const frozen = account.frozenBalance || 0;
+      account.frozenBalance = Math.max(0, frozen - fd.principal);
+      account.balance = Math.round((account.balance + fd.maturityAmount) * 100) / 100;
+      await this.savingsRepo.save(account);
+
+      fd.status = 'matured';
+      fd.maturedAt = now;
+      await this.fdRepo.save(fd);
+
+      await this.txRepo.save(this.txRepo.create({
+        accountId: fd.accountId,
+        type: 'deposit',
+        amount: fd.maturityAmount,
+        balanceAfter: account.balance,
+        reference: `Fixed deposit matured: ${fd.durationMonths} months at ${(fd.interestRate * 100).toFixed(1)}%`,
+      }));
+
+      matured += 1;
+    }
+
+    if (matured > 0) {
+      this.logger.log(`Matured ${matured} fixed deposit(s)`);
+    }
+    return matured;
+  }
+
   async getFixedDeposits(accountId: string): Promise<FixedDepositEntity[]> {
     return this.fdRepo.find({
       where: { accountId },
