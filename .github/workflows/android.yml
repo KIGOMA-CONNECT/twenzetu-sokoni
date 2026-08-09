@@ -1,0 +1,52 @@
+name: Android build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master]
+    paths:
+      - 'android/**'
+
+jobs:
+  build:
+    name: Build signed AAB + APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Create signing config from secrets
+        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/keystore-release.jks
+          cat > android/keystore.properties <<EOF
+          storeFile=keystore-release.jks
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyAlias=${{ secrets.KEYSTORE_KEY_ALIAS }}
+          keyPassword=${{ secrets.KEYSTORE_KEY_PASSWORD }}
+          EOF
+
+      - name: Build release AAB
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew bundleRelease --no-daemon
+
+      - name: Build release APK
+        working-directory: android
+        run: |
+          ./gradlew assembleRelease --no-daemon
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: afrimarket-android-release
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/apk/release/*.apk

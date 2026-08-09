@@ -1,0 +1,15 @@
+# Android Gradle project
+build/
+.gradle/
+local.properties
+.idea/
+*.iml
+captures/
+.cxx/
+
+# Signing secrets - never commit
+keystore.properties
+keystore-release.jks
+*.jks
+*.keystore
+*.p12

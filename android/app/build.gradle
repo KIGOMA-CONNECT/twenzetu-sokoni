@@ -1,0 +1,73 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.twenzetusokoni.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.twenzetusokoni.app'
+        minSdk 23
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+
+        resValue "string", "appName", "afriMarket"
+        resValue "string", "launcherName", "afriMarket"
+        resValue "string", "launchUrl", "https://twenzetusokoni.com/"
+        resValue "string", "webManifestUrl", "https://twenzetusokoni.com/manifest.json"
+        resValue "string", "hostName", "twenzetusokoni.com"
+
+        resValue "color", "colorPrimary", "#0F766E"
+        resValue "color", "colorPrimaryDark", "#0F766E"
+        resValue "color", "navigationColor", "#FFFFFF"
+        resValue "color", "navigationColorDark", "#0F766E"
+        resValue "color", "navigationDividerColor", "#00000000"
+        resValue "color", "navigationDividerColorDark", "#00000000"
+        resValue "color", "backgroundColor", "#F8FAFC"
+
+        resValue "string", "providerAuthority", "com.twenzetusokoni.app.fileprovider"
+        resValue "bool", "enableNotification", "false"
+        resValue "integer", "splashScreenFadeOutDuration", "300"
+        resValue "string", "generatorApp", "opencode"
+        resValue "string", "fallbackType", "customtabs"
+        resValue "bool", "enableSiteSettingsShortcut", "true"
+        resValue "string", "orientation", "portrait"
+    }
+
+    signingConfigs {
+        release {
+            def keystorePropsFile = rootProject.file("keystore.properties")
+            def keystoreProps = new Properties()
+            if (keystorePropsFile.exists()) {
+                keystoreProps.load(new FileInputStream(keystorePropsFile))
+                storeFile rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword keystoreProps.getProperty("storePassword")
+                keyAlias keystoreProps.getProperty("keyAlias")
+                keyPassword keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    lintOptions {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}
