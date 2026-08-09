@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MarketplaceApplicationModule } from '@afri-market/marketplace-application';
-import { NotificationOrmEntity } from '@afri-market/marketplace-infrastructure';
-import { NotificationsService, MarketplaceGatewayModule } from '@afri-market/marketplace-api';
+import { NotificationOrmEntity, PushSubscriptionOrmEntity } from '@afri-market/marketplace-infrastructure';
+import { NotificationsService, PushService, MarketplaceGatewayModule } from '@afri-market/marketplace-api';
 import { StaleOrderService } from './stale-order.service';
 import { OtpCleanupService } from './otp-cleanup.service';
 import { SurgeRecalcService } from './surge-recalc.service';
@@ -19,7 +19,7 @@ import { SubscriptionBillingService } from './subscription-billing.service';
     ScheduleModule.forRoot(),
     MarketplaceApplicationModule,
     MarketplaceGatewayModule,
-    TypeOrmModule.forFeature([NotificationOrmEntity]),
+    TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity]),
   ],
   providers: [
     StaleOrderService,
@@ -32,6 +32,7 @@ import { SubscriptionBillingService } from './subscription-billing.service';
     FixedDepositMaturityService,
     SubscriptionBillingService,
     NotificationsService,
+    PushService,
   ],
 })
 export class SchedulerModule {}
