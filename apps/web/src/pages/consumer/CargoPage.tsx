@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle } from '../../components/ui';
 import { MapPicker, calculateDistance, calculateFare, VEHICLE_RATES } from '../../components/MapPicker';
-import type { VehicleRate } from '../../components/MapPicker';
 
 const CARGO_SUBS = [
   { id: 'd0000000-0000-0000-0000-000000000090', name: 'Cargo ya Ndani', emoji: '📦', desc: 'Kutoka mji hadi mji' },

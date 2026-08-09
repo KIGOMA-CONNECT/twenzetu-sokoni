@@ -31,6 +31,7 @@ module.exports = {
     '^@afri-market/core-audit$': path.join(ROOT, 'libs/core-audit/src/index.ts'),
     '^@afri-market/core-resilience$': path.join(ROOT, 'libs/core-resilience/src/index.ts'),
     '^@afri-market/core-tracing$': path.join(ROOT, 'libs/core-tracing/src/index.ts'),
+    '^@afri-market/core-finance$': path.join(ROOT, 'libs/core-finance/src/index.ts'),
   },
   coverageDirectory: '../../coverage/apps/api',
 };

@@ -27,6 +27,7 @@ module.exports = {
     '^@afri-market/core-logger$': path.join(ROOT, 'libs/core/logger/src/index.ts'),
     '^@afri-market/database$': path.join(ROOT, 'libs/database/src/index.ts'),
     '^@afri-market/tenancy$': path.join(ROOT, 'libs/tenancy/src/index.ts'),
+    '^@afri-market/core-finance$': path.join(ROOT, 'libs/core-finance/src/index.ts'),
   },
   testMatch: ['**/*.spec.ts'],
   testPathIgnorePatterns: ['/node_modules/', '__tests__/'],
