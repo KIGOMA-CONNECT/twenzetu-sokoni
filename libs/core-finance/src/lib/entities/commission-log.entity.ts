@@ -34,6 +34,6 @@ export class CommissionLogEntity {
   @Column({ name: 'deducted_at', type: 'timestamptz', nullable: true })
   deductedAt?: Date;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 }

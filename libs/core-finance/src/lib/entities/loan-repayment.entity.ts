@@ -20,7 +20,7 @@ export class LoanRepaymentEntity {
   @Column({ name: 'remaining_balance', type: 'decimal', precision: 14, scale: 2 })
   remainingBalance!: number;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ name: 'paid_at', type: 'timestamptz' })
   paidAt!: Date;
 
   @Column({ name: 'reference', type: 'varchar', length: 200, nullable: true })

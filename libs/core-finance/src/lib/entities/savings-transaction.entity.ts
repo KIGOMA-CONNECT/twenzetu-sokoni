@@ -20,6 +20,6 @@ export class SavingsTransactionEntity {
   @Column({ name: 'reference', type: 'varchar', length: 200, nullable: true })
   reference?: string;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 }

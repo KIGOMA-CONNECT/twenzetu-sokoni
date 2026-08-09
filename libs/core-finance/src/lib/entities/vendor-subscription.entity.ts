@@ -34,9 +34,9 @@ export class VendorSubscriptionEntity {
   @Column({ name: 'trial_end', type: 'timestamptz', nullable: true })
   trialEnd?: Date;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ type: 'timestamptz' })
+  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
   updatedAt!: Date;
 }

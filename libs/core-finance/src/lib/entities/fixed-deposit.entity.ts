@@ -29,6 +29,6 @@ export class FixedDepositEntity {
   @Column({ name: 'matured_at', type: 'timestamptz', nullable: true })
   maturedAt?: Date;
 
-  @CreateDateColumn({ type: 'timestamptz' })
+  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt!: Date;
 }
