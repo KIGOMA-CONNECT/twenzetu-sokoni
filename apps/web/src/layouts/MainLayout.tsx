@@ -63,6 +63,7 @@ export function MainLayout() {
     { label: 'Services', path: '/services', show: isCustomer || isAdmin },
     { label: 'My Orders', path: '/orders', show: isCustomer },
     { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor },
+    { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver },
     { label: 'Addresses', path: '/addresses', show: isCustomer },
     { label: 'Loyalty', path: '/loyalty', show: isCustomer },
     { label: 'Reviews', path: '/reviews', show: isCustomer },
@@ -108,6 +109,7 @@ export function MainLayout() {
     { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
+    { label: 'Finance', ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },
     { label: 'Account', ico: '👤', path: '/notifications', show: true },
   ].filter(n => n.show);
 
