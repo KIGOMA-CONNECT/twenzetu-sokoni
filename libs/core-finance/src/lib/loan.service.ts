@@ -121,6 +121,40 @@ export class LoanService {
     });
   }
 
+  async getAdminLoans(status?: string): Promise<LoanEntity[]> {
+    const where = status && status !== 'all' ? { status } : {};
+    return this.loanRepo.find({
+      where,
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async getLoanStats(): Promise<{
+    pending: number;
+    approved: number;
+    active: number;
+    paid: number;
+    totalDisbursed: number;
+    outstanding: number;
+  }> {
+    const [pending, approved, active, paid, activeLoans] = await Promise.all([
+      this.loanRepo.count({ where: { status: 'pending' } }),
+      this.loanRepo.count({ where: { status: 'approved' } }),
+      this.loanRepo.count({ where: { status: 'active' } }),
+      this.loanRepo.count({ where: { status: 'paid' } }),
+      this.loanRepo.find({ where: { status: 'active' } }),
+    ]);
+
+    const totalDisbursed = Math.round(
+      activeLoans.reduce((sum, l) => sum + l.principal, 0) * 100,
+    ) / 100;
+    const outstanding = Math.round(
+      activeLoans.reduce((sum, l) => sum + l.remainingBalance, 0) * 100,
+    ) / 100;
+
+    return { pending, approved, active, paid, totalDisbursed, outstanding };
+  }
+
   async getLoanRepayments(loanId: string): Promise<LoanRepaymentEntity[]> {
     return this.repaymentRepo.find({
       where: { loanId },

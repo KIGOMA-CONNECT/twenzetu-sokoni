@@ -82,6 +82,7 @@ export function MainLayout() {
     { label: 'Verifications', path: '/admin/verifications', show: isAdmin },
     { label: 'USSD Simulator', path: '/admin/ussd', show: isAdmin },
     { label: 'Reconciliation', path: '/admin/reconciliation', show: isAdmin && p('manage_finance') },
+    { label: 'Loans', path: '/admin/loans', show: isAdmin && p('manage_finance') },
     { label: 'Audit Log', path: '/admin/audit-log', show: isAdmin && p('manage_admins') },
     { label: 'Notifications', path: '/notifications', show: true },
     { label: 'Manage Admins', path: '/admin/manage-admins', show: isSuperAdmin },

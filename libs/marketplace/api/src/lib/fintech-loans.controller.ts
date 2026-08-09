@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
@@ -92,6 +92,23 @@ export class FintechLoansController {
   @ApiBody({ type: RepayLoanDto })
   public async repay(@Param('id', ParseUUIDPipe) id: string, @Body() body: RepayLoanDto) {
     return this.loans.makeRepayment(id, body.amount);
+  }
+
+  @Get('admin')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(...FINANCE_ADMIN_ROLES)
+  @ApiOperation({ summary: 'List all loans with optional status filter (admin)' })
+  @ApiParam({ name: 'status', description: 'pending | approved | active | paid | all' })
+  public async adminList(@Query('status') status?: string) {
+    return { data: await this.loans.getAdminLoans(status) };
+  }
+
+  @Get('admin/stats')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(...FINANCE_ADMIN_ROLES)
+  @ApiOperation({ summary: 'Loan portfolio stats (admin)' })
+  public async adminStats() {
+    return { data: await this.loans.getLoanStats() };
   }
 
   @Post(':id/approve')
