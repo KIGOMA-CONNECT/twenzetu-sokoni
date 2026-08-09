@@ -8,25 +8,25 @@ export class VendorSubscriptionTierEntity {
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 
-  @Column({ type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'monthly_price', type: 'decimal', precision: 10, scale: 2 })
   monthlyPrice!: number;
 
-  @Column({ type: 'varchar', length: 3, default: 'TZS' })
+  @Column({ name: 'currency', type: 'varchar', length: 3, default: 'TZS' })
   currency!: string;
 
-  @Column({ type: 'integer', default: 50 })
+  @Column({ name: 'max_products', type: 'integer', default: 50 })
   maxProducts!: number;
 
-  @Column({ type: 'integer', default: 5 })
+  @Column({ name: 'max_images_per_product', type: 'integer', default: 5 })
   maxImagesPerProduct!: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 4, nullable: true })
+  @Column({ name: 'commission_rate_override', type: 'decimal', precision: 5, scale: 4, nullable: true })
   commissionRateOverride?: number;
 
-  @Column({ type: 'jsonb', default: '[]' })
+  @Column({ name: 'features', type: 'jsonb', default: '[]' })
   features!: string[];
 
-  @Column({ type: 'boolean', default: true })
+  @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive!: boolean;
 
   @CreateDateColumn({ type: 'timestamptz' })

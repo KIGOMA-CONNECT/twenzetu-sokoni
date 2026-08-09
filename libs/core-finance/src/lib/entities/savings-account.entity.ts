@@ -5,22 +5,22 @@ export class SavingsAccountEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'owner_id', type: 'uuid' })
   ownerId!: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ name: 'owner_type', type: 'varchar', length: 20 })
   ownerType!: string;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'balance', type: 'decimal', precision: 14, scale: 2, default: 0 })
   balance!: number;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'frozen_balance', type: 'decimal', precision: 14, scale: 2, default: 0 })
   frozenBalance!: number;
 
-  @Column({ type: 'varchar', length: 3, default: 'TZS' })
+  @Column({ name: 'currency', type: 'varchar', length: 3, default: 'TZS' })
   currency!: string;
 
-  @Column({ type: 'decimal', precision: 5, scale: 4, default: 0.05 })
+  @Column({ name: 'interest_rate', type: 'decimal', precision: 5, scale: 4, default: 0.05 })
   interestRate!: number;
 
   @Column({ type: 'varchar', length: 20, default: 'active' })

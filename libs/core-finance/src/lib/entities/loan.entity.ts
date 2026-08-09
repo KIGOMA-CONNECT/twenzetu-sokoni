@@ -5,46 +5,46 @@ export class LoanEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'borrower_id', type: 'uuid' })
   borrowerId!: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ name: 'borrower_type', type: 'varchar', length: 20 })
   borrowerType!: string;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'principal', type: 'decimal', precision: 14, scale: 2 })
   principal!: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 4 })
+  @Column({ name: 'interest_rate', type: 'decimal', precision: 5, scale: 4 })
   interestRate!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ name: 'term_months', type: 'integer' })
   termMonths!: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'monthly_payment', type: 'decimal', precision: 12, scale: 2 })
   monthlyPayment!: number;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'total_repaid', type: 'decimal', precision: 14, scale: 2, default: 0 })
   totalRepaid!: number;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'remaining_balance', type: 'decimal', precision: 14, scale: 2 })
   remainingBalance!: number;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'collateral', type: 'text', nullable: true })
   collateral?: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ name: 'purpose', type: 'text', nullable: true })
   purpose?: string;
 
-  @Column({ type: 'varchar', length: 20, default: 'pending' })
+  @Column({ name: 'status', type: 'varchar', length: 20, default: 'pending' })
   status!: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'approved_at', type: 'timestamptz', nullable: true })
   approvedAt?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'disbursed_at', type: 'timestamptz', nullable: true })
   disbursedAt?: Date;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'due_date', type: 'timestamptz', nullable: true })
   dueDate?: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })

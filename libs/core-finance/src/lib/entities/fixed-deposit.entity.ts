@@ -5,28 +5,28 @@ export class FixedDepositEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'account_id', type: 'uuid' })
   accountId!: string;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'principal', type: 'decimal', precision: 14, scale: 2 })
   principal!: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 4 })
+  @Column({ name: 'interest_rate', type: 'decimal', precision: 5, scale: 4 })
   interestRate!: number;
 
-  @Column({ type: 'integer' })
+  @Column({ name: 'duration_months', type: 'integer' })
   durationMonths!: number;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ name: 'maturity_date', type: 'timestamptz' })
   maturityDate!: Date;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'maturity_amount', type: 'decimal', precision: 14, scale: 2 })
   maturityAmount!: number;
 
-  @Column({ type: 'varchar', length: 20, default: 'active' })
+  @Column({ name: 'status', type: 'varchar', length: 20, default: 'active' })
   status!: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'matured_at', type: 'timestamptz', nullable: true })
   maturedAt?: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })

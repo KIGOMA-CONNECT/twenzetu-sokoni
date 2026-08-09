@@ -7,31 +7,31 @@ export class CommissionLogEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'tenant_id', type: 'uuid' })
   tenantId!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'order_id', type: 'uuid' })
   orderId!: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ name: 'payer_type', type: 'varchar', length: 20 })
   payerType!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'payer_id', type: 'uuid' })
   payerId!: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'order_amount', type: 'decimal', precision: 12, scale: 2 })
   orderAmount!: number;
 
-  @Column({ type: 'decimal', precision: 5, scale: 4, default: 0.10 })
+  @Column({ name: 'commission_rate', type: 'decimal', precision: 5, scale: 4, default: 0.10 })
   commissionRate!: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'commission_amount', type: 'decimal', precision: 12, scale: 2 })
   commissionAmount!: number;
 
-  @Column({ type: 'varchar', length: 20, default: 'pending' })
+  @Column({ name: 'status', type: 'varchar', length: 20, default: 'pending' })
   status!: string;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'deducted_at', type: 'timestamptz', nullable: true })
   deductedAt?: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })

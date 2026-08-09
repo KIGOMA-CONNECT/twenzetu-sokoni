@@ -5,19 +5,19 @@ export class SavingsTransactionEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'account_id', type: 'uuid' })
   accountId!: string;
 
-  @Column({ type: 'varchar', length: 20 })
+  @Column({ name: 'type', type: 'varchar', length: 20 })
   type!: string;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'amount', type: 'decimal', precision: 14, scale: 2 })
   amount!: number;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'balance_after', type: 'decimal', precision: 14, scale: 2 })
   balanceAfter!: number;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ name: 'reference', type: 'varchar', length: 200, nullable: true })
   reference?: string;
 
   @CreateDateColumn({ type: 'timestamptz' })

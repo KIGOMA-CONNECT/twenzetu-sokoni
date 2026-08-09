@@ -5,24 +5,24 @@ export class LoanRepaymentEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'loan_id', type: 'uuid' })
   loanId!: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'amount', type: 'decimal', precision: 12, scale: 2 })
   amount!: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'principal_portion', type: 'decimal', precision: 12, scale: 2 })
   principalPortion!: number;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'interest_portion', type: 'decimal', precision: 12, scale: 2 })
   interestPortion!: number;
 
-  @Column({ type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'remaining_balance', type: 'decimal', precision: 14, scale: 2 })
   remainingBalance!: number;
 
   @CreateDateColumn({ type: 'timestamptz' })
   paidAt!: Date;
 
-  @Column({ type: 'varchar', length: 200, nullable: true })
+  @Column({ name: 'reference', type: 'varchar', length: 200, nullable: true })
   reference?: string;
 }

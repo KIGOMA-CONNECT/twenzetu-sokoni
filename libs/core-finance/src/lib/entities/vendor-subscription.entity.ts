@@ -6,32 +6,32 @@ export class VendorSubscriptionEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'tenant_id', type: 'uuid' })
   tenantId!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'vendor_id', type: 'uuid' })
   vendorId!: string;
 
-  @Column({ type: 'uuid' })
+  @Column({ name: 'tier_id', type: 'uuid' })
   tierId!: string;
 
   @ManyToOne(() => VendorSubscriptionTierEntity)
   @JoinColumn({ name: 'tier_id' })
   tier?: VendorSubscriptionTierEntity;
 
-  @Column({ type: 'varchar', length: 20, default: 'active' })
+  @Column({ name: 'status', type: 'varchar', length: 20, default: 'active' })
   status!: string;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ name: 'current_period_start', type: 'timestamptz' })
   currentPeriodStart!: Date;
 
-  @Column({ type: 'timestamptz' })
+  @Column({ name: 'current_period_end', type: 'timestamptz' })
   currentPeriodEnd!: Date;
 
-  @Column({ type: 'boolean', default: false })
+  @Column({ name: 'cancel_at_period_end', type: 'boolean', default: false })
   cancelAtPeriodEnd!: boolean;
 
-  @Column({ type: 'timestamptz', nullable: true })
+  @Column({ name: 'trial_end', type: 'timestamptz', nullable: true })
   trialEnd?: Date;
 
   @CreateDateColumn({ type: 'timestamptz' })
