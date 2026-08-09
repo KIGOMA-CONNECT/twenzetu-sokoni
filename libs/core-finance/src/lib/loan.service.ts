@@ -84,10 +84,18 @@ export class LoanService {
     return this.loanRepo.save(loan);
   }
 
-  async makeRepayment(loanId: string, amount: number): Promise<LoanRepaymentEntity> {
-    if (amount <= 0) throw new BadRequestException('Amount must be positive');
+  private async getOwnedLoan(loanId: string, borrowerId?: string): Promise<LoanEntity> {
     const loan = await this.loanRepo.findOne({ where: { id: loanId } });
     if (!loan) throw new NotFoundException('Loan not found');
+    if (borrowerId && loan.borrowerId !== borrowerId) {
+      throw new NotFoundException('Loan not found');
+    }
+    return loan;
+  }
+
+  async makeRepayment(loanId: string, amount: number, borrowerId?: string): Promise<LoanRepaymentEntity> {
+    if (amount <= 0) throw new BadRequestException('Amount must be positive');
+    const loan = await this.getOwnedLoan(loanId, borrowerId);
     if (loan.status !== 'active') throw new BadRequestException('Loan is not active');
     if (amount > loan.remainingBalance) throw new BadRequestException('Amount exceeds remaining balance');
 
@@ -155,16 +163,16 @@ export class LoanService {
     return { pending, approved, active, paid, totalDisbursed, outstanding };
   }
 
-  async getLoanRepayments(loanId: string): Promise<LoanRepaymentEntity[]> {
+  async getLoanRepayments(loanId: string, borrowerId?: string): Promise<LoanRepaymentEntity[]> {
+    await this.getOwnedLoan(loanId, borrowerId);
     return this.repaymentRepo.find({
       where: { loanId },
       order: { paidAt: 'DESC' },
     });
   }
 
-  async getLoanSchedule(loanId: string) {
-    const loan = await this.loanRepo.findOne({ where: { id: loanId } });
-    if (!loan) throw new NotFoundException('Loan not found');
+  async getLoanSchedule(loanId: string, borrowerId?: string) {
+    const loan = await this.getOwnedLoan(loanId, borrowerId);
 
     const schedule = [];
     let balance = loan.principal;

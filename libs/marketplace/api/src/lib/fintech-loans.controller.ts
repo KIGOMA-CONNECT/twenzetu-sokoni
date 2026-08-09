@@ -76,22 +76,22 @@ export class FintechLoansController {
   @Get(':id/schedule')
   @ApiOperation({ summary: 'Get amortization schedule for a loan' })
   @ApiParam({ name: 'id', description: 'Loan ID' })
-  public async schedule(@Param('id', ParseUUIDPipe) id: string) {
-    return { data: await this.loans.getLoanSchedule(id) };
+  public async schedule(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return { data: await this.loans.getLoanSchedule(id, user.sub) };
   }
 
   @Get(':id/repayments')
   @ApiOperation({ summary: 'List repayments for a loan' })
   @ApiParam({ name: 'id', description: 'Loan ID' })
-  public async repayments(@Param('id', ParseUUIDPipe) id: string) {
-    return { data: await this.loans.getLoanRepayments(id) };
+  public async repayments(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    return { data: await this.loans.getLoanRepayments(id, user.sub) };
   }
 
   @Post(':id/repay')
   @ApiOperation({ summary: 'Make a loan repayment' })
   @ApiBody({ type: RepayLoanDto })
-  public async repay(@Param('id', ParseUUIDPipe) id: string, @Body() body: RepayLoanDto) {
-    return this.loans.makeRepayment(id, body.amount);
+  public async repay(@Param('id', ParseUUIDPipe) id: string, @Body() body: RepayLoanDto, @CurrentUser() user: JwtPayload) {
+    return this.loans.makeRepayment(id, body.amount, user.sub);
   }
 
   @Get('admin')

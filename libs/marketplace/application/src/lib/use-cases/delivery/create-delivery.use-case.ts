@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { EntityId, TenantId } from '@afri-market/kernel';
 import {
   Delivery,
@@ -15,6 +15,14 @@ export interface IDeliveryRepository {
   findByDriverId(driverId: string): Promise<Delivery[]>;
 }
 
+export interface CreateDeliveryActor {
+  userId: string;
+  role: string;
+  vendorId?: string;
+}
+
+const ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
+
 @Injectable()
 export class CreateDeliveryUseCase {
   constructor(
@@ -25,6 +33,7 @@ export class CreateDeliveryUseCase {
   public async execute(
     tenantId: string,
     command: CreateDeliveryCommand,
+    actor?: CreateDeliveryActor,
   ): Promise<{ deliveryId: string }> {
     const order = await this.orderRepo.findById(
       EntityId.from(command.orderId),
@@ -34,6 +43,14 @@ export class CreateDeliveryUseCase {
     }
     if (order.status !== 'READY_FOR_PICKUP') {
       throw new Error('Order is not ready for pickup');
+    }
+
+    if (actor) {
+      const isAdmin = ADMIN_ROLES.includes(actor.role ?? '');
+      const isOrderVendor = actor.vendorId != null && order.vendorId.value === actor.vendorId;
+      if (!isAdmin && !isOrderVendor) {
+        throw new ForbiddenException('Only the order vendor or an admin can create a delivery assignment');
+      }
     }
 
     const existing = await this.deliveryRepo.findByOrderId(command.orderId);

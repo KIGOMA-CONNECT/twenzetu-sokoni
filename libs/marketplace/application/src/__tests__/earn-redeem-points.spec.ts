@@ -38,6 +38,7 @@ describe('EarnPointsUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 
@@ -204,6 +205,7 @@ describe('EarnPointsUseCase', () => {
         specialInstructions: undefined,
         OTPCode: undefined,
         OTPVerified: false,
+        OTPAttempts: 0,
         version: 1,
       }),
     );

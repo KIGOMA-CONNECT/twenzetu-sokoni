@@ -60,19 +60,35 @@ export class CreateOrderUseCase {
     Guard.assert(vendor, 'Vendor not found');
     Guard.assert(vendor!.status === 'ACTIVE', 'Vendor is not active');
 
+    const isServiceOrder = command.type === 'service';
     const validatedItems: Array<{ productId: string; productName: string; quantity: number; unitPrice: number }> = [];
-    for (const item of command.items) {
-      const product = await this.productRepo.findById(EntityId.from(item.productId));
-      Guard.assert(product, `Product ${item.productName} is no longer available`);
-      Guard.assert(product!.status === 'ACTIVE', `Product ${item.productName} is not available`);
-      Guard.assert(product!.vendorId.value === vendor!.id.value, `Product ${item.productName} does not belong to this vendor`);
-      Guard.assert(product!.stockQuantity >= item.quantity, `Insufficient stock for ${item.productName}`);
-      validatedItems.push({
-        productId: product!.id.value,
-        productName: product!.name,
-        quantity: item.quantity,
-        unitPrice: product!.price.amount,
-      });
+    if (isServiceOrder) {
+      // Service orders are built from service requests/quotes and have no
+      // inventory product row; use the item data as provided.
+      for (const item of command.items) {
+        Guard.assert(item.quantity > 0, `Quantity must be positive for ${item.productName}`);
+        Guard.assert(item.unitPrice >= 0, `Price cannot be negative for ${item.productName}`);
+        validatedItems.push({
+          productId: item.productId,
+          productName: item.productName,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+        });
+      }
+    } else {
+      for (const item of command.items) {
+        const product = await this.productRepo.findById(EntityId.from(item.productId));
+        Guard.assert(product, `Product ${item.productName} is no longer available`);
+        Guard.assert(product!.status === 'ACTIVE', `Product ${item.productName} is not available`);
+        Guard.assert(product!.vendorId.value === vendor!.id.value, `Product ${item.productName} does not belong to this vendor`);
+        Guard.assert(product!.stockQuantity >= item.quantity, `Insufficient stock for ${item.productName}`);
+        validatedItems.push({
+          productId: product!.id.value,
+          productName: product!.name,
+          quantity: item.quantity,
+          unitPrice: product!.price.amount,
+        });
+      }
     }
 
     const currency = command.currency ?? getCurrencyForPhone(command.customerPhone ?? '');
@@ -134,11 +150,13 @@ export class CreateOrderUseCase {
       );
     }
 
-    for (const item of validatedItems) {
-      const product = await this.productRepo.findById(EntityId.from(item.productId));
-      if (product) {
-        product.reduceStock(item.quantity);
-        await this.productRepo.save(product);
+    if (!isServiceOrder) {
+      for (const item of validatedItems) {
+        const product = await this.productRepo.findById(EntityId.from(item.productId));
+        if (product) {
+          product.reduceStock(item.quantity);
+          await this.productRepo.save(product);
+        }
       }
     }
 

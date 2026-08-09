@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -62,23 +62,30 @@ export class SavingsController {
     return this.savings.getAvailableRates();
   }
 
+  private async assertOwnsAccount(user: JwtPayload, accountId: string): Promise<void> {
+    const account = await this.savings.getOrCreateAccount(user.sub, this.ownerType(user.role));
+    if (account.id !== accountId) {
+      throw new ForbiddenException('You can only access your own savings account');
+    }
+  }
+
   @Get(':accountId/transactions')
   @ApiOperation({ summary: 'List savings account transactions' })
   public async transactions(
     @Param('accountId', ParseUUIDPipe) accountId: string,
     @CurrentUser() user: JwtPayload,
   ) {
-    const account = await this.savings.getOrCreateAccount(user.sub, this.ownerType(user.role));
-    if (account.id !== accountId) {
-      const owned = await this.savings.getAccountTransactions(accountId);
-      return { data: owned };
-    }
+    await this.assertOwnsAccount(user, accountId);
     return { data: await this.savings.getAccountTransactions(accountId) };
   }
 
   @Get(':accountId/fixed-deposits')
   @ApiOperation({ summary: 'List fixed deposits for an account' })
-  public async fixedDeposits(@Param('accountId', ParseUUIDPipe) accountId: string) {
+  public async fixedDeposits(
+    @Param('accountId', ParseUUIDPipe) accountId: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.assertOwnsAccount(user, accountId);
     return { data: await this.savings.getFixedDeposits(accountId) };
   }
 

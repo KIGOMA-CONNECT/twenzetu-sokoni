@@ -80,6 +80,7 @@ describe('CompleteDeliveryUseCase', () => {
       specialInstructions: 'Ring the bell',
       OTPCode: otpCode,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 
@@ -295,8 +296,9 @@ describe('CompleteDeliveryUseCase', () => {
     expect(delivery.status).toBe('IN_TRANSIT');
     expect(order.status).toBe('OUT_FOR_DELIVERY');
     expect(order.otpVerified).toBe(false);
+    expect(order.otpAttempts).toBe(1);
     expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
-    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+    expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
     expect(mockPaymentRepo.save).not.toHaveBeenCalled();
   });
 
@@ -314,7 +316,29 @@ describe('CompleteDeliveryUseCase', () => {
         driverEarnings: 2500,
       }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Invalid delivery confirmation code');
-    expect(mockOrderRepo.save).not.toHaveBeenCalled();
+    expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
+    expect(order.otpAttempts).toBe(1);
+  });
+
+  it('should lock completion after too many failed delivery OTP attempts', async () => {
+    const delivery = createTestDelivery();
+    const order = createTestOrder(500000, '1234');
+    for (let i = 0; i < 5; i++) order.recordOtpFailure();
+
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
+    mockOrderRepo.findById.mockResolvedValue(order);
+    mockPointsRepo.findByCustomerId.mockResolvedValue(null);
+
+    await expect(
+      useCase.execute(TENANT_ID, {
+        deliveryId: DELIVERY_ID,
+        driverEarnings: 2500,
+        deliveryOtp: '1234',
+      }, { driverId: DRIVER_ID, role: 'driver' }),
+    ).rejects.toThrow('Too many failed delivery confirmation attempts');
+
+    expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
+    expect(order.otpVerified).toBe(false);
   });
 
   it('should complete delivery and verify OTP when correct code is provided', async () => {

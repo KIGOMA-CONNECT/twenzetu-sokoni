@@ -49,6 +49,7 @@ describe('CreateDisputeUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 
@@ -71,6 +72,7 @@ describe('CreateDisputeUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 

@@ -74,7 +74,12 @@ export class CompleteDeliveryUseCase {
     if (!order) throw new Error('Order not found');
 
     if (order.otpCode && !order.otpVerified) {
+      if (order.isOtpLocked()) {
+        throw new BadRequestException('Too many failed delivery confirmation attempts. The code has been locked; contact support.');
+      }
       if (!params.deliveryOtp || params.deliveryOtp.trim() !== order.otpCode) {
+        order.recordOtpFailure();
+        await this.orderRepo.save(order);
         throw new BadRequestException('Invalid delivery confirmation code. Delivery cannot be completed and payment will not be released.');
       }
       order.verifyOTP();

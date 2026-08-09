@@ -121,6 +121,7 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
       specialInstructions: e.specialInstructions ?? undefined,
       OTPCode: e.otpCode ?? undefined,
       OTPVerified: e.otpVerified,
+      OTPAttempts: e.otpAttempts,
       version: e.version,
       createdAt: e.createdAt ?? new Date(),
     });
@@ -146,6 +147,7 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
       specialInstructions: entity.specialInstructions ?? null,
       otpCode: entity.otpCode ?? null,
       otpVerified: entity.otpVerified,
+      otpAttempts: entity.otpAttempts,
       version: entity.version,
     };
   }

@@ -473,4 +473,39 @@ describe('CreateOrderUseCase', () => {
     const savedProduct = mockProductRepo.save.mock.calls[0][0];
     expect(savedProduct.stockQuantity).toBe(98);
   });
+
+  it('should create a service order without requiring a real product row', async () => {
+    const vendor = createActiveVendor();
+    mockVendorRepo.findById.mockResolvedValue(vendor);
+
+    (CommissionEngine.calculate as jest.Mock).mockReturnValue({
+      itemsSubtotal: Money.create(25000),
+      systemCommission: Money.create(2500),
+      vendorNet: Money.create(22500),
+      deliveryFee: Money.create(0),
+      driverNet: Money.create(0),
+      totalPaid: Money.create(25000),
+    });
+
+    const serviceRequestId = 'service-request-uuid';
+    const command = new CreateOrderCommand(
+      CUSTOMER_ID,
+      VENDOR_ID,
+      'service',
+      'Service delivery',
+      [
+        { productId: serviceRequestId, productName: 'Plumbing repair', quantity: 1, unitPrice: 25000 },
+      ],
+      'cash',
+    );
+
+    const result = await useCase.execute(TENANT_ID, command);
+
+    expect(result.orderId).toBeDefined();
+    expect(result.total).toBe(25000);
+    // product lookup must NOT be attempted for service orders
+    expect(mockProductRepo.findById).not.toHaveBeenCalled();
+    expect(mockProductRepo.save).not.toHaveBeenCalled();
+    expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
+  });
 });

@@ -38,6 +38,7 @@ describe('CancelOrderUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 
@@ -110,6 +111,7 @@ describe('VendorUpdateOrderStatusUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 
@@ -181,6 +183,7 @@ describe('UpdateOrderStatusUseCase', () => {
       specialInstructions: undefined,
       OTPCode: undefined,
       OTPVerified: false,
+      OTPAttempts: 0,
       version: 1,
     });
 

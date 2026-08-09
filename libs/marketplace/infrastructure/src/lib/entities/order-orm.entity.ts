@@ -58,6 +58,9 @@ export class OrderOrmEntity extends TenantAwareEntity {
   @Column({ name: 'otp_verified', type: 'boolean', default: false })
   public otpVerified!: boolean;
 
+  @Column({ name: 'otp_attempts', type: 'integer', default: 0 })
+  public otpAttempts!: number;
+
   @Column({ type: 'integer', default: 1 })
   public version!: number;
 }
