@@ -12,6 +12,7 @@ import { PayoutSettlementService } from './payout-settlement.service';
 import { PaymentTimeoutService } from './payment-timeout.service';
 import { AutoDispatchService } from './auto-dispatch.service';
 import { FixedDepositMaturityService } from './fixed-deposit-maturity.service';
+import { SubscriptionBillingService } from './subscription-billing.service';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { FixedDepositMaturityService } from './fixed-deposit-maturity.service';
     PaymentTimeoutService,
     AutoDispatchService,
     FixedDepositMaturityService,
+    SubscriptionBillingService,
     NotificationsService,
   ],
 })

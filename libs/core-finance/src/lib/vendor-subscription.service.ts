@@ -1,8 +1,9 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, LessThan } from 'typeorm';
 import { VendorSubscriptionEntity } from './entities/vendor-subscription.entity';
 import { VendorSubscriptionTierEntity } from './entities/vendor-subscription-tier.entity';
+import { SubscriptionInvoiceEntity } from './entities/subscription-invoice.entity';
 
 @Injectable()
 export class VendorSubscriptionService {
@@ -13,6 +14,8 @@ export class VendorSubscriptionService {
     private readonly subRepo: Repository<VendorSubscriptionEntity>,
     @InjectRepository(VendorSubscriptionTierEntity)
     private readonly tierRepo: Repository<VendorSubscriptionTierEntity>,
+    @InjectRepository(SubscriptionInvoiceEntity)
+    private readonly invoiceRepo: Repository<SubscriptionInvoiceEntity>,
   ) {}
 
   async seedDefaultTiers(): Promise<void> {
@@ -80,5 +83,69 @@ export class VendorSubscriptionService {
       where: { vendorId, status: 'active' },
       relations: { tier: true },
     });
+  }
+
+  async getVendorInvoices(vendorId: string): Promise<SubscriptionInvoiceEntity[]> {
+    const sub = await this.subRepo.findOne({ where: { vendorId } });
+    if (!sub) return [];
+    return this.invoiceRepo.find({
+      where: { subscriptionId: sub.id },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
+  async markInvoicePaid(invoiceId: string): Promise<SubscriptionInvoiceEntity> {
+    const invoice = await this.invoiceRepo.findOne({ where: { id: invoiceId } });
+    if (!invoice) throw new NotFoundException('Invoice not found');
+    if (invoice.status === 'paid') return invoice;
+
+    invoice.status = 'paid';
+    invoice.paidAt = new Date();
+    return this.invoiceRepo.save(invoice);
+  }
+
+  async billDueSubscriptions(): Promise<number> {
+    const now = new Date();
+    const due = await this.subRepo.find({
+      where: { status: 'active', currentPeriodEnd: LessThan(now) },
+      relations: { tier: true },
+    });
+    let billed = 0;
+
+    for (const sub of due) {
+      if (!sub.tier) continue;
+
+      const start = new Date(sub.currentPeriodEnd);
+      const end = new Date(start);
+      end.setMonth(end.getMonth() + 1);
+
+      sub.currentPeriodStart = start;
+      sub.currentPeriodEnd = end;
+
+      if (sub.tier.monthlyPrice > 0) {
+        const existing = await this.invoiceRepo.findOne({
+          where: { subscriptionId: sub.id, status: 'pending' },
+        });
+        if (!existing) {
+          const dueDate = new Date(start);
+          dueDate.setDate(dueDate.getDate() + 7);
+          await this.invoiceRepo.save(this.invoiceRepo.create({
+            subscriptionId: sub.id,
+            amount: sub.tier.monthlyPrice,
+            currency: sub.tier.currency || 'TZS',
+            status: 'pending',
+            dueDate,
+          }));
+        }
+      }
+
+      await this.subRepo.save(sub);
+      billed += 1;
+    }
+
+    if (billed > 0) {
+      this.logger.log(`Billed ${billed} vendor subscription(s) for renewal`);
+    }
+    return billed;
   }
 }

@@ -1,10 +1,13 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
-import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
+import { ADMIN_ROLES } from '@afri-market/identity-domain';
 import { FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { VendorSubscriptionService } from '@afri-market/core-finance';
 import { IsString, IsUUID } from 'class-validator';
+
+const FINANCE_ADMIN_ROLES = ADMIN_ROLES.filter((r) => r !== 'support_admin' && r !== 'marketing_admin');
 
 class SubscribeDto {
   @IsString()
@@ -52,10 +55,26 @@ export class VendorSubscriptionsController {
     return this.subs.subscribe(await this.resolveVendorId(user), user.tenantId, body.tierId);
   }
 
+  @Get('me/invoices')
+  @ApiOperation({ summary: 'Get invoices for my vendor subscription' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  public async myInvoices(@CurrentUser() user: JwtPayload) {
+    return { data: await this.subs.getVendorInvoices(await this.resolveVendorId(user)) };
+  }
+
   @Get(':vendorId')
   @ApiOperation({ summary: 'Get active subscription for a vendor (public view)' })
   @ApiParam({ name: 'vendorId', description: 'Vendor ID' })
   public async byVendor(@Param('vendorId', ParseUUIDPipe) vendorId: string) {
     return await this.subs.getVendorSubscription(vendorId);
+  }
+
+  @Post('invoices/:invoiceId/paid')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(...FINANCE_ADMIN_ROLES)
+  @ApiOperation({ summary: 'Mark an invoice as paid (admin)' })
+  @ApiParam({ name: 'invoiceId', description: 'Invoice ID' })
+  public async markPaid(@Param('invoiceId', ParseUUIDPipe) invoiceId: string) {
+    return this.subs.markInvoicePaid(invoiceId);
   }
 }

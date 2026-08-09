@@ -77,6 +77,15 @@ interface CommissionRecord {
   createdAt: string;
 }
 
+interface SubscriptionInvoice {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  dueDate: string;
+  createdAt: string;
+}
+
 const formatDate = (iso: string) => {
   try {
     return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -477,6 +486,7 @@ export default function FintechPage() {
   function SubscriptionTab() {
     const { data: tiers, loading, error } = useApi<SubscriptionTier[]>('/vendor-subscriptions/tiers');
     const { data: mine, refetch } = useApi<{ id: string; status: string; tier?: SubscriptionTier | null; currentPeriodEnd?: string } | null>('/vendor-subscriptions/me');
+    const { data: invoices } = useApi<SubscriptionInvoice[] | null>(isVendor ? '/vendor-subscriptions/me/invoices' : null);
     const [busy, setBusy] = useState<string | null>(null);
 
     const handleSubscribe = async (tierId: string) => {
@@ -500,6 +510,24 @@ export default function FintechPage() {
           <div style={{ background: 'var(--brand-soft)', padding: '1rem', borderRadius: 'var(--radius)' }}>
             <div style={{ fontWeight: 800, color: 'var(--brand)' }}>⭐ Active: {mine.tier?.name ?? 'Subscription'}</div>
             {mine.currentPeriodEnd && <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>Renews: {formatDate(mine.currentPeriodEnd)}</div>}
+          </div>
+        )}
+        {invoices && invoices.length > 0 && (
+          <div>
+            <div style={{ fontWeight: 800, marginBottom: '0.75rem' }}>🧾 Invoices</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {invoices.map((inv) => (
+                <div key={inv.id} className="card" style={{ padding: '0.75rem 1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem' }}>
+                  <div>
+                    <div style={{ fontWeight: 700 }}>{formatCurrency(inv.amount)} <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{inv.currency}</span></div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Due: {formatDate(inv.dueDate)}</div>
+                  </div>
+                  <span className={`badge ${inv.status === 'paid' ? 'badge-green' : inv.status === 'pending' ? '' : 'badge-red'}`} style={{ textTransform: 'capitalize' }}>
+                    {inv.status}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1rem' }}>

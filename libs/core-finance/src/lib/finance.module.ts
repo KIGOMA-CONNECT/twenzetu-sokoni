@@ -8,6 +8,7 @@ import { SavingsTransactionEntity } from './entities/savings-transaction.entity'
 import { FixedDepositEntity } from './entities/fixed-deposit.entity';
 import { LoanEntity } from './entities/loan.entity';
 import { LoanRepaymentEntity } from './entities/loan-repayment.entity';
+import { SubscriptionInvoiceEntity } from './entities/subscription-invoice.entity';
 import { CommissionService } from './commission.service';
 import { SavingsService } from './savings.service';
 import { LoanService } from './loan.service';
@@ -22,6 +23,7 @@ export const FINANCE_ENTITIES = [
   FixedDepositEntity,
   LoanEntity,
   LoanRepaymentEntity,
+  SubscriptionInvoiceEntity,
 ];
 
 @Global()
