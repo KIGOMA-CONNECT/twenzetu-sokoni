@@ -2,6 +2,7 @@ export * from './lib/entities/address-orm.entity';
 export * from './lib/entities/cart-orm.entity';
 export * from './lib/entities/cart-item-orm.entity';
 export * from './lib/entities/notification-orm.entity';
+export * from './lib/entities/push-subscription-orm.entity';
 export * from './lib/entities/audit-log-orm.entity';
 export * from './lib/entities/coupon-orm.entity';
 export * from './lib/entities/flash-sale-orm.entity';

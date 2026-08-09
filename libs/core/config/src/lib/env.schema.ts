@@ -21,6 +21,9 @@ export const envSchema = z.object({
   SMS_DEFAULT_COUNTRY: z.string().default('TZ'),
   DEFAULT_CURRENCY: z.string().default('TZS'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  VAPID_PUBLIC_KEY: z.string().default(''),
+  VAPID_PRIVATE_KEY: z.string().default(''),
+  VAPID_SUBJECT: z.string().default('mailto:support@afrimarket.co.tz'),
 }).superRefine((val, ctx) => {
   if (val.APP_ENV !== 'production') return;
   const defaults = new Set(['postgres', 'afri_owner_dev_password', 'afri_runtime_dev_password', 'dev-jwt-secret']);

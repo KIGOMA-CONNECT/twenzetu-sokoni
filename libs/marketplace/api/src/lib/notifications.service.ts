@@ -1,13 +1,17 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationOrmEntity } from '@afri-market/marketplace-infrastructure';
+import { PushService } from './push.service';
 
 @Injectable()
 export class NotificationsService {
+  private readonly logger = new Logger(NotificationsService.name);
+
   constructor(
     @InjectRepository(NotificationOrmEntity)
     private readonly notifRepo: Repository<NotificationOrmEntity>,
+    private readonly pushService: PushService,
   ) {}
 
   public async create(params: {
@@ -18,6 +22,7 @@ export class NotificationsService {
     type: string;
     referenceId?: string;
     referenceType?: string;
+    push?: boolean;
   }): Promise<NotificationOrmEntity> {
     const entity = this.notifRepo.create({
       tenantId: params.tenantId,
@@ -29,7 +34,21 @@ export class NotificationsService {
       referenceType: params.referenceType ?? null,
       isRead: false,
     });
-    return this.notifRepo.save(entity);
+    const saved = await this.notifRepo.save(entity);
+
+    if (params.push !== false) {
+      this.pushService
+        .sendToUser(params.userId, {
+          title: params.title,
+          body: params.message,
+          url: '/notifications',
+        })
+        .catch((error) => {
+          this.logger.warn(`Push notification failed: ${error}`);
+        });
+    }
+
+    return saved;
   }
 
   public async findByUser(userId: string, limit = 50, offset = 0): Promise<{ data: NotificationOrmEntity[]; total: number }> {

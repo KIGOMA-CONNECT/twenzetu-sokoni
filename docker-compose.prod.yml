@@ -90,6 +90,9 @@ services:
       AZAMPAY_ENVIRONMENT: ${AZAMPAY_ENVIRONMENT:-sandbox}
       AZAMPAY_CALLBACK_URL: ${AZAMPAY_CALLBACK_URL:-https://yourdomain.com/api/webhooks/azampay}
       METRICS_SECRET: ${METRICS_SECRET:?Set METRICS_SECRET in .env.production}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@afrimarket.co.tz}
     depends_on:
       postgres:
         condition: service_healthy

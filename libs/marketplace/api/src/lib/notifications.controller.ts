@@ -1,15 +1,20 @@
-import { Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { NotificationsService } from './notifications.service';
+import { PushService } from './push.service';
+import { SavePushSubscriptionDto } from './dto/save-push-subscription.dto';
 
 @ApiTags('Notifications')
 @ApiBearerAuth()
 @UseGuards(AuthGuard('jwt'))
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private readonly notifService: NotificationsService) {}
+  constructor(
+    private readonly notifService: NotificationsService,
+    private readonly pushService: PushService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get notifications for current user' })
@@ -46,6 +51,37 @@ export class NotificationsController {
   @ApiResponse({ status: 200, description: 'All marked as read' })
   public async markAllRead(@CurrentUser() user: JwtPayload) {
     await this.notifService.markAllAsRead(user.sub);
+    return { success: true };
+  }
+
+  @Get('push/vapid-public-key')
+  @ApiOperation({ summary: 'Get VAPID public key for push subscriptions' })
+  @ApiResponse({ status: 200, description: 'Public key' })
+  public async vapidPublicKey() {
+    return { publicKey: this.pushService.publicKey };
+  }
+
+  @Post('push-subscriptions')
+  @ApiOperation({ summary: 'Save a web push subscription for the current user' })
+  @ApiResponse({ status: 201, description: 'Subscription saved' })
+  public async saveSubscription(
+    @Body() dto: SavePushSubscriptionDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    await this.pushService.saveSubscription(user.sub, user.tenantId, dto);
+    return { success: true };
+  }
+
+  @Delete('push-subscriptions')
+  @ApiOperation({ summary: 'Remove a web push subscription for the current user' })
+  @ApiResponse({ status: 200, description: 'Subscription removed' })
+  public async removeSubscription(
+    @Query('endpoint') endpoint: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (endpoint) {
+      await this.pushService.removeSubscription(user.sub, endpoint);
+    }
     return { success: true };
   }
 }

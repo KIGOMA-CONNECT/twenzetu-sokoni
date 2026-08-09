@@ -63,4 +63,12 @@ export class AppConfigService {
       origins: this.config.CORS_ORIGINS.split(',').map((s) => s.trim()),
     };
   }
+
+  public get push() {
+    return {
+      publicKey: this.config.VAPID_PUBLIC_KEY,
+      privateKey: this.config.VAPID_PRIVATE_KEY,
+      subject: this.config.VAPID_SUBJECT,
+    };
+  }
 }

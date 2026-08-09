@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MarketplaceApplicationModule, MARKETPLACE_GATEWAY } from '@afri-market/marketplace-application';
 import { FileUploadService, MobileMoneyService } from '@afri-market/integrations';
-import { NotificationOrmEntity } from '@afri-market/marketplace-infrastructure';
+import { NotificationOrmEntity, PushSubscriptionOrmEntity } from '@afri-market/marketplace-infrastructure';
 import { MarketplaceGatewayModule, MarketplaceGateway } from './gateway';
 import { AdminModule } from './admin';
 import { VendorsController } from './vendors.controller';
@@ -34,6 +34,7 @@ import { FlashSalesController } from './flash-sales.controller';
 import { DriverFleetController } from './driver-fleet.controller';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
+import { PushService } from './push.service';
 import { OrderNotifierService } from './order-notifier.service';
 import { ChatController } from './chat.controller';
 import { RecommendationsController } from './recommendations.controller';
@@ -47,7 +48,7 @@ import { VendorSubscriptionsController } from './vendor-subscriptions.controller
 import { CommissionsController } from './commissions.controller';
 
 @Module({
-  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity])],
+  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity])],
   controllers: [
     VendorsController,
     ProductsController,
@@ -93,8 +94,9 @@ import { CommissionsController } from './commissions.controller';
     FileUploadService,
     MobileMoneyService,
     NotificationsService,
+    PushService,
     OrderNotifierService,
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, PushService],
 })
 export class MarketplaceModule {}

@@ -1,5 +1,5 @@
-/* global self, caches, fetch, Response */
-const CACHE_NAME = 'afrimarket-v4';
+/* global self, caches, fetch, Response, clients, URL */
+const CACHE_NAME = 'afrimarket-v5';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -64,6 +64,50 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       });
+    }),
+  );
+});
+
+self.addEventListener('push', (event) => {
+  let title = 'afriMarket';
+  let body = '';
+  let url = '/';
+  let icon = '/icons/icon-192.png';
+  try {
+    const data = event.data ? event.data.json() : {};
+    title = data.title || title;
+    body = data.body || body;
+    url = data.url || url;
+    icon = data.icon || icon;
+  } catch {
+    // ignore malformed payload
+  }
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon,
+      badge: '/icons/icon-192.png',
+      vibrate: [100, 50, 100],
+      data: { url },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = new URL(
+    (event.notification.data && event.notification.data.url) || '/',
+    self.location.origin,
+  ).href;
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin)) {
+          client.navigate(targetUrl).catch(() => {});
+          return client.focus();
+        }
+      }
+      return clients.openWindow(targetUrl);
     }),
   );
 });
