@@ -137,6 +137,7 @@ function ConsumerDashboard() {
   );
   const loyaltyPoints = Math.floor(totalSpent / 1000);
   const firstName = user?.fullName?.split(' ')[0] || 'there';
+  const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
   const isPhone = device.type === 'phone';
   const isSmallPhone = device.phoneSize === 'small';
@@ -168,11 +169,10 @@ function ConsumerDashboard() {
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: isPhone ? '1rem' : '1.5rem', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: heroMinHeight, padding: heroPadding, textAlign: 'center' }}>
           <div>
-            <span className="hero-badge" style={{ marginBottom: '0.9rem' }}>🎉 Karibu, {firstName}!</span>
-            <h1 style={{ fontSize: isSmallPhone ? '1.4rem' : 'clamp(1.6rem, 4vw, 2.3rem)', fontWeight: 800, letterSpacing: '-0.02em' }}>
-              What would you like <span className="hero-gradient">today?</span>
+            <h1 style={{ fontSize: isSmallPhone ? '1.6rem' : 'clamp(1.9rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
+              Hello, <span className="hero-gradient">{firstNameLabel}</span>
             </h1>
-            <p style={{ color: 'var(--muted)', margin: '0.6rem 0 0', fontSize: isSmallPhone ? '0.9rem' : '1.05rem' }}>Welcome back to afriMarket</p>
+            <p style={{ color: 'var(--muted)', margin: '0', fontSize: isSmallPhone ? '0.9rem' : '1.05rem' }}>Welcome back to afriMarket</p>
           </div>
         </div>
       </section>
