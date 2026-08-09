@@ -1,5 +1,5 @@
 /* global self, caches, fetch, Response */
-const CACHE_NAME = 'afrimarket-v3';
+const CACHE_NAME = 'afrimarket-v4';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -42,11 +42,15 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          if (response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
-        .catch(() => caches.match(request)),
+        .catch(() =>
+          caches.match(request).then((cached) => cached || caches.match('/')),
+        ),
     );
     return;
   }

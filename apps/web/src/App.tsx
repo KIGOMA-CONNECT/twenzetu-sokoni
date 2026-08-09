@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { InstallPrompt } from './components/InstallPrompt';
 import { MainLayout } from './layouts/MainLayout';
 import HomePage from './pages/landing/HomePage';
 import LoginPage from './pages/auth/LoginPage';
@@ -164,6 +165,7 @@ export default function App() {
       <NotificationProvider>
         <CartProvider>
           <AppRoutes />
+          <InstallPrompt />
         </CartProvider>
       </NotificationProvider>
     </AuthProvider>
