@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle } from '../../components/ui';
 import { MapPicker, calculateDistance, calculateFare, VEHICLE_RATES } from '../../components/MapPicker';
+import api from '../../api/client';
 
 const CARGO_SUBS = [
   { id: 'd0000000-0000-0000-0000-000000000090', name: 'Cargo ya Ndani', emoji: '📦', desc: 'Kutoka mji hadi mji' },
@@ -20,6 +21,9 @@ export default function CargoPage() {
   const [delivery, setDelivery] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
   const isPhone = device.type === 'phone';
 
   const selectedVehicle = VEHICLE_RATES.find((v) => v.id === vehicleId);
@@ -38,6 +42,69 @@ export default function CargoPage() {
 
   function formatCurrency(amount: number): string {
     return 'Tsh ' + amount.toLocaleString('sw-TZ');
+  }
+
+  const selectedSubObj = CARGO_SUBS.find((s) => s.id === selectedSub);
+
+  async function submitRequest() {
+    if (!pickup || !delivery || !selectedSubObj || !selectedVehicle) return;
+    setSubmitting(true);
+    setSubmitError('');
+    try {
+      await api.post('/cargo/requests', {
+        subServiceName: selectedSubObj.name,
+        vehicleName: selectedVehicle.name,
+        pickup: { address: pickup.address, lat: pickup.lat, lng: pickup.lng },
+        delivery: { address: delivery.address, lat: delivery.lat, lng: delivery.lng },
+        weightKg,
+        notes: notes.trim() || undefined,
+        fare: fare > 0 ? fare : undefined,
+      });
+      setSubmitted(true);
+    } catch (err: any) {
+      setSubmitError(
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
+        'Ombi halijatumwa. Jaribu tena.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function resetForm() {
+    setSelectedSub('');
+    setVehicleId('');
+    setPickup(null);
+    setDelivery(null);
+    setWeight('');
+    setNotes('');
+    setSubmitError('');
+    setSubmitted(false);
+  }
+
+  if (submitted) {
+    return (
+      <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined, paddingBottom: '3rem' }}>
+        <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
+          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Ombi Limetumwa!</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+            Mtoa huduma atawasiliana nawe kuhusu usafirishaji wa mzigo wako.
+            <br />
+            Angalia "Mahitaji Yangu" katika huduma kwa maelezo zaidi.
+          </p>
+          <button
+            className="btn btn-primary"
+            onClick={resetForm}
+            style={{ fontSize: '1rem', padding: '0.85rem 2rem' }}
+          >
+            Tuma Ombi Jipya
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -184,12 +251,22 @@ export default function CargoPage() {
             </div>
           )}
 
+          {submitError && (
+            <div style={{
+              background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c',
+              borderRadius: 'var(--radius)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
+            }}>
+              {submitError}
+            </div>
+          )}
+
           <button
             className="btn btn-primary"
-            disabled={!pickup || !delivery || !weight}
+            disabled={!pickup || !delivery || !weight || submitting}
+            onClick={submitRequest}
             style={{ width: '100%', fontSize: '1rem', padding: '0.85rem' }}
           >
-            🚚 Omba Usafiri — {fare > 0 ? formatCurrency(fare) : 'Chagua eneo'}
+            {submitting ? 'Inatuma...' : `🚚 Omba Usafiri — ${fare > 0 ? formatCurrency(fare) : 'Chagua eneo'}`}
           </button>
         </>
       )}

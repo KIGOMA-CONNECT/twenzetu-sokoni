@@ -24,6 +24,7 @@ import {
 } from '@afri-market/marketplace-application';
 import { CreateServiceListingDto } from './dto/create-service-listing.dto';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto';
+import { CreateCargoRequestDto } from './dto/create-cargo-request.dto';
 import { SubmitServiceQuoteDto } from './dto/submit-service-quote.dto';
 import { AcceptServiceQuoteDto } from './dto/accept-service-quote.dto';
 import { SendServiceMessageDto } from './dto/send-service-message.dto';
@@ -124,6 +125,52 @@ export class ServicesController {
       return { success: false, error: 'Vendor profile not found' };
     }
     return this.deleteListing.execute(user.tenantId, id, vendor.id.value);
+  }
+
+  // ── Cargo / transport requests ─────────────────────────────
+  @Post('cargo/requests')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Create a cargo / transport request (customer)' })
+  @ApiBody({ type: CreateCargoRequestDto })
+  @ApiResponse({ status: 201, description: 'Request created' })
+  public async createCargoRequestEndpoint(@Body() dto: CreateCargoRequestDto, @CurrentUser() user: JwtPayload) {
+    const { data: cargoListings } = await this.listingRepo.findActive(user.tenantId, { category: 'cargo', limit: 1 });
+    let vendorId: string;
+    let listingId: string | undefined;
+
+    if (cargoListings.length > 0) {
+      vendorId = cargoListings[0].vendorId.value;
+      listingId = cargoListings[0].id.value;
+    } else {
+      const vendors = await this.vendorRepo.findActiveByTenant(user.tenantId);
+      if (vendors.length === 0) {
+        return { success: false, error: 'Hakuna mtoa huduma wa usafirishaji kwa sasa. Jaribu tena baadaye.' };
+      }
+      vendorId = vendors[0].id.value;
+    }
+
+    const route = `${dto.pickup.address} → ${dto.delivery.address}`;
+    const details = [
+      `Huduma: ${dto.subServiceName}`,
+      `Usafiri: ${dto.vehicleName}`,
+      `Njia: ${route}`,
+      `Uzito: ${dto.weightKg} kg`,
+      dto.fare ? `Nauli ya makadirio: Tsh ${dto.fare.toLocaleString('sw-TZ')}` : undefined,
+      dto.notes ? `Maelezo: ${dto.notes}` : undefined,
+    ].filter(Boolean).join('\n');
+
+    return this.createRequest.execute(user.tenantId, new CreateServiceRequestCommand(
+      user.sub,
+      vendorId,
+      listingId,
+      `${dto.subServiceName} — ${dto.vehicleName}`,
+      1,
+      'trip',
+      details,
+      [],
+      'TZS',
+      undefined,
+    ));
   }
 
   // ── Requests ────────────────────────────────────────────────
