@@ -26,3 +26,4 @@ Every ADR follows this template (from Chapter 9.3):
 | [ADR-0001](ADR-0001-enterprise-suites.md) | Organize the platform as Enterprise Suites | Accepted | 2026-08-10 |
 | [ADR-0002](ADR-0002-dependency-security-overrides.md) | Pin security patches via npm overrides | Accepted | 2026-08-10 |
 | [ADR-0003](ADR-0003-payments-fail-closed.md) | Payment providers fail closed when unconfigured | Accepted | 2026-08-10 |
+| [ADR-0004](ADR-0004-azampay-primary-aggregator.md) | AzamPay as the primary payment aggregator | Accepted | 2026-08-10 |

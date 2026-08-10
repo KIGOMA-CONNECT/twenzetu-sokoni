@@ -2,13 +2,16 @@
 
 How to take AfriMarket from sandbox to production payments and SMS. This is the checklist for advancing the **Payments** suite from L2 → L4 and enabling OTP SMS delivery.
 
+**Payment strategy (ADR-0004): AzamPay is the single payment aggregator.** One AzamPay API key covers M-Pesa, YAS Tanzania (Mixx by Yas), Airtel Money, HaloPesa, T-Pesa, and AzamPesa. We are waiting for the production AzamPay API key; no payment code changes are needed to launch except the card checkout gap below.
+
 ## Current state (what is already built)
 
 | Capability | Status |
 |---|---|
-| M-Pesa provider (STK Push, status query, reversal, B2C) | Built — `libs/integrations/src/lib/payments/mpesa.provider.ts` |
-| AzamPay provider (MNO checkout for M-Pesa/Tigo/Airtel/HaloPesa/AzamPesa, transfers) | Built — `azampay.provider.ts` |
-| Webhook controllers (M-Pesa, AzamPay, Tigo Pesa, MTN MoMo, internal top-up confirm) | Built — `libs/marketplace/api/src/lib/webhooks.controller.ts` |
+| AzamPay provider (MNO checkout, transfers/reversals, callback verification) | Built — `libs/integrations/src/lib/payments/azampay.provider.ts` |
+| Provider routing table (M-Pesa, Mixx by Yas, Tigo Pesa, Airtel Money, HaloPesa, AzamPesa → AzamPay) | Built — `AZAMPAY_PROVIDER_MAP` in `types.ts` |
+| Router prefers AzamPay whenever configured; production fails closed if unconfigured | Built — `MobileMoneyService.selectProvider` |
+| Webhook controllers (AzamPay, M-Pesa, Tigo Pesa, MTN MoMo, internal top-up confirm) | Built — `libs/marketplace/api/src/lib/webhooks.controller.ts` |
 | Wallet top-ups + pending claim/dedup | Built (DB `wallet_topup_requests`, `creditWallet`) |
 | Payment timeout scheduler | Built — `apps/api/src/app/scheduler/payment-timeout.service.ts` |
 | SMS provider adapters (Africa's Talking, Twilio, Termii) + per-country routing | Built — `libs/integrations/src/lib/sms/` |
@@ -16,31 +19,15 @@ How to take AfriMarket from sandbox to production payments and SMS. This is the 
 
 ## What blocks production
 
-1. **No M-Pesa or AzamPay production credentials** — provider env vars are empty in production (the Payments suite is at L2).
-2. **No SMS provider credentials** — `AT_API_KEY`, `TWILIO_*`, `TERMII_API_KEY` are empty; OTP cannot be delivered in production.
-3. **Provider behaviour rule (ADR-0003):** providers must **fail closed** when unconfigured. M-Pesa still returns a simulated success when unconfigured — align it to fail closed (AzamPay already does) before going live.
+1. **The AzamPay production API key** — the only payment credential required (covers all MNO methods). AzamPay env vars are empty in production.
+2. **Card checkout (gap to close).** Card is a supported `PaymentChannel`, but the AzamPay provider currently implements only the MNO checkout. When the API key arrives, add the AzamPay **card checkout** (`azampay/checkout` redirect flow) and map `card` in `AZAMPAY_PROVIDER_MAP`.
+3. **SMS provider credentials** — `AT_API_KEY`, `TWILIO_*`, or `TERMII_API_KEY` are empty; OTP cannot be delivered in production.
+4. **M-Pesa Daraja is NOT required.** The direct M-Pesa provider remains only as an optional fallback (see ADR-0004). Production already fails closed when AzamPay is unconfigured.
 
 ## Credentials you must gather
 
-### M-Pesa (Safaricom Daraja, Tanzania)
-Register at the Safaricom/Daraja developer portal and request a **production** go-live (requires business documents). You need:
-
-| Env var | What it is | Where from |
-|---|---|---|
-| `MPESA_CONSUMER_KEY` | API consumer key | Daraja app credentials |
-| `MPESA_CONSUMER_SECRET` | API consumer secret | Daraja app credentials |
-| `MPESA_SHORTCODE` | Paybill/Buy-Goods till (e.g. `174379` is the sandbox one) | Your approved paybill |
-| `MPESA_PASSKEY` | STK push passkey (Lipa na MPESA Online) | Daraja app |
-| `MPESA_CALLBACK_URL` | Public HTTPS endpoint → `/api/webhooks/mpesa` | Your domain (set `https://twenzetusokoni.com/api/webhooks/mpesa`) |
-| `MPESA_ENVIRONMENT` | `sandbox` → `production` | — |
-
-Notes:
-- Callback must be publicly reachable and HTTPS.
-- Test in sandbox first with sandbox test numbers; then switch `MPESA_ENVIRONMENT=production`.
-- The STK push amount is TZS; `TransactionType: CustomerBuyGoodsOnline`.
-
-### AzamPay (Tanzania, supports M-Pesa/Tigo/Airtel/HaloPesa/AzamPesa)
-Register at the AzamPay merchant portal and request production access.
+### AzamPay (the one you are waiting for)
+Register at the AzamPay merchant portal and request production access. Covers: M-Pesa, YAS Tanzania (Mixx by Yas), Airtel Money, HaloPesa, T-Pesa, AzamPesa, and card.
 
 | Env var | What it is |
 |---|---|
@@ -64,23 +51,25 @@ Routing: `SMS_PROVIDER_DEFAULT`, `SMS_PROVIDER_TZ`, `SMS_PROVIDER_NG`, `SMS_DEFA
 
 ## Cutover checklist
 
-1. **Fail-closed change (ADR-0003).** Align `MpesaProvider` unconfigured paths with AzamPay (return `FAILED`, never simulate). Add tests. Deploy.
-2. **Sandbox verification (staging).** Put sandbox credentials in staging `.env`, run an end-to-end STK push + callback, confirm wallet credit. Same for AzamPay sandbox.
-3. **Production credentials.** Add production keys to the server's `/opt/afri-market/.env.production` (never commit them; the file is gitignored). Set `MPESA_ENVIRONMENT=production`, `AZAMPAY_ENVIRONMENT=production`.
-4. **Callbacks.** Ensure both provider dashboards are pointed at `https://twenzetusokoni.com/api/webhooks/mpesa` and `.../azampay`. Test by triggering a small real transaction.
-5. **Verify callbacks end-to-end.** Real STK push → webhook → `confirmPayment` → order status updated; wallet top-up credited; duplicate webhook calls do **not** double-credit (dedup already implemented).
-6. **Reconciliation.** Compare provider statements vs. DB payment records for a week before enabling vendor disbursement.
-7. **Vendor payouts.** Enable B2C/transfer disbursement only after reconciliation is green.
-8. **Enable OTP SMS.** Add SMS provider keys; verify an OTP login on a real number in production.
+1. **Receive the AzamPay production API key.** Add the six `AZAMPAY_*` values to the server's `/opt/afri-market/.env.production` (never commit them; the file is gitignored). Set `AZAMPAY_ENVIRONMENT=production`.
+2. **Close the card gap.** Implement AzamPay card checkout and map `card` in `AZAMPAY_PROVIDER_MAP` (small, tested change to `libs/integrations`). Deploy.
+3. **Register the callback.** Point the AzamPay dashboard at `https://twenzetusokoni.com/api/webhooks/azampay`.
+4. **Sandbox verification (staging).** Put sandbox credentials in staging, run an end-to-end MNO checkout + callback, confirm wallet credit. Repeat per method (M-Pesa, Mixx by Yas, Airtel Money, HaloPesa, T-Pesa).
+5. **Card verification.** Complete a card checkout end-to-end; confirm the redirect flow and callback.
+6. **Real transaction.** Small real STK push → webhook → `confirmPayment` → order status updated; wallet top-up credited; duplicate webhook calls do **not** double-credit (dedup already implemented).
+7. **Reconciliation.** Compare AzamPay statements vs. DB payment records for a week before enabling vendor disbursement.
+8. **Vendor payouts.** Enable transfers/disbursement only after reconciliation is green.
+9. **Enable OTP SMS.** Add SMS provider keys; verify an OTP login on a real number in production.
 
 ## Post-cutover monitoring
 
-- Watch `/api/metrics` + payment logs for failed STK pushes and callback signature mismatches.
-- Alert on: payments stuck in `INITIATED`, callback failures, webhook 401s.
+- Watch `/api/metrics` + payment logs for failed checkouts and callback signature mismatches.
+- Alert on: payments stuck in `INITIATED`, callback failures, webhook 401s (signature mismatch).
 - Record the maturity change (Payments **L2 → L4**) as an ADR with evidence per the [roadmap](roadmap.md).
 
 ## Related
 
+- [ADR-0004 — AzamPay as the primary payment aggregator](adr/ADR-0004-azampay-primary-aggregator.md)
 - [ADR-0003 — Payment providers fail closed](adr/ADR-0003-payments-fail-closed.md)
 - [Constitution, Chapter 7 — Product Principles (7.3 Trust)](constitution/07-product-principles.md)
 - [Roadmap — Horizon 1](roadmap.md)

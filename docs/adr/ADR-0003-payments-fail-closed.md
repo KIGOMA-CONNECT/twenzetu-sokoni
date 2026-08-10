@@ -10,7 +10,7 @@
   3. Add an explicit `PAYMENTS_ENABLED` master switch — fails all providers until production keys are present.
 - Decision: Adopt **failing closed** as the platform rule: no payment provider ever simulates success. Align M-Pesa's unconfigured paths with AzamPay (return `FAILED` with a clear message). Optionally layer a `PAYMENTS_ENABLED` master switch when the Payments suite reaches L3.
 - Consequences:
-  - Local development must provide real sandbox credentials (or run the dedicated sandbox provider) instead of relying on implicit simulation.
-  - Prevents false "successful" payments in staging/production misconfigurations — protecting user money and trust.
-  - Requires a code change + tests in `libs/integrations/src/lib/payments/mpesa.provider.ts`.
+  - **Already mitigated at the service layer.** `MobileMoneyService.selectProvider` throws `ServiceUnavailableException` in production when a provider is not configured (unless `PAYMENTS_DEMO_MODE=true`). The M-Pesa provider's simulated-success path is therefore only reachable in development or explicit demo mode, and is additionally superseded by ADR-0004 (AzamPay becomes the primary aggregator).
+  - Remaining hardening (deferred, low priority): make `MpesaProvider` itself return `FAILED` when unconfigured, for defense in depth if the provider is ever used outside the service guard.
+  - Local development must use real sandbox credentials or `PAYMENTS_DEMO_MODE=true` — never implicit simulation in production.
 - Constitution check: Trust (Ch4), Security by default (Ch5.1), Product Principle 7.3 "Trust is a product feature" (Ch7).

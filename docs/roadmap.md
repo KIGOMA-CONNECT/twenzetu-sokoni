@@ -27,7 +27,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 | Core Platform (tenancy, audit, finance, queue, tracing, security) | **L4** | Operational. Next: published standards for suite integration. |
 | Identity | **L3** | AuthN/AuthZ live. Next: self-service account, SSO readiness → L4. |
 | Engagement (web, Android/TWA, USSD) | **L2–L3** | USSD implemented. Next: production hardening of USSD + notification routing → L4. |
-| Payments | **L2** | M-Pesa + AzamPay adapters, webhook controllers, wallet top-ups built. Blocked on **provider production keys** (see [payments-readiness](payments-readiness.md)). |
+| Payments | **L2** | AzamPay aggregator built (M-Pesa, YAS/Mixx, Airtel Money, HaloPesa, T-Pesa, AzamPesa) + webhooks + wallets (ADR-0004). Blocked on the **AzamPay production API key**; card checkout gap to close (see [payments-readiness](payments-readiness.md)). |
 | Analytics | **L1** | Metrics exposed (`/api/metrics`) + monitoring stack. Next: tenant-facing reports → L2/L3. |
 | AI | **L0** | Concept. Next: charter + use cases (recommendations, forecasting). |
 | Cloud | **L0** | Concept. Next: managed hosting proposition for tenants. |
@@ -40,7 +40,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 ## Milestones
 
 ### Horizon 1 — Prove (2026–2027)
-- [ ] **Payments L4** — obtain M-Pesa + AzamPay production credentials; activate; sandbox→prod cutover; reconciliation verified. (See [payments-readiness](payments-readiness.md).)
+- [ ] **Payments L4** — receive AzamPay production API key; close the card checkout gap; activate and verify all MNO methods; reconciliation verified. (See [payments-readiness](payments-readiness.md).)
 - [ ] **SMS L4** — obtain and configure an SMS provider (Africa's Talking / Twilio / Termii) for OTP delivery in production.
 - [ ] **Engagement L4** — USSD production hardening; notification routing stable.
 - [ ] **Analytics L2/L3** — tenant-facing reports; defined metric catalog.
