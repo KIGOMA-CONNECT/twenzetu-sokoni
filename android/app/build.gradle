@@ -41,7 +41,7 @@ android {
         resValue "color", "backgroundColor", "#F8FAFC"
 
         resValue "string", "providerAuthority", "com.twenzetusokoni.app.fileprovider"
-        resValue "bool", "enableNotification", "false"
+        resValue "bool", "enableNotification", "true"
         resValue "integer", "splashScreenFadeOutDuration", "300"
         resValue "string", "generatorApp", "opencode"
         resValue "string", "fallbackType", "customtabs"
