@@ -2,6 +2,8 @@ import { AppLoggerService } from '@afri-market/core-logger';
 import { httpRequest } from './http';
 import {
   AZAMPAY_PROVIDER_MAP,
+  CardCheckoutParams,
+  CardCheckoutResult,
   DisbursePaymentParams,
   IPaymentProvider,
   PaymentInitiationParams,
@@ -17,6 +19,8 @@ interface AzamPayConfig {
   apiKey: string;
   environment: 'sandbox' | 'production';
   callbackUrl: string;
+  cardSuccessUrl: string;
+  cardFailUrl: string;
 }
 
 interface AzamPayTokenResponse {
@@ -49,6 +53,8 @@ export class AzamPayProvider implements IPaymentProvider {
       apiKey: process.env.AZAMPAY_API_KEY || '',
       environment: (process.env.AZAMPAY_ENVIRONMENT as 'sandbox' | 'production') || (isProd ? 'production' : 'sandbox'),
       callbackUrl: process.env.AZAMPAY_CALLBACK_URL || '',
+      cardSuccessUrl: process.env.AZAMPAY_CARD_SUCCESS_URL || '',
+      cardFailUrl: process.env.AZAMPAY_CARD_FAIL_URL || '',
     };
   }
 
@@ -150,6 +156,78 @@ export class AzamPayProvider implements IPaymentProvider {
         provider,
         message,
       };
+    }
+  }
+
+  public async initiateCardCheckout(params: CardCheckoutParams): Promise<CardCheckoutResult> {
+    if (!this.isConfigured) {
+      const message = 'AzamPay is not configured. Failing closed instead of simulating a card checkout.';
+      this.logger.error(message, 'AzamPayProvider');
+      return { success: false, message };
+    }
+
+    if (!this.config.cardSuccessUrl || !this.config.cardFailUrl) {
+      const message = 'AZAMPAY_CARD_SUCCESS_URL and AZAMPAY_CARD_FAIL_URL must be configured for card checkout.';
+      this.logger.error(message, 'AzamPayProvider');
+      return { success: false, message };
+    }
+
+    try {
+      const token = await this.getAccessToken();
+      const response = await httpRequest<{
+        success?: boolean;
+        checkoutUrl?: string;
+        message?: string;
+      }>({
+        method: 'POST',
+        url: `${this.checkoutBaseUrl}/azampay/checkout`,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          ...(this.config.apiKey ? { 'X-API-Key': this.config.apiKey } : {}),
+        },
+        body: {
+          amount: String(params.amount),
+          currency: params.currency ?? 'TZS',
+          externalId: params.accountReference,
+          redirectSuccessURL: this.config.cardSuccessUrl,
+          redirectFailURL: this.config.cardFailUrl,
+          callbackUrl: this.config.callbackUrl,
+          cart: {
+            items: [
+              {
+                name: params.description,
+                amount: String(params.amount),
+                quantity: 1,
+              },
+            ],
+          },
+          billing: {
+            email: params.customerEmail ?? '',
+            firstName: params.customerFirstName ?? '',
+            lastName: params.customerLastName ?? '',
+          },
+        },
+      });
+
+      const success = response?.success === true && !!response?.checkoutUrl;
+      if (!success) {
+        throw new Error(response?.message || 'AzamPay card checkout failed');
+      }
+
+      this.logger.log(
+        `AzamPay card checkout initiated: ${params.accountReference} (${params.currency ?? 'TZS'})`,
+        'AzamPayProvider',
+      );
+      return {
+        success: true,
+        checkoutUrl: response.checkoutUrl,
+        reference: params.accountReference,
+        message: response?.message,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`AzamPay card checkout failed: ${message}`, 'AzamPayProvider');
+      return { success: false, message };
     }
   }
 

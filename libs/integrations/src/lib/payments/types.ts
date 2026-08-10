@@ -49,6 +49,23 @@ export interface DisbursePaymentParams {
   provider?: string;
 }
 
+export interface CardCheckoutParams {
+  amount: number;
+  accountReference: string;
+  description: string;
+  currency?: string;
+  customerEmail?: string;
+  customerFirstName?: string;
+  customerLastName?: string;
+}
+
+export interface CardCheckoutResult {
+  success: boolean;
+  checkoutUrl?: string;
+  reference?: string;
+  message?: string;
+}
+
 export interface IPaymentProvider {
   readonly name: string;
   readonly isConfigured: boolean;

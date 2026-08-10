@@ -150,15 +150,31 @@ export class WalletsController {
 
     if (provider === 'card') {
       const cardRef = `card_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+      const cardResult = await this.mobileMoney.initiateCardCheckout({
+        amount: body.amount,
+        accountReference: cardRef,
+        description: `Wallet top-up: ${body.amount} ${currency}`,
+        currency,
+      });
+
+      if (!cardResult.success || !cardResult.checkoutUrl) {
+        return {
+          success: false,
+          message: cardResult.message || 'Failed to initiate card payment',
+        };
+      }
+
       await this.ds.query(
         `INSERT INTO wallet_topup_requests (tenant_id, user_id, amount, phone_number, checkout_request_id, provider, card_reference, status)
          VALUES ($1, $2, $3, $4, $5, 'card', $6, 'PENDING')`,
         [user.tenantId, user.sub, body.amount, body.phoneNumber, cardRef, cardRef],
       );
+
       return {
         success: true,
         checkoutRequestId: cardRef,
-        message: 'Card payment initiated. Complete the payment to confirm your top-up.',
+        checkoutUrl: cardResult.checkoutUrl,
+        message: 'Card payment initiated. You will be redirected to complete payment.',
       };
     }
 

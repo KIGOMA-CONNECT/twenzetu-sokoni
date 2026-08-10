@@ -134,4 +134,46 @@ describe('MobileMoneyService (payment gateway dispatcher)', () => {
     expect(service.verifyCallback('azampay', {}, { password: 'wrong-key' })).toBe(false);
     expect(service.verifyCallback('mpesa', {})).toBe(true);
   });
+
+  it('simulates a card checkout URL when AzamPay is not configured', async () => {
+    const service = new MobileMoneyService(mockLogger);
+    const result = await service.initiateCardCheckout({
+      amount: 5000,
+      accountReference: 'card-1',
+      description: 'Wallet top-up: 5000 TZS',
+      currency: 'TZS',
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.checkoutUrl).toContain('sandbox/card');
+    expect(result.reference).toBe('card-1');
+  });
+
+  it('routes card checkout to AzamPay when configured', async () => {
+    process.env.AZAMPAY_APP_NAME = 'AfriMarket';
+    process.env.AZAMPAY_CLIENT_ID = 'client-id';
+    process.env.AZAMPAY_CLIENT_SECRET = 'client-secret';
+    process.env.AZAMPAY_CARD_SUCCESS_URL = 'https://twenzetusokoni.com/wallet?status=success';
+    process.env.AZAMPAY_CARD_FAIL_URL = 'https://twenzetusokoni.com/wallet?status=failed';
+
+    const service = new MobileMoneyService(mockLogger);
+    const azamPay = (service as unknown as { azamPay: { initiateCardCheckout: jest.Mock } }).azamPay;
+    azamPay.initiateCardCheckout = jest.fn().mockResolvedValue({
+      success: true,
+      checkoutUrl: 'https://checkout.azampay.co.tz/card?session=abc',
+      reference: 'card-2',
+    });
+
+    const result = await service.initiateCardCheckout({
+      amount: 10000,
+      accountReference: 'card-2',
+      description: 'Wallet top-up',
+      currency: 'TZS',
+    });
+
+    expect(azamPay.initiateCardCheckout).toHaveBeenCalledWith(
+      expect.objectContaining({ accountReference: 'card-2', currency: 'TZS' }),
+    );
+    expect(result.checkoutUrl).toBe('https://checkout.azampay.co.tz/card?session=abc');
+  });
 });

@@ -4,6 +4,8 @@ import { AzamPayProvider } from './payments/azampay.provider';
 import { MpesaProvider } from './payments/mpesa.provider';
 import { SandboxPaymentProvider } from './payments/sandbox.provider';
 import {
+  CardCheckoutParams,
+  CardCheckoutResult,
   IPaymentProvider,
   isAzamPayRoutable,
   normalizeProvider,
@@ -62,6 +64,7 @@ export interface DisburseResult {
 
 export interface IMobileMoneyService {
   initiateStkPush(params: InitiateStkPushParams): Promise<StkPushResult>;
+  initiateCardCheckout(params: CardCheckoutParams): Promise<CardCheckoutResult>;
   checkPaymentStatus(checkoutRequestId: string, provider?: string): Promise<PaymentStatusResponse>;
   reversePayment(transactionId: string, amount: number, reason: string): Promise<{ success: boolean }>;
   disburse(params: DisburseParams): Promise<DisburseResult>;
@@ -129,6 +132,30 @@ export class MobileMoneyService implements IMobileMoneyService {
       responseCode: result.success ? '0' : '1',
       responseDescription: result.message,
       merchantRequestID: result.reference,
+    };
+  }
+
+  public async initiateCardCheckout(params: CardCheckoutParams): Promise<CardCheckoutResult> {
+    if (this.azamPay.isConfigured) {
+      return this.azamPay.initiateCardCheckout(params);
+    }
+
+    const demoMode = process.env.PAYMENTS_DEMO_MODE === 'true';
+    if (this.isProduction() && !demoMode) {
+      throw new ServiceUnavailableException(
+        'Payment provider is not configured for production',
+      );
+    }
+
+    this.logger.warn(
+      `Card checkout simulated (sandbox) for ${params.accountReference}`,
+      'MobileMoneyService',
+    );
+    return {
+      success: true,
+      checkoutUrl: `https://payments.local/sandbox/card?externalId=${encodeURIComponent(params.accountReference)}`,
+      reference: params.accountReference,
+      message: 'Sandbox mode - simulated card checkout URL',
     };
   }
 

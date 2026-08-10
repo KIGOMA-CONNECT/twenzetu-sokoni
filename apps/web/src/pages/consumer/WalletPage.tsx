@@ -54,9 +54,6 @@ export default function WalletPage() {
   const [submitting, setSubmitting] = useState(false);
   const [topupSuccess, setTopupSuccess] = useState('');
   const [topupError, setTopupError] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
   const [bankReference, setBankReference] = useState('');
 
   const [showWithdraw, setShowWithdraw] = useState(false);
@@ -72,10 +69,6 @@ export default function WalletPage() {
   const canWithdraw = user?.role === 'vendor' || user?.role === 'driver';
 
   const handleTopup = async () => {
-    if (selectedMethod === 'card' && (!cardNumber.trim() || !cardHolder.trim() || !cardExpiry.trim())) {
-      setTopupError('Please fill in cardholder name, card number and expiry.');
-      return;
-    }
     setSubmitting(true);
     setTopupSuccess('');
     setTopupError('');
@@ -84,11 +77,12 @@ export default function WalletPage() {
         amount: topupAmount,
         phoneNumber,
         provider: selectedMethod,
-        cardHolder: selectedMethod === 'card' ? cardHolder : undefined,
-        cardNumber: selectedMethod === 'card' ? cardNumber : undefined,
-        cardExpiry: selectedMethod === 'card' ? cardExpiry : undefined,
         bankReference: selectedMethod === 'bank' ? bankReference : undefined,
       });
+      if (res.data?.data?.checkoutUrl) {
+        window.location.href = res.data.data.checkoutUrl;
+        return;
+      }
       if (res.data?.data?.success) {
         setTopupSuccess(res.data.data.message || 'Payment prompt sent to your phone. Confirm to complete top-up.');
         setTimeout(() => {
@@ -162,7 +156,7 @@ export default function WalletPage() {
                 {t('wallet.withdraw')}
               </button>
             )}
-            <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setCardHolder(''); setCardNumber(''); setCardExpiry(''); setBankReference(''); setShowTopup(true); }}>
+            <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setBankReference(''); setShowTopup(true); }}>
               + {t('wallet.topUp')}
             </button>
           </div>
@@ -290,15 +284,8 @@ export default function WalletPage() {
 
             {selectedMethod === 'card' && (
               <div className="field">
-                <label className="field-label">Card Details</label>
-                <input className="input mb-1" placeholder="Cardholder name" value={cardHolder} onChange={(e) => setCardHolder(e.target.value)} />
-                <input className="input mb-1" placeholder="Card number (or virtual card ID)" inputMode="numeric" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
-                <div className="grid grid-2">
-                  <input className="input" placeholder="MM/YY" value={cardExpiry} onChange={(e) => setCardExpiry(e.target.value)} />
-                  <input className="input" placeholder="CVV" type="password" inputMode="numeric" maxLength={4} />
-                </div>
-                <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
-                  🔒 Payments are encrypted. Card is charged once you confirm.
+                <div className="text-muted" style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem', background: 'var(--brand-soft)', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}>
+                  🔒 You will be redirected to our secure payment page to complete the card payment with Visa, Mastercard or a virtual card.
                 </div>
               </div>
             )}
