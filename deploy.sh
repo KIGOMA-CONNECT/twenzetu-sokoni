@@ -15,7 +15,7 @@ echo "========================================="
 
 if [ ! -f "$ENV_FILE" ]; then
   echo "ERROR: no .env.production or .env found!"
-  echo "Copy .env.production.example to .env.production and fill in values."
+  echo "Copy .env.example to .env.production and fill in values."
   exit 1
 fi
 

@@ -76,4 +76,4 @@ Add a feature graphic 1024x500 (teal, "afriMarket" wordmark).
 3. **CRITICAL — Play App Signing**: Google re-signs the uploaded AAB with a Play-managed key. After the first upload, open Play Console → Setup → App signing and copy the **App signing key certificate SHA-256 fingerprint** into `.well-known/assetlinks.json` (append a second entry alongside the current upload-key fingerprint). Without this, the TWA <-> site verification breaks on devices installed from Play. Keep the upload keystore (`afrimarket-release.keystore`) + `keystore-pass.txt` backed up — losing it locks you out of future uploads.
 
 ## First-release naming
-- Release name: `1.0.0 (184)`
+- Release name: `1.0.0 (<versionCode>)` — versionCode is auto-derived from `git rev-list --count HEAD`; it increases with every commit. Last built artifact: `1.0.0 (185)`.
