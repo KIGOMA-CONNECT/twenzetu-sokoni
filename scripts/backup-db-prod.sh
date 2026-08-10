@@ -51,7 +51,7 @@ if [ -n "$BACKUP_S3_BUCKET" ]; then
     echo ""
     echo "Uploading to S3 (rclone): s3://${BACKUP_S3_BUCKET}/database/"
     if rclone listremotes 2>/dev/null | grep -q '^afrimarket-s3:'; then
-      rclone copy "$FILEPATH" "afrimarket-s3:${BACKUP_S3_BUCKET}/database/" 2>/dev/null || \
+      rclone copy "$FILEPATH" "afrimarket-s3:${BACKUP_S3_BUCKET}/database/" --s3-no-check-bucket 2>/dev/null || \
         echo "WARNING: rclone S3 upload failed."
       rclone delete --min-age ${RETENTION_DAYS}d "afrimarket-s3:${BACKUP_S3_BUCKET}/database/" 2>/dev/null || true
     else
