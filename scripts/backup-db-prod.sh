@@ -47,10 +47,19 @@ echo "Removed backups older than ${RETENTION_DAYS} days"
 
 # Optional: Upload to S3-compatible storage
 if [ -n "$BACKUP_S3_BUCKET" ]; then
-  echo ""
-  echo "Uploading to S3: s3://${BACKUP_S3_BUCKET}/"
-  aws s3 cp "$FILEPATH" "s3://${BACKUP_S3_BUCKET}/database/" --storage-class STANDARD_IA 2>/dev/null || \
-    echo "WARNING: S3 upload failed. Check AWS credentials."
+  if command -v rclone >/dev/null 2>&1; then
+    echo ""
+    echo "Uploading to S3 (rclone): s3://${BACKUP_S3_BUCKET}/database/"
+    if rclone listremotes 2>/dev/null | grep -q '^afrimarket-s3:'; then
+      rclone copy "$FILEPATH" "afrimarket-s3:${BACKUP_S3_BUCKET}/database/" 2>/dev/null || \
+        echo "WARNING: rclone S3 upload failed."
+      rclone delete --min-age ${RETENTION_DAYS}d "afrimarket-s3:${BACKUP_S3_BUCKET}/database/" 2>/dev/null || true
+    else
+      echo "WARNING: rclone remote 'afrimarket-s3' not configured; skipping S3 upload."
+    fi
+  else
+    echo "WARNING: rclone not installed; skipping S3 upload."
+  fi
 fi
 
 
