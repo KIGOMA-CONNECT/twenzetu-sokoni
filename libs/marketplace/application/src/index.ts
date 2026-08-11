@@ -185,3 +185,14 @@ export * from './lib/use-cases/promotion/list-flash-sales.use-case';
 export * from './lib/use-cases/marketing/list-active-ads.use-case';
 export * from './lib/use-cases/marketing/list-adverts.use-case';
 export * from './lib/use-cases/marketing/create-advert.use-case';
+
+// Use Cases - Vendor Staff
+export * from './lib/use-cases/vendor-staff/invite-vendor-staff.use-case';
+export * from './lib/use-cases/vendor-staff/list-vendor-staff.use-case';
+export * from './lib/use-cases/vendor-staff/update-vendor-staff.use-case';
+export * from './lib/use-cases/vendor-staff/remove-vendor-staff.use-case';
+export * from './lib/use-cases/pos/create-pos-sale.use-case';
+export * from './lib/use-cases/pos/get-pos-day-report.use-case';
+
+// Vendor Access
+export * from './lib/vendor-access/vendor-access.service';

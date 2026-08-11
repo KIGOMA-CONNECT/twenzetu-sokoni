@@ -72,3 +72,5 @@ export * from './lib/dto/update-used-goods.dto';
 export * from './lib/public.controller';
 export * from './lib/ads.controller';
 export * from './lib/dto/create-advert.dto';
+export * from './lib/pos.controller';
+export * from './lib/dto/pos-checkout.dto';

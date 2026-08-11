@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { CommissionService } from '@afri-market/core-finance';
-import { FindVendorsUseCase } from '@afri-market/marketplace-application';
+import { VendorAccessService } from '@afri-market/marketplace-application';
 
 @ApiTags('Commissions')
 @Controller('commissions')
@@ -12,15 +12,15 @@ import { FindVendorsUseCase } from '@afri-market/marketplace-application';
 export class CommissionsController {
   constructor(
     private readonly commissions: CommissionService,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   private async resolvePayer(user: JwtPayload): Promise<{ payerId: string; payerType: 'vendor' | 'driver' }> {
     if (user.role === 'driver') {
       return { payerId: user.sub, payerType: 'driver' };
     }
-    const vendor = await this.findVendors.findByUserId(user.sub);
-    return { payerId: vendor ? vendor.id.value : user.sub, payerType: 'vendor' };
+    const ctx = await this.vendorAccess.resolve(user);
+    return { payerId: ctx ? ctx.vendorId : user.sub, payerType: 'vendor' };
   }
 
   @Get('me')

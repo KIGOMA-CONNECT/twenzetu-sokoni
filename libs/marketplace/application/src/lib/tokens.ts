@@ -1,6 +1,9 @@
 // Repositories
 export const VENDOR_REPOSITORY = 'IVendorRepository';
+export const VENDOR_MEMBER_REPOSITORY = 'IVendorMemberRepository';
+export const USER_REPOSITORY = 'IUserRepository';
 export const PRODUCT_REPOSITORY = 'IProductRepository';
+export const PRODUCT_SALE_REPOSITORY = 'IProductSaleRepository';
 export const ORDER_REPOSITORY = 'IOrderRepository';
 export const DELIVERY_REPOSITORY = 'IDeliveryRepository';
 export const PAYMENT_REPOSITORY = 'IPaymentRepository';

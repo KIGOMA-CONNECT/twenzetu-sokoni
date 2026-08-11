@@ -14,7 +14,7 @@ import {
   CreditWalletUseCase,
   DebitWalletUseCase,
   ListWalletTransactionsUseCase,
-  FindVendorsUseCase,
+  VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
@@ -31,7 +31,7 @@ export class WalletsController {
     private readonly debitWallet: DebitWalletUseCase,
     private readonly listTransactions: ListWalletTransactionsUseCase,
     private readonly mobileMoney: MobileMoneyService,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
     @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
@@ -52,8 +52,8 @@ export class WalletsController {
 
   private async resolveWalletOwner(user: JwtPayload): Promise<string> {
     if (user.role === 'vendor') {
-      const vendor = await this.findVendors.findByUserId(user.sub);
-      if (vendor) return vendor.id.value;
+      const ctx = await this.vendorAccess.resolve(user);
+      if (ctx) return ctx.vendorId;
     }
     return user.sub;
   }

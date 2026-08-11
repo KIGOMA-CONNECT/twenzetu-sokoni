@@ -10,7 +10,7 @@ import {
   CreditWalletUseCase,
   DebitWalletUseCase,
   ListWalletTransactionsUseCase,
-  FindVendorsUseCase,
+  VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
 
@@ -37,9 +37,9 @@ describe('WalletsController', () => {
       execute: jest.fn().mockResolvedValue({ data: [], total: 0 }),
     } as unknown as jest.Mocked<ListWalletTransactionsUseCase>;
     const mobileMoney = { initiateStkPush: jest.fn() } as unknown as jest.Mocked<MobileMoneyService>;
-    const findVendors = {
-      findByUserId: jest.fn().mockResolvedValue(null),
-    } as unknown as jest.Mocked<FindVendorsUseCase>;
+    const vendorAccess = {
+      resolve: jest.fn().mockResolvedValue(null),
+    } as unknown as jest.Mocked<VendorAccessService>;
     const dataSource = { query: jest.fn().mockResolvedValue([]) } as any;
 
     module = await Test.createTestingModule({
@@ -50,7 +50,7 @@ describe('WalletsController', () => {
         { provide: DebitWalletUseCase, useValue: debitWallet },
         { provide: ListWalletTransactionsUseCase, useValue: listTransactions },
         { provide: MobileMoneyService, useValue: mobileMoney },
-        { provide: FindVendorsUseCase, useValue: findVendors },
+        { provide: VendorAccessService, useValue: vendorAccess },
         { provide: getDataSourceToken(), useValue: dataSource },
         { provide: CACHE_MANAGER, useValue: { reset: jest.fn().mockResolvedValue(undefined) } },
         RolesGuard,

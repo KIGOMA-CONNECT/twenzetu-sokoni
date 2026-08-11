@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { EntityId } from '@afri-market/kernel';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
-import { IProductRepository, IVendorRepository } from '@afri-market/marketplace-domain';
+import { IProductRepository } from '@afri-market/marketplace-domain';
 import { CreateProductDto } from './dto/create-product.dto';
-import { CreateProductUseCase, FindProductsUseCase, SearchProductsUseCase, CreateProductCommand, PRODUCT_REPOSITORY, VENDOR_REPOSITORY } from '@afri-market/marketplace-application';
+import { CreateProductUseCase, FindProductsUseCase, SearchProductsUseCase, VendorAccessService, CreateProductCommand, PRODUCT_REPOSITORY } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 
@@ -18,8 +18,8 @@ export class ProductsController {
     private readonly createProduct: CreateProductUseCase,
     private readonly findProducts: FindProductsUseCase,
     private readonly searchProducts: SearchProductsUseCase,
+    private readonly vendorAccess: VendorAccessService,
     @Inject(PRODUCT_REPOSITORY) private readonly productRepo: IProductRepository,
-    @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
   ) {}
 
   @Post()
@@ -30,6 +30,10 @@ export class ProductsController {
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async create(@Body() dto: CreateProductDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have permission to manage products');
+    }
     const command = new CreateProductCommand(
       user.sub,
       dto.name,
@@ -41,8 +45,10 @@ export class ProductsController {
       dto.imageUrl,
       dto.stockQuantity ?? 0,
       dto.unit ?? 'pcs',
+      dto.sku,
+      dto.barcode,
     );
-    return this.createProduct.execute(user.tenantId, command);
+    return this.createProduct.execute(user.tenantId, command, ctx.isOwner ? undefined : ctx.vendorId);
   }
 
   @Get()
@@ -98,12 +104,15 @@ export class ProductsController {
   @ApiResponse({ status: 200, description: 'Product deleted' })
   @ApiResponse({ status: 404, description: 'Product not found' })
   public async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
+      return { success: false, error: 'Not authorized to delete this product' };
+    }
     const product = await this.productRepo.findById(EntityId.from(id));
     if (!product) {
       return { success: false, error: 'Product not found' };
     }
-    const vendor = await this.vendorRepo.findByUserId(user.sub);
-    if (!vendor || product.vendorId.value !== vendor.id.value) {
+    if (product.vendorId.value !== ctx.vendorId) {
       return { success: false, error: 'Not authorized to delete this product' };
     }
     await this.productRepo.delete(EntityId.from(id));

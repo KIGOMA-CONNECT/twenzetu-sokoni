@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { EntityId, Money, TenantId } from '@afri-market/kernel';
 import {
   Product,
+  Vendor,
   IVendorRepository,
   IProductRepository,
   ProductType,
@@ -19,8 +20,14 @@ export class CreateProductUseCase {
   public async execute(
     tenantId: string,
     command: CreateProductCommand,
+    vendorIdOverride?: string,
   ): Promise<{ productId: string }> {
-    const vendor = await this.vendorRepo.findByUserId(command.vendorId);
+    let vendor: Vendor | null = null;
+    if (vendorIdOverride) {
+      vendor = await this.vendorRepo.findById(EntityId.from(vendorIdOverride));
+    } else {
+      vendor = await this.vendorRepo.findByUserId(command.vendorId);
+    }
     if (!vendor) {
       throw new Error('Vendor not found');
     }
@@ -36,6 +43,8 @@ export class CreateProductUseCase {
       imageUrl: command.imageUrl,
       stockQuantity: command.stockQuantity,
       unit: command.unit,
+      sku: command.sku,
+      barcode: command.barcode,
     });
 
     await this.productRepo.save(product);

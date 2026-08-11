@@ -15,7 +15,7 @@ import {
   GetDeliveryTrackingUseCase,
   UpdateDriverLocationUseCase,
   CreateDeliveryCommand,
-  FindVendorsUseCase,
+  VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from './gateway';
 import { CacheInvalidationInterceptor } from './cache';
@@ -37,7 +37,7 @@ export class DeliveriesController {
     private readonly updateDriverLocation: UpdateDriverLocationUseCase,
     private readonly gateway: MarketplaceGateway,
     private readonly orderNotifier: OrderNotifierService,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   @Post()
@@ -61,8 +61,8 @@ export class DeliveriesController {
     );
     let vendorId: string | undefined;
     if (user.role === 'vendor') {
-      const vendor = await this.findVendors.findByUserId(user.sub);
-      vendorId = vendor?.id.value;
+      const ctx = await this.vendorAccess.resolve(user);
+      vendorId = ctx?.vendorId;
     }
     return this.createDelivery.execute(user.tenantId, command, { userId: user.sub, role: user.role, vendorId });
   }

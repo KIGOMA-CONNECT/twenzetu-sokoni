@@ -51,6 +51,9 @@ import FintechPage from './pages/consumer/FintechPage';
 import SmartCatalog from './pages/consumer/SmartCatalog';
 import ConsumerServices from './pages/consumer/ConsumerServices';
 import VendorServices from './pages/vendor/VendorServices';
+import VendorStaff from './pages/vendor/VendorStaff';
+import VendorPos from './pages/vendor/VendorPos';
+import VendorDayReport from './pages/vendor/VendorDayReport';
 import CartPage from './pages/consumer/CartPage';
 import CheckoutPage from './pages/consumer/CheckoutPage';
 import AdminHrDashboard from './pages/admin/hr/AdminHrDashboard';
@@ -110,6 +113,9 @@ function AppRoutes() {
         <Route path="/vendor/products" element={<ProtectedRoute roles={['vendor']}><VendorProducts /></ProtectedRoute>} />
         <Route path="/vendor/orders" element={<ProtectedRoute roles={['vendor']}><VendorOrders /></ProtectedRoute>} />
         <Route path="/vendor/services" element={<ProtectedRoute roles={['vendor']}><VendorServices /></ProtectedRoute>} />
+        <Route path="/vendor/staff" element={<ProtectedRoute roles={['vendor']}><VendorStaff /></ProtectedRoute>} />
+        <Route path="/vendor/pos" element={<ProtectedRoute roles={['vendor']}><VendorPos /></ProtectedRoute>} />
+        <Route path="/vendor/pos-report" element={<ProtectedRoute roles={['vendor']}><VendorDayReport /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/vendors" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVendors /></ProtectedRoute>} />
         <Route path="/admin/disputes" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDisputes /></ProtectedRoute>} />
@@ -154,12 +160,15 @@ function AppRoutes() {
 }
 
 function DashboardRedirect() {
-  const { user } = useAuth();
+  const { user, vendorAccess } = useAuth();
   if (!user) return <Navigate to="/login" />;
   if (STAFF_ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin/dashboard" />;
   if (user.role === 'vendor') return <Navigate to="/vendor/dashboard" />;
   if (user.role === 'driver') return <Navigate to="/driver/dashboard" />;
-  if (user.role === 'customer') return <ConsumerDashboard />;
+  if (user.role === 'customer') {
+    if (vendorAccess) return <Navigate to="/vendor/dashboard" />;
+    return <ConsumerDashboard />;
+  }
   return <Navigate to="/login" />;
 }
 

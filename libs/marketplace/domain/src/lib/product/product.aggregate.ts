@@ -13,6 +13,8 @@ export interface CreateProductProps {
   readonly imageUrl?: string;
   readonly stockQuantity?: number;
   readonly unit?: string;
+  readonly sku?: string;
+  readonly barcode?: string;
 }
 
 export interface ReconstituteProductProps {
@@ -27,6 +29,8 @@ export interface ReconstituteProductProps {
   readonly imageUrl: string | undefined;
   readonly stockQuantity: number;
   readonly unit: string;
+  readonly sku: string | undefined;
+  readonly barcode: string | undefined;
   readonly status: ProductStatus;
   readonly version: number;
 }
@@ -44,6 +48,8 @@ export class Product extends AggregateRoot<EntityId> {
     private _imageUrl: string | undefined,
     private _stockQuantity: number,
     private _unit: string,
+    private _sku: string | undefined,
+    private _barcode: string | undefined,
     private _status: ProductStatus,
     private readonly _version: number,
   ) {
@@ -56,7 +62,7 @@ export class Product extends AggregateRoot<EntityId> {
       EntityId.create(), props.tenantId, props.vendorId, props.name,
       props.description, props.price, props.type, props.categoryId,
       props.imageUrl, props.stockQuantity ?? 0, props.unit ?? 'piece',
-      'ACTIVE', 1,
+      props.sku, props.barcode, 'ACTIVE', 1,
     );
   }
 
@@ -64,7 +70,8 @@ export class Product extends AggregateRoot<EntityId> {
     return new Product(
       props.id, props.tenantId, props.vendorId, props.name,
       props.description, props.price, props.type, props.categoryId,
-      props.imageUrl, props.stockQuantity, props.unit, props.status, props.version,
+      props.imageUrl, props.stockQuantity, props.unit, props.sku, props.barcode,
+      props.status, props.version,
     );
   }
 
@@ -78,6 +85,8 @@ export class Product extends AggregateRoot<EntityId> {
   public get imageUrl(): string | undefined { return this._imageUrl; }
   public get stockQuantity(): number { return this._stockQuantity; }
   public get unit(): string { return this._unit; }
+  public get sku(): string | undefined { return this._sku; }
+  public get barcode(): string | undefined { return this._barcode; }
   public get status(): ProductStatus { return this._status; }
   public get version(): number { return this._version; }
 
@@ -103,6 +112,8 @@ export class Product extends AggregateRoot<EntityId> {
       imageUrl: this._imageUrl,
       stockQuantity: this._stockQuantity,
       unit: this._unit,
+      sku: this._sku ?? null,
+      barcode: this._barcode ?? null,
       status: this._status,
     };
   }

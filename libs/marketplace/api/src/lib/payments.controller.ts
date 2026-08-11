@@ -3,7 +3,7 @@ import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
-import { ReleasePaymentUseCase, ListPaymentsUseCase, GetPaymentByOrderUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
+import { ReleasePaymentUseCase, ListPaymentsUseCase, GetPaymentByOrderUseCase, VendorAccessService } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 import { OrderNotifierService } from './order-notifier.service';
@@ -18,13 +18,13 @@ export class PaymentsController {
     private readonly listPayments: ListPaymentsUseCase,
     private readonly getPaymentByOrder: GetPaymentByOrderUseCase,
     private readonly orderNotifier: OrderNotifierService,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   private async resolveCallerVendorId(user: JwtPayload): Promise<string | undefined> {
     if (user.role === 'vendor') {
-      const vendor = await this.findVendors.findByUserId(user.sub);
-      if (vendor) return vendor.id.value;
+      const ctx = await this.vendorAccess.resolve(user);
+      if (ctx) return ctx.vendorId;
     }
     return undefined;
   }

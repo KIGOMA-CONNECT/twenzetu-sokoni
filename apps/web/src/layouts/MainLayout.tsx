@@ -9,7 +9,7 @@ import { CartIcon } from '../components/CartIcon';
 import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
-  const { user, logout, isAdmin, isSuperAdmin, isVendor, isCustomer, isDriver } = useAuth();
+  const { user, vendorAccess, logout, isAdmin, isSuperAdmin, isVendor, isVendorOwner, hasVendorPermission, isCustomer, isDriver } = useAuth();
   const { itemCount } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -71,9 +71,12 @@ export function MainLayout() {
     { label: 'Verify Identity', path: '/kyc', show: isCustomer },
     { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer },
     { label: 'Vendor Panel', path: '/vendor/dashboard', show: isVendor },
-    { label: 'My Products', path: '/vendor/products', show: isVendor },
-    { label: 'My Services', path: '/vendor/services', show: isVendor },
-    { label: 'Vendor Orders', path: '/vendor/orders', show: isVendor },
+    { label: 'My Products', path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products') },
+    { label: 'My Services', path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products') },
+    { label: 'Vendor Orders', path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')) },
+    { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos') },
+    { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports') },
+    { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },
     { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
     { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },
     { label: 'Disputes', path: '/admin/disputes', show: isAdmin && p('manage_disputes') },
@@ -145,7 +148,9 @@ export function MainLayout() {
       </nav>
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user ? `${user.fullName} (${user.role})` : 'Mgeni'}</div>
+          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+            {user ? `${user.fullName} (${vendorAccess ? vendorAccess.staffRole : user.role})` : 'Mgeni'}
+          </div>
           {user && <NotificationBell />}
         </div>
         <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher dark /></div>

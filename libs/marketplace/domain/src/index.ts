@@ -2,6 +2,9 @@ export * from './lib/vendor/vendor-status';
 export * from './lib/vendor/vendor.aggregate';
 export * from './lib/vendor/vendor.repository.interface';
 export * from './lib/vendor/vendor-category';
+export * from './lib/vendor/vendor-staff-role';
+export * from './lib/vendor/vendor-member.aggregate';
+export * from './lib/vendor/vendor-member.repository.interface';
 export * from './lib/service/service-status';
 export * from './lib/service/service-listing.aggregate';
 export * from './lib/service/service-listing.repository.interface';
@@ -100,3 +103,7 @@ export * from './lib/promotion/flash-sale.repository.interface';
 // Marketing
 export * from './lib/marketing/advert.aggregate';
 export * from './lib/marketing/advert.repository.interface';
+// POS
+export * from './lib/pos/pos-payment-method';
+export * from './lib/pos/pos-sale.aggregate';
+export * from './lib/pos/pos-sale.repository.interface';

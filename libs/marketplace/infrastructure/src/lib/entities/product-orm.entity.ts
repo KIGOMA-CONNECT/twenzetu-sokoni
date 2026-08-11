@@ -37,6 +37,12 @@ export class ProductOrmEntity extends TenantAwareEntity {
   @Column({ type: 'varchar', length: 20, default: 'piece' })
   public unit!: string;
 
+  @Column({ type: 'varchar', length: 64, nullable: true })
+  public sku!: string | null;
+
+  @Column({ type: 'varchar', length: 128, nullable: true })
+  public barcode!: string | null;
+
   @Column({ type: 'varchar', length: 20, default: 'ACTIVE' })
   public status!: string;
 

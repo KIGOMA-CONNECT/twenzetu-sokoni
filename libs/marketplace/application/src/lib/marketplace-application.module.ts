@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MARKETPLACE_ENTITIES } from '@afri-market/marketplace-infrastructure';
-import { IDENTITY_ENTITIES } from '@afri-market/identity-infrastructure';
+import { IDENTITY_ENTITIES, TypeOrmUserRepository, ArgonPasswordHasher, USER_REPOSITORY } from '@afri-market/identity-infrastructure';
 import {
   TypeOrmVendorRepository,
+  TypeOrmVendorMemberRepository,
   TypeOrmOrderRepository,
   TypeOrmProductRepository,
+  TypeOrmProductSaleRepository,
   TypeOrmDeliveryRepository,
   TypeOrmPaymentRepository,
   TypeOrmDisputeRepository,
@@ -39,7 +41,7 @@ import {
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
-  VENDOR_REPOSITORY, ORDER_REPOSITORY, PRODUCT_REPOSITORY,
+  VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, ORDER_REPOSITORY, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY,
   DELIVERY_REPOSITORY, PAYMENT_REPOSITORY, DISPUTE_REPOSITORY,
   CUSTOMER_POINTS_REPOSITORY, SURGE_RULE_REPOSITORY,
   WALLET_REPOSITORY, WALLET_TRANSACTION_REPOSITORY, USED_GOODS_REPOSITORY,
@@ -165,11 +167,21 @@ import { CheckoutCartUseCase } from './use-cases/order/checkout-cart.use-case';
 import { ListActiveAdsUseCase } from './use-cases/marketing/list-active-ads.use-case';
 import { ListAdvertsUseCase } from './use-cases/marketing/list-adverts.use-case';
 import { CreateAdvertUseCase } from './use-cases/marketing/create-advert.use-case';
+import { InviteVendorStaffUseCase } from './use-cases/vendor-staff/invite-vendor-staff.use-case';
+import { ListVendorStaffUseCase } from './use-cases/vendor-staff/list-vendor-staff.use-case';
+import { UpdateVendorStaffUseCase } from './use-cases/vendor-staff/update-vendor-staff.use-case';
+import { RemoveVendorStaffUseCase } from './use-cases/vendor-staff/remove-vendor-staff.use-case';
+import { VendorAccessService } from './vendor-access/vendor-access.service';
+import { CreatePosSaleUseCase } from './use-cases/pos/create-pos-sale.use-case';
+import { GetPosDayReportUseCase } from './use-cases/pos/get-pos-day-report.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
+  { provide: VENDOR_MEMBER_REPOSITORY, useClass: TypeOrmVendorMemberRepository },
+  { provide: USER_REPOSITORY, useClass: TypeOrmUserRepository },
   { provide: ORDER_REPOSITORY, useClass: TypeOrmOrderRepository },
   { provide: PRODUCT_REPOSITORY, useClass: TypeOrmProductRepository },
+  { provide: PRODUCT_SALE_REPOSITORY, useClass: TypeOrmProductSaleRepository },
   { provide: DELIVERY_REPOSITORY, useClass: TypeOrmDeliveryRepository },
   { provide: PAYMENT_REPOSITORY, useClass: TypeOrmPaymentRepository },
   { provide: DISPUTE_REPOSITORY, useClass: TypeOrmDisputeRepository },
@@ -206,6 +218,7 @@ const SERVICES = [
   { provide: SMS_SERVICE, useClass: SmsService },
   { provide: MOBILE_MONEY_SERVICE, useClass: MobileMoneyService },
   { provide: EMAIL_SERVICE, useClass: EmailService },
+  { provide: 'IPasswordHasher', useClass: ArgonPasswordHasher },
   { provide: MARKETPLACE_GATEWAY, useValue: null },
 ];
 
@@ -324,11 +337,18 @@ SetDefaultAddressUseCase,
   ListActiveAdsUseCase,
   ListAdvertsUseCase,
   CreateAdvertUseCase,
+  InviteVendorStaffUseCase,
+  ListVendorStaffUseCase,
+  UpdateVendorStaffUseCase,
+  RemoveVendorStaffUseCase,
+  VendorAccessService,
+  CreatePosSaleUseCase,
+  GetPosDayReportUseCase,
 ];
 
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}

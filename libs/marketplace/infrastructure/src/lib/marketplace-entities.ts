@@ -1,5 +1,7 @@
 import { VendorOrmEntity } from './entities/vendor-orm.entity';
+import { VendorMemberOrmEntity } from './entities/vendor-member-orm.entity';
 import { ProductOrmEntity } from './entities/product-orm.entity';
+import { ProductSaleOrmEntity } from './entities/product-sale-orm.entity';
 import { CategoryOrmEntity } from './entities/category-orm.entity';
 import { OrderOrmEntity } from './entities/order-orm.entity';
 import { OrderItemOrmEntity } from './entities/order-item-orm.entity';
@@ -43,7 +45,9 @@ import { AdvertOrmEntity } from './entities/advert-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
+  VendorMemberOrmEntity,
   ProductOrmEntity,
+  ProductSaleOrmEntity,
   CategoryOrmEntity,
   OrderOrmEntity,
   OrderItemOrmEntity,

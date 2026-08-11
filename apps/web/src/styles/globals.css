@@ -920,3 +920,18 @@ table.table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 @media (display-mode: standalone) {
   .topbar { padding-top: env(safe-area-inset-top); }
 }
+
+/* POS receipt printing: only print the receipt overlay */
+@media print {
+  body * { visibility: hidden; }
+  #receipt-print, #receipt-print * { visibility: visible; }
+  #receipt-print {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm;
+    padding: 0;
+    box-shadow: none;
+    border: none;
+  }
+}

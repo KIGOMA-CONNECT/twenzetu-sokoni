@@ -14,6 +14,7 @@ import {
   SearchVendorsUseCase,
   FindProductsUseCase,
   CreateVendorCommand,
+  VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from './gateway';
 import { CacheInvalidationInterceptor } from './cache';
@@ -35,6 +36,7 @@ export class VendorsController {
     private readonly findProducts: FindProductsUseCase,
     private readonly gateway: MarketplaceGateway,
     private readonly orderNotifier: OrderNotifierService,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   @Post()
@@ -96,12 +98,12 @@ export class VendorsController {
     @Query('limit') limit?: number,
     @Query('offset') offset?: number,
   ) {
-    const vendor = await this.findVendors.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.resolve(user);
+    if (!ctx) {
       return { data: [], total: 0 };
     }
     const { limit: parsedLimit, offset: parsedOffset } = parsePagination({ limit, offset });
-    const result = await this.getVendorOrders.execute(user.tenantId, vendor.id.value, {
+    const result = await this.getVendorOrders.execute(user.tenantId, ctx.vendorId, {
       status,
       limit: parsedLimit,
       offset: parsedOffset,
@@ -113,22 +115,22 @@ export class VendorsController {
   @ApiOperation({ summary: 'Get vendor dashboard statistics' })
   @ApiResponse({ status: 200, description: 'Success' })
   public async getMyStats(@CurrentUser() user: JwtPayload) {
-    const vendor = await this.findVendors.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.resolve(user);
+    if (!ctx) {
       return { error: 'Vendor profile not found' };
     }
-    return this.getVendorStats.execute(user.tenantId, vendor.id.value);
+    return this.getVendorStats.execute(user.tenantId, ctx.vendorId);
   }
 
   @Get('me/products')
   @ApiOperation({ summary: 'Get products for the current vendor' })
   @ApiResponse({ status: 200, description: 'Success' })
   public async getMyProducts(@CurrentUser() user: JwtPayload) {
-    const vendor = await this.findVendors.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.resolve(user);
+    if (!ctx) {
       return { data: [] };
     }
-    const products = await this.findProducts.findByVendor(vendor.id.value);
+    const products = await this.findProducts.findByVendor(ctx.vendorId);
     return { data: products.map(p => p.toDto()) };
   }
 
@@ -145,12 +147,12 @@ export class VendorsController {
     @Param('orderId', ParseUUIDPipe) orderId: string,
     @Body() body: VendorUpdateOrderStatusDto,
   ) {
-    const vendor = await this.findVendors.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_orders');
+    if (!ctx) {
       return { error: 'Vendor profile not found' };
     }
-    const result = await this.updateOrderStatus.execute(user.tenantId, orderId, vendor.id.value, body.status);
-    this.gateway.notifyOrderUpdate(orderId, { status: body.status, vendorId: vendor.id.value });
+    const result = await this.updateOrderStatus.execute(user.tenantId, orderId, ctx.vendorId, body.status);
+    this.gateway.notifyOrderUpdate(orderId, { status: body.status, vendorId: ctx.vendorId });
     this.orderNotifier.notifyCustomerStatusChanged({
       tenantId: user.tenantId,
       orderId,

@@ -35,6 +35,15 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
     return entities.map((e) => this.toDomain(e));
   }
 
+  public async findByIds(ids: string[]): Promise<Product[]> {
+    if (ids.length === 0) return [];
+    const entities = await this.repository
+      .createQueryBuilder('p')
+      .where('p.id IN (:...ids)', { ids })
+      .getMany();
+    return entities.map((e) => this.toDomain(e));
+  }
+
   public async findActiveByTenant(tenantId: string): Promise<Product[]> {
     const entities = await this.repository.find({ where: { tenantId, status: 'ACTIVE' } });
     return entities.map((e) => this.toDomain(e));
@@ -101,6 +110,8 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
       imageUrl: e.imageUrl ?? undefined,
       stockQuantity: e.stockQuantity,
       unit: e.unit,
+      sku: e.sku ?? undefined,
+      barcode: e.barcode ?? undefined,
       status: e.status as ProductStatus,
       version: e.version,
     });
@@ -120,6 +131,8 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
       imageUrl: entity.imageUrl ?? null,
       stockQuantity: entity.stockQuantity,
       unit: entity.unit,
+      sku: entity.sku ?? null,
+      barcode: entity.barcode ?? null,
       status: entity.status,
       version: entity.version,
     };

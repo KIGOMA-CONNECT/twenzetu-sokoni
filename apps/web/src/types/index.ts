@@ -58,6 +58,8 @@ export interface Product {
   imageUrl?: string;
   stockQuantity: number;
   unit: string;
+  sku?: string | null;
+  barcode?: string | null;
   status: string;
 }
 
@@ -360,4 +362,87 @@ export interface ServiceMessage {
   senderRole: string;
   message: string;
   createdAt: string;
+}
+
+export type VendorStaffRole = 'manager' | 'cashier';
+
+export interface VendorAccessContext {
+  vendorId: string;
+  shopName: string;
+  staffRole: 'owner' | VendorStaffRole;
+  permissions: string[];
+  isOwner: boolean;
+}
+
+export interface PosSaleItem {
+  productId: string;
+  productName: string;
+  sku: string | null;
+  barcode: string | null;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+  currency: string;
+}
+
+export type PosPaymentMethod =
+  | 'cash'
+  | 'mpesa'
+  | 'tigo_pesa'
+  | 'tigo_money'
+  | 'airtel_money'
+  | 'halotel'
+  | 'azampesa'
+  | 'card'
+  | 'wallet';
+
+export interface PosSale {
+  id: string;
+  vendorId: string;
+  operatorId: string;
+  saleNumber: string;
+  items: PosSaleItem[];
+  subtotal: number;
+  discount: number;
+  tax: number;
+  total: number;
+  currency: string;
+  paymentMethod: PosPaymentMethod;
+  amountTendered: number | null;
+  status: string;
+  createdAt: string;
+}
+
+export interface PosCheckoutResult {
+  sale: PosSale;
+  change: number;
+  receiptText: string;
+}
+
+export interface PaymentBreakdownRow {
+  method: string;
+  amount: number;
+}
+
+export interface PosDayReport {
+  date: string;
+  shopName?: string;
+  totalRevenue: number;
+  transactionCount: number;
+  itemCount: number;
+  averageSale: number;
+  currency: string;
+  paymentBreakdown: PaymentBreakdownRow[];
+  sales: PosSale[];
+}
+
+export interface VendorStaffMember {
+  id: string;
+  vendorId: string;
+  userId: string;
+  role: VendorStaffRole;
+  permissions: string[];
+  status: string;
+  fullName?: string | null;
+  phoneNumber?: string | null;
 }

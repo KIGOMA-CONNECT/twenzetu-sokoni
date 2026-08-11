@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import api, { clearSession } from '../api/client';
-import type { User, AuthResponse, VerifyOtpResponse } from '../types';
+import type { User, AuthResponse, VerifyOtpResponse, VendorAccessContext } from '../types';
 
 const STAFF_ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
@@ -11,9 +11,13 @@ interface AuthContextType {
   sendOtp: (phoneNumber: string) => Promise<void>;
   verifyOtp: (phoneNumber: string, code: string) => Promise<{ registered: boolean }>;
   logout: () => Promise<void>;
+  refreshVendorAccess: () => Promise<void>;
+  vendorAccess: VendorAccessContext | null;
   isAdmin: boolean;
   isSuperAdmin: boolean;
   isVendor: boolean;
+  isVendorOwner: boolean;
+  hasVendorPermission: (permission: string) => boolean;
   isCustomer: boolean;
   isDriver: boolean;
 }
@@ -29,7 +33,23 @@ function persistTokens(payload: AuthResponse) {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [vendorAccess, setVendorAccess] = useState<VendorAccessContext | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshVendorAccess = useCallback(async () => {
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      setVendorAccess(null);
+      return;
+    }
+    try {
+      const res = await api.get('/vendor-staff/me');
+      const ctx = (res.data?.data ?? res.data) as VendorAccessContext | null;
+      setVendorAccess(ctx);
+    } catch {
+      setVendorAccess(null);
+    }
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
@@ -39,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const parsed = JSON.parse(storedUser);
         if (parsed && parsed.id) {
           setUser(parsed);
+          void refreshVendorAccess();
         } else {
           clearSession();
         }
@@ -47,13 +68,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
     setLoading(false);
-  }, []);
+  }, [refreshVendorAccess]);
 
   const login = async (phoneNumber: string, password: string) => {
     const res = await api.post('/auth/login', { phoneNumber, password });
     const payload = (res.data.data || res.data) as AuthResponse;
     persistTokens(payload);
     setUser(payload.user);
+    void refreshVendorAccess();
   };
 
   const sendOtp = async (phoneNumber: string) => {
@@ -66,6 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (payload.verified && payload.registered) {
       persistTokens(payload);
       setUser(payload.user);
+      void refreshVendorAccess();
     }
     return { registered: payload.verified ? payload.registered : false };
   };
@@ -81,6 +104,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     clearSession();
     setUser(null);
+    setVendorAccess(null);
   };
 
   const value: AuthContextType = {
@@ -90,9 +114,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sendOtp,
     verifyOtp,
     logout,
+    refreshVendorAccess,
+    vendorAccess,
     isAdmin: STAFF_ADMIN_ROLES.includes(user?.role || ''),
     isSuperAdmin: user?.role === 'super_admin',
-    isVendor: user?.role === 'vendor',
+    isVendor: user?.role === 'vendor' || !!vendorAccess,
+    isVendorOwner: user?.role === 'vendor',
+    hasVendorPermission: (permission: string) =>
+      !!(user?.role === 'vendor' || vendorAccess?.isOwner) || (vendorAccess?.permissions?.includes(permission) ?? false),
     isCustomer: user?.role === 'customer',
     isDriver: user?.role === 'driver',
   };

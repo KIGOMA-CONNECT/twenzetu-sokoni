@@ -5,7 +5,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { MarketplaceGateway } from './gateway';
-import { FindOrdersUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
+import { FindOrdersUseCase, VendorAccessService } from '@afri-market/marketplace-application';
 
 import { IsString, IsNotEmpty } from 'class-validator';
 
@@ -30,7 +30,7 @@ export class ChatController {
     @InjectDataSource() private readonly ds: DataSource,
     private readonly gateway: MarketplaceGateway,
     private readonly findOrders: FindOrdersUseCase,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   private async assertParticipant(orderId: string, user: JwtPayload): Promise<void> {
@@ -42,8 +42,8 @@ export class ChatController {
       return;
     }
     if (user.role === 'vendor') {
-      const vendor = await this.findVendors.findByUserId(user.sub);
-      if (vendor && vendor.id.value === order.vendorId.value) {
+      const ctx = await this.vendorAccess.resolve(user);
+      if (ctx && ctx.vendorId === order.vendorId.value) {
         return;
       }
     }

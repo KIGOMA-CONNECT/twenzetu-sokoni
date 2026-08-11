@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { Inject } from '@nestjs/common';
 import { EntityId } from '@afri-market/kernel';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
-import { IVendorRepository, IServiceListingRepository } from '@afri-market/marketplace-domain';
-import { VENDOR_REPOSITORY, SERVICE_LISTING_REPOSITORY } from '@afri-market/marketplace-application';
+import { IServiceListingRepository } from '@afri-market/marketplace-domain';
+import { SERVICE_LISTING_REPOSITORY } from '@afri-market/marketplace-application';
 import {
   CreateServiceListingUseCase,
   ListServiceListingsUseCase,
@@ -21,6 +21,7 @@ import {
   CreateServiceRequestCommand,
   SubmitServiceQuoteCommand,
   AcceptServiceQuoteCommand,
+  VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { CreateServiceListingDto } from './dto/create-service-listing.dto';
 import { CreateServiceRequestDto } from './dto/create-service-request.dto';
@@ -44,7 +45,7 @@ export class ServicesController {
     private readonly listMessages: ListServiceMessagesUseCase,
     private readonly deleteListing: DeleteServiceListingUseCase,
     private readonly createServiceReview: CreateServiceReviewUseCase,
-    @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
+    private readonly vendorAccess: VendorAccessService,
     @Inject(SERVICE_LISTING_REPOSITORY) private readonly listingRepo: IServiceListingRepository,
   ) {}
 
@@ -66,11 +67,11 @@ export class ServicesController {
   ) {
     let resolvedVendorId = vendorId;
     if (vendorId === 'mine') {
-      const vendor = await this.vendorRepo.findByUserId(user.sub);
-      if (!vendor) {
+      const ctx = await this.vendorAccess.resolve(user);
+      if (!ctx) {
         return { data: [], total: 0 };
       }
-      resolvedVendorId = vendor.id.value;
+      resolvedVendorId = ctx.vendorId;
     }
     return this.listListings.execute(user.tenantId, {
       category,
@@ -87,12 +88,12 @@ export class ServicesController {
   @ApiBody({ type: CreateServiceListingDto })
   @ApiResponse({ status: 201, description: 'Listing created' })
   public async createListingEndpoint(@Body() dto: CreateServiceListingDto, @CurrentUser() user: JwtPayload) {
-    const vendor = await this.vendorRepo.findByUserId(user.sub);
-    if (!vendor) {
-      return { success: false, error: 'Vendor profile not found' };
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
+      throw new ForbiddenException('Vendor profile not found or no permission to manage listings');
     }
     return this.createListing.execute(user.tenantId, new CreateServiceListingCommand(
-      vendor.id.value,
+      ctx.vendorId,
       dto.name,
       dto.description,
       dto.category,
@@ -119,11 +120,11 @@ export class ServicesController {
   @ApiOperation({ summary: 'Delete a service listing (vendor, only if no active requests)' })
   @ApiResponse({ status: 200, description: 'Listing deleted' })
   public async deleteListingEndpoint(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
-    const vendor = await this.vendorRepo.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
       return { success: false, error: 'Vendor profile not found' };
     }
-    return this.deleteListing.execute(user.tenantId, id, vendor.id.value);
+    return this.deleteListing.execute(user.tenantId, id, ctx.vendorId);
   }
 
   // ── Requests ────────────────────────────────────────────────
@@ -158,11 +159,11 @@ export class ServicesController {
   ) {
     let scopeUserId = user.sub;
     if (user.role === 'vendor') {
-      const vendor = await this.vendorRepo.findByUserId(user.sub);
-      if (!vendor) {
+      const ctx = await this.vendorAccess.resolve(user);
+      if (!ctx) {
         return { data: [], total: 0 };
       }
-      scopeUserId = vendor.id.value;
+      scopeUserId = ctx.vendorId;
     }
     return this.listRequests.execute(user.tenantId, user.role, scopeUserId, { status });
   }
@@ -197,13 +198,13 @@ export class ServicesController {
   @ApiBody({ type: SubmitServiceQuoteDto })
   @ApiResponse({ status: 201, description: 'Quote submitted' })
   public async submitQuoteEndpoint(@Body() dto: SubmitServiceQuoteDto, @CurrentUser() user: JwtPayload) {
-    const vendor = await this.vendorRepo.findByUserId(user.sub);
-    if (!vendor) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_orders');
+    if (!ctx) {
       return { success: false, error: 'Vendor profile not found' };
     }
     return this.submitQuote.execute(user.tenantId, new SubmitServiceQuoteCommand(
       dto.requestId,
-      vendor.id.value,
+      ctx.vendorId,
       dto.price,
       dto.currency ?? 'TZS',
       dto.message,

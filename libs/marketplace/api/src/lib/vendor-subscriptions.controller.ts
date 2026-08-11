@@ -3,7 +3,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody, ApiParam } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { ADMIN_ROLES } from '@afri-market/identity-domain';
-import { FindVendorsUseCase } from '@afri-market/marketplace-application';
+import { VendorAccessService } from '@afri-market/marketplace-application';
 import { VendorSubscriptionService } from '@afri-market/core-finance';
 import { IsString, IsUUID } from 'class-validator';
 
@@ -22,13 +22,13 @@ class SubscribeDto {
 export class VendorSubscriptionsController {
   constructor(
     private readonly subs: VendorSubscriptionService,
-    private readonly findVendors: FindVendorsUseCase,
+    private readonly vendorAccess: VendorAccessService,
   ) {}
 
   private async resolveVendorId(user: JwtPayload): Promise<string> {
     if (user.role === 'vendor') {
-      const vendor = await this.findVendors.findByUserId(user.sub);
-      if (vendor) return vendor.id.value;
+      const ctx = await this.vendorAccess.resolve(user);
+      if (ctx) return ctx.vendorId;
     }
     return user.sub;
   }

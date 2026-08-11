@@ -15,6 +15,8 @@ interface NewProduct {
   type: string;
   categoryId: string;
   unit: string;
+  sku: string;
+  barcode: string;
 }
 
 const PRODUCT_TYPES = ['food', 'grocery', 'secondhand', 'general', 'laundry', 'service', 'tailoring', 'cargo'];
@@ -93,6 +95,8 @@ const emptyForm: NewProduct = {
   type: '',
   categoryId: '',
   unit: 'pcs',
+  sku: '',
+  barcode: '',
 };
 
 const styles: Record<string, React.CSSProperties> = {
@@ -183,6 +187,8 @@ export default function VendorProducts() {
         type: form.type,
         categoryId: form.categoryId,
         unit: form.unit,
+        sku: form.sku.trim() || undefined,
+        barcode: form.barcode.trim() || undefined,
       });
       setModalOpen(false);
       await refetch();
@@ -281,6 +287,14 @@ export default function VendorProducts() {
                   <option key={u} value={u}>{u}</option>
                 ))}
               </select>
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>SKU (for POS scanning)</label>
+              <input style={styles.input} value={form.sku} placeholder="e.g. RK-001" onChange={(e) => updateField('sku', e.target.value)} />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Barcode</label>
+              <input style={styles.input} value={form.barcode} placeholder="e.g. 8964000001234" onChange={(e) => updateField('barcode', e.target.value)} />
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Type</label>

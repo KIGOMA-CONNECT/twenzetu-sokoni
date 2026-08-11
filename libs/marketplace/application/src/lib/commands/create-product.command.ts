@@ -12,6 +12,8 @@ export class CreateProductCommand extends CommandBase {
     public readonly imageUrl: string | undefined,
     public readonly stockQuantity: number,
     public readonly unit: string,
+    public readonly sku: string | undefined,
+    public readonly barcode: string | undefined,
   ) {
     super();
   }
