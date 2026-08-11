@@ -32,7 +32,7 @@ export default function HomePage() {
 
   const onSearch = (e: FormEvent) => {
     e.preventDefault();
-    navigate(`/register?q=${encodeURIComponent(query.trim())}`);
+    navigate(`/vendors?q=${encodeURIComponent(query.trim())}`);
   };
 
   return (
@@ -74,8 +74,11 @@ export default function HomePage() {
             </form>
 
             <div className="hero-cta-group">
-              <button className="btn btn-accent btn-lg" onClick={() => navigate('/register')}>
-                🛍️ Start shopping
+              <button className="btn btn-accent btn-lg" onClick={() => navigate('/vendors')}>
+                🛍️ Browse vendors
+              </button>
+              <button className="btn btn-outline btn-lg" onClick={() => navigate('/matangazo')}>
+                📣 Matangazo
               </button>
               <button className="btn btn-outline btn-lg" onClick={() => navigate('/login')}>
                 Sign in
@@ -136,7 +139,7 @@ export default function HomePage() {
         <h2 className="section-title">🛍️ Shop by category</h2>
         <div className="cat-scroll">
           {CATEGORIES.map((c) => (
-            <div key={c.name} className="cat-tile" onClick={() => navigate('/register')}>
+            <div key={c.name} className="cat-tile" onClick={() => navigate('/vendors')}>
               <div className="cat-emoji" style={{ background: c.bg }}>{c.emoji}</div>
               <div className="cat-name">{c.name}</div>
             </div>
@@ -151,7 +154,7 @@ export default function HomePage() {
             <div className="deal-title">🔥 Today's Hot Deals</div>
             <div className="deal-sub">Up to 40% off fresh produce, electronics and more. Limited time only.</div>
           </div>
-          <button className="btn btn-lg" onClick={() => navigate('/register')}>Shop deals</button>
+          <button className="btn btn-lg" onClick={() => navigate('/vendors')}>Shop deals</button>
         </div>
       </section>
 
@@ -211,7 +214,8 @@ export default function HomePage() {
           </div>
           <div>
             <h4>Marketplace</h4>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Browse Vendors</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/vendors'); }}>Browse Vendors</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/matangazo'); }}>Matangazo</a>
             <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Become a Vendor</a>
             <a href="#" onClick={(e) => { e.preventDefault(); navigate('/register'); }}>Become a Driver</a>
           </div>
