@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { IsBoolean, IsEnum, IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, Min, ValidateNested } from 'class-validator';
+import { CargoTripType, CargoVehicleKey } from '@afri-market/marketplace-domain';
 
 export class CargoLocationDto {
   @IsString()
@@ -18,9 +19,8 @@ export class CreateCargoRequestDto {
   @IsNotEmpty()
   subServiceName!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  vehicleName!: string;
+  @IsEnum(['boda', 'bajaji', 'carry', 'van', 'guta', 'fuso'])
+  vehicle!: CargoVehicleKey;
 
   @IsObject()
   @ValidateNested()
@@ -37,10 +37,67 @@ export class CreateCargoRequestDto {
   weightKg!: number;
 
   @IsOptional()
+  @IsEnum(['instant', 'scheduled'])
+  tripType?: CargoTripType;
+
+  @IsOptional()
   @IsString()
-  notes?: string;
+  scheduledAt?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  insured?: boolean;
 
   @IsOptional()
   @IsNumber()
-  fare?: number;
+  @Min(0)
+  cargoValue?: number;
+
+  @IsOptional()
+  @IsString()
+  paymentMethod?: string;
+
+  @IsOptional()
+  @IsString()
+  notes?: string;
+}
+
+export class CargoFareQueryDto {
+  @IsNumber()
+  @Type(() => Number)
+  pickupLat!: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  pickupLng!: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  dropLat!: number;
+
+  @IsNumber()
+  @Type(() => Number)
+  dropLng!: number;
+
+  @IsEnum(['boda', 'bajaji', 'carry', 'van', 'guta', 'fuso'])
+  vehicle!: CargoVehicleKey;
+
+  @IsNumber()
+  @Type(() => Number)
+  @Min(0)
+  weightKg!: number;
+
+  @IsOptional()
+  @IsEnum(['instant', 'scheduled'])
+  tripType?: CargoTripType;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  cargoValue?: number;
+
+  @IsOptional()
+  @IsString()
+  insured?: string;
 }

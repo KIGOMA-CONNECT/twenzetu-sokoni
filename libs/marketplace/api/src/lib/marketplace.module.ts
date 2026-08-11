@@ -42,6 +42,7 @@ import { ReferralsController } from './referrals.controller';
 import { SubscriptionsController } from './subscriptions.controller';
 import { CatalogController } from './catalog.controller';
 import { ServicesController } from './services.controller';
+import { CargoController } from './cargo.controller';
 import { SavingsController } from './savings.controller';
 import { FintechLoansController } from './fintech-loans.controller';
 import { VendorSubscriptionsController } from './vendor-subscriptions.controller';
@@ -84,6 +85,7 @@ import { CommissionsController } from './commissions.controller';
     SubscriptionsController,
     CatalogController,
     ServicesController,
+    CargoController,
     SavingsController,
     FintechLoansController,
     VendorSubscriptionsController,

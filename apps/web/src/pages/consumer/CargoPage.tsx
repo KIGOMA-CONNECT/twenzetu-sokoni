@@ -1,8 +1,8 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle } from '../../components/ui';
-import { MapPicker, calculateDistance, calculateFare, VEHICLE_RATES } from '../../components/MapPicker';
+import { MapPicker, calculateDistance, VEHICLE_RATES, type VehicleRate } from '../../components/MapPicker';
 import api from '../../api/client';
 
 const CARGO_SUBS = [
@@ -12,21 +12,58 @@ const CARGO_SUBS = [
   { id: 'd0000000-0000-0000-0000-000000000093', name: 'Kukodisha Lori/Cherehe', emoji: '🚛', desc: 'Mizigo mikubwa' },
 ];
 
+const PAYMENT_METHODS: Array<{ id: string; icon: string; name: string; desc: string }> = [
+  { id: 'wallet', icon: '💰', name: 'Wallet (Salio)', desc: 'Maliza mara moja kwa salio lako' },
+  { id: 'mpesa', icon: '📱', name: 'M-Pesa', desc: 'Vodacom Tanzania' },
+  { id: 'tigo_money', icon: '📱', name: 'Mixx by Yas', desc: 'Tigo Tanzania' },
+  { id: 'airtel_money', icon: '📱', name: 'Airtel Money', desc: 'Airtel Tanzania' },
+  { id: 'halotel', icon: '📱', name: 'Halotel', desc: 'Halotel Money' },
+  { id: 'azampesa', icon: '📱', name: 'AzamPay', desc: 'AzamPay Mobile Money' },
+  { id: 'card', icon: '💳', name: 'Kadi / Virtual Card', desc: 'Visa, Mastercard' },
+  { id: 'cash', icon: '💵', name: 'Cash', desc: 'Lipa kwa mkono wakati wa pickup' },
+];
+
+interface BookingResult {
+  success: boolean;
+  requestId: string;
+  orderId: string;
+  fare: number;
+  distanceKm: number;
+  vehicle: string;
+  capacityKg: number;
+  paymentMethod: string;
+  paymentStatus: string;
+  checkoutUrl?: string;
+  message?: string;
+  fareBreakdown?: Array<{ label: string; amount: number }>;
+}
+
 export default function CargoPage() {
   const navigate = useNavigate();
   const device = useDevice();
+  const isPhone = device.type === 'phone';
+
   const [selectedSub, setSelectedSub] = useState('');
   const [vehicleId, setVehicleId] = useState('');
   const [pickup, setPickup] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [delivery, setDelivery] = useState<{ address: string; lat: number; lng: number } | null>(null);
   const [weight, setWeight] = useState('');
   const [notes, setNotes] = useState('');
+  const [tripType, setTripType] = useState<'instant' | 'scheduled'>('instant');
+  const [scheduledAt, setScheduledAt] = useState('');
+  const [insured, setInsured] = useState(false);
+  const [cargoValue, setCargoValue] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('wallet');
+
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const isPhone = device.type === 'phone';
+  const [result, setResult] = useState<BookingResult | null>(null);
 
-  const selectedVehicle = VEHICLE_RATES.find((v) => v.id === vehicleId);
+  const [serverFare, setServerFare] = useState<{ totalFare: number; breakdown: Array<{ label: string; amount: number }> } | null>(null);
+  const [fareLoading, setFareLoading] = useState(false);
+  const [fareError, setFareError] = useState('');
+
+  const selectedVehicle = VEHICLE_RATES.find((v) => v.id === vehicleId) as VehicleRate | undefined;
 
   const distance = useMemo(() => {
     if (!pickup || !delivery) return 0;
@@ -34,33 +71,89 @@ export default function CargoPage() {
   }, [pickup, delivery]);
 
   const weightKg = parseFloat(weight) || 0;
+  const cargoValueNum = parseFloat(cargoValue) || 0;
+  const overCapacity = selectedVehicle ? weightKg > selectedVehicle.capacityKg : false;
 
-  const fare = useMemo(() => {
-    if (!selectedVehicle || !pickup || !delivery) return 0;
-    return calculateFare(distance, weightKg, selectedVehicle);
-  }, [distance, weightKg, selectedVehicle, pickup, delivery]);
+  // Live binding quote straight from the server (single source of truth for pricing)
+  useEffect(() => {
+    if (!pickup || !delivery || !selectedVehicle || weightKg < 0 || weightKg > (selectedVehicle?.capacityKg ?? Infinity)) {
+      setServerFare(null);
+      return;
+    }
+    setFareLoading(true);
+    setFareError('');
+    const timer = setTimeout(async () => {
+      try {
+        const res = await api.get('/cargo/fare', {
+          params: {
+            pickupLat: pickup.lat,
+            pickupLng: pickup.lng,
+            dropLat: delivery.lat,
+            dropLng: delivery.lng,
+            vehicle: selectedVehicle.id,
+            weightKg,
+            tripType,
+            cargoValue: cargoValueNum || undefined,
+            insured: insured ? 'true' : 'false',
+          },
+        });
+        const data = res.data.data;
+        setServerFare({ totalFare: data.totalFare, breakdown: data.breakdown });
+      } catch (err: any) {
+        setFareError(err.response?.data?.message || err.response?.data?.error || 'Haiwezi kuhesabu nauli kwa sasa');
+        setServerFare(null);
+      } finally {
+        setFareLoading(false);
+      }
+    }, 450);
+    return () => clearTimeout(timer);
+  }, [pickup, delivery, selectedVehicle, weightKg, cargoValueNum, tripType, insured]);
+
+  const bindingFare = serverFare?.totalFare ?? 0;
+  const previewFare = useMemo(() => {
+    if (!selectedVehicle) return 0;
+    return (() => {
+      const d = Math.max(0.5, Math.round(distance * 100) / 100);
+      const subtotal = Math.max(selectedVehicle.baseFare + (d * selectedVehicle.perKm) + (weightKg * selectedVehicle.perKg), selectedVehicle.minFare);
+      const ins = insured && cargoValueNum > 0 ? Math.max(500, Math.round(cargoValueNum * 0.005)) : 0;
+      const disc = tripType === 'scheduled' ? Math.round(subtotal * 0.1) : 0;
+      return Math.max(subtotal - disc, Math.round(selectedVehicle.minFare * 0.9)) + ins;
+    })();
+  }, [distance, weightKg, selectedVehicle, tripType, insured, cargoValueNum]);
+
+  const displayFare = bindingFare || previewFare;
 
   function formatCurrency(amount: number): string {
     return 'Tsh ' + amount.toLocaleString('sw-TZ');
   }
 
   const selectedSubObj = CARGO_SUBS.find((s) => s.id === selectedSub);
+  const canBook = Boolean(pickup && delivery && selectedSubObj && selectedVehicle && weightKg > 0 && !overCapacity && displayFare > 0);
 
-  async function submitRequest() {
+  async function submitBooking() {
     if (!pickup || !delivery || !selectedSubObj || !selectedVehicle) return;
     setSubmitting(true);
     setSubmitError('');
     try {
-      await api.post('/cargo/requests', {
+      const res = await api.post('/cargo/requests', {
         subServiceName: selectedSubObj.name,
-        vehicleName: selectedVehicle.name,
+        vehicle: selectedVehicle.id,
         pickup: { address: pickup.address, lat: pickup.lat, lng: pickup.lng },
         delivery: { address: delivery.address, lat: delivery.lat, lng: delivery.lng },
         weightKg,
+        tripType,
+        scheduledAt: tripType === 'scheduled' && scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        insured,
+        cargoValue: insured ? cargoValueNum : undefined,
+        paymentMethod,
         notes: notes.trim() || undefined,
-        fare: fare > 0 ? fare : undefined,
       });
-      setSubmitted(true);
+      const data: BookingResult = res.data.data;
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      setResult(data);
     } catch (err: any) {
       setSubmitError(
         err.response?.data?.message ||
@@ -80,21 +173,46 @@ export default function CargoPage() {
     setDelivery(null);
     setWeight('');
     setNotes('');
+    setTripType('instant');
+    setScheduledAt('');
+    setInsured(false);
+    setCargoValue('');
+    setPaymentMethod('wallet');
     setSubmitError('');
-    setSubmitted(false);
+    setServerFare(null);
+    setResult(null);
   }
 
-  if (submitted) {
+  if (result) {
+    const paid = result.success;
     return (
       <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined, paddingBottom: '3rem' }}>
         <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>✅</div>
-          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>Ombi Limetumwa!</h2>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{paid ? '✅' : '⏳'}</div>
+          <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>
+            {paid ? 'Usafirishaji Umehakikiwa!' : 'Ombi Limesajiliwa'}
+          </h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
-            Mtoa huduma atawasiliana nawe kuhusu usafirishaji wa mzigo wako.
-            <br />
-            Angalia "Mahitaji Yangu" katika huduma kwa maelezo zaidi.
+            {result.message}
           </p>
+          <div style={{
+            background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 'var(--radius-lg)',
+            padding: '1.25rem', marginBottom: '1.5rem', textAlign: 'left', maxWidth: 420, margin: '0 auto 1.5rem',
+          }}>
+            {result.fareBreakdown?.map((b, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.3rem' }}>
+                <span style={{ color: 'var(--muted)' }}>{b.label}</span>
+                <span style={{ fontWeight: 700 }}>{formatCurrency(b.amount)}</span>
+              </div>
+            ))}
+            <div style={{ borderTop: '1px solid var(--line)', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
+              <span style={{ fontWeight: 800 }}>Jumla</span>
+              <span style={{ fontWeight: 800, color: 'var(--brand)' }}>{formatCurrency(result.fare)}</span>
+            </div>
+            <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.6rem' }}>
+              {result.vehicle} · {result.distanceKm.toFixed(1)} km · Nambari ya ombi: {result.requestId.slice(0, 8)}...
+            </div>
+          </div>
           <button
             className="btn btn-primary"
             onClick={resetForm}
@@ -178,7 +296,6 @@ export default function CargoPage() {
       {/* Maps & Address */}
       {vehicleId && (
         <>
-          {/* Pickup Map */}
           <SectionTitle title="📍 Mahali pa kuchukua mzigo" emoji="" />
           <MapPicker
             onSelect={setPickup}
@@ -188,7 +305,6 @@ export default function CargoPage() {
             style={{ marginBottom: '1.5rem' }}
           />
 
-          {/* Delivery Map */}
           <SectionTitle title="📍 Mahali pa kuelekeza mzigo" emoji="" />
           <MapPicker
             onSelect={setDelivery}
@@ -198,17 +314,86 @@ export default function CargoPage() {
             style={{ marginBottom: '1.5rem' }}
           />
 
-          {/* Weight & Notes */}
+          {/* Trip type */}
+          <SectionTitle title="🕐 Mpango wa usafiri" emoji="" />
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
+            <button
+              onClick={() => setTripType('instant')}
+              style={{
+                padding: '0.85rem', borderRadius: 'var(--radius-lg)',
+                border: tripType === 'instant' ? '2px solid var(--brand)' : '1px solid var(--line)',
+                background: tripType === 'instant' ? 'var(--brand-soft)' : 'var(--surface)',
+                cursor: 'pointer', textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: '1.4rem' }}>⚡</div>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Haraka</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Chukuliwa sasa</div>
+            </button>
+            <button
+              onClick={() => setTripType('scheduled')}
+              style={{
+                padding: '0.85rem', borderRadius: 'var(--radius-lg)',
+                border: tripType === 'scheduled' ? '2px solid var(--brand)' : '1px solid var(--line)',
+                background: tripType === 'scheduled' ? 'var(--brand-soft)' : 'var(--surface)',
+                cursor: 'pointer', textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: '1.4rem' }}>📅</div>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Ratiba</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Punguzo 10%</div>
+            </button>
+          </div>
+          {tripType === 'scheduled' && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>Saa ya pickup</label>
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                style={{ width: '100%', padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}
+              />
+            </div>
+          )}
+
+          {/* Weight & extras */}
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>⚖️ Uzito (kg)</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>
+              ⚖️ Uzito (kg) {selectedVehicle && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>— hadi {selectedVehicle.capacityKg} kg</span>}
+            </label>
             <input
               type="number"
+              min="0"
               placeholder="kg"
               value={weight}
               onChange={(e) => setWeight(e.target.value)}
-              style={{ width: '100%', padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}
+              style={{ width: '100%', padding: '0.65rem', borderRadius: 'var(--radius)', border: `1px solid ${overCapacity ? '#fca5a5' : 'var(--line)'}` }}
             />
+            {overCapacity && selectedVehicle && (
+              <div style={{ fontSize: '0.78rem', color: '#b91c1c', marginTop: '0.3rem' }}>
+                Uzito unazidi uwezo wa {selectedVehicle.name} ({selectedVehicle.capacityKg} kg). Chagua gari kubwa zaidi.
+              </div>
+            )}
           </div>
+
+          {/* Insurance */}
+          <div style={{ marginBottom: '1.5rem' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.4rem' }}>
+              <input type="checkbox" checked={insured} onChange={(e) => setInsured(e.target.checked)} />
+              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>🛡️ Bima ya mzigo <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(Tsh 500+ au 0.5%)</span></span>
+            </label>
+            {insured && (
+              <input
+                type="number"
+                min="0"
+                placeholder="Thamani ya mzigo (TZS)"
+                value={cargoValue}
+                onChange={(e) => setCargoValue(e.target.value)}
+                style={{ width: '100%', padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}
+              />
+            )}
+          </div>
+
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>Maelezo ya mzigo</label>
             <textarea
@@ -220,14 +405,35 @@ export default function CargoPage() {
             />
           </div>
 
-          {/* Fare Summary */}
-          {pickup && delivery && selectedVehicle && (
+          {/* Payment method */}
+          <SectionTitle title="💳 Njia ya malipo" emoji="" />
+          <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            {PAYMENT_METHODS.map((m) => (
+              <button
+                key={m.id}
+                onClick={() => setPaymentMethod(m.id)}
+                style={{
+                  padding: '0.75rem', borderRadius: 'var(--radius-lg)',
+                  border: paymentMethod === m.id ? '2px solid var(--brand)' : '1px solid var(--line)',
+                  background: paymentMethod === m.id ? 'var(--brand-soft)' : 'var(--surface)',
+                  cursor: 'pointer', textAlign: 'left',
+                }}
+              >
+                <span style={{ fontSize: '1.2rem', marginRight: '0.4rem' }}>{m.icon}</span>
+                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{m.name}</span>
+                <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{m.desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {/* Fare Summary (live server quote) */}
+          {pickup && delivery && selectedVehicle && displayFare > 0 && (
             <div style={{
               background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)', borderRadius: 'var(--radius-lg)',
               padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid #bbf7d0',
             }}>
               <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.75rem', color: '#166534' }}>
-                💰 Umakini wa Nauli
+                💰 {fareLoading ? 'Inahesabu nauli...' : 'Nauli Inayofunga'}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
                 <span style={{ color: 'var(--muted)' }}>Umbali:</span>
@@ -241,13 +447,34 @@ export default function CargoPage() {
                 <span style={{ color: 'var(--muted)' }}>Usafiri:</span>
                 <span style={{ fontWeight: 700 }}>{selectedVehicle.emoji} {selectedVehicle.name}</span>
               </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
+                <span style={{ color: 'var(--muted)' }}>Mpango:</span>
+                <span style={{ fontWeight: 700 }}>{tripType === 'scheduled' ? '📅 Ratiba (punguzo 10%)' : '⚡ Haraka'}</span>
+              </div>
+              {serverFare?.breakdown?.map((b, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem', fontSize: '0.8rem' }}>
+                  <span style={{ color: 'var(--muted)' }}>{b.label}</span>
+                  <span style={{ fontWeight: 700 }}>{formatCurrency(b.amount)}</span>
+                </div>
+              ))}
               <div style={{ borderTop: '1px solid #bbf7d0', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
                 <span style={{ fontWeight: 800, fontSize: '1rem' }}>Jumla ya Nauli:</span>
-                <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#166534' }}>{formatCurrency(fare)}</span>
+                <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#166534' }}>{formatCurrency(displayFare)}</span>
               </div>
-              <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-                Base: {formatCurrency(selectedVehicle.baseFare)} + Umbali: {formatCurrency(distance * selectedVehicle.perKm)} + Uzito: {formatCurrency(weightKg * selectedVehicle.perKg)}
-              </div>
+              {!serverFare && !fareLoading && (
+                <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+                  Makadirio — nauli kamili itathibitishwa wakati wa kujaza maelezo yote.
+                </div>
+              )}
+            </div>
+          )}
+
+          {fareError && (
+            <div style={{
+              background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c',
+              borderRadius: 'var(--radius)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
+            }}>
+              {fareError}
             </div>
           )}
 
@@ -262,11 +489,15 @@ export default function CargoPage() {
 
           <button
             className="btn btn-primary"
-            disabled={!pickup || !delivery || !weight || submitting}
-            onClick={submitRequest}
+            disabled={!canBook || submitting}
+            onClick={submitBooking}
             style={{ width: '100%', fontSize: '1rem', padding: '0.85rem' }}
           >
-            {submitting ? 'Inatuma...' : `🚚 Omba Usafiri — ${fare > 0 ? formatCurrency(fare) : 'Chagua eneo'}`}
+            {submitting
+              ? 'Inachakata...'
+              : !canBook
+                ? '🚚 Jaza maelezo yote'
+                : `🚚 Omba Usafiri — ${formatCurrency(displayFare)}${paymentMethod === 'wallet' ? '' : ` · ${PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.name ?? ''}`}`}
           </button>
         </>
       )}

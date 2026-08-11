@@ -170,21 +170,33 @@ export interface VehicleRate {
   name: string;
   emoji: string;
   capacity: string;
+  capacityKg: number;
   baseFare: number;
   perKm: number;
   perKg: number;
   minFare: number;
 }
 
+// Canonical keys match the server's CARGO_VEHICLE_RATES (boda/bajaji/carry/van/guta/fuso)
 export const VEHICLE_RATES: VehicleRate[] = [
-  { id: 'bodaboda', name: 'Bodaboda', emoji: '🏍️', capacity: '5kg', baseFare: 2000, perKm: 500, perKg: 200, minFare: 2000 },
-  { id: 'tukutuku', name: 'TukTuk', emoji: '🛺', capacity: '20kg', baseFare: 3000, perKm: 800, perKg: 150, minFare: 5000 },
-  { id: 'pickup', name: 'Pickup', emoji: '🛻', capacity: '500kg', baseFare: 10000, perKm: 2000, perKg: 50, minFare: 20000 },
-  { id: 'van', name: 'Van', emoji: '🚐', capacity: '100kg', baseFare: 5000, perKm: 1200, perKg: 80, minFare: 10000 },
-  { id: 'lorry', name: 'Lori', emoji: '🚛', capacity: '5-10 tons', baseFare: 50000, perKm: 5000, perKg: 10, minFare: 100000 },
+  { id: 'boda', name: 'Bodaboda', emoji: '🏍️', capacity: '5kg', capacityKg: 5, baseFare: 2000, perKm: 500, perKg: 200, minFare: 2000 },
+  { id: 'bajaji', name: 'TukTuk', emoji: '🛺', capacity: '20kg', capacityKg: 20, baseFare: 3000, perKm: 800, perKg: 150, minFare: 5000 },
+  { id: 'carry', name: 'Pickup', emoji: '🛻', capacity: '500kg', capacityKg: 500, baseFare: 10000, perKm: 2000, perKg: 50, minFare: 20000 },
+  { id: 'van', name: 'Van', emoji: '🚐', capacity: '100kg', capacityKg: 100, baseFare: 5000, perKm: 1200, perKg: 80, minFare: 10000 },
+  { id: 'guta', name: 'Guta', emoji: '🚚', capacity: '2000kg', capacityKg: 2000, baseFare: 15000, perKm: 3000, perKg: 30, minFare: 30000 },
+  { id: 'fuso', name: 'Lori', emoji: '🚛', capacity: '8000kg', capacityKg: 8000, baseFare: 50000, perKm: 5000, perKg: 10, minFare: 100000 },
 ];
 
-export function calculateFare(distanceKm: number, weightKg: number, vehicle: VehicleRate): number {
-  const fare = vehicle.baseFare + (distanceKm * vehicle.perKm) + (weightKg * vehicle.perKg);
-  return Math.max(fare, vehicle.minFare);
+export interface CargoFareOptions {
+  tripType?: 'instant' | 'scheduled';
+  insured?: boolean;
+  cargoValue?: number;
+}
+
+export function calculateFare(distanceKm: number, weightKg: number, vehicle: VehicleRate, opts?: CargoFareOptions): number {
+  const d = Math.max(0.5, Math.round(distanceKm * 100) / 100);
+  const subtotal = Math.max(vehicle.baseFare + (d * vehicle.perKm) + (weightKg * vehicle.perKg), vehicle.minFare);
+  const insuranceFee = opts?.insured && (opts.cargoValue ?? 0) > 0 ? Math.max(500, Math.round((opts.cargoValue ?? 0) * 0.005)) : 0;
+  const scheduledDiscount = opts?.tripType === 'scheduled' ? Math.round(subtotal * 0.1) : 0;
+  return Math.max(subtotal - scheduledDiscount, Math.round(vehicle.minFare * 0.9)) + insuranceFee;
 }

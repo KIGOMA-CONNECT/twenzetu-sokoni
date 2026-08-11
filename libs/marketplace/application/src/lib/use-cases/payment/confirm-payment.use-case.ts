@@ -1,6 +1,6 @@
 import { Inject, Injectable, Optional } from '@nestjs/common';
-import { IPaymentRepository } from '@afri-market/marketplace-domain';
-import { PAYMENT_REPOSITORY, MARKETPLACE_GATEWAY } from '../../tokens';
+import { IPaymentRepository, IOrderRepository } from '@afri-market/marketplace-domain';
+import { PAYMENT_REPOSITORY, ORDER_REPOSITORY, MARKETPLACE_GATEWAY } from '../../tokens';
 import { IEventDispatcher } from '../../events/event-types';
 import { NoOpEventDispatcher } from '../../events/noop-event-dispatcher';
 
@@ -10,6 +10,7 @@ export class ConfirmPaymentUseCase {
 
   constructor(
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
+    @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
     @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyPaymentConfirmed(userId: string, payment: Record<string, unknown>): void } | undefined,
     @Optional() eventDispatcher?: IEventDispatcher,
   ) {
@@ -34,6 +35,17 @@ export class ConfirmPaymentUseCase {
       payment.setTransactionRef(params.receiptNumber);
     }
     await this.paymentRepo.save(payment);
+
+    // Cargo bookings are paid-for transport, not shop orders waiting to be
+    // prepared: once the money is in escrow the order becomes ready for a
+    // driver to pick up the cargo.
+    const order = payment.orderId
+      ? await this.orderRepo.findById(payment.orderId)
+      : undefined;
+    if (order && order.status === 'PLACED' && order.specialInstructions?.includes('CargoBooking')) {
+      order.markReady();
+      await this.orderRepo.save(order);
+    }
 
     this.gateway?.notifyPaymentConfirmed(payment.vendorId.value, {
       paymentId: payment.id.value,

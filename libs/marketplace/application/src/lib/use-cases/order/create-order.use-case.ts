@@ -18,6 +18,9 @@ import { ORDER_REPOSITORY, VENDOR_REPOSITORY, PAYMENT_REPOSITORY, PRODUCT_REPOSI
 import { CreateOrderCommand } from '../../commands/create-order.command';
 import { IEventDispatcher } from '../../events/event-types';
 import { NoOpEventDispatcher } from '../../events/noop-event-dispatcher';
+import { GetWalletUseCase } from '../wallet/get-wallet.use-case';
+import { DebitWalletUseCase } from '../wallet/debit-wallet.use-case';
+import { FindVendorsUseCase } from '../vendor/find-vendors.use-case';
 
 @Injectable()
 export class CreateOrderUseCase {
@@ -29,6 +32,9 @@ export class CreateOrderUseCase {
     @Inject(PAYMENT_REPOSITORY) private readonly paymentRepo: IPaymentRepository,
     @Inject(PRODUCT_REPOSITORY) private readonly productRepo: IProductRepository,
     @InjectDataSource() private readonly ds: DataSource,
+    private readonly wallet: GetWalletUseCase,
+    private readonly debitWallet: DebitWalletUseCase,
+    private readonly findVendors: FindVendorsUseCase,
     @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyNewOrder(vendorId: string, order: Record<string, unknown>): void } | undefined,
     @Optional() @Inject(SMS_SERVICE) private readonly smsService?: ISmsService,
     @Optional() @Inject(EMAIL_SERVICE) private readonly emailService?: IEmailService,
@@ -36,6 +42,14 @@ export class CreateOrderUseCase {
     @Optional() eventDispatcher?: IEventDispatcher,
   ) {
     this.eventDispatcher = eventDispatcher ?? new NoOpEventDispatcher();
+  }
+
+  private async resolveWalletOwner(userId: string): Promise<string> {
+    const vendor = await this.findVendors.findByUserId(userId);
+    if (vendor) {
+      return vendor.id.value;
+    }
+    return userId;
   }
 
   public async execute(
@@ -51,6 +65,7 @@ export class CreateOrderUseCase {
     paymentId: string;
     paymentStatus: string;
     otpCode: string;
+    checkoutUrl?: string;
   }> {
     Guard.assert(command.items.length > 0, 'Order must have at least one item');
 
@@ -160,7 +175,7 @@ export class CreateOrderUseCase {
       }
     }
 
-    const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'cash') || 'mpesa';
+    const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'wallet' | 'card' | 'cash') || 'mpesa';
 
     const payment = Payment.create({
       tenantId: TenantId.create(tenantId),
@@ -195,26 +210,78 @@ export class CreateOrderUseCase {
       paymentMethod,
     });
 
-    if (paymentMethod === 'cash') {
-      payment.confirmEscrow();
-      await this.paymentRepo.save(payment);
-    } else if (customerPhone) {
-      try {
-        const stkResult = await this.mobileMoneyService?.initiateStkPush({
-          phoneNumber: customerPhone,
-          amount: commissionSplit.totalPaid.amount,
-          accountReference: order.id.value,
-          description: `Payment for order ${order.id.value}`,
-          provider: paymentMethod as InitiateStkPushParams['provider'],
-        });
-        if (stkResult?.checkoutRequestId) {
-          payment.setTransactionRef(stkResult.checkoutRequestId);
+    let checkoutUrl: string | undefined;
+
+    switch (paymentMethod) {
+      case 'cash':
+        payment.confirmEscrow();
+        await this.paymentRepo.save(payment);
+        break;
+
+      case 'wallet': {
+        const ownerId = await this.resolveWalletOwner(command.customerId);
+        try {
+          await this.debitWallet.execute(
+            tenantId,
+            ownerId,
+            commissionSplit.totalPaid.amount,
+            `Order payment: ${order.id.value}`,
+            order.id.value,
+            'order_payment',
+          );
+          payment.confirmEscrow();
+          await this.paymentRepo.save(payment);
+        } catch {
+          payment.fail();
           await this.paymentRepo.save(payment);
         }
-      } catch {
-        payment.fail();
-        await this.paymentRepo.save(payment);
+        break;
       }
+
+      case 'card': {
+        const cardRef = `card_${order.id.value}`;
+        try {
+          const cardResult = await this.mobileMoneyService?.initiateCardCheckout({
+            amount: commissionSplit.totalPaid.amount,
+            accountReference: cardRef,
+            description: `Payment for order ${order.id.value}`,
+            currency,
+          });
+          if (cardResult?.success && cardResult.checkoutUrl) {
+            payment.setTransactionRef(cardRef);
+            await this.paymentRepo.save(payment);
+            checkoutUrl = cardResult.checkoutUrl;
+          } else {
+            payment.fail();
+            await this.paymentRepo.save(payment);
+          }
+        } catch {
+          payment.fail();
+          await this.paymentRepo.save(payment);
+        }
+        break;
+      }
+
+      default:
+        if (customerPhone) {
+          try {
+            const stkResult = await this.mobileMoneyService?.initiateStkPush({
+              phoneNumber: customerPhone,
+              amount: commissionSplit.totalPaid.amount,
+              accountReference: order.id.value,
+              description: `Payment for order ${order.id.value}`,
+              provider: paymentMethod as InitiateStkPushParams['provider'],
+            });
+            if (stkResult?.checkoutRequestId) {
+              payment.setTransactionRef(stkResult.checkoutRequestId);
+              await this.paymentRepo.save(payment);
+            }
+          } catch {
+            payment.fail();
+            await this.paymentRepo.save(payment);
+          }
+        }
+        break;
     }
 
     this.gateway?.notifyNewOrder(command.vendorId, {
@@ -237,6 +304,7 @@ export class CreateOrderUseCase {
       paymentId: payment.id.value,
       paymentStatus: payment.status,
       otpCode,
+      checkoutUrl,
     };
   }
 }

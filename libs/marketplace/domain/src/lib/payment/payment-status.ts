@@ -6,4 +6,6 @@ export type PaymentMethod =
   | 'airtel_money'
   | 'halotel'
   | 'azampesa'
-  | 'cash';
+  | 'cash'
+  | 'card'
+  | 'wallet';
