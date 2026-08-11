@@ -26,6 +26,9 @@ export const ADDRESS_REPOSITORY = 'IAddressRepository';
 export const MENU_REPOSITORY = 'IMenuRepository';
 export const CART_REPOSITORY = 'ICartRepository';
 
+// Marketing
+export const ADVERT_REPOSITORY = 'IAdvertRepository';
+
 // Gateway
 export const MARKETPLACE_GATEWAY = 'MARKETPLACE_GATEWAY';
 

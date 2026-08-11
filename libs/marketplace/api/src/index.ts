@@ -69,3 +69,6 @@ export * from './lib/dto/create-menu.dto';
 export * from './lib/dto/register-vehicle.dto';
 export * from './lib/dto/update-vehicle-location.dto';
 export * from './lib/dto/update-used-goods.dto';
+export * from './lib/public.controller';
+export * from './lib/ads.controller';
+export * from './lib/dto/create-advert.dto';

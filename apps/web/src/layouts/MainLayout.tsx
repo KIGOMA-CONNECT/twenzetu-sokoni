@@ -66,6 +66,7 @@ export function MainLayout() {
     { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver },
     { label: 'Addresses', path: '/addresses', show: isCustomer },
     { label: 'Loyalty', path: '/loyalty', show: isCustomer },
+    { label: 'Matangazo', path: '/matangazo', show: isCustomer || isAdmin },
     { label: 'Reviews', path: '/reviews', show: isCustomer },
     { label: 'Verify Identity', path: '/kyc', show: isCustomer },
     { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer },

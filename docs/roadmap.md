@@ -29,6 +29,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 | Engagement (web, Android/TWA, USSD) | **L2–L3** | USSD implemented. Next: production hardening of USSD + notification routing → L4. |
 | Payments | **L2** | AzamPay aggregator built (M-Pesa, YAS/Mixx, Airtel Money, HaloPesa, T-Pesa, AzamPesa) + webhooks + wallets + **card checkout wired end-to-end** (ADR-0004, commit `6865bc1`). Blocked on the **AzamPay production API key** + `AZAMPAY_CARD_SUCCESS_URL`/`AZAMPAY_CARD_FAIL_URL` in `.env.production`; then verify all MNO + card methods (see [payments-readiness](payments-readiness.md)). |
 | Cargo, Express & Logistics | **L3** | Binding server-side fare engine (`CargoFareCalculator`), instant booking with wallet/card/mobile-money/cash, `READY_FOR_PICKUP` auto-promotion (ADR-0005). Next: live tracking, driver assignment UI, ratings → L4. |
+| Marketing & Growth | **L2** | Tenant-managed category marketing data (tagline/benefits/emoji), public tenant-aware `/api/public/ads` + `/api/public/catalog`, in-app Matangazo page with copyable share links (ADR-0006). Next: OpenGraph/social cards on public links, WhatsApp/SMS campaign integration → L3. |
 | Analytics | **L1** | Metrics exposed (`/api/metrics`) + monitoring stack. Next: tenant-facing reports → L2/L3. |
 | AI | **L0** | Concept. Next: charter + use cases (recommendations, forecasting). |
 | Cloud | **L0** | Concept. Next: managed hosting proposition for tenants. |
@@ -43,6 +44,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 ### Horizon 1 — Prove (2026–2027)
 - [ ] **Payments L4** — receive AzamPay production API key; set `AZAMPAY_*` + `AZAMPAY_CARD_SUCCESS_URL`/`AZAMPAY_CARD_FAIL_URL`; activate and verify all MNO + card methods; reconciliation verified. (See [payments-readiness](payments-readiness.md).)
 - [ ] **Cargo, Express & Logistics L4** — live tracking, driver assignment, driver earnings, cargo ratings; driver PWA for pickup/delivery OTP.
+- [ ] **Marketing & Growth L3** — OpenGraph/social cards on public share links; WhatsApp/SMS campaign sending against `/api/public/ads` + `/api/public/catalog`; per-tenant marketing copy management UI.
 - [ ] **SMS L4** — obtain and configure an SMS provider (Africa's Talking / Twilio / Termii) for OTP delivery in production.
 - [ ] **Engagement L4** — USSD production hardening; notification routing stable.
 - [ ] **Analytics L2/L3** — tenant-facing reports; defined metric catalog.

@@ -15,6 +15,15 @@ export class CategoryOrmEntity extends TenantAwareEntity {
   @Column({ name: 'image_url', type: 'text', nullable: true })
   public imageUrl!: string | null;
 
+  @Column({ type: 'text', nullable: true })
+  public tagline!: string | null;
+
+  @Column({ type: 'jsonb', default: '[]' })
+  public benefits!: string[];
+
+  @Column({ type: 'varchar', length: 8, nullable: true })
+  public emoji!: string | null;
+
   @Column({ name: 'is_active', type: 'boolean', default: true })
   public isActive!: boolean;
 }

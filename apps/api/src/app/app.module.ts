@@ -82,6 +82,7 @@ export class AppModule implements NestModule {
         { path: 'auth/logout', method: RequestMethod.ALL },
         { path: 'webhooks/*path', method: RequestMethod.ALL },
         { path: 'ussd/*path', method: RequestMethod.ALL },
+        { path: 'public/*path', method: RequestMethod.ALL },
       )
       .forRoutes('*path');
   }

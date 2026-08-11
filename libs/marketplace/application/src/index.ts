@@ -180,3 +180,8 @@ export * from './lib/use-cases/promotion/list-coupons.use-case';
 export * from './lib/use-cases/promotion/create-flash-sale.use-case';
 export * from './lib/use-cases/promotion/list-active-flash-sales.use-case';
 export * from './lib/use-cases/promotion/list-flash-sales.use-case';
+
+// Use Cases - Marketing
+export * from './lib/use-cases/marketing/list-active-ads.use-case';
+export * from './lib/use-cases/marketing/list-adverts.use-case';
+export * from './lib/use-cases/marketing/create-advert.use-case';

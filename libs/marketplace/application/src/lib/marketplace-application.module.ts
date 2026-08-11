@@ -35,6 +35,7 @@ import {
   TypeOrmServiceRequestRepository,
   TypeOrmServiceQuoteRepository,
   TypeOrmCartRepository,
+  TypeOrmAdvertRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
@@ -51,7 +52,7 @@ import {
   ADMIN_USER_REPOSITORY,
   COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
   SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY,
-  CART_REPOSITORY,
+  CART_REPOSITORY, ADVERT_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
@@ -161,6 +162,9 @@ import { UpdateCartItemUseCase } from './use-cases/cart/update-cart-item.use-cas
 import { RemoveCartItemUseCase } from './use-cases/cart/remove-cart-item.use-case';
 import { ClearCartUseCase } from './use-cases/cart/clear-cart.use-case';
 import { CheckoutCartUseCase } from './use-cases/order/checkout-cart.use-case';
+import { ListActiveAdsUseCase } from './use-cases/marketing/list-active-ads.use-case';
+import { ListAdvertsUseCase } from './use-cases/marketing/list-adverts.use-case';
+import { CreateAdvertUseCase } from './use-cases/marketing/create-advert.use-case';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -195,6 +199,7 @@ const REPOSITORIES = [
   { provide: SERVICE_REQUEST_REPOSITORY, useClass: TypeOrmServiceRequestRepository },
   { provide: SERVICE_QUOTE_REPOSITORY, useClass: TypeOrmServiceQuoteRepository },
   { provide: CART_REPOSITORY, useClass: TypeOrmCartRepository },
+  { provide: ADVERT_REPOSITORY, useClass: TypeOrmAdvertRepository },
 ];
 
 const SERVICES = [
@@ -316,11 +321,14 @@ SetDefaultAddressUseCase,
   RemoveCartItemUseCase,
   ClearCartUseCase,
   CheckoutCartUseCase,
+  ListActiveAdsUseCase,
+  ListAdvertsUseCase,
+  CreateAdvertUseCase,
 ];
 
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, VENDOR_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}

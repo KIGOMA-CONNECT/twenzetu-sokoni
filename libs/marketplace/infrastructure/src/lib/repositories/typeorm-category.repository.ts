@@ -54,6 +54,9 @@ export class TypeOrmCategoryRepository extends TypeOrmRepository<ProductCategory
       parentId: e.parentId ? EntityId.from(e.parentId) : undefined,
       imageUrl: e.imageUrl ?? undefined,
       isActive: e.isActive,
+      tagline: e.tagline ?? undefined,
+      benefits: e.benefits ?? [],
+      emoji: e.emoji ?? undefined,
     });
   }
 
@@ -66,6 +69,9 @@ export class TypeOrmCategoryRepository extends TypeOrmRepository<ProductCategory
       parentId: entity.parentId?.value ?? null,
       imageUrl: entity.imageUrl ?? null,
       isActive: entity.isActive,
+      tagline: entity.tagline ?? null,
+      benefits: entity.benefits,
+      emoji: entity.emoji ?? null,
     };
   }
 }

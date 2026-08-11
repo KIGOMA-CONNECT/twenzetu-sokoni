@@ -11,12 +11,15 @@ export class CreateCategoryUseCase {
 
   public async execute(
     tenantId: string,
-    dto: { name: string; type: string },
+    dto: { name: string; type: string; tagline?: string; benefits?: string[]; emoji?: string },
   ): Promise<{ categoryId: string }> {
     const category = ProductCategory.create({
       tenantId: TenantId.create(tenantId),
       name: dto.name,
       type: dto.type,
+      tagline: dto.tagline,
+      benefits: dto.benefits,
+      emoji: dto.emoji,
     });
 
     await this.categoryRepo.save(category);

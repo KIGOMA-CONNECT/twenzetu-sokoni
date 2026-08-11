@@ -97,3 +97,6 @@ export * from './lib/promotion/coupon.aggregate';
 export * from './lib/promotion/coupon.repository.interface';
 export * from './lib/promotion/flash-sale.aggregate';
 export * from './lib/promotion/flash-sale.repository.interface';
+// Marketing
+export * from './lib/marketing/advert.aggregate';
+export * from './lib/marketing/advert.repository.interface';

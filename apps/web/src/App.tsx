@@ -45,6 +45,7 @@ import LegalPage from './pages/LegalPage';
 import VendorOnboarding from './pages/vendor/VendorOnboarding';
 import CustomerKyc from './pages/consumer/CustomerKyc';
 import ReferralPage from './pages/consumer/ReferralPage';
+import MatangazoPage from './pages/consumer/MatangazoPage';
 import SubscriptionPage from './pages/consumer/SubscriptionPage';
 import FintechPage from './pages/consumer/FintechPage';
 import SmartCatalog from './pages/consumer/SmartCatalog';
@@ -93,6 +94,7 @@ function AppRoutes() {
         <Route path="/reviews" element={<ProtectedRoute roles={['customer']}><ReviewList /></ProtectedRoute>} />
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
+        <Route path="/matangazo" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><MatangazoPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/fintech" element={<ProtectedRoute roles={['customer', 'vendor', 'driver', ...STAFF_ADMIN_ROLES]}><FintechPage /></ProtectedRoute>} />
         <Route path="/used-goods" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><UsedGoodsPage /></ProtectedRoute>} />

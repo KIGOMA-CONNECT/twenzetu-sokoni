@@ -47,6 +47,8 @@ import { SavingsController } from './savings.controller';
 import { FintechLoansController } from './fintech-loans.controller';
 import { VendorSubscriptionsController } from './vendor-subscriptions.controller';
 import { CommissionsController } from './commissions.controller';
+import { PublicController } from './public.controller';
+import { AdsController } from './ads.controller';
 
 @Module({
   imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity])],
@@ -90,6 +92,8 @@ import { CommissionsController } from './commissions.controller';
     FintechLoansController,
     VendorSubscriptionsController,
     CommissionsController,
+    PublicController,
+    AdsController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },

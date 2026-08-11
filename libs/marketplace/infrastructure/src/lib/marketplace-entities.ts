@@ -39,6 +39,7 @@ import { ServiceRequestMessageOrmEntity } from './entities/service-request-messa
 import { CartOrmEntity } from './entities/cart-orm.entity';
 import { CartItemOrmEntity } from './entities/cart-item-orm.entity';
 import { PushSubscriptionOrmEntity } from './entities/push-subscription-orm.entity';
+import { AdvertOrmEntity } from './entities/advert-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -82,4 +83,5 @@ export const MARKETPLACE_ENTITIES = [
   CartOrmEntity,
   CartItemOrmEntity,
   PushSubscriptionOrmEntity,
+  AdvertOrmEntity,
 ];

@@ -246,6 +246,23 @@ export interface Category {
   parentId: string | null;
   imageUrl: string | null;
   isActive: boolean;
+  tagline?: string | null;
+  benefits?: string[];
+  emoji?: string | null;
+}
+
+export interface Advert {
+  id: string;
+  title: string;
+  body: string | null;
+  emoji: string | null;
+  imageUrl: string | null;
+  ctaLabel: string | null;
+  ctaUrl: string | null;
+  isActive: boolean;
+  sortOrder: number;
+  startsAt: string | null;
+  endsAt: string | null;
 }
 
 export interface CatalogMatch {

@@ -182,8 +182,8 @@ function ConsumerDashboard() {
         <SectionTitle title={t('app.categories')} emoji="🛍️" />
         <div className="cat-scroll">
           {parentCategories.map((cat) => {
-            const icon = CATEGORY_ICONS[cat.id] ?? '🛍️';
-            const hint = SUBCATEGORY_HINTS[cat.id];
+            const icon = cat.emoji || CATEGORY_ICONS[cat.id] || '🛍️';
+            const hint = cat.tagline || SUBCATEGORY_HINTS[cat.id];
             return (
               <div key={cat.id} className="cat-tile" onClick={() => handleCategoryClick(cat)}>
                 <div className="cat-emoji" style={{ background: CATEGORY_BG[icon] || 'var(--brand-soft)' }}>{icon}</div>
@@ -260,6 +260,7 @@ function ConsumerDashboard() {
             <SectionTitle title={t('app.quickLinks')} emoji="⚡" />
             <div className="flex gap-2 wrap">
               <button className="btn btn-primary" onClick={() => navigate('/orders')}>📦 My Orders</button>
+              <button className="btn btn-outline" onClick={() => navigate('/matangazo')}>📣 {t('nav.promotions')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/referrals')}>🎁 {t('nav.referrals')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/subscriptions')}>🔁 {t('nav.subscriptions')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/wallet')}>💳 Wallet</button>
