@@ -84,7 +84,7 @@ export default function CargoPage() {
     setFareError('');
     const timer = setTimeout(async () => {
       try {
-        const res = await api.get('/cargo/fare', {
+        const res = await api.get('/public/cargo/fare', {
           params: {
             pickupLat: pickup.lat,
             pickupLng: pickup.lng,
@@ -132,6 +132,10 @@ export default function CargoPage() {
 
   async function submitBooking() {
     if (!pickup || !delivery || !selectedSubObj || !selectedVehicle) return;
+    if (!localStorage.getItem('accessToken')) {
+      navigate('/login');
+      return;
+    }
     setSubmitting(true);
     setSubmitError('');
     try {

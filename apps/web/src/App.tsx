@@ -80,10 +80,18 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to="/dashboard" /> : <HomePage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+      <Route element={<MainLayout />}>
+        <Route path="/vendors" element={<VendorList />} />
+        <Route path="/vendors/:vendorId/products" element={<ProductList />} />
+        <Route path="/used-goods" element={<UsedGoodsPage />} />
+        <Route path="/used-goods/:categoryId" element={<UsedGoodsPage />} />
+        <Route path="/tailoring" element={<TailoringOrderPage />} />
+        <Route path="/general-products" element={<GeneralProductsPage />} />
+        <Route path="/cargo" element={<CargoPage />} />
+        <Route path="/matangazo" element={<MatangazoPage />} />
+      </Route>
       <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardRedirect />} />
-        <Route path="/vendors" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><VendorList /></ProtectedRoute>} />
-        <Route path="/vendors/:vendorId/products" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ProductList /></ProtectedRoute>} />
         <Route path="/cart" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><CartPage /></ProtectedRoute>} />
         <Route path="/checkout" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><CheckoutPage /></ProtectedRoute>} />
         <Route path="/orders" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><OrderHistory /></ProtectedRoute>} />
@@ -94,14 +102,8 @@ function AppRoutes() {
         <Route path="/reviews" element={<ProtectedRoute roles={['customer']}><ReviewList /></ProtectedRoute>} />
         <Route path="/kyc" element={<ProtectedRoute roles={['customer']}><CustomerKyc /></ProtectedRoute>} />
         <Route path="/referrals" element={<ProtectedRoute roles={['customer']}><ReferralPage /></ProtectedRoute>} />
-        <Route path="/matangazo" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><MatangazoPage /></ProtectedRoute>} />
         <Route path="/subscriptions" element={<ProtectedRoute roles={['customer']}><SubscriptionPage /></ProtectedRoute>} />
         <Route path="/fintech" element={<ProtectedRoute roles={['customer', 'vendor', 'driver', ...STAFF_ADMIN_ROLES]}><FintechPage /></ProtectedRoute>} />
-        <Route path="/used-goods" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><UsedGoodsPage /></ProtectedRoute>} />
-        <Route path="/used-goods/:categoryId" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><UsedGoodsPage /></ProtectedRoute>} />
-        <Route path="/tailoring" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><TailoringOrderPage /></ProtectedRoute>} />
-        <Route path="/general-products" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><GeneralProductsPage /></ProtectedRoute>} />
-        <Route path="/cargo" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><CargoPage /></ProtectedRoute>} />
         <Route path="/catalog" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><SmartCatalog /></ProtectedRoute>} />
         <Route path="/services" element={<ProtectedRoute roles={['customer', ...STAFF_ADMIN_ROLES]}><ConsumerServices /></ProtectedRoute>} />
         <Route path="/vendor/dashboard" element={<ProtectedRoute roles={['vendor']}><VendorDashboard /></ProtectedRoute>} />

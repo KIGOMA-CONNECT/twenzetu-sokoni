@@ -27,18 +27,22 @@ const SUBCAT_BG: Record<string, string> = {
 export default function UsedGoodsPage() {
   const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId?: string }>();
-  const { data: categories, loading: catsLoading, error: catsError } = useApi<Category[]>('/categories', []);
+  const { data: categories, loading: catsLoading, error: catsError } = useApi<Category[]>('/public/categories', []);
   const { addItem } = useCart();
 
   const subcategories = (categories ?? []).filter((c) => c.parentId === USED_PARENT_ID);
   const selectedCat = subcategories.find((c) => c.id === categoryId);
 
   const { data: products, loading: prodsLoading, error: prodsError } = useApi<Product[]>(
-    categoryId ? `/products?categoryId=${categoryId}` : null,
+    categoryId ? `/public/products?categoryId=${categoryId}` : null,
     [categoryId],
   );
 
   const handleAdd = async (p: Product) => {
+    if (!localStorage.getItem('accessToken')) {
+      navigate('/login');
+      return;
+    }
     try { await addItem(p.id); } catch { /* noop */ }
   };
 

@@ -58,7 +58,7 @@ export default function MatangazoPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { data: ads, loading: adsLoading, error: adsError } = useApi<Advert[]>('/public/ads', []);
-  const { data: categories, loading: catsLoading } = useApi<Category[]>('/categories', []);
+  const { data: categories, loading: catsLoading } = useApi<Category[]>('/public/categories', []);
 
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 

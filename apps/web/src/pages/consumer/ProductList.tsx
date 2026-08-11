@@ -16,10 +16,10 @@ function ProductList() {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: products, loading, error } = useApi<Product[]>(
-    `/products?vendorId=${vendorId}`,
+    `/public/products?vendorId=${vendorId}`,
     [vendorId]
   );
-  const { data: vendors } = useApi<Vendor[]>('/vendors');
+  const { data: vendors } = useApi<Vendor[]>('/public/vendors');
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   const { cart, activeVendorId, setActiveVendor, addItem, updateItem, removeItem, mutation, error: cartError } = useCart();
@@ -33,7 +33,7 @@ function ProductList() {
   useEffect(() => {
     if (!products || products.length === 0) return;
     const firstId = products[0].id;
-    api.get(`/products/${firstId}/similar?limit=4`).then(res => {
+    api.get(`/public/products/${firstId}/similar?limit=4`).then(res => {
       const data = res.data?.data?.data || res.data?.data || [];
       setSimilarProducts(Array.isArray(data) ? data : []);
     }).catch(() => setSimilarProducts([]));
@@ -43,6 +43,10 @@ function ProductList() {
 
   const handleAdd = async (p: Product) => {
     if (!vendorId) return;
+    if (!localStorage.getItem('accessToken')) {
+      navigate('/login');
+      return;
+    }
     try {
       await addItem(p.id);
     } catch {

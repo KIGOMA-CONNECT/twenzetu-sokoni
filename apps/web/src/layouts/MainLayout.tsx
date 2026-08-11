@@ -58,15 +58,15 @@ export function MainLayout() {
   };
 
   const menuItems: { label: string; path: string; show: boolean }[] = [
-    { label: 'Dashboard', path: '/dashboard', show: true },
-    { label: 'Browse Vendors', path: '/vendors', show: isCustomer || isAdmin },
+    { label: 'Dashboard', path: '/dashboard', show: !!user },
+    { label: 'Browse Vendors', path: '/vendors', show: !user || isCustomer || isAdmin },
     { label: 'Services', path: '/services', show: isCustomer || isAdmin },
     { label: 'My Orders', path: '/orders', show: isCustomer },
     { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver },
     { label: 'Addresses', path: '/addresses', show: isCustomer },
     { label: 'Loyalty', path: '/loyalty', show: isCustomer },
-    { label: 'Matangazo', path: '/matangazo', show: isCustomer || isAdmin },
+    { label: 'Matangazo', path: '/matangazo', show: !user || isCustomer || isAdmin },
     { label: 'Reviews', path: '/reviews', show: isCustomer },
     { label: 'Verify Identity', path: '/kyc', show: isCustomer },
     { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer },
@@ -105,8 +105,8 @@ export function MainLayout() {
   ];
 
   const bottomNav = [
-    { label: 'Home', ico: '🏠', path: '/dashboard', show: true },
-    { label: 'Vendors', ico: '🏪', path: '/vendors', show: isCustomer || isAdmin },
+    { label: 'Home', ico: '🏠', path: user ? '/dashboard' : '/vendors', show: true },
+    { label: 'Vendors', ico: '🏪', path: '/vendors', show: !user || isCustomer || isAdmin },
     { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
     { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
@@ -145,12 +145,16 @@ export function MainLayout() {
       </nav>
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user?.fullName} ({user?.role})</div>
-          <NotificationBell />
+          <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{user ? `${user.fullName} (${user.role})` : 'Mgeni'}</div>
+          {user && <NotificationBell />}
         </div>
         <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher dark /></div>
         <div style={{ marginBottom: '0.5rem' }}><CurrencySwitcher /></div>
-        <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Logout</button>
+        {user ? (
+          <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Logout</button>
+        ) : (
+          <button onClick={() => go('/login')} className="btn btn-primary btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Login / Register</button>
+        )}
       </div>
     </>
   );
@@ -163,7 +167,7 @@ export function MainLayout() {
           {isMobile && (
             <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="icon-btn" style={{ fontSize: '1.35rem' }}>☰</button>
           )}
-          <button className="brand" onClick={() => go(isCustomer || isAdmin ? '/dashboard' : user?.role === 'vendor' ? '/vendor/dashboard' : user?.role === 'driver' ? '/driver/dashboard' : '/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+          <button className="brand" onClick={() => go(!user ? '/vendors' : isCustomer || isAdmin ? '/dashboard' : user?.role === 'vendor' ? '/vendor/dashboard' : user?.role === 'driver' ? '/driver/dashboard' : '/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <span className="brand-dot" />
             afriMarket
           </button>
@@ -193,9 +197,9 @@ export function MainLayout() {
                 <CurrencySwitcher />
               </div>
             </div>
-            <button className="user-chip" onClick={handleLogout} title="Logout">
+            <button className="user-chip" onClick={user ? handleLogout : () => navigate('/login')} title={user ? 'Logout' : 'Login'}>
               <span className="avatar">{(user?.fullName || 'U').charAt(0).toUpperCase()}</span>
-              <span className="chip-name hide-tablet">{user?.fullName?.split(' ')[0] || 'Account'}</span>
+              <span className="chip-name hide-tablet">{user?.fullName?.split(' ')[0] || (user ? 'Account' : 'Login')}</span>
             </button>
           </div>
         </div>
@@ -278,7 +282,11 @@ export function MainLayout() {
             {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/addresses'); }}>Addresses</a>}
             {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/loyalty'); }}>Loyalty Points</a>}
             <a href="#" onClick={(e) => { e.preventDefault(); go('/notifications'); }}>Notifications</a>
-            <button onClick={handleLogout} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Logout</button>
+            {user ? (
+              <button onClick={handleLogout} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Logout</button>
+            ) : (
+              <button onClick={() => go('/login')} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Login / Register</button>
+            )}
           </div>
           <div>
             <h4>Company</h4>

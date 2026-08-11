@@ -22,7 +22,7 @@ function VendorList() {
   const [searching, setSearching] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<any>(null);
-  const { data: vendors, loading, error } = useApi<Vendor[]>(category ? `/vendors?category=${encodeURIComponent(category)}` : '/vendors', [category]);
+  const { data: vendors, loading, error } = useApi<Vendor[]>(category ? `/public/vendors?category=${encodeURIComponent(category)}` : '/public/vendors', [category]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -41,7 +41,7 @@ function VendorList() {
     debounceRef.current = setTimeout(async () => {
       setSearching(true);
       try {
-        const res = await api.get(`/search/suggestions?q=${encodeURIComponent(value)}&limit=5`);
+        const res = await api.get(`/public/search/suggestions?q=${encodeURIComponent(value)}&limit=5`);
         const payload = res.data?.data ?? res.data ?? [];
         const list = Array.isArray(payload) ? payload : payload?.data;
         setSuggestions(Array.isArray(list) ? list : []);
