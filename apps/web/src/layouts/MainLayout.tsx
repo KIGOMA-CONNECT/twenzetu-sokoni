@@ -57,6 +57,10 @@ export function MainLayout() {
     setQuery('');
   };
 
+  const showMarketplace = !user || (isCustomer && !isVendor) || isAdmin;
+
+  const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
+
   const menuItems: { label: string; path: string; show: boolean }[] = [
     { label: 'Dashboard', path: '/dashboard', show: !!user && !isVendor && !isDriver },
     { label: 'Browse Vendors', path: '/vendors', show: showMarketplace },
@@ -103,10 +107,6 @@ export function MainLayout() {
 
   const isActive = (path: string) =>
     location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
-
-  const showMarketplace = !user || (isCustomer && !isVendor) || isAdmin;
-
-  const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
 
   const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
     ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
