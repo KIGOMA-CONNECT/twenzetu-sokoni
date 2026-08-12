@@ -42,6 +42,8 @@ import { CartOrmEntity } from './entities/cart-orm.entity';
 import { CartItemOrmEntity } from './entities/cart-item-orm.entity';
 import { PushSubscriptionOrmEntity } from './entities/push-subscription-orm.entity';
 import { AdvertOrmEntity } from './entities/advert-orm.entity';
+import { SupplierOrmEntity } from './entities/supplier-orm.entity';
+import { PurchaseOrderOrmEntity } from './entities/purchase-order-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -88,4 +90,6 @@ export const MARKETPLACE_ENTITIES = [
   CartItemOrmEntity,
   PushSubscriptionOrmEntity,
   AdvertOrmEntity,
+  SupplierOrmEntity,
+  PurchaseOrderOrmEntity,
 ];

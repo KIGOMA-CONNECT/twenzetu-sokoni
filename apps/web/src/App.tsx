@@ -55,6 +55,8 @@ import VendorStaff from './pages/vendor/VendorStaff';
 import VendorPos from './pages/vendor/VendorPos';
 import VendorDayReport from './pages/vendor/VendorDayReport';
 import VendorAccounting from './pages/vendor/VendorAccounting';
+import VendorSuppliers from './pages/vendor/VendorSuppliers';
+import VendorPurchaseOrders from './pages/vendor/VendorPurchaseOrders';
 import CartPage from './pages/consumer/CartPage';
 import CheckoutPage from './pages/consumer/CheckoutPage';
 import AdminHrDashboard from './pages/admin/hr/AdminHrDashboard';
@@ -118,6 +120,8 @@ function AppRoutes() {
         <Route path="/vendor/pos" element={<ProtectedRoute roles={['vendor']}><VendorPos /></ProtectedRoute>} />
         <Route path="/vendor/pos-report" element={<ProtectedRoute roles={['vendor']}><VendorDayReport /></ProtectedRoute>} />
         <Route path="/vendor/accounting" element={<ProtectedRoute roles={['vendor']}><VendorAccounting /></ProtectedRoute>} />
+        <Route path="/vendor/suppliers" element={<ProtectedRoute roles={['vendor']}><VendorSuppliers /></ProtectedRoute>} />
+        <Route path="/vendor/purchase-orders" element={<ProtectedRoute roles={['vendor']}><VendorPurchaseOrders /></ProtectedRoute>} />
         <Route path="/admin/dashboard" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDashboard /></ProtectedRoute>} />
         <Route path="/admin/vendors" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVendors /></ProtectedRoute>} />
         <Route path="/admin/disputes" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDisputes /></ProtectedRoute>} />

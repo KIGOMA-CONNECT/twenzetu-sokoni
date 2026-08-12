@@ -95,6 +95,13 @@ export class Product extends AggregateRoot<EntityId> {
     if (this._stockQuantity < quantity) throw new Error('Insufficient stock');
     this._stockQuantity -= quantity;
   }
+  public increaseStock(quantity: number): void {
+    Guard.assert(quantity > 0, 'Quantity must be positive');
+    this._stockQuantity += quantity;
+    if (this._status === 'OUT_OF_STOCK' && this._stockQuantity > 0) {
+      this._status = 'ACTIVE';
+    }
+  }
   public markOutOfStock(): void { this._status = 'OUT_OF_STOCK'; }
   public activate(): void { this._status = 'ACTIVE'; }
   public deactivate(): void { this._status = 'INACTIVE'; }

@@ -17,6 +17,11 @@ const statusColors: Record<string, { cls: string; dot: string }> = {
   OPEN: { cls: 'badge-red', dot: '#dc2626' },
   RESOLVED: { cls: 'badge-green', dot: '#16a34a' },
   CLOSED: { cls: 'badge-slate', dot: '#64748b' },
+  ORDERED: { cls: 'badge-amber', dot: '#f59e0b' },
+  RECEIVED: { cls: 'badge-blue', dot: '#2563eb' },
+  COMPLETED: { cls: 'badge-green', dot: '#16a34a' },
+  PAID: { cls: 'badge-green', dot: '#16a34a' },
+  UNPAID: { cls: 'badge-red', dot: '#dc2626' },
 };
 
 export function StatusBadge({ status }: { status: string | undefined | null }) {

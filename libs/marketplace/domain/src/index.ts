@@ -107,3 +107,8 @@ export * from './lib/marketing/advert.repository.interface';
 export * from './lib/pos/pos-payment-method';
 export * from './lib/pos/pos-sale.aggregate';
 export * from './lib/pos/pos-sale.repository.interface';
+// Supplier & Purchase Orders
+export * from './lib/supplier/supplier.aggregate';
+export * from './lib/supplier/supplier.repository.interface';
+export * from './lib/supplier/supplier-order.aggregate';
+export * from './lib/supplier/supplier-order.repository.interface';

@@ -198,5 +198,9 @@ export * from './lib/use-cases/pos/get-pos-day-report.use-case';
 export * from './lib/use-cases/vendor-accounting/vendor-accounting.service';
 export * from './lib/use-cases/vendor-accounting/vendor-accounting-range';
 
+// Use Cases - Supplier & Purchase Orders
+export * from './lib/use-cases/supplier/supplier.use-cases';
+export * from './lib/use-cases/purchase-order/purchase-order.use-cases';
+
 // Vendor Access
 export * from './lib/vendor-access/vendor-access.service';

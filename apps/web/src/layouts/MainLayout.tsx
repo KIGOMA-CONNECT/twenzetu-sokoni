@@ -58,18 +58,18 @@ export function MainLayout() {
   };
 
   const menuItems: { label: string; path: string; show: boolean }[] = [
-    { label: 'Dashboard', path: '/dashboard', show: !!user },
-    { label: 'Browse Vendors', path: '/vendors', show: !user || isCustomer || isAdmin },
-    { label: 'Services', path: '/services', show: isCustomer || isAdmin },
+    { label: 'Dashboard', path: '/dashboard', show: !!user && !isVendor && !isDriver },
+    { label: 'Browse Vendors', path: '/vendors', show: showMarketplace },
+    { label: 'Services', path: '/services', show: (isCustomer && !isVendor) || isAdmin },
     { label: 'My Orders', path: '/orders', show: isCustomer },
     { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver },
     { label: 'Addresses', path: '/addresses', show: isCustomer },
     { label: 'Loyalty', path: '/loyalty', show: isCustomer },
-    { label: 'Matangazo', path: '/matangazo', show: !user || isCustomer || isAdmin },
+    { label: 'Matangazo', path: '/matangazo', show: showMarketplace },
     { label: 'Reviews', path: '/reviews', show: isCustomer },
     { label: 'Verify Identity', path: '/kyc', show: isCustomer },
-    { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer },
+    { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer && !isVendor },
     { label: 'Vendor Panel', path: '/vendor/dashboard', show: isVendor },
     { label: 'My Products', path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'My Services', path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products') },
@@ -77,6 +77,8 @@ export function MainLayout() {
     { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos') },
     { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports') },
     { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports') },
+    { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products') },
+    { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },
     { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
     { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },
@@ -102,6 +104,8 @@ export function MainLayout() {
   const isActive = (path: string) =>
     location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
+  const showMarketplace = !user || (isCustomer && !isVendor) || isAdmin;
+
   const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
     ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
     { label: '🧰 Services', path: '/services', cta: true },
@@ -110,9 +114,9 @@ export function MainLayout() {
 
   const bottomNav = [
     { label: 'Home', ico: '🏠', path: user ? '/dashboard' : '/vendors', show: true },
-    { label: 'Vendors', ico: '🏪', path: '/vendors', show: !user || isCustomer || isAdmin },
-    { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
-    { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
+    { label: 'Vendors', ico: '🏪', path: '/vendors', show: showMarketplace },
+    { label: 'Services', ico: '🧰', path: '/services', show: (isCustomer && !isVendor) || isAdmin },
+    { label: 'Cart', ico: '🛒', path: '/cart', show: (isCustomer && !isVendor) || isAdmin, badge: itemCount },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Finance', ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },
@@ -178,15 +182,17 @@ export function MainLayout() {
             afriMarket
           </button>
 
-          <form className="searchbar hide-tablet" onSubmit={onSearch} role="search">
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search vendors, products..."
-              aria-label="Search"
-            />
-            <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
-          </form>
+          {showMarketplace && (
+            <form className="searchbar hide-tablet" onSubmit={onSearch} role="search">
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search vendors, products..."
+                aria-label="Search"
+              />
+              <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
+            </form>
+          )}
 
           <div className="topbar-actions">
             {isCustomer && (
@@ -195,7 +201,7 @@ export function MainLayout() {
               </button>
             )}
             <NotificationBell />
-            {(isCustomer || isAdmin) && <CartIcon />}
+            {showMarketplace && <CartIcon />}
             <div className="hide-tablet" style={{ width: 1, height: 26, background: 'rgba(148,163,184,0.25)' }} />
             <div className="hide-tablet" style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
               <LanguageSwitcher dark />
@@ -210,8 +216,8 @@ export function MainLayout() {
           </div>
         </div>
 
-        {/* Category bar (desktop) */}
-        {!isMobile && (
+        {/* Category bar (desktop) — marketplace browsing only */}
+        {showMarketplace && !isMobile && (
           <nav className="catbar hide-mobile">
             <div className="catbar-inner">
               {categoryLinks.map((c) => (
@@ -225,7 +231,7 @@ export function MainLayout() {
       </header>
 
       {/* Mobile search row */}
-      {isMobile && (
+      {showMarketplace && isMobile && (
         <div style={{ background: 'var(--ink-soft)', padding: '0 1rem 0.75rem' }}>
           <form className="searchbar" onSubmit={onSearch} role="search">
             <input
@@ -277,8 +283,8 @@ export function MainLayout() {
           </div>
           <div>
             <h4>Marketplace</h4>
-            <a href="#" onClick={(e) => { e.preventDefault(); go('/vendors'); }}>Browse Vendors</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); go('/catalog'); }}>Smart Cart</a>
+            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/vendors'); }}>Browse Vendors</a>}
+            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/catalog'); }}>Smart Cart</a>}
             {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/orders'); }}>My Orders</a>}
             {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/referrals'); }}>Refer a Friend</a>}
           </div>

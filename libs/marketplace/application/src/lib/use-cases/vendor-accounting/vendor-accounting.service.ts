@@ -4,6 +4,7 @@ import {
   PaymentOrmEntity,
   ProductSaleOrmEntity,
   WalletTransactionOrmEntity,
+  PurchaseOrderOrmEntity,
 } from '@afri-market/marketplace-infrastructure';
 import {
   AccountingDateRange,
@@ -17,9 +18,12 @@ export interface VendorAccountingSummary {
   posSales: number;
   grossRevenue: number;
   commissions: number;
+  cogs: number;
   netEarnings: number;
+  netProfit: number;
   orderCount: number;
   posTransactionCount: number;
+  purchaseOrderCount: number;
   walletCredits: number;
   withdrawals: number;
   otherDebits: number;
@@ -31,6 +35,7 @@ export interface AccountingDailyRow {
   marketplaceRevenue: number;
   posSales: number;
   commissions: number;
+  cogs: number;
   withdrawals: number;
   net: number;
 }
@@ -62,6 +67,13 @@ interface WalletTxRow {
   created_at: Date;
 }
 
+interface PoRow {
+  id: string;
+  po_number: string;
+  total_cost: string;
+  received_at: Date | null;
+}
+
 @Injectable()
 export class VendorAccountingService {
   constructor(private readonly dataSource: DataSource) {}
@@ -75,8 +87,9 @@ export class VendorAccountingService {
     const paymentRepo = this.dataSource.getRepository(PaymentOrmEntity);
     const saleRepo = this.dataSource.getRepository(ProductSaleOrmEntity);
     const walletTxRepo = this.dataSource.getRepository(WalletTransactionOrmEntity);
+    const poRepo = this.dataSource.getRepository(PurchaseOrderOrmEntity);
 
-    const [payments, posSales, walletTx] = await Promise.all([
+    const [payments, posSales, walletTx, purchases] = await Promise.all([
       paymentRepo
         .createQueryBuilder('p')
         .select([
@@ -115,6 +128,18 @@ export class VendorAccountingService {
         .andWhere('wt.created_at >= :since', { since })
         .andWhere('wt.created_at < :until', { until })
         .getRawOne(),
+      poRepo
+        .createQueryBuilder('po')
+        .select([
+          "COALESCE(SUM(po.total_cost), 0) AS \"cogs\"",
+          "COUNT(*) FILTER (WHERE po.status IN ('RECEIVED', 'CONFIRMED', 'COMPLETED')) AS \"poCount\"",
+        ])
+        .where('po.tenant_id = :tenantId', { tenantId })
+        .andWhere('po.vendor_id = :vendorId', { vendorId })
+        .andWhere("po.status IN ('RECEIVED', 'CONFIRMED', 'COMPLETED')")
+        .andWhere('po.received_at >= :since', { since })
+        .andWhere('po.received_at < :until', { until })
+        .getRawOne(),
     ]);
 
     const gross = Number(payments.gross);
@@ -123,8 +148,10 @@ export class VendorAccountingService {
     const walletCredits = Number(walletTx.credits);
     const withdrawals = Number(walletTx.withdrawals);
     const otherDebits = Number(walletTx.otherDebits);
+    const cogs = Number(purchases.cogs);
 
     const netEarnings = gross + posSalesTotal - commissions;
+    const netProfit = netEarnings - cogs;
 
     return {
       currency: 'TZS',
@@ -132,9 +159,12 @@ export class VendorAccountingService {
       posSales: posSalesTotal,
       grossRevenue: gross + posSalesTotal,
       commissions,
+      cogs,
       netEarnings,
+      netProfit,
       orderCount: Number(payments.count),
       posTransactionCount: Number(posSales.posCount),
+      purchaseOrderCount: Number(purchases.poCount),
       walletCredits,
       withdrawals,
       otherDebits,
@@ -151,8 +181,9 @@ export class VendorAccountingService {
     const paymentRepo = this.dataSource.getRepository(PaymentOrmEntity);
     const saleRepo = this.dataSource.getRepository(ProductSaleOrmEntity);
     const walletTxRepo = this.dataSource.getRepository(WalletTransactionOrmEntity);
+    const poRepo = this.dataSource.getRepository(PurchaseOrderOrmEntity);
 
-    const [payments, sales, walletTx] = await Promise.all([
+    const [payments, sales, walletTx, purchases] = await Promise.all([
       paymentRepo
         .createQueryBuilder('p')
         .select([
@@ -202,6 +233,21 @@ export class VendorAccountingService {
         .andWhere('wt.created_at >= :since', { since })
         .andWhere('wt.created_at < :until', { until })
         .orderBy('wt.created_at', 'DESC')
+        .getRawMany(),
+      poRepo
+        .createQueryBuilder('po')
+        .select([
+          'po.id AS "id"',
+          'po.po_number AS "po_number"',
+          'po.total_cost AS "total_cost"',
+          'po.received_at AS "received_at"',
+        ])
+        .where('po.tenant_id = :tenantId', { tenantId })
+        .andWhere('po.vendor_id = :vendorId', { vendorId })
+        .andWhere("po.status IN ('RECEIVED', 'CONFIRMED', 'COMPLETED')")
+        .andWhere('po.received_at >= :since', { since })
+        .andWhere('po.received_at < :until', { until })
+        .orderBy('po.received_at', 'DESC')
         .getRawMany(),
     ]);
 
@@ -273,6 +319,18 @@ export class VendorAccountingService {
       }
     }
 
+    for (const po of purchases as PoRow[]) {
+      const date = new Date(po.received_at ?? new Date()).toISOString();
+      entries.push({
+        id: `purchase:${po.id}`,
+        date,
+        type: 'PURCHASE',
+        description: `Stock purchase ${po.po_number}`,
+        amount: -Number(po.total_cost),
+        referenceId: po.id,
+      });
+    }
+
     entries.sort((a, b) => b.date.localeCompare(a.date));
     return entries;
   }
@@ -293,6 +351,7 @@ export class VendorAccountingService {
         marketplaceRevenue: 0,
         posSales: 0,
         commissions: 0,
+        cogs: 0,
         withdrawals: 0,
         net: 0,
       };
@@ -306,13 +365,16 @@ export class VendorAccountingService {
         case 'COMMISSION':
           row.commissions += -entry.amount;
           break;
+        case 'PURCHASE':
+          row.cogs += -entry.amount;
+          break;
         case 'WITHDRAWAL':
           row.withdrawals += -entry.amount;
           break;
         default:
           break;
       }
-      row.net = row.marketplaceRevenue + row.posSales - row.commissions - row.withdrawals;
+      row.net = row.marketplaceRevenue + row.posSales - row.commissions - row.cogs - row.withdrawals;
       map.set(key, row);
     }
 

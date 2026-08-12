@@ -2,6 +2,7 @@ import {
   PaymentOrmEntity,
   ProductSaleOrmEntity,
   WalletTransactionOrmEntity,
+  PurchaseOrderOrmEntity,
 } from '@afri-market/marketplace-infrastructure';
 import { VendorAccountingService } from '../lib/use-cases/vendor-accounting/vendor-accounting.service';
 import {
@@ -46,15 +47,19 @@ const emptyOne = {
   credits: '0',
   withdrawals: '0',
   otherDebits: '0',
+  cogs: '0',
+  poCount: '0',
 };
 
 function makeDataSource(opts: {
   paymentOne?: unknown;
   saleOne?: unknown;
   walletOne?: unknown;
+  poOne?: unknown;
   paymentRows?: unknown[];
   saleRows?: unknown[];
   walletRows?: unknown[];
+  poRows?: unknown[];
 }) {
   const dataSource: any = {
     getRepository: jest.fn((entity: any) => {
@@ -67,6 +72,9 @@ function makeDataSource(opts: {
       if (entity === WalletTransactionOrmEntity) {
         return { createQueryBuilder: jest.fn(() => makeQueryBuilder({ one: opts.walletOne ?? emptyOne, many: opts.walletRows })) };
       }
+      if (entity === PurchaseOrderOrmEntity) {
+        return { createQueryBuilder: jest.fn(() => makeQueryBuilder({ one: opts.poOne ?? emptyOne, many: opts.poRows })) };
+      }
       throw new Error(`Unexpected entity ${String((entity as any)?.name)}`);
     }),
   };
@@ -74,12 +82,13 @@ function makeDataSource(opts: {
 }
 
 describe('VendorAccountingService.summary', () => {
-  it('should aggregate income, commission and wallet flows', async () => {
+  it('should aggregate income, commission, purchases and wallet flows', async () => {
     const service = new VendorAccountingService(
       makeDataSource({
         paymentOne: { gross: '100000', commission: '10000', net: '90000', count: '3' },
         saleOne: { pos: '50000', posCount: '4' },
         walletOne: { credits: '20000', withdrawals: '15000', otherDebits: '5000' },
+        poOne: { cogs: '30000', poCount: '2' },
       }),
     );
 
@@ -89,9 +98,12 @@ describe('VendorAccountingService.summary', () => {
     expect(s.posSales).toBe(50000);
     expect(s.grossRevenue).toBe(150000);
     expect(s.commissions).toBe(10000);
+    expect(s.cogs).toBe(30000);
     expect(s.netEarnings).toBe(140000);
+    expect(s.netProfit).toBe(110000);
     expect(s.orderCount).toBe(3);
     expect(s.posTransactionCount).toBe(4);
+    expect(s.purchaseOrderCount).toBe(2);
     expect(s.walletCredits).toBe(20000);
     expect(s.withdrawals).toBe(15000);
     expect(s.otherDebits).toBe(5000);
@@ -167,6 +179,26 @@ describe('VendorAccountingService.ledger', () => {
     const entries = await service.ledger(TENANT_ID, VENDOR_ID, range());
     expect(entries).toHaveLength(0);
   });
+
+  it('should include received purchase orders as negative COGS entries', async () => {
+    const service = new VendorAccountingService(
+      makeDataSource({
+        poRows: [
+          {
+            id: 'po-1',
+            po_number: 'PO-20260106-0001',
+            total_cost: '25000',
+            received_at: new Date('2026-01-06T11:00:00.000Z'),
+          },
+        ],
+      }),
+    );
+    const entries = await service.ledger(TENANT_ID, VENDOR_ID, range());
+    expect(entries).toHaveLength(1);
+    expect(entries[0].type).toBe('PURCHASE');
+    expect(entries[0].amount).toBe(-25000);
+    expect(entries[0].description).toContain('PO-20260106-0001');
+  });
 });
 
 describe('VendorAccountingService.daily/report', () => {
@@ -226,6 +258,7 @@ describe('vendor-accounting-range helpers', () => {
     expect(ACCOUNTING_PERIODS).toContain('30d');
     expect(ACCOUNTING_ENTRY_TYPES).toContain('ORDER_PAYOUT');
     expect(ACCOUNTING_ENTRY_TYPES).toContain('COMMISSION');
+    expect(ACCOUNTING_ENTRY_TYPES).toContain('PURCHASE');
   });
 
   it('should default to 30d when period is unknown', () => {

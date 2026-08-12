@@ -76,3 +76,7 @@ export * from './lib/repositories/typeorm-service-listing.repository';
 export * from './lib/repositories/typeorm-service-request.repository';
 export * from './lib/repositories/typeorm-service-quote.repository';
 export * from './lib/repositories/typeorm-advert.repository';
+export * from './lib/entities/supplier-orm.entity';
+export * from './lib/entities/purchase-order-orm.entity';
+export * from './lib/repositories/typeorm-supplier.repository';
+export * from './lib/repositories/typeorm-purchase-order.repository';

@@ -496,3 +496,46 @@ export interface VendorAccountingReport {
   daily: AccountingDailyRow[];
   entries: AccountingEntry[];
 }
+
+export interface Supplier {
+  id: string;
+  vendorId: string;
+  name: string;
+  phone?: string | null;
+  contactPerson?: string | null;
+  notes?: string | null;
+  linkedVendorId?: string | null;
+  status: string;
+  createdAt: string;
+}
+
+export interface PurchaseOrderItem {
+  productId: string;
+  productName: string;
+  sku?: string | null;
+  quantity: number;
+  unitCost: number;
+  totalCost: number;
+  currency: string;
+}
+
+export type PurchaseOrderStatus = 'ORDERED' | 'RECEIVED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED';
+export type PurchaseOrderPaymentStatus = 'UNPAID' | 'PAID';
+
+export interface PurchaseOrder {
+  id: string;
+  vendorId: string;
+  operatorId: string;
+  supplierId?: string | null;
+  poNumber: string;
+  items: PurchaseOrderItem[];
+  subtotal: number;
+  currency: string;
+  status: PurchaseOrderStatus;
+  paymentStatus: PurchaseOrderPaymentStatus;
+  notes?: string | null;
+  receivedAt?: string | null;
+  confirmedAt?: string | null;
+  completedAt?: string | null;
+  createdAt: string;
+}

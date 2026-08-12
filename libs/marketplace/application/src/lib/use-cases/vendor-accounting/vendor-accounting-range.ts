@@ -15,7 +15,8 @@ export type AccountingEntryType =
   | 'POS_SALE'
   | 'WALLET_CREDIT'
   | 'WITHDRAWAL'
-  | 'WALLET_DEBIT';
+  | 'WALLET_DEBIT'
+  | 'PURCHASE';
 
 export const ACCOUNTING_ENTRY_TYPES: ReadonlyArray<AccountingEntryType> = [
   'ORDER_PAYOUT',
@@ -24,6 +25,7 @@ export const ACCOUNTING_ENTRY_TYPES: ReadonlyArray<AccountingEntryType> = [
   'WALLET_CREDIT',
   'WITHDRAWAL',
   'WALLET_DEBIT',
+  'PURCHASE',
 ];
 
 export interface AccountingEntry {

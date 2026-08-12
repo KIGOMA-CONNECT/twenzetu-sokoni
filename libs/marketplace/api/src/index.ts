@@ -76,3 +76,7 @@ export * from './lib/pos.controller';
 export * from './lib/dto/pos-checkout.dto';
 export * from './lib/vendor-accounting.controller';
 export * from './lib/dto/vendor-accounting-query.dto';
+export * from './lib/vendor-suppliers.controller';
+export * from './lib/dto/create-supplier.dto';
+export * from './lib/vendor-purchase-orders.controller';
+export * from './lib/dto/create-purchase-order.dto';

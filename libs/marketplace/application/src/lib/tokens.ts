@@ -29,6 +29,10 @@ export const ADDRESS_REPOSITORY = 'IAddressRepository';
 export const MENU_REPOSITORY = 'IMenuRepository';
 export const CART_REPOSITORY = 'ICartRepository';
 
+// Supplier & Purchase Orders
+export const SUPPLIER_REPOSITORY = 'ISupplierRepository';
+export const PURCHASE_ORDER_REPOSITORY = 'IPurchaseOrderRepository';
+
 // Marketing
 export const ADVERT_REPOSITORY = 'IAdvertRepository';
 

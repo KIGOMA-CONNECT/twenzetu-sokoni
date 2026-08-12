@@ -38,6 +38,8 @@ import {
   TypeOrmServiceQuoteRepository,
   TypeOrmCartRepository,
   TypeOrmAdvertRepository,
+  TypeOrmSupplierRepository,
+  TypeOrmPurchaseOrderRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
 import {
@@ -55,6 +57,7 @@ import {
   COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
   SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY,
   CART_REPOSITORY, ADVERT_REPOSITORY,
+  SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
@@ -175,6 +178,20 @@ import { VendorAccessService } from './vendor-access/vendor-access.service';
 import { CreatePosSaleUseCase } from './use-cases/pos/create-pos-sale.use-case';
 import { GetPosDayReportUseCase } from './use-cases/pos/get-pos-day-report.use-case';
 import { VendorAccountingService } from './use-cases/vendor-accounting/vendor-accounting.service';
+import {
+  CreateSupplierUseCase,
+  ListSuppliersUseCase,
+  DeleteSupplierUseCase,
+} from './use-cases/supplier/supplier.use-cases';
+import {
+  CreatePurchaseOrderUseCase,
+  ListPurchaseOrdersUseCase,
+  ReceivePurchaseOrderUseCase,
+  ConfirmPurchaseOrderUseCase,
+  CompletePurchaseOrderUseCase,
+  CancelPurchaseOrderUseCase,
+  SetPurchaseOrderPaymentUseCase,
+} from './use-cases/purchase-order/purchase-order.use-cases';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -213,6 +230,8 @@ const REPOSITORIES = [
   { provide: SERVICE_QUOTE_REPOSITORY, useClass: TypeOrmServiceQuoteRepository },
   { provide: CART_REPOSITORY, useClass: TypeOrmCartRepository },
   { provide: ADVERT_REPOSITORY, useClass: TypeOrmAdvertRepository },
+  { provide: SUPPLIER_REPOSITORY, useClass: TypeOrmSupplierRepository },
+  { provide: PURCHASE_ORDER_REPOSITORY, useClass: TypeOrmPurchaseOrderRepository },
 ];
 
 const SERVICES = [
@@ -346,11 +365,21 @@ SetDefaultAddressUseCase,
   CreatePosSaleUseCase,
   GetPosDayReportUseCase,
   VendorAccountingService,
+  CreateSupplierUseCase,
+  ListSuppliersUseCase,
+  DeleteSupplierUseCase,
+  CreatePurchaseOrderUseCase,
+  ListPurchaseOrdersUseCase,
+  ReceivePurchaseOrderUseCase,
+  ConfirmPurchaseOrderUseCase,
+  CompletePurchaseOrderUseCase,
+  CancelPurchaseOrderUseCase,
+  SetPurchaseOrderPaymentUseCase,
 ];
 
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}
