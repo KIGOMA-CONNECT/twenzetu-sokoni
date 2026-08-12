@@ -30,7 +30,8 @@ export class VendorAccessService {
   /**
    * Resolves the vendor context for the given authenticated user.
    * - Platform admins resolve to null (they bypass vendor gating).
-   * - The vendor owner resolves to `staffRole: 'owner'` with all permissions.
+   * - Anyone with an owned vendor profile resolves to `staffRole: 'owner'` with all permissions
+   *   (covers both `role === 'vendor'` and customers onboarded via 'Become a Vendor').
    * - Active staff members resolve via their vendor_members row.
    * - Everyone else resolves to null.
    */
@@ -39,14 +40,11 @@ export class VendorAccessService {
       return null;
     }
 
-    if (user.role === 'vendor') {
-      const vendor = await this.vendorRepo.findByUserId(user.sub);
-      if (!vendor) {
-        return null;
-      }
+    const ownedVendor = await this.vendorRepo.findByUserId(user.sub);
+    if (ownedVendor) {
       return {
-        vendorId: vendor.id.value,
-        shopName: vendor.shopName,
+        vendorId: ownedVendor.id.value,
+        shopName: ownedVendor.shopName,
         staffRole: 'owner',
         permissions: [...ALL_VENDOR_PERMISSIONS],
         isOwner: true,

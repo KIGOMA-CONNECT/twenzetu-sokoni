@@ -334,6 +334,15 @@ describe('VendorAccessService', () => {
     expect(await service.resolve({ sub: STAFF_USER_ID, role: 'customer', tenantId: TENANT_ID })).toBeNull();
   });
 
+  it('should resolve a customer-role owner as owner (Become a Vendor onboarding)', async () => {
+    vendors.findByUserId.mockResolvedValue(makeVendor());
+    const ctx = await service.resolve({ sub: OWNER_USER_ID, role: 'customer', tenantId: TENANT_ID });
+    expect(ctx).not.toBeNull();
+    expect(ctx?.isOwner).toBe(true);
+    expect(ctx?.staffRole).toBe('owner');
+    expect(ctx?.permissions).toEqual(ALL_VENDOR_PERMISSIONS);
+  });
+
   it('assertPermission should allow an owner any permission', async () => {
     vendors.findByUserId.mockResolvedValue(makeVendor());
     const ctx = await service.assertPermission({ sub: OWNER_USER_ID, role: 'vendor', tenantId: TENANT_ID }, 'use_pos');

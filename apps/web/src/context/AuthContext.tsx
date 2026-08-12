@@ -119,7 +119,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isAdmin: STAFF_ADMIN_ROLES.includes(user?.role || ''),
     isSuperAdmin: user?.role === 'super_admin',
     isVendor: user?.role === 'vendor' || !!vendorAccess,
-    isVendorOwner: user?.role === 'vendor',
+    isVendorOwner: user?.role === 'vendor' || vendorAccess?.isOwner === true,
     hasVendorPermission: (permission: string) =>
       !!(user?.role === 'vendor' || vendorAccess?.isOwner) || (vendorAccess?.permissions?.includes(permission) ?? false),
     isCustomer: user?.role === 'customer',
