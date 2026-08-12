@@ -446,3 +446,53 @@ export interface VendorStaffMember {
   fullName?: string | null;
   phoneNumber?: string | null;
 }
+
+export type AccountingPeriod = '7d' | '30d' | '90d' | 'this_month' | 'last_month' | 'all_time';
+
+export type AccountingEntryType =
+  | 'ORDER_PAYOUT'
+  | 'COMMISSION'
+  | 'POS_SALE'
+  | 'WALLET_CREDIT'
+  | 'WITHDRAWAL'
+  | 'WALLET_DEBIT';
+
+export interface AccountingEntry {
+  id: string;
+  date: string;
+  type: AccountingEntryType;
+  description: string;
+  amount: number;
+  referenceId?: string;
+}
+
+export interface AccountingDailyRow {
+  date: string;
+  marketplaceRevenue: number;
+  posSales: number;
+  commissions: number;
+  withdrawals: number;
+  net: number;
+}
+
+export interface VendorAccountingSummary {
+  currency: string;
+  marketplaceRevenue: number;
+  posSales: number;
+  grossRevenue: number;
+  commissions: number;
+  netEarnings: number;
+  orderCount: number;
+  posTransactionCount: number;
+  walletCredits: number;
+  withdrawals: number;
+  otherDebits: number;
+  netCashFlow: number;
+}
+
+export interface VendorAccountingReport {
+  shopName?: string;
+  summary: VendorAccountingSummary;
+  daily: AccountingDailyRow[];
+  entries: AccountingEntry[];
+}

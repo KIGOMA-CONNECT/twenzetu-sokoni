@@ -51,6 +51,7 @@ import { PublicController } from './public.controller';
 import { AdsController } from './ads.controller';
 import { VendorStaffController } from './vendor-staff.controller';
 import { PosController } from './pos.controller';
+import { VendorAccountingController } from './vendor-accounting.controller';
 
 @Module({
   imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity])],
@@ -98,6 +99,7 @@ import { PosController } from './pos.controller';
     AdsController,
     VendorStaffController,
     PosController,
+    VendorAccountingController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },

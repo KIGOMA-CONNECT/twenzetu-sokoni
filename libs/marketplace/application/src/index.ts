@@ -194,5 +194,9 @@ export * from './lib/use-cases/vendor-staff/remove-vendor-staff.use-case';
 export * from './lib/use-cases/pos/create-pos-sale.use-case';
 export * from './lib/use-cases/pos/get-pos-day-report.use-case';
 
+// Use Cases - Vendor Accounting
+export * from './lib/use-cases/vendor-accounting/vendor-accounting.service';
+export * from './lib/use-cases/vendor-accounting/vendor-accounting-range';
+
 // Vendor Access
 export * from './lib/vendor-access/vendor-access.service';

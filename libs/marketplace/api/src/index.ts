@@ -74,3 +74,5 @@ export * from './lib/ads.controller';
 export * from './lib/dto/create-advert.dto';
 export * from './lib/pos.controller';
 export * from './lib/dto/pos-checkout.dto';
+export * from './lib/vendor-accounting.controller';
+export * from './lib/dto/vendor-accounting-query.dto';

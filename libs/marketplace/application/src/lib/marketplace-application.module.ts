@@ -174,6 +174,7 @@ import { RemoveVendorStaffUseCase } from './use-cases/vendor-staff/remove-vendor
 import { VendorAccessService } from './vendor-access/vendor-access.service';
 import { CreatePosSaleUseCase } from './use-cases/pos/create-pos-sale.use-case';
 import { GetPosDayReportUseCase } from './use-cases/pos/get-pos-day-report.use-case';
+import { VendorAccountingService } from './use-cases/vendor-accounting/vendor-accounting.service';
 
 const REPOSITORIES = [
   { provide: VENDOR_REPOSITORY, useClass: TypeOrmVendorRepository },
@@ -344,6 +345,7 @@ SetDefaultAddressUseCase,
   VendorAccessService,
   CreatePosSaleUseCase,
   GetPosDayReportUseCase,
+  VendorAccountingService,
 ];
 
 @Module({

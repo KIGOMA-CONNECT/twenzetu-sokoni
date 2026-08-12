@@ -76,6 +76,7 @@ export function MainLayout() {
     { label: 'Vendor Orders', path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')) },
     { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos') },
     { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports') },
+    { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports') },
     { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },
     { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
     { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },
