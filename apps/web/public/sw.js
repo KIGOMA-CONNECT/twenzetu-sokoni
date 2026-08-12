@@ -1,5 +1,5 @@
 /* global self, caches, fetch, Response, clients, URL */
-const CACHE_NAME = 'afrimarket-v5';
+const CACHE_NAME = 'afrimarket-v6';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',

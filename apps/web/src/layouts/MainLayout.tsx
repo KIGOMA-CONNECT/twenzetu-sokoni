@@ -106,6 +106,8 @@ export function MainLayout() {
 
   const showMarketplace = !user || (isCustomer && !isVendor) || isAdmin;
 
+  const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
+
   const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
     ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
     { label: '🧰 Services', path: '/services', cta: true },
@@ -264,13 +266,48 @@ export function MainLayout() {
         {sidebarContent}
       </aside>
 
+      {/* Desktop workspace sidebar — vendor/driver/admin management */}
+      {showWorkspaceSidebar && (
+        <aside
+          style={{
+            position: 'fixed', top: 'var(--topbar-h)', bottom: 0, left: 0, width: '264px',
+            background: '#1e293b', color: '#e2e8f0', zIndex: 60, display: 'flex', flexDirection: 'column',
+            borderRight: '1px solid #334155', boxShadow: '2px 0 8px rgba(0,0,0,0.15)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '1rem 1.5rem', borderBottom: '1px solid #334155' }}>
+            <span className="brand-dot" />
+            <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#14b8a6' }}>
+              {isVendor ? 'Vendor Panel' : isDriver ? 'Driver Panel' : 'Admin Panel'}
+            </span>
+          </div>
+          <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
+            {visibleItems.map(item => (
+              <button
+                key={item.path}
+                onClick={() => go(item.path)}
+                style={{
+                  display: 'block', width: '100%', textAlign: 'left', padding: '0.6rem 1.5rem',
+                  background: isActive(item.path) ? '#334155' : 'transparent', border: 'none',
+                  color: isActive(item.path) ? '#ffffff' : '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer',
+                  borderLeft: isActive(item.path) ? '3px solid #14b8a6' : '3px solid transparent',
+                }}
+              >{item.label}</button>
+            ))}
+          </nav>
+          <div style={{ padding: '0.85rem 1.5rem', borderTop: '1px solid #334155', fontSize: '0.78rem', color: '#94a3b8' }}>
+            {user ? `${user.fullName} (${vendorAccess ? vendorAccess.staffRole : user.role})` : 'Mgeni'}
+          </div>
+        </aside>
+      )}
+
       {/* ===== Main content ===== */}
-      <main className="main-content" style={{ minHeight: 'calc(100vh - var(--topbar-h))' }}>
+      <main className="main-content" style={{ minHeight: 'calc(100vh - var(--topbar-h))', marginLeft: showWorkspaceSidebar ? '264px' : 0, transition: 'margin-left 0.2s ease' }}>
         <Outlet />
       </main>
 
       {/* ===== Footer ===== */}
-      <footer className="footer">
+      <footer className="footer" style={showWorkspaceSidebar ? { marginLeft: '264px' } : undefined}>
         <div className="footer-inner">
           <div>
             <div className="footer-brand">

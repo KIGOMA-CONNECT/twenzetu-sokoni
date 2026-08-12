@@ -19,16 +19,6 @@ interface VendorStats {
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
-  header: {
-    background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 100%)',
-    color: '#fff',
-    padding: '1.5rem 2rem',
-    borderRadius: '12px',
-    marginBottom: '1.5rem',
-    boxShadow: '0 4px 12px rgba(59,130,246,0.15)',
-  },
-  headerTitle: { fontSize: '1.5rem', fontWeight: 700, margin: 0 },
-  headerSubtitle: { fontSize: '0.9rem', opacity: 0.85, marginTop: '0.25rem' },
   cardGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
@@ -86,12 +76,21 @@ export default function VendorDashboard() {
   const loading = statsLoading || ordersLoading || walletLoading;
   const error = statsError || ordersError;
 
+  const firstName = user?.fullName?.split(' ')[0] || 'Vendor';
+  const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.headerTitle}>Welcome back, {user?.fullName || 'Vendor'} 👋</h1>
-        <div style={styles.headerSubtitle}>Here's what's happening with your shop today.</div>
-      </div>
+      <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px', padding: '2rem', textAlign: 'center' }}>
+          <div>
+            <h1 style={{ fontSize: 'clamp(1.9rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, marginBottom: '0.4rem' }}>
+              Welcome back, <span className="hero-gradient">{firstNameLabel}</span> 👋
+            </h1>
+            <p style={{ color: 'var(--muted)', margin: 0, fontSize: '1.05rem' }}>Here's what's happening with your shop today.</p>
+          </div>
+        </div>
+      </section>
 
       {loading ? (
         <LoadingSpinner />
