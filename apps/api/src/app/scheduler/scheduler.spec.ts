@@ -4,6 +4,7 @@ import { OtpCleanupService } from './otp-cleanup.service';
 import { SurgeRecalcService } from './surge-recalc.service';
 import { LoanReminderService } from './loan-reminder.service';
 import { PayoutSettlementService } from './payout-settlement.service';
+import { CommissionSweepService } from './commission-sweep.service';
 import { DataSource } from 'typeorm';
 
 function createMockRepo() {
@@ -300,5 +301,96 @@ describe('PayoutSettlementService', () => {
       expect.stringContaining('INSERT INTO wallet_transactions'),
       ['v1', 'vendor', 5000, 't1'],
     );
+  });
+});
+
+describe('CommissionSweepService', () => {
+  let service: CommissionSweepService;
+  let dataSource: { query: jest.Mock };
+  let logSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    dataSource = {
+      query: jest.fn().mockResolvedValue([]),
+    } as unknown as { query: jest.Mock };
+    service = new CommissionSweepService(dataSource as unknown as DataSource);
+    logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+  });
+
+  afterEach(() => logSpy.mockRestore());
+
+  it('should write commission logs for released payments without an existing log', async () => {
+    dataSource.query.mockResolvedValue([
+      {
+        id: 'p1',
+        tenant_id: 't1',
+        order_id: 'o1',
+        vendor_id: 'v1',
+        system_commission: '1000',
+        vendor_net: '9000',
+        confirmed_at: new Date('2026-01-02T00:00:00.000Z'),
+        updated_at: new Date('2026-01-02T00:00:00.000Z'),
+      },
+    ]);
+
+    await service.handleCommissionSweep();
+
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining("p.status = 'RELEASED'"),
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('NOT EXISTS'),
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO commission_logs'),
+      ['t1', 'o1', 'v1', 10000, 0.1, 1000, expect.any(Date)],
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Commission logged: vendor v1 - Tsh 1000 from order o1'),
+    );
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Commission sweep complete: 1 commission record(s) written'),
+    );
+  });
+
+  it('should skip rows with zero order amount', async () => {
+    dataSource.query.mockResolvedValue([
+      {
+        id: 'p1',
+        tenant_id: 't1',
+        order_id: 'o1',
+        vendor_id: 'v1',
+        system_commission: '1000',
+        vendor_net: '-1000',
+        confirmed_at: null,
+        updated_at: new Date(),
+      },
+    ]);
+
+    await service.handleCommissionSweep();
+
+    expect(dataSource.query).toHaveBeenCalledTimes(1);
+    expect(logSpy).not.toHaveBeenCalledWith(expect.stringContaining('Commission logged'));
+    expect(logSpy).toHaveBeenCalledWith(
+      expect.stringContaining('Commission sweep complete: 0 commission record(s) written'),
+    );
+  });
+
+  it('should query only released payments with commission and no existing log', async () => {
+    await service.handleCommissionSweep();
+
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining("WHERE p.status = 'RELEASED'"),
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('p.system_commission > 0'),
+    );
+  });
+
+  it('should not log when no released payments are pending', async () => {
+    await service.handleCommissionSweep();
+
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('No released payments awaiting commission logging'));
   });
 });
