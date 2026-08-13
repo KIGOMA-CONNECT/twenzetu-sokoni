@@ -44,6 +44,7 @@ import { PushSubscriptionOrmEntity } from './entities/push-subscription-orm.enti
 import { AdvertOrmEntity } from './entities/advert-orm.entity';
 import { SupplierOrmEntity } from './entities/supplier-orm.entity';
 import { PurchaseOrderOrmEntity } from './entities/purchase-order-orm.entity';
+import { BalanceSheetAccountOrmEntity } from './entities/balance-sheet-account-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -92,4 +93,5 @@ export const MARKETPLACE_ENTITIES = [
   AdvertOrmEntity,
   SupplierOrmEntity,
   PurchaseOrderOrmEntity,
+  BalanceSheetAccountOrmEntity,
 ];

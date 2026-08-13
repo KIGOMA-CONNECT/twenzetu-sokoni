@@ -538,11 +538,34 @@ export interface TrialBalanceRow {
   currency: string;
 }
 
+export interface BalanceSheetLine {
+  label: string;
+  amount: number;
+  auto?: boolean;
+}
+
+export interface BalanceSheetAccount {
+  id: string;
+  tenantId: string;
+  vendorId: string;
+  name: string;
+  category: 'asset' | 'liability';
+  amount: number;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface VendorFinancialPosition {
   currency: string;
   ownerCapital: number;
   retainedEarnings: number;
   cash: number;
+  assets: BalanceSheetLine[];
+  totalAssets: number;
+  liabilities: BalanceSheetLine[];
+  totalLiabilities: number;
+  totalEquity: number;
 }
 
 export interface VendorStatements {

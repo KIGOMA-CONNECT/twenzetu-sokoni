@@ -1,7 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import {
+  BalanceSheetAccountOrmEntity,
   PaymentOrmEntity,
+  ProductOrmEntity,
   ProductSaleOrmEntity,
   WalletTransactionOrmEntity,
   PurchaseOrderOrmEntity,
@@ -401,18 +403,63 @@ export class VendorAccountingService {
     range: AccountingDateRange,
   ): Promise<VendorStatements> {
     const now = new Date();
-    const [summary, allTime, entries, wallet] = await Promise.all([
+    const [summary, allTime, entries, wallet, inventoryRow, accountRows, loanRows] = await Promise.all([
       this.summary(tenantId, vendorId, range),
       this.summary(tenantId, vendorId, { since: new Date(0), until: now }),
       this.ledger(tenantId, vendorId, range),
       this.dataSource.getRepository(WalletOrmEntity).findOne({
         where: { tenantId, ownerId: vendorId, ownerType: 'vendor' },
       }),
+      this.dataSource
+        .getRepository(ProductOrmEntity)
+        .createQueryBuilder('pr')
+        .select([
+          "COALESCE(SUM(pr.stock_quantity * pr.price), 0) AS \"inventory\"",
+        ])
+        .where('pr.tenant_id = :tenantId', { tenantId })
+        .andWhere('pr.vendor_id = :vendorId', { vendorId })
+        .andWhere("pr.status IS DISTINCT FROM 'DELETED'")
+        .getRawOne(),
+      this.dataSource.getRepository(BalanceSheetAccountOrmEntity).find({
+        where: { tenantId, vendorId },
+        order: { createdAt: 'ASC' },
+      }),
+      this.dataSource.query(
+        `SELECT COALESCE(SUM(remaining_balance), 0) AS "outstanding"
+           FROM "loans"
+          WHERE "borrower_id" = $1 AND "borrower_type" = 'vendor' AND "status" = 'active'`,
+        [vendorId],
+      ),
     ]);
 
     const closingCash = Number(wallet?.balance ?? 0);
     const netChange = summary.netCashFlow;
     const openingCash = closingCash - netChange;
+
+    const inventoryValue = Number((inventoryRow as { inventory?: string } | undefined)?.inventory ?? 0);
+    const outstandingLoans = Number((loanRows as { outstanding?: string }[] | undefined)?.[0]?.outstanding ?? 0);
+    const manualAccounts = (accountRows as BalanceSheetAccountOrmEntity[] | undefined) ?? [];
+
+    const assets: BalanceSheetLine[] = [
+      { label: 'Cash (wallet balance)', amount: closingCash, auto: true },
+      { label: 'Inventory (stock at retail price)', amount: inventoryValue, auto: true },
+      ...manualAccounts
+        .filter((a) => a.category === 'asset')
+        .map((a) => ({ label: a.name, amount: Number(a.amount) })),
+    ];
+    const totalAssets = this.round2(assets.reduce((sum, l) => sum + l.amount, 0));
+
+    const liabilities: BalanceSheetLine[] = [
+      { label: 'Loans payable', amount: outstandingLoans, auto: true },
+      ...manualAccounts
+        .filter((a) => a.category === 'liability')
+        .map((a) => ({ label: a.name, amount: Number(a.amount) })),
+    ];
+    const totalLiabilities = this.round2(liabilities.reduce((sum, l) => sum + l.amount, 0));
+
+    const ownerCapital = allTime.walletCredits;
+    const totalEquity = this.round2(totalAssets - totalLiabilities);
+    const retainedEarnings = this.round2(totalEquity - ownerCapital);
 
     return {
       asOf: now.toISOString(),
@@ -437,11 +484,78 @@ export class VendorAccountingService {
       trialBalance: this.buildTrialBalance(entries, summary.currency),
       financialPosition: {
         currency: summary.currency,
-        ownerCapital: allTime.walletCredits,
-        retainedEarnings: closingCash - allTime.walletCredits,
+        ownerCapital,
+        retainedEarnings,
         cash: closingCash,
+        assets,
+        totalAssets,
+        liabilities,
+        totalLiabilities,
+        totalEquity,
       },
     };
+  }
+
+  public async listBalanceSheetAccounts(
+    tenantId: string,
+    vendorId: string,
+  ): Promise<BalanceSheetAccountOrmEntity[]> {
+    return this.dataSource.getRepository(BalanceSheetAccountOrmEntity).find({
+      where: { tenantId, vendorId },
+      order: { createdAt: 'ASC' },
+    });
+  }
+
+  public async createBalanceSheetAccount(
+    tenantId: string,
+    vendorId: string,
+    input: { name: string; category: 'asset' | 'liability'; amount: number; currency?: string },
+  ): Promise<BalanceSheetAccountOrmEntity> {
+    const repo = this.dataSource.getRepository(BalanceSheetAccountOrmEntity);
+    const account = repo.create({
+      tenantId,
+      vendorId,
+      name: input.name,
+      category: input.category,
+      amount: input.amount,
+      currency: input.currency ?? 'TZS',
+    });
+    return repo.save(account);
+  }
+
+  public async updateBalanceSheetAccount(
+    tenantId: string,
+    vendorId: string,
+    accountId: string,
+    input: Partial<{ name: string; category: 'asset' | 'liability'; amount: number; currency: string }>,
+  ): Promise<BalanceSheetAccountOrmEntity> {
+    const repo = this.dataSource.getRepository(BalanceSheetAccountOrmEntity);
+    const account = await repo.findOne({ where: { id: accountId, tenantId, vendorId } });
+    if (!account) {
+      throw new NotFoundException('Balance sheet account not found');
+    }
+    if (input.name !== undefined) account.name = input.name;
+    if (input.category !== undefined) account.category = input.category;
+    if (input.amount !== undefined) account.amount = input.amount;
+    if (input.currency !== undefined) account.currency = input.currency;
+    return repo.save(account);
+  }
+
+  public async deleteBalanceSheetAccount(
+    tenantId: string,
+    vendorId: string,
+    accountId: string,
+  ): Promise<{ deleted: boolean }> {
+    const repo = this.dataSource.getRepository(BalanceSheetAccountOrmEntity);
+    const result = await repo.delete({ id: accountId, tenantId, vendorId });
+    if (!result.affected) {
+      throw new NotFoundException('Balance sheet account not found');
+    }
+    return { deleted: true };
+  }
+
+  private round2(value: number): number {
+    return Math.round(value * 100) / 100;
   }
 
   private buildTrialBalance(entries: AccountingEntry[], currency: string): TrialBalanceRow[] {
@@ -520,11 +634,22 @@ export interface TrialBalanceRow {
   currency: string;
 }
 
+export interface BalanceSheetLine {
+  label: string;
+  amount: number;
+  auto?: boolean;
+}
+
 export interface VendorFinancialPosition {
   currency: string;
   ownerCapital: number;
   retainedEarnings: number;
   cash: number;
+  assets: BalanceSheetLine[];
+  totalAssets: number;
+  liabilities: BalanceSheetLine[];
+  totalLiabilities: number;
+  totalEquity: number;
 }
 
 export interface VendorStatements {

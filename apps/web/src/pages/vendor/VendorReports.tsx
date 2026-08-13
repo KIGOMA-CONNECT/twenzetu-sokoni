@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
-import type { AccountingPeriod, VendorStatements } from '../../types';
+import type { AccountingPeriod, BalanceSheetAccount, VendorStatements } from '../../types';
 
 const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -19,7 +20,7 @@ const TABS = [
   { key: 'income', label: 'Income Statement' },
   { key: 'cashflow', label: 'Cash Flow' },
   { key: 'trial', label: 'Trial Balance' },
-  { key: 'position', label: 'Financial Position' },
+  { key: 'position', label: 'Balance Sheet' },
 ] as const;
 
 const styles: Record<string, React.CSSProperties> = {
@@ -48,6 +49,12 @@ const styles: Record<string, React.CSSProperties> = {
   empty: { textAlign: 'center', color: '#94a3b8', padding: '2rem' },
   pos: { color: '#047857' },
   neg: { color: '#dc2626' },
+  overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
+  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '440px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  field: { marginBottom: '0.85rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
 };
 
 function downloadCsv(filename: string, rows: string[][]) {
@@ -69,6 +76,72 @@ export default function VendorReports() {
   const { data: raw, loading, error, refetch } = useApi<VendorStatements>(query, [query]);
 
   const report: VendorStatements | null = raw && typeof raw === 'object' && 'incomeStatement' in raw ? raw : null;
+
+  const { data: accountsRaw, refetch: refetchAccounts } = useApi<BalanceSheetAccount[]>('/vendor/accounting/balance-sheet-accounts');
+  const accounts: BalanceSheetAccount[] = Array.isArray(accountsRaw) ? accountsRaw : [];
+
+  const [accountModalOpen, setAccountModalOpen] = useState(false);
+  const [editingAccount, setEditingAccount] = useState<BalanceSheetAccount | null>(null);
+  const [accountForm, setAccountForm] = useState({ name: '', category: 'asset' as 'asset' | 'liability', amount: '' });
+  const [accountSaving, setAccountSaving] = useState(false);
+  const [accountError, setAccountError] = useState<string | null>(null);
+  const [accountBusyId, setAccountBusyId] = useState<string | null>(null);
+
+  const openCreateAccount = () => {
+    setEditingAccount(null);
+    setAccountForm({ name: '', category: 'asset', amount: '' });
+    setAccountError(null);
+    setAccountModalOpen(true);
+  };
+
+  const openEditAccount = (a: BalanceSheetAccount) => {
+    setEditingAccount(a);
+    setAccountForm({ name: a.name, category: a.category, amount: String(a.amount) });
+    setAccountError(null);
+    setAccountModalOpen(true);
+  };
+
+  const saveAccount = async () => {
+    const name = accountForm.name.trim();
+    const amount = Number(accountForm.amount);
+    if (!name) {
+      setAccountError('Account name is required.');
+      return;
+    }
+    if (isNaN(amount) || amount < 0) {
+      setAccountError('Amount must be a positive number.');
+      return;
+    }
+    setAccountSaving(true);
+    setAccountError(null);
+    try {
+      const body = { name, category: accountForm.category, amount };
+      if (editingAccount) {
+        await api.patch(`/vendor/accounting/balance-sheet-accounts/${editingAccount.id}`, body);
+      } else {
+        await api.post('/vendor/accounting/balance-sheet-accounts', body);
+      }
+      setAccountModalOpen(false);
+      await Promise.all([refetchAccounts(), refetch()]);
+    } catch (err: any) {
+      setAccountError(err.response?.data?.message || err.message || 'Failed to save account.');
+    } finally {
+      setAccountSaving(false);
+    }
+  };
+
+  const removeAccount = async (a: BalanceSheetAccount) => {
+    if (!window.confirm(`Delete "${a.name}" from the balance sheet?`)) return;
+    setAccountBusyId(a.id);
+    try {
+      await api.delete(`/vendor/accounting/balance-sheet-accounts/${a.id}`);
+      await Promise.all([refetchAccounts(), refetch()]);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Failed to delete account.');
+    } finally {
+      setAccountBusyId(null);
+    }
+  };
 
   const exportCsv = () => {
     if (!report) return;
@@ -102,11 +175,15 @@ export default function VendorReports() {
       ]);
     } else {
       const p = report.financialPosition;
-      downloadCsv(`financial-position-${stamp}.csv`, [
+      downloadCsv(`balance-sheet-${stamp}.csv`, [
         ['Line', 'Amount'],
-        ['Cash (wallet balance)', p.cash],
+        ...p.assets.map((l) => [l.label, l.amount]),
+        ['Total Assets', p.totalAssets],
+        ...p.liabilities.map((l) => [l.label, l.amount]),
+        ['Total Liabilities', p.totalLiabilities],
         ['Owner Capital (top-ups)', p.ownerCapital],
         ['Retained Earnings', p.retainedEarnings],
+        ['Total Equity', p.totalEquity],
       ]);
     }
   };
@@ -266,49 +343,174 @@ export default function VendorReports() {
           )}
 
           {tab === 'position' && (
-            <div style={styles.panel}>
-              <div style={styles.panelHeader}>
-                <span>Financial Position (simplified)</span>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>As of {new Date(report.asOf).toLocaleDateString()}</span>
+            <>
+              <div style={styles.panel}>
+                <div style={styles.panelHeader}>
+                  <span>Balance Sheet</span>
+                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                    As of {new Date(report.asOf).toLocaleDateString()} · {report.financialPosition.currency}
+                  </span>
+                </div>
+                <table style={styles.table}>
+                  <tbody>
+                    <tr>
+                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Assets</td>
+                      <td style={styles.tdRight}></td>
+                    </tr>
+                    {report.financialPosition.assets.map((l, i) => (
+                      <tr key={`asset-${i}`}>
+                        <td style={styles.td}>
+                          {l.label}
+                          {l.auto && <span style={{ color: '#94a3b8', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                        </td>
+                        <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(l.amount)}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td style={styles.total}>Total Assets</td>
+                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalAssets)}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Liabilities</td>
+                      <td style={styles.tdRight}></td>
+                    </tr>
+                    {report.financialPosition.liabilities.map((l, i) => (
+                      <tr key={`liability-${i}`}>
+                        <td style={styles.td}>
+                          {l.label}
+                          {l.auto && <span style={{ color: '#94a3b8', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                        </td>
+                        <td style={{ ...styles.tdRight, ...styles.neg }}>{fmt(l.amount)}</td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td style={styles.total}>Total Liabilities</td>
+                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalLiabilities)}</td>
+                    </tr>
+                    <tr>
+                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Owner's Equity</td>
+                      <td style={styles.tdRight}></td>
+                    </tr>
+                    <tr>
+                      <td style={styles.td}>Owner capital (wallet top-ups)</td>
+                      <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.ownerCapital)}</td>
+                    </tr>
+                    <tr>
+                      <td style={styles.td}>Retained earnings</td>
+                      <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.retainedEarnings)}</td>
+                    </tr>
+                    <tr>
+                      <td style={styles.total}>Total Equity</td>
+                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalEquity)}</td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div style={styles.note}>
+                  Assets = Liabilities + Equity. Cash and loans payable are tracked automatically; inventory is
+                  estimated at retail price from current stock (status ≠ DELETED). Use "Manage accounts" below to add
+                  other assets (equipment, receivables) and liabilities (supplier payables, taxes).
+                </div>
               </div>
-              <table style={styles.table}>
-                <tbody>
-                  <tr>
-                    <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Assets</td>
-                    <td style={styles.tdRight}></td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Cash (wallet balance)</td>
-                    <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.cash)}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.total}>Total Assets</td>
-                    <td style={styles.totalRight}>{fmt(report.financialPosition.cash)}</td>
-                  </tr>
-                  <tr>
-                    <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Owner's Equity</td>
-                    <td style={styles.tdRight}></td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Owner capital (wallet top-ups)</td>
-                    <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.ownerCapital)}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.td}>Retained earnings</td>
-                    <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.retainedEarnings)}</td>
-                  </tr>
-                  <tr>
-                    <td style={styles.total}>Total Equity</td>
-                    <td style={styles.totalRight}>{fmt(report.financialPosition.cash)}</td>
-                  </tr>
-                </tbody>
-              </table>
-              <div style={styles.note}>
-                Simplified cash-based position. The platform does not yet track inventory, receivables, fixed assets or debt,
-                so total assets equal cash in the wallet and total equity equals total assets. For a full balance sheet,
-                combine this with your own records of stock, equipment and outstanding liabilities.
+
+              <div style={styles.panel}>
+                <div style={styles.panelHeader}>
+                  <span>Manage Accounts</span>
+                  <button
+                    style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
+                    onClick={openCreateAccount}
+                  >
+                    + Add Account
+                  </button>
+                </div>
+                {accounts.length === 0 ? (
+                  <div style={styles.empty}>No manual accounts yet. Add equipment, receivables, supplier payables or other line items.</div>
+                ) : (
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}>Name</th>
+                        <th style={styles.th}>Type</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>Amount</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {accounts.map((a) => (
+                        <tr key={a.id}>
+                          <td style={styles.td}>{a.name}</td>
+                          <td style={styles.td}>
+                            <span style={{ ...(a.category === 'asset' ? styles.pos : styles.neg), fontWeight: 600 }}>
+                              {a.category === 'asset' ? 'Asset' : 'Liability'}
+                            </span>
+                          </td>
+                          <td style={styles.tdRight}>{fmt(a.amount)} {a.currency}</td>
+                          <td style={{ ...styles.tdRight, whiteSpace: 'nowrap' }}>
+                            <button style={{ ...styles.refreshBtn, marginRight: '0.4rem' }} onClick={() => openEditAccount(a)}>Edit</button>
+                            <button
+                              style={{ ...styles.refreshBtn, borderColor: '#fecaca', color: '#dc2626' }}
+                              onClick={() => removeAccount(a)}
+                              disabled={accountBusyId === a.id}
+                            >
+                              {accountBusyId === a.id ? '...' : 'Delete'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
               </div>
-            </div>
+
+              {accountModalOpen && (
+                <div style={styles.overlay}>
+                  <div style={styles.modal}>
+                    <div style={styles.modalTitle}>{editingAccount ? 'Edit Account' : 'Add Account'}</div>
+                    <div style={styles.field}>
+                      <label style={styles.label}>Name</label>
+                      <input
+                        style={styles.input}
+                        value={accountForm.name}
+                        onChange={(e) => setAccountForm((f) => ({ ...f, name: e.target.value }))}
+                        placeholder="e.g. Shop equipment, Supplier payables"
+                      />
+                    </div>
+                    <div style={styles.field}>
+                      <label style={styles.label}>Type</label>
+                      <select
+                        style={styles.input}
+                        value={accountForm.category}
+                        onChange={(e) => setAccountForm((f) => ({ ...f, category: e.target.value as 'asset' | 'liability' }))}
+                      >
+                        <option value="asset">Asset</option>
+                        <option value="liability">Liability</option>
+                      </select>
+                    </div>
+                    <div style={styles.field}>
+                      <label style={styles.label}>Amount (TZS)</label>
+                      <input
+                        style={styles.input}
+                        type="number"
+                        min={0}
+                        value={accountForm.amount}
+                        onChange={(e) => setAccountForm((f) => ({ ...f, amount: e.target.value }))}
+                        placeholder="0"
+                      />
+                    </div>
+                    {accountError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{accountError}</div>}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+                      <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>Cancel</button>
+                      <button
+                        style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
+                        onClick={saveAccount}
+                        disabled={accountSaving}
+                      >
+                        {accountSaving ? 'Saving...' : 'Save'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}

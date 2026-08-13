@@ -1,8 +1,11 @@
 import {
+  BalanceSheetAccountOrmEntity,
   PaymentOrmEntity,
+  ProductOrmEntity,
   ProductSaleOrmEntity,
   WalletTransactionOrmEntity,
   PurchaseOrderOrmEntity,
+  WalletOrmEntity,
 } from '@afri-market/marketplace-infrastructure';
 import { VendorAccountingService } from '../lib/use-cases/vendor-accounting/vendor-accounting.service';
 import {
@@ -60,8 +63,15 @@ function makeDataSource(opts: {
   saleRows?: unknown[];
   walletRows?: unknown[];
   poRows?: unknown[];
+  wallet?: unknown;
+  productOne?: unknown;
+  balanceSheetAccounts?: unknown[];
+  loanOutstanding?: string;
 }) {
   const dataSource: any = {
+    query: jest.fn(() =>
+      Promise.resolve([{ outstanding: opts.loanOutstanding ?? '0' }]),
+    ),
     getRepository: jest.fn((entity: any) => {
       if (entity === PaymentOrmEntity) {
         return { createQueryBuilder: jest.fn(() => makeQueryBuilder({ one: opts.paymentOne ?? emptyOne, many: opts.paymentRows })) };
@@ -74,6 +84,15 @@ function makeDataSource(opts: {
       }
       if (entity === PurchaseOrderOrmEntity) {
         return { createQueryBuilder: jest.fn(() => makeQueryBuilder({ one: opts.poOne ?? emptyOne, many: opts.poRows })) };
+      }
+      if (entity === WalletOrmEntity) {
+        return { findOne: jest.fn(() => Promise.resolve(opts.wallet ?? null)) };
+      }
+      if (entity === ProductOrmEntity) {
+        return { createQueryBuilder: jest.fn(() => makeQueryBuilder({ one: opts.productOne ?? { inventory: '0' } })) };
+      }
+      if (entity === BalanceSheetAccountOrmEntity) {
+        return { find: jest.fn(() => Promise.resolve(opts.balanceSheetAccounts ?? [])) };
       }
       throw new Error(`Unexpected entity ${String((entity as any)?.name)}`);
     }),
@@ -250,6 +269,62 @@ describe('VendorAccountingService.daily/report', () => {
     expect(report.daily[0].withdrawals).toBe(10000);
     expect(report.daily[0].net).toBe(50000);
     expect(report.entries).toHaveLength(4);
+  });
+});
+
+describe('VendorAccountingService.statements balance sheet', () => {
+  it('builds assets, liabilities and equity that balance', async () => {
+    const service = new VendorAccountingService(
+      makeDataSource({
+        walletOne: { credits: '100000', withdrawals: '0', otherDebits: '0' },
+        wallet: { balance: '100000' },
+        productOne: { inventory: '250000' },
+        balanceSheetAccounts: [
+          { id: 'a-1', name: 'Equipment', category: 'asset', amount: 50000 },
+          { id: 'l-1', name: 'Supplier payables', category: 'liability', amount: 30000 },
+        ],
+        loanOutstanding: '20000',
+      }),
+    );
+
+    const stmts = await service.statements(TENANT_ID, VENDOR_ID, range());
+    const p = stmts.financialPosition;
+
+    expect(p.assets.map((l) => [l.label, l.amount])).toEqual([
+      ['Cash (wallet balance)', 100000],
+      ['Inventory (stock at retail price)', 250000],
+      ['Equipment', 50000],
+    ]);
+    expect(p.totalAssets).toBe(400000);
+
+    expect(p.liabilities.map((l) => [l.label, l.amount])).toEqual([
+      ['Loans payable', 20000],
+      ['Supplier payables', 30000],
+    ]);
+    expect(p.totalLiabilities).toBe(50000);
+
+    expect(p.ownerCapital).toBe(100000);
+    expect(p.totalEquity).toBe(350000);
+    expect(p.retainedEarnings).toBe(250000);
+    expect(p.totalAssets).toBe(p.totalLiabilities + p.totalEquity);
+    expect(p.cash).toBe(100000);
+  });
+
+  it('balances to cash only when there is no stock, debt or manual accounts', async () => {
+    const service = new VendorAccountingService(
+      makeDataSource({
+        walletOne: { credits: '30000', withdrawals: '0', otherDebits: '0' },
+        wallet: { balance: '30000' },
+      }),
+    );
+
+    const stmts = await service.statements(TENANT_ID, VENDOR_ID, range());
+    const p = stmts.financialPosition;
+
+    expect(p.totalAssets).toBe(30000);
+    expect(p.totalLiabilities).toBe(0);
+    expect(p.totalEquity).toBe(30000);
+    expect(p.retainedEarnings).toBe(0);
   });
 });
 

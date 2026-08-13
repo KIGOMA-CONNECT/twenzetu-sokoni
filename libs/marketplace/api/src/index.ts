@@ -82,3 +82,5 @@ export * from './lib/vendor-suppliers.controller';
 export * from './lib/dto/create-supplier.dto';
 export * from './lib/vendor-purchase-orders.controller';
 export * from './lib/dto/create-purchase-order.dto';
+export * from './lib/dto/create-balance-sheet-account.dto';
+export * from './lib/dto/update-balance-sheet-account.dto';
