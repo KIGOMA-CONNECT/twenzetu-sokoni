@@ -102,6 +102,32 @@ export class Vendor extends AggregateRoot<EntityId> {
     this._longitude = longitude;
   }
 
+  public updateProfile(updates: {
+    shopName?: string;
+    description?: string | null;
+    category?: string;
+    latitude?: number | null;
+    longitude?: number | null;
+  }): void {
+    if (updates.shopName !== undefined) {
+      Guard.assert(Guard.againstEmptyString(updates.shopName, 'shopName'));
+      this._shopName = updates.shopName;
+    }
+    if (updates.description !== undefined) {
+      this._description = updates.description ?? undefined;
+    }
+    if (updates.category !== undefined) {
+      Guard.assert(isVendorCategory(updates.category), `Invalid vendor category: ${updates.category}`);
+      this._category = updates.category;
+    }
+    if (updates.latitude !== undefined) {
+      this._latitude = updates.latitude ?? undefined;
+    }
+    if (updates.longitude !== undefined) {
+      this._longitude = updates.longitude ?? undefined;
+    }
+  }
+
   public approve(): void { this._status = 'ACTIVE'; }
   public suspend(): void { this._status = 'SUSPENDED'; }
   public close(): void { this._status = 'CLOSED'; }

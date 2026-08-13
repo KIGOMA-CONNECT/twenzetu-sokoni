@@ -455,7 +455,8 @@ export type AccountingEntryType =
   | 'POS_SALE'
   | 'WALLET_CREDIT'
   | 'WITHDRAWAL'
-  | 'WALLET_DEBIT';
+  | 'WALLET_DEBIT'
+  | 'PURCHASE';
 
 export interface AccountingEntry {
   id: string;
@@ -495,6 +496,62 @@ export interface VendorAccountingReport {
   summary: VendorAccountingSummary;
   daily: AccountingDailyRow[];
   entries: AccountingEntry[];
+}
+
+export interface VendorProfile {
+  id: string;
+  shopName: string;
+  description?: string | null;
+  category: string;
+  commissionRate: number;
+  status: string;
+  averageRating: number;
+  totalOrders: number;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+export interface VendorIncomeStatement {
+  currency: string;
+  grossRevenue: number;
+  commissions: number;
+  netRevenue: number;
+  cogs: number;
+  netProfit: number;
+}
+
+export interface VendorCashFlowStatement {
+  currency: string;
+  openingCash: number;
+  netEarnings: number;
+  walletCredits: number;
+  withdrawals: number;
+  otherDebits: number;
+  netChange: number;
+  closingCash: number;
+}
+
+export interface TrialBalanceRow {
+  account: string;
+  debit: number;
+  credit: number;
+  currency: string;
+}
+
+export interface VendorFinancialPosition {
+  currency: string;
+  ownerCapital: number;
+  retainedEarnings: number;
+  cash: number;
+}
+
+export interface VendorStatements {
+  shopName?: string;
+  asOf: string;
+  incomeStatement: VendorIncomeStatement;
+  cashFlow: VendorCashFlowStatement;
+  trialBalance: TrialBalanceRow[];
+  financialPosition: VendorFinancialPosition;
 }
 
 export interface Supplier {

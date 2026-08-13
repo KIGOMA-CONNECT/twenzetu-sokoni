@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateVendorDto } from './dto/create-vendor.dto';
+import { UpdateVendorProfileDto } from './dto/update-vendor-profile.dto';
 import { VendorUpdateOrderStatusDto } from './dto/vendor-update-order-status.dto';
 import { ParseFlexibleUuidPipe } from './common/parse-flexible-uuid.pipe';
 import {
@@ -14,6 +15,8 @@ import {
   SearchVendorsUseCase,
   FindProductsUseCase,
   CreateVendorCommand,
+  UpdateVendorProfileCommand,
+  UpdateVendorProfileUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { MarketplaceGateway } from './gateway';
@@ -28,6 +31,7 @@ import { OrderNotifierService } from './order-notifier.service';
 export class VendorsController {
   constructor(
     private readonly createVendor: CreateVendorUseCase,
+    private readonly updateVendorProfile: UpdateVendorProfileUseCase,
     private readonly findVendors: FindVendorsUseCase,
     private readonly getVendorOrders: GetVendorOrdersUseCase,
     private readonly updateOrderStatus: VendorUpdateOrderStatusUseCase,
@@ -120,6 +124,44 @@ export class VendorsController {
       return { error: 'Vendor profile not found' };
     }
     return this.getVendorStats.execute(user.tenantId, ctx.vendorId);
+  }
+
+  @Get('me')
+  @ApiOperation({ summary: 'Get current vendor profile' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  public async getMyProfile(@CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.resolve(user);
+    if (!ctx) {
+      return { data: null };
+    }
+    const vendor = await this.findVendors.findById(ctx.vendorId);
+    return { data: vendor?.toDto() ?? null };
+  }
+
+  @Patch('me/profile')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @ApiOperation({ summary: 'Update current vendor profile' })
+  @ApiBody({ type: UpdateVendorProfileDto })
+  @ApiResponse({ status: 200, description: 'Vendor profile updated' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Only the shop owner can update the profile' })
+  public async updateMyProfile(@Body() dto: UpdateVendorProfileDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.resolve(user);
+    if (!ctx) {
+      return { error: 'Vendor profile not found' };
+    }
+    if (!ctx.isOwner) {
+      throw new ForbiddenException('Only the shop owner can update the profile');
+    }
+    const command = new UpdateVendorProfileCommand(
+      dto.shopName,
+      dto.description,
+      dto.category,
+      dto.latitude,
+      dto.longitude,
+    );
+    return this.updateVendorProfile.execute(ctx.vendorId, command);
   }
 
   @Get('me/products')

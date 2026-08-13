@@ -65,4 +65,13 @@ export class VendorAccountingController {
     const data = await this.accounting.report(user.tenantId, ctx.vendorId, range);
     return { data: { ...data, shopName: ctx.shopName } };
   }
+
+  @Get('statements')
+  @ApiOperation({ summary: 'Standard financial statements: income statement, cash flow, trial balance, financial position (requires view_reports)' })
+  public async statements(@Query() dto: VendorAccountingQueryDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.resolveContext(user);
+    const range = this.resolveRange(dto);
+    const data = await this.accounting.statements(user.tenantId, ctx.vendorId, range);
+    return { data: { ...data, shopName: ctx.shopName } };
+  }
 }

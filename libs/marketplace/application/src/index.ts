@@ -11,6 +11,7 @@ export * from './lib/events/queue-event-dispatcher';
 
 // Commands
 export * from './lib/commands/create-vendor.command';
+export * from './lib/commands/update-vendor-profile.command';
 export * from './lib/commands/create-product.command';
 export * from './lib/commands/create-order.command';
 export * from './lib/commands/update-order-status.command';
@@ -25,6 +26,7 @@ export * from './lib/commands/accept-service-quote.command';
 
 // Use Cases - Vendor
 export * from './lib/use-cases/vendor/create-vendor.use-case';
+export * from './lib/use-cases/vendor/update-vendor-profile.use-case';
 export * from './lib/use-cases/vendor/find-vendors.use-case';
 export * from './lib/use-cases/vendor/get-vendor-orders.use-case';
 export * from './lib/use-cases/vendor/vendor-update-order-status.use-case';

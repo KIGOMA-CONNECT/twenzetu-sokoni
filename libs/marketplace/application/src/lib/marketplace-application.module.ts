@@ -60,6 +60,7 @@ import {
   SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
+import { UpdateVendorProfileUseCase } from './use-cases/vendor/update-vendor-profile.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
 import { CreateProductUseCase } from './use-cases/product/create-product.use-case';
 import { FindProductsUseCase } from './use-cases/product/find-products.use-case';
@@ -244,6 +245,7 @@ const SERVICES = [
 
 const USE_CASES = [
   CreateVendorUseCase,
+  UpdateVendorProfileUseCase,
   FindVendorsUseCase,
   CreateProductUseCase,
   FindProductsUseCase,

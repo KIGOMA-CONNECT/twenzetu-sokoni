@@ -5,6 +5,7 @@ import {
   ProductSaleOrmEntity,
   WalletTransactionOrmEntity,
   PurchaseOrderOrmEntity,
+  WalletOrmEntity,
 } from '@afri-market/marketplace-infrastructure';
 import {
   AccountingDateRange,
@@ -393,6 +394,145 @@ export class VendorAccountingService {
     ]);
     return { summary, daily, entries };
   }
+
+  public async statements(
+    tenantId: string,
+    vendorId: string,
+    range: AccountingDateRange,
+  ): Promise<VendorStatements> {
+    const now = new Date();
+    const [summary, allTime, entries, wallet] = await Promise.all([
+      this.summary(tenantId, vendorId, range),
+      this.summary(tenantId, vendorId, { since: new Date(0), until: now }),
+      this.ledger(tenantId, vendorId, range),
+      this.dataSource.getRepository(WalletOrmEntity).findOne({
+        where: { tenantId, ownerId: vendorId, ownerType: 'vendor' },
+      }),
+    ]);
+
+    const closingCash = Number(wallet?.balance ?? 0);
+    const netChange = summary.netCashFlow;
+    const openingCash = closingCash - netChange;
+
+    return {
+      asOf: now.toISOString(),
+      incomeStatement: {
+        currency: summary.currency,
+        grossRevenue: summary.grossRevenue,
+        commissions: summary.commissions,
+        netRevenue: summary.netEarnings,
+        cogs: summary.cogs,
+        netProfit: summary.netProfit,
+      },
+      cashFlow: {
+        currency: summary.currency,
+        openingCash,
+        netEarnings: summary.netEarnings,
+        walletCredits: summary.walletCredits,
+        withdrawals: summary.withdrawals,
+        otherDebits: summary.otherDebits,
+        netChange,
+        closingCash,
+      },
+      trialBalance: this.buildTrialBalance(entries, summary.currency),
+      financialPosition: {
+        currency: summary.currency,
+        ownerCapital: allTime.walletCredits,
+        retainedEarnings: closingCash - allTime.walletCredits,
+        cash: closingCash,
+      },
+    };
+  }
+
+  private buildTrialBalance(entries: AccountingEntry[], currency: string): TrialBalanceRow[] {
+    const map = new Map<string, TrialBalanceRow>();
+
+    const upsert = (account: string, amount: number) => {
+      const row = map.get(account) ?? { account, debit: 0, credit: 0, currency };
+      if (amount >= 0) {
+        row.credit += amount;
+      } else {
+        row.debit += -amount;
+      }
+      map.set(account, row);
+    };
+
+    for (const entry of entries) {
+      switch (entry.type) {
+        case 'ORDER_PAYOUT':
+        case 'POS_SALE':
+          upsert('Sales revenue', entry.amount);
+          break;
+        case 'COMMISSION':
+          upsert('Platform commission', entry.amount);
+          break;
+        case 'PURCHASE':
+          upsert('Cost of goods sold', entry.amount);
+          break;
+        case 'WALLET_CREDIT':
+          upsert('Other income (wallet top-ups)', entry.amount);
+          break;
+        case 'WITHDRAWAL':
+          upsert('Drawings', entry.amount);
+          break;
+        case 'WALLET_DEBIT':
+          upsert('Other operating expenses', entry.amount);
+          break;
+        default:
+          break;
+      }
+    }
+
+    const rows = [...map.values()].sort((a, b) => a.account.localeCompare(b.account));
+    return rows.map((r) => ({
+      account: r.account,
+      debit: Math.round(r.debit * 100) / 100,
+      credit: Math.round(r.credit * 100) / 100,
+      currency,
+    }));
+  }
+}
+
+export interface VendorIncomeStatement {
+  currency: string;
+  grossRevenue: number;
+  commissions: number;
+  netRevenue: number;
+  cogs: number;
+  netProfit: number;
+}
+
+export interface VendorCashFlowStatement {
+  currency: string;
+  openingCash: number;
+  netEarnings: number;
+  walletCredits: number;
+  withdrawals: number;
+  otherDebits: number;
+  netChange: number;
+  closingCash: number;
+}
+
+export interface TrialBalanceRow {
+  account: string;
+  debit: number;
+  credit: number;
+  currency: string;
+}
+
+export interface VendorFinancialPosition {
+  currency: string;
+  ownerCapital: number;
+  retainedEarnings: number;
+  cash: number;
+}
+
+export interface VendorStatements {
+  asOf: string;
+  incomeStatement: VendorIncomeStatement;
+  cashFlow: VendorCashFlowStatement;
+  trialBalance: TrialBalanceRow[];
+  financialPosition: VendorFinancialPosition;
 }
 
 export type { AccountingEntryType };
