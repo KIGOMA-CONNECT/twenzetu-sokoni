@@ -1,11 +1,13 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { EntityId } from '@afri-market/kernel';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { IProductRepository } from '@afri-market/marketplace-domain';
 import { CreateProductDto } from './dto/create-product.dto';
-import { CreateProductUseCase, FindProductsUseCase, SearchProductsUseCase, VendorAccessService, CreateProductCommand, PRODUCT_REPOSITORY } from '@afri-market/marketplace-application';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { BulkCreateProductsDto } from './dto/bulk-create-products.dto';
+import { CreateProductUseCase, UpdateProductUseCase, BulkCreateProductsUseCase, FindProductsUseCase, SearchProductsUseCase, VendorAccessService, CreateProductCommand, UpdateProductCommand, BulkCreateProductsCommand, PRODUCT_REPOSITORY } from '@afri-market/marketplace-application';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 
@@ -16,6 +18,8 @@ import { parsePagination, paginatedResult } from './pagination';
 export class ProductsController {
   constructor(
     private readonly createProduct: CreateProductUseCase,
+    private readonly updateProduct: UpdateProductUseCase,
+    private readonly bulkCreateProducts: BulkCreateProductsUseCase,
     private readonly findProducts: FindProductsUseCase,
     private readonly searchProducts: SearchProductsUseCase,
     private readonly vendorAccess: VendorAccessService,
@@ -49,6 +53,35 @@ export class ProductsController {
       dto.barcode,
     );
     return this.createProduct.execute(user.tenantId, command, ctx.isOwner ? undefined : ctx.vendorId);
+  }
+
+  @Post('bulk')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @ApiOperation({ summary: 'Bulk create products' })
+  @ApiBody({ type: BulkCreateProductsDto })
+  @ApiResponse({ status: 201, description: 'Bulk import result' })
+  public async bulkCreate(@Body() dto: BulkCreateProductsDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have permission to manage products');
+    }
+    const commands = dto.products.map(
+      (p) => new CreateProductCommand(
+        user.sub,
+        p.name,
+        p.description ?? '',
+        p.price,
+        p.currency ?? 'TZS',
+        p.type,
+        p.categoryId,
+        p.imageUrl,
+        p.stockQuantity ?? 0,
+        p.unit ?? 'pcs',
+        p.sku,
+        p.barcode,
+      ),
+    );
+    return this.bulkCreateProducts.execute(user.tenantId, new BulkCreateProductsCommand(user.sub, commands), ctx.isOwner ? undefined : ctx.vendorId);
   }
 
   @Get()
@@ -94,6 +127,36 @@ export class ProductsController {
   public async findOne(@Param('id', ParseUUIDPipe) id: string) {
     const product = await this.findProducts.findById(id);
     return { data: product?.toDto() ?? null };
+  }
+
+  @Patch(':id')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @ApiParam({ name: 'id', description: 'Product ID' })
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiBody({ type: UpdateProductDto })
+  @ApiResponse({ status: 200, description: 'Product updated' })
+  public async update(@Param('id', ParseUUIDPipe) id: string, @Body() dto: UpdateProductDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have permission to manage products');
+    }
+    const command = new UpdateProductCommand(
+      id,
+      user.sub,
+      dto.name,
+      dto.description,
+      dto.price,
+      dto.currency,
+      dto.type,
+      dto.categoryId,
+      dto.imageUrl === '' ? undefined : dto.imageUrl,
+      dto.stockQuantity,
+      dto.unit,
+      dto.sku,
+      dto.barcode,
+      dto.status,
+    );
+    return this.updateProduct.execute(user.tenantId, command, ctx.isOwner ? undefined : ctx.vendorId);
   }
 
   @Delete(':id')

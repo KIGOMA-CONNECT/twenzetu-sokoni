@@ -39,6 +39,8 @@ export * from './lib/push.service';
 export * from './lib/gateway';
 export * from './lib/dto/create-vendor.dto';
 export * from './lib/dto/create-product.dto';
+export * from './lib/dto/update-product.dto';
+export * from './lib/dto/bulk-create-products.dto';
 export * from './lib/dto/create-order.dto';
 export * from './lib/dto/update-order-status.dto';
 export * from './lib/dto/create-delivery.dto';

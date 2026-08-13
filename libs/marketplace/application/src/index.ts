@@ -13,6 +13,8 @@ export * from './lib/events/queue-event-dispatcher';
 export * from './lib/commands/create-vendor.command';
 export * from './lib/commands/update-vendor-profile.command';
 export * from './lib/commands/create-product.command';
+export * from './lib/commands/update-product.command';
+export * from './lib/commands/bulk-create-products.command';
 export * from './lib/commands/create-order.command';
 export * from './lib/commands/update-order-status.command';
 export * from './lib/commands/create-delivery.command';
@@ -35,6 +37,8 @@ export * from './lib/use-cases/vendor/search-vendors.use-case';
 
 // Use Cases - Product
 export * from './lib/use-cases/product/create-product.use-case';
+export * from './lib/use-cases/product/update-product.use-case';
+export * from './lib/use-cases/product/bulk-create-products.use-case';
 export * from './lib/use-cases/product/find-products.use-case';
 export * from './lib/use-cases/product/search-products.use-case';
 

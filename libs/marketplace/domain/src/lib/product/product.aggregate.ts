@@ -44,7 +44,7 @@ export class Product extends AggregateRoot<EntityId> {
     private _description: string,
     private _price: Money,
     private _type: ProductType,
-    private readonly _categoryId: EntityId | undefined,
+    private _categoryId: EntityId | undefined,
     private _imageUrl: string | undefined,
     private _stockQuantity: number,
     private _unit: string,
@@ -105,6 +105,35 @@ export class Product extends AggregateRoot<EntityId> {
   public markOutOfStock(): void { this._status = 'OUT_OF_STOCK'; }
   public activate(): void { this._status = 'ACTIVE'; }
   public deactivate(): void { this._status = 'INACTIVE'; }
+
+  public update(props: {
+    name?: string;
+    description?: string;
+    price?: Money;
+    type?: ProductType;
+    categoryId?: EntityId;
+    imageUrl?: string;
+    stockQuantity?: number;
+    unit?: string;
+    sku?: string;
+    barcode?: string;
+    status?: ProductStatus;
+  }): void {
+    if (props.name !== undefined) {
+      Guard.assert(Guard.againstEmptyString(props.name, 'name'));
+      this._name = props.name;
+    }
+    if (props.description !== undefined) this._description = props.description;
+    if (props.price !== undefined) this._price = props.price;
+    if (props.type !== undefined) this._type = props.type;
+    if (props.categoryId !== undefined) this._categoryId = props.categoryId;
+    if (props.imageUrl !== undefined) this._imageUrl = props.imageUrl;
+    if (props.stockQuantity !== undefined) this._stockQuantity = props.stockQuantity;
+    if (props.unit !== undefined) this._unit = props.unit;
+    if (props.sku !== undefined) this._sku = props.sku;
+    if (props.barcode !== undefined) this._barcode = props.barcode;
+    if (props.status !== undefined) this._status = props.status;
+  }
 
   public toDto() {
     return {

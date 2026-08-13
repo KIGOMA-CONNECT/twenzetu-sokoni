@@ -63,6 +63,8 @@ import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { UpdateVendorProfileUseCase } from './use-cases/vendor/update-vendor-profile.use-case';
 import { FindVendorsUseCase } from './use-cases/vendor/find-vendors.use-case';
 import { CreateProductUseCase } from './use-cases/product/create-product.use-case';
+import { UpdateProductUseCase } from './use-cases/product/update-product.use-case';
+import { BulkCreateProductsUseCase } from './use-cases/product/bulk-create-products.use-case';
 import { FindProductsUseCase } from './use-cases/product/find-products.use-case';
 import { CreateOrderUseCase } from './use-cases/order/create-order.use-case';
 import { UpdateOrderStatusUseCase } from './use-cases/order/update-order-status.use-case';
@@ -248,6 +250,8 @@ const USE_CASES = [
   UpdateVendorProfileUseCase,
   FindVendorsUseCase,
   CreateProductUseCase,
+  UpdateProductUseCase,
+  BulkCreateProductsUseCase,
   FindProductsUseCase,
   CreateOrderUseCase,
   UpdateOrderStatusUseCase,
