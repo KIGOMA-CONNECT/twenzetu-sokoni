@@ -82,6 +82,7 @@ export function MainLayout() {
     { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports') },
     { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports') },
     { label: 'Reports', path: '/vendor/reports', show: isVendor && hasVendorPermission('view_reports') },
+    { label: 'Analytics', path: '/vendor/analytics', show: isVendor && hasVendorPermission('view_reports') },
     { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },

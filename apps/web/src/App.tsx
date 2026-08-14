@@ -58,6 +58,7 @@ import VendorDayReport from './pages/vendor/VendorDayReport';
 import VendorAccounting from './pages/vendor/VendorAccounting';
 import VendorSettings from './pages/vendor/VendorSettings';
 import VendorReports from './pages/vendor/VendorReports';
+import VendorAnalytics from './pages/vendor/VendorAnalytics';
 import VendorSuppliers from './pages/vendor/VendorSuppliers';
 import VendorPurchaseOrders from './pages/vendor/VendorPurchaseOrders';
 import CartPage from './pages/consumer/CartPage';
@@ -124,6 +125,7 @@ function AppRoutes() {
         <Route path="/vendor/pos-report" element={<ProtectedRoute roles={['vendor']}><VendorDayReport /></ProtectedRoute>} />
         <Route path="/vendor/accounting" element={<ProtectedRoute roles={['vendor']}><VendorAccounting /></ProtectedRoute>} />
         <Route path="/vendor/reports" element={<ProtectedRoute roles={['vendor']}><VendorReports /></ProtectedRoute>} />
+        <Route path="/vendor/analytics" element={<ProtectedRoute roles={['vendor']}><VendorAnalytics /></ProtectedRoute>} />
         <Route path="/vendor/settings" element={<ProtectedRoute roles={['vendor']}><VendorSettings /></ProtectedRoute>} />
         <Route path="/vendor/suppliers" element={<ProtectedRoute roles={['vendor']}><VendorSuppliers /></ProtectedRoute>} />
         <Route path="/vendor/purchase-orders" element={<ProtectedRoute roles={['vendor']}><VendorPurchaseOrders /></ProtectedRoute>} />

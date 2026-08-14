@@ -53,6 +53,7 @@ import { AdsController } from './ads.controller';
 import { VendorStaffController } from './vendor-staff.controller';
 import { PosController } from './pos.controller';
 import { VendorAccountingController } from './vendor-accounting.controller';
+import { VendorAnalyticsController } from './vendor-analytics.controller';
 import { VendorSuppliersController } from './vendor-suppliers.controller';
 import { VendorPurchaseOrdersController } from './vendor-purchase-orders.controller';
 
@@ -104,6 +105,7 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     VendorStaffController,
     PosController,
     VendorAccountingController,
+    VendorAnalyticsController,
     VendorSuppliersController,
     VendorPurchaseOrdersController,
   ],

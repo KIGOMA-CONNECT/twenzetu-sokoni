@@ -185,6 +185,7 @@ import { VendorAccessService } from './vendor-access/vendor-access.service';
 import { CreatePosSaleUseCase } from './use-cases/pos/create-pos-sale.use-case';
 import { GetPosDayReportUseCase } from './use-cases/pos/get-pos-day-report.use-case';
 import { VendorAccountingService } from './use-cases/vendor-accounting/vendor-accounting.service';
+import { AnalyticsService } from './use-cases/analytics/analytics.service';
 import {
   CreateSupplierUseCase,
   ListSuppliersUseCase,
@@ -379,6 +380,7 @@ SetDefaultAddressUseCase,
   CreatePosSaleUseCase,
   GetPosDayReportUseCase,
   VendorAccountingService,
+  AnalyticsService,
   CreateSupplierUseCase,
   ListSuppliersUseCase,
   DeleteSupplierUseCase,

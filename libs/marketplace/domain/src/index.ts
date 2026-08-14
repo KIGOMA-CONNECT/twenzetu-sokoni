@@ -114,3 +114,5 @@ export * from './lib/supplier/supplier.aggregate';
 export * from './lib/supplier/supplier.repository.interface';
 export * from './lib/supplier/supplier-order.aggregate';
 export * from './lib/supplier/supplier-order.repository.interface';
+// Analytics
+export * from './lib/analytics/metric-catalog';

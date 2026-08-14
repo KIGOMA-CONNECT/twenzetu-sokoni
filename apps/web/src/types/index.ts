@@ -578,6 +578,99 @@ export interface VendorStatements {
   financialPosition: VendorFinancialPosition;
 }
 
+export interface AnalyticsSalesSummary {
+  currency: string;
+  totalRevenue: number;
+  commission: number;
+  netRevenue: number;
+  deliveryFeeRevenue: number;
+  orderCount: number;
+  completedOrders: number;
+  cancelledOrders: number;
+  cancellationRate: number;
+  averageOrderValue: number;
+}
+
+export interface AnalyticsDailyRow {
+  date: string;
+  orders: number;
+  revenue: number;
+  commission: number;
+}
+
+export interface AnalyticsOrderFunnelRow {
+  status: string;
+  count: number;
+  value: number;
+}
+
+export interface AnalyticsCustomerAcquisition {
+  uniqueCustomers: number;
+  newCustomers: number;
+  returningCustomers: number;
+  averageOrdersPerCustomer: number;
+}
+
+export interface AnalyticsDeliveryPerformance {
+  total: number;
+  completed: number;
+  active: number;
+  failed: number;
+  averageDistanceKm: number;
+  averageDurationMinutes: number;
+  deliveryFeeRevenue: number;
+  driverEarnings: number;
+}
+
+export interface AnalyticsOverview {
+  shopName?: string;
+  currency: string;
+  summary: AnalyticsSalesSummary;
+  daily: AnalyticsDailyRow[];
+  funnel: AnalyticsOrderFunnelRow[];
+  customers: AnalyticsCustomerAcquisition;
+  deliveries: AnalyticsDeliveryPerformance;
+}
+
+export interface AnalyticsTopProduct {
+  productId: string;
+  productName: string;
+  quantity: number;
+  revenue: number;
+  orderCount: number;
+  share: number;
+}
+
+export interface AnalyticsInventoryItem {
+  id: string;
+  name: string;
+  sku: string | null;
+  unit: string;
+  status: string;
+  stockQuantity: number;
+  price: number;
+  currency: string;
+  stockValue: number;
+}
+
+export interface AnalyticsInventoryReport {
+  threshold: number;
+  lowStockCount: number;
+  outOfStockCount: number;
+  activeProductCount: number;
+  inventoryValue: number;
+  items: AnalyticsInventoryItem[];
+}
+
+export interface MetricDefinition {
+  key: string;
+  name: string;
+  category: 'SALES' | 'ORDERS' | 'CUSTOMERS' | 'INVENTORY' | 'DELIVERY';
+  unit: 'TZS' | 'COUNT' | 'RATE' | 'DISTANCE';
+  description: string;
+  source: string;
+}
+
 export interface Supplier {
   id: string;
   vendorId: string;
