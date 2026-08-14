@@ -95,6 +95,14 @@ export class SessionService {
     await this.sessionRepo.revokeAllForUser(userId);
   }
 
+  public async revokeAllForUserExcept(userId: string, sessionId: string): Promise<void> {
+    await this.sessionRepo.revokeAllForUserExcept(userId, sessionId);
+  }
+
+  public async findActiveByUserId(userId: string): Promise<SessionOrmEntity[]> {
+    return this.sessionRepo.findActiveByUserId(userId);
+  }
+
   public async isSessionValid(sessionId: string): Promise<boolean> {
     const session = await this.sessionRepo.findById(sessionId);
     return !!session && !this.isRevoked(session) && !this.isExpired(session);

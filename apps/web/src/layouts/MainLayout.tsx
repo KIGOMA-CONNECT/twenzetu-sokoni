@@ -100,6 +100,7 @@ export function MainLayout() {
     { label: 'Loans', path: '/admin/loans', show: isAdmin && p('manage_finance') },
     { label: 'Audit Log', path: '/admin/audit-log', show: isAdmin && p('manage_admins') },
     { label: 'Notifications', path: '/notifications', show: true },
+    { label: 'Account', path: '/account', show: !!user },
     { label: 'Manage Admins', path: '/admin/manage-admins', show: isSuperAdmin },
     { label: 'Driver Panel', path: '/driver/dashboard', show: isDriver },
     { label: 'Deliveries', path: '/driver/deliveries', show: isDriver },
@@ -126,7 +127,7 @@ export function MainLayout() {
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Finance', ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },
-    { label: 'Account', ico: '👤', path: '/notifications', show: true },
+    { label: 'Account', ico: '👤', path: '/account', show: true },
   ].filter(n => n.show);
 
   const sidebarContent = (

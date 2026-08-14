@@ -1,4 +1,4 @@
-import { ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomInt } from 'crypto';
 import { EntityId, TenantId, PhoneNumber, Email } from '@afri-market/kernel';
@@ -12,11 +12,13 @@ import {
   TypeOrmSessionRepository,
   SessionService,
   SessionMetadata,
+  SessionOrmEntity,
   USER_REPOSITORY,
   TENANT_REPOSITORY,
   JwtPayload,
 } from '@afri-market/identity-infrastructure';
 import { SmsService, EmailService, normalizeE164 } from '@afri-market/integrations';
+import { PASSWORD_PATTERN, PASSWORD_POLICY_MESSAGE } from './dto/password-policy';
 
 export interface TokenBundle {
   accessToken: string;
@@ -217,6 +219,107 @@ export class AuthService {
     return this.getProfile(userId);
   }
 
+  public async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+    currentSessionId?: string,
+  ): Promise<{ success: boolean }> {
+    const user = await this.userRepo.findById(EntityId.from(userId));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const valid = await this.hasher.verify(user.passwordHash, currentPassword);
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    this.assertStrongPassword(newPassword);
+    const hash = await this.hasher.hash(newPassword);
+    user.changePasswordHash(hash);
+    await this.userRepo.save(user);
+    // Revoke every other session so a lost/compromised device loses access.
+    if (currentSessionId) {
+      await this.sessionService.revokeAllForUserExcept(user.id.value, currentSessionId);
+    }
+    return { success: true };
+  }
+
+  public async forgotPassword(phoneNumber: string): Promise<{ message: string }> {
+    const canonicalPhone = this.canonicalizePhone(phoneNumber);
+    if (!this.otpSendLimiter.isAllowed(`forgot:${canonicalPhone}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
+      throw new UnauthorizedException('Too many OTP requests for this phone number. Try again later.');
+    }
+    // Only send when the account exists — always answer the same way so the
+    // endpoint cannot be used to enumerate registered phone numbers.
+    const user = await this.userRepo.findByPhoneNumber(canonicalPhone);
+    if (user) {
+      await this.otpRepo.invalidateAll(canonicalPhone);
+      const code = this.generateOtpCode();
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + this.config.otp.expiryMinutes);
+      await this.otpRepo.create(canonicalPhone, code, expiresAt);
+      await this.smsService.sendOtp(canonicalPhone, code);
+    }
+    return { message: 'If that phone number is registered, an OTP has been sent.' };
+  }
+
+  public async resetPassword(
+    phoneNumber: string,
+    code: string,
+    newPassword: string,
+  ): Promise<{ success: boolean }> {
+    const canonicalPhone = this.canonicalizePhone(phoneNumber);
+    if (!this.otpVerifyLimiter.isAllowed(`reset:${canonicalPhone}`, OTP_VERIFY_LIMIT, OTP_VERIFY_WINDOW_MS)) {
+      throw new UnauthorizedException('Too many attempts for this phone number. Try again later.');
+    }
+    const otp = await this.otpRepo.consume(canonicalPhone, code);
+    if (!otp) {
+      throw new UnauthorizedException('Invalid or expired code');
+    }
+    const user = await this.userRepo.findByPhoneNumber(canonicalPhone);
+    if (!user) {
+      throw new UnauthorizedException('Invalid or expired code');
+    }
+    this.assertStrongPassword(newPassword);
+    const hash = await this.hasher.hash(newPassword);
+    user.changePasswordHash(hash);
+    await this.userRepo.save(user);
+    // Reset the password => every existing session is revoked and the user
+    // must sign in again with the new password.
+    await this.sessionService.revokeAllForUser(user.id.value);
+    return { success: true };
+  }
+
+  public async listSessions(
+    userId: string,
+    currentSessionId: string,
+  ): Promise<Record<string, unknown>[]> {
+    const sessions = await this.sessionService.findActiveByUserId(userId);
+    return sessions.map((session) => this.toSessionDto(session, currentSessionId));
+  }
+
+  public async revokeSession(
+    userId: string,
+    sessionId: string,
+    currentSessionId: string,
+  ): Promise<{ success: boolean }> {
+    if (sessionId === currentSessionId) {
+      throw new BadRequestException('Cannot revoke the current session');
+    }
+    const session = await this.sessionService.findActiveByUserId(userId);
+    const target = session.find((s) => s.id === sessionId);
+    if (!target) {
+      throw new NotFoundException('Session not found');
+    }
+    await this.sessionRepo.revoke(target.id);
+    return { success: true };
+  }
+
+  public async revokeAllSessions(userId: string): Promise<{ success: boolean }> {
+    await this.sessionService.revokeAllForUser(userId);
+    return { success: true };
+  }
+
   public async sendOtp(phoneNumber: string): Promise<{ message: string }> {
     const canonicalPhone = this.canonicalizePhone(phoneNumber);
     if (!this.otpSendLimiter.isAllowed(`send:${canonicalPhone}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
@@ -368,6 +471,24 @@ export class AuthService {
     if (user.status !== 'ACTIVE') {
       throw new UnauthorizedException('Account is suspended. Contact support.');
     }
+  }
+
+  private assertStrongPassword(password: string): void {
+    if (password.length < 8 || !PASSWORD_PATTERN.test(password)) {
+      throw new BadRequestException(PASSWORD_POLICY_MESSAGE);
+    }
+  }
+
+  private toSessionDto(session: SessionOrmEntity, currentSessionId: string): Record<string, unknown> {
+    return {
+      id: session.id,
+      deviceName: session.deviceName ?? null,
+      ipAddress: session.ipAddress ?? null,
+      userAgent: session.userAgent ?? null,
+      createdAt: session.createdAt,
+      expiresAt: session.expiresAt,
+      isCurrent: session.id === currentSessionId,
+    };
   }
 
   private toUserDto(user: User): Record<string, unknown> {

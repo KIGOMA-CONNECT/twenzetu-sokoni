@@ -148,6 +148,9 @@ export default function LoginPage() {
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
                 {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Signing in...</> : 'Sign in'}
               </button>
+              <div style={{ marginTop: '0.75rem', textAlign: 'right' }}>
+                <Link to="/reset-password" style={{ color: 'var(--brand)', fontSize: '0.85rem', fontWeight: 600 }}>Forgot password?</Link>
+              </div>
             </form>
           ) : codeSent ? (
             <form onSubmit={handleVerifyCode}>

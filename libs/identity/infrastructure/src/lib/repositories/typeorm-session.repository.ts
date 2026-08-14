@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, MoreThan, QueryDeepPartialEntity, Repository } from 'typeorm';
+import { IsNull, MoreThan, Not, QueryDeepPartialEntity, Repository } from 'typeorm';
 import { SessionOrmEntity } from '../entities/session-orm.entity';
 import type { SessionMetadata } from '../auth/session.service';
 
@@ -71,6 +71,20 @@ export class TypeOrmSessionRepository {
 
   public async revokeAllForUser(userId: string): Promise<void> {
     await this.repo.update({ userId }, { revokedAt: new Date() });
+  }
+
+  public async revokeAllForUserExcept(userId: string, keepSessionId: string): Promise<void> {
+    await this.repo.update(
+      { userId, revokedAt: IsNull(), id: Not(keepSessionId) },
+      { revokedAt: new Date() },
+    );
+  }
+
+  public async findActiveByUserId(userId: string): Promise<SessionOrmEntity[]> {
+    return this.repo.find({
+      where: { userId, revokedAt: IsNull(), expiresAt: MoreThan(new Date()) },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   public async deleteExpired(before: Date): Promise<number> {

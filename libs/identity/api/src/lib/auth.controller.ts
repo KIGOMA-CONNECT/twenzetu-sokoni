@@ -12,6 +12,9 @@ import { SendOtpDto } from './dto/send-otp.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
+import { ChangePasswordDto } from './dto/change-password.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -88,6 +91,73 @@ export class AuthController {
     @Body() body: { fullName?: string; email?: string },
   ) {
     return this.authService.updateProfile(user.sub, body);
+  }
+
+  @Post('me/change-password')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Change the current user password (revokes all other sessions)' })
+  @ApiBody({ type: ChangePasswordDto })
+  @ApiResponse({ status: 201, description: 'Password changed' })
+  @ApiResponse({ status: 400, description: 'Weak password' })
+  @ApiResponse({ status: 401, description: 'Current password incorrect or Unauthorized' })
+  public async changePassword(@CurrentUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(user.sub, dto.currentPassword, dto.newPassword, user.sid);
+  }
+
+  @Get('me/sessions')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'List the current user active sessions (self-service device management)' })
+  @ApiResponse({ status: 200, description: 'Active sessions' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async listSessions(@CurrentUser() user: JwtPayload) {
+    return this.authService.listSessions(user.sub, user.sid);
+  }
+
+  @Post('me/sessions/:id/revoke')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiParam({ name: 'id', description: 'Session ID' })
+  @ApiOperation({ summary: 'Revoke a session (cannot revoke the current one)' })
+  @ApiResponse({ status: 201, description: 'Session revoked' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async revokeSession(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    return this.authService.revokeSession(user.sub, id, user.sid);
+  }
+
+  @Post('me/sessions/revoke-all')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke every session for the current user (sign out everywhere)' })
+  @ApiResponse({ status: 201, description: 'All sessions revoked' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async revokeAllSessions(@CurrentUser() user: JwtPayload) {
+    return this.authService.revokeAllSessions(user.sub);
+  }
+
+  @Post('forgot-password')
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiOperation({ summary: 'Request a password-reset OTP for the given phone number' })
+  @ApiBody({ type: ForgotPasswordDto })
+  @ApiResponse({ status: 201, description: 'OTP sent if the phone is registered' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  public async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto.phoneNumber);
+  }
+
+  @Post('reset-password')
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @ApiOperation({ summary: 'Reset the password with an OTP code (revokes all sessions)' })
+  @ApiBody({ type: ResetPasswordDto })
+  @ApiResponse({ status: 201, description: 'Password reset' })
+  @ApiResponse({ status: 400, description: 'Weak password' })
+  @ApiResponse({ status: 401, description: 'Invalid or expired code' })
+  public async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto.phoneNumber, dto.code, dto.newPassword);
   }
 
   @Post('send-otp')

@@ -6,6 +6,8 @@ import { MainLayout } from './layouts/MainLayout';
 import HomePage from './pages/landing/HomePage';
 import LoginPage from './pages/auth/LoginPage';
 import RegisterPage from './pages/auth/RegisterPage';
+import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import AccountPage from './pages/account/AccountPage';
 import ConsumerDashboard from './pages/consumer/ConsumerDashboard';
 import UsedGoodsPage from './pages/consumer/UsedGoodsPage';
 import TailoringOrderPage from './pages/consumer/TailoringOrderPage';
@@ -90,6 +92,7 @@ function AppRoutes() {
       <Route path="/" element={user ? <Navigate to="/dashboard" /> : <HomePage />} />
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <LoginPage />} />
       <Route path="/register" element={user ? <Navigate to="/dashboard" /> : <RegisterPage />} />
+      <Route path="/reset-password" element={user ? <Navigate to="/dashboard" /> : <ResetPasswordPage />} />
       <Route element={<MainLayout />}>
         <Route path="/vendors" element={<VendorList />} />
         <Route path="/vendors/:vendorId/products" element={<ProductList />} />
@@ -167,6 +170,7 @@ function AppRoutes() {
         <Route path="/driver/earnings" element={<ProtectedRoute roles={['driver']}><DriverEarnings /></ProtectedRoute>} />
         <Route path="/driver/vehicle" element={<ProtectedRoute roles={['driver']}><DriverVehicle /></ProtectedRoute>} />
         <Route path="/notifications" element={<NotificationsPage />} />
+        <Route path="/account" element={<AccountPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

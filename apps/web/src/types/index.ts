@@ -35,6 +35,16 @@ export type VerifyOtpResponse =
   | { verified: true; registered: false }
   | { verified: false; registered: false };
 
+export interface SessionInfo {
+  id: string;
+  deviceName: string | null;
+  ipAddress: string | null;
+  userAgent: string | null;
+  createdAt: string;
+  expiresAt: string;
+  isCurrent: boolean;
+}
+
 export interface Vendor {
   id: string;
   shopName: string;
