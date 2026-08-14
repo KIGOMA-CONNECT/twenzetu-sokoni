@@ -36,6 +36,8 @@ export * from './lib/audit-log.service';
 export * from './lib/notifications.controller';
 export * from './lib/notifications.service';
 export * from './lib/push.service';
+export * from './lib/notification-router.service';
+export * from './lib/order-notifier.service';
 export * from './lib/gateway';
 export * from './lib/dto/create-vendor.dto';
 export * from './lib/dto/create-product.dto';

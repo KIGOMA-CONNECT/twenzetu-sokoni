@@ -36,6 +36,7 @@ import { DriverFleetController } from './driver-fleet.controller';
 import { NotificationsController } from './notifications.controller';
 import { NotificationsService } from './notifications.service';
 import { PushService } from './push.service';
+import { NotificationRouterService } from './notification-router.service';
 import { OrderNotifierService } from './order-notifier.service';
 import { ChatController } from './chat.controller';
 import { RecommendationsController } from './recommendations.controller';
@@ -115,6 +116,7 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     MobileMoneyService,
     NotificationsService,
     PushService,
+    NotificationRouterService,
     OrderNotifierService,
   ],
   exports: [NotificationsService, PushService],

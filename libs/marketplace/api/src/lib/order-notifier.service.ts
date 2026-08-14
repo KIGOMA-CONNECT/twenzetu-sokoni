@@ -3,7 +3,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ISmsService } from '@afri-market/integrations';
 import { SMS_SERVICE } from '@afri-market/marketplace-application';
-import { NotificationsService } from './notifications.service';
+import { NotificationRouterService } from './notification-router.service';
 
 /**
  * Fires out-of-band notifications (SMS + in-app bell) around order events.
@@ -14,7 +14,7 @@ export class OrderNotifierService {
   constructor(
     @InjectDataSource() private readonly ds: DataSource,
     @Inject(SMS_SERVICE) private readonly smsService: ISmsService,
-    private readonly notifService: NotificationsService,
+    private readonly router: NotificationRouterService,
   ) {}
 
   public async notifyCustomerStatusChanged(params: {
@@ -33,10 +33,7 @@ export class OrderNotifierService {
       if (!row) {
         return;
       }
-      if (row.phoneNumber) {
-        await this.smsService.sendOrderStatusUpdate(row.phoneNumber, params.orderId, params.newStatus);
-      }
-      await this.notifService.create({
+      await this.router.route({
         tenantId: params.tenantId,
         userId: row.customerId,
         title: 'Order Update',
@@ -44,6 +41,13 @@ export class OrderNotifierService {
         type: 'order_update',
         referenceId: params.orderId,
         referenceType: 'order',
+        sms: row.phoneNumber
+          ? {
+              phone: row.phoneNumber,
+              send: () =>
+                this.smsService.sendOrderStatusUpdate(row.phoneNumber, params.orderId, params.newStatus),
+            }
+          : null,
       });
     } catch {
       return;
@@ -72,10 +76,7 @@ export class OrderNotifierService {
         [vendorUserId],
       );
       const phoneNumber = userRows?.[0]?.phoneNumber as string | undefined;
-      if (phoneNumber) {
-        await this.smsService.sendVendorCredited(phoneNumber, params.orderId, params.amount, params.currency);
-      }
-      await this.notifService.create({
+      await this.router.route({
         tenantId: params.tenantId,
         userId: vendorUserId,
         title: 'Payment Released',
@@ -83,6 +84,18 @@ export class OrderNotifierService {
         type: 'payment_released',
         referenceId: params.orderId,
         referenceType: 'order',
+        sms: phoneNumber
+          ? {
+              phone: phoneNumber,
+              send: () =>
+                this.smsService.sendVendorCredited(
+                  phoneNumber,
+                  params.orderId,
+                  params.amount,
+                  params.currency,
+                ),
+            }
+          : null,
       });
     } catch {
       return;

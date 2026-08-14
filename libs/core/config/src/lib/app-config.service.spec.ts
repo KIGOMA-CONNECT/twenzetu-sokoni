@@ -88,6 +88,20 @@ describe('AppConfigService', () => {
     expect(service.cors.origins).toEqual(['http://localhost:4200', 'https://app.example.com']);
   });
 
+  it('exposes ussd config with callback secret and environment-default simulator toggle', () => {
+    setEnv({ USSD_CALLBACK_SECRET: 'gw-secret', USSD_SIMULATE_ENABLED: 'true' });
+    const service = new AppConfigService();
+
+    expect(service.ussd).toEqual({ callbackSecret: 'gw-secret', simulateEnabled: true });
+  });
+
+  it('disables the ussd simulator in production unless explicitly enabled', () => {
+    setEnv({ APP_ENV: 'production' });
+    const service = new AppConfigService();
+
+    expect(service.ussd).toEqual({ callbackSecret: '', simulateEnabled: false });
+  });
+
   it('applies defaults for unset variables', () => {
     delete process.env['APP_PORT'];
     delete process.env['APP_NAME'];

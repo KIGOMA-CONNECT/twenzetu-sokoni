@@ -44,6 +44,8 @@ describe('envSchema', () => {
     expect(env.OTP_LENGTH).toBe(4);
     expect(env.SMS_DEFAULT_COUNTRY).toBe('KE');
     expect(env.DEFAULT_CURRENCY).toBe('KES');
+    expect(env.USSD_CALLBACK_SECRET).toBe('');
+    expect(env.USSD_SIMULATE_ENABLED).toBe('');
   });
 
   it('applies defaults for unset variables', () => {
@@ -62,6 +64,13 @@ describe('envSchema', () => {
     expect(env.SMS_DEFAULT_COUNTRY).toBe('TZ');
     expect(env.DEFAULT_CURRENCY).toBe('TZS');
     expect(env.CORS_ORIGINS).toBe('http://localhost:3000');
+  });
+
+  it('parses USSD callback secret and simulator toggle', () => {
+    const env = envSchema.parse(validSource({ USSD_CALLBACK_SECRET: 'gw-secret', USSD_SIMULATE_ENABLED: 'true' }));
+
+    expect(env.USSD_CALLBACK_SECRET).toBe('gw-secret');
+    expect(env.USSD_SIMULATE_ENABLED).toBe('true');
   });
 
   it('coerces numeric string env vars into numbers', () => {

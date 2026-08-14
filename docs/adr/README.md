@@ -29,3 +29,4 @@ Every ADR follows this template (from Chapter 9.3):
 | [ADR-0004](ADR-0004-azampay-primary-aggregator.md) | AzamPay as the primary payment aggregator | Accepted | 2026-08-10 |
 | [ADR-0005](ADR-0005-cargo-binding-fare-and-instant-booking.md) | Cargo, Express & Logistics — server-side binding fare and instant booking | Accepted | 2026-08-11 |
 | [ADR-0006](ADR-0006-marketing-catalog-public-ads-share-links.md) | Marketing catalog data, public ads API, and shareable category links | Accepted | 2026-08-11 |
+| [ADR-0007](ADR-0007-ussd-hardening-notification-routing.md) | USSD production hardening and stable notification routing | Accepted | 2026-08-14 |

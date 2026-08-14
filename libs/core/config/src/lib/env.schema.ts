@@ -24,6 +24,8 @@ export const envSchema = z.object({
   VAPID_PUBLIC_KEY: z.string().default(''),
   VAPID_PRIVATE_KEY: z.string().default(''),
   VAPID_SUBJECT: z.string().default('mailto:support@afrimarket.co.tz'),
+  USSD_CALLBACK_SECRET: z.string().default(''),
+  USSD_SIMULATE_ENABLED: z.string().default(''),
 }).superRefine((val, ctx) => {
   if (val.APP_ENV !== 'production') return;
   const defaults = new Set(['postgres', 'afri_owner_dev_password', 'afri_runtime_dev_password', 'dev-jwt-secret']);

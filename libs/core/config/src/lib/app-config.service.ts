@@ -71,4 +71,13 @@ export class AppConfigService {
       subject: this.config.VAPID_SUBJECT,
     };
   }
+
+  public get ussd() {
+    const force = this.config.USSD_SIMULATE_ENABLED.trim().toLowerCase();
+    const envDefault = this.config.APP_ENV !== 'production';
+    return {
+      callbackSecret: this.config.USSD_CALLBACK_SECRET,
+      simulateEnabled: force === '' ? envDefault : force === 'true' || force === '1',
+    };
+  }
 }
