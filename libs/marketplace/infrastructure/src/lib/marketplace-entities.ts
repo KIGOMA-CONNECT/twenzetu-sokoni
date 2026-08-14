@@ -14,6 +14,7 @@ import { CustomProcurementOrmEntity } from './entities/custom-procurement-orm.en
 import { VendorQuoteOrmEntity } from './entities/vendor-quote-orm.entity';
 import { AddressOrmEntity } from './entities/address-orm.entity';
 import { ReviewOrmEntity } from './entities/review-orm.entity';
+import { DriverReviewOrmEntity } from './entities/driver-review-orm.entity';
 import { MenuOrmEntity } from './entities/menu-orm.entity';
 import { DisputeOrmEntity } from './entities/dispute-orm.entity';
 import { SurgeRuleOrmEntity } from './entities/surge-rule-orm.entity';
@@ -63,6 +64,7 @@ export const MARKETPLACE_ENTITIES = [
   VendorQuoteOrmEntity,
   AddressOrmEntity,
   ReviewOrmEntity,
+  DriverReviewOrmEntity,
   MenuOrmEntity,
   DisputeOrmEntity,
   SurgeRuleOrmEntity,

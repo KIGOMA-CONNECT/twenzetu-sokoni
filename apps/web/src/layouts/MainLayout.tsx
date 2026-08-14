@@ -92,6 +92,7 @@ export function MainLayout() {
     { label: 'Analytics', path: '/admin/analytics', show: isAdmin && p('view_analytics') },
     { label: 'Promotions', path: '/admin/promotions', show: isAdmin && p('manage_promotions') },
     { label: 'Drivers', path: '/admin/drivers', show: isAdmin && p('manage_drivers') },
+    { label: 'Deliveries', path: '/admin/deliveries', show: isAdmin && p('manage_drivers') },
     { label: 'Verifications', path: '/admin/verifications', show: isAdmin },
     { label: 'USSD Simulator', path: '/admin/ussd', show: isAdmin },
     { label: 'Reconciliation', path: '/admin/reconciliation', show: isAdmin && p('manage_finance') },

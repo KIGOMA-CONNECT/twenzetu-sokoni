@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
+import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
 import type { Order, TrackingInfo } from '../../types';
 import L from 'leaflet';
@@ -31,6 +32,7 @@ export default function OrderTracking() {
   const { orderId } = useParams<{ orderId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { user } = useAuth();
   const { data: orderData, loading } = useApi<Order>(orderId ? `/orders/${orderId}` : null);
   const { data: trackingData, refetch: refetchTracking } = useApi<TrackingInfo>(
     orderId ? `/deliveries/order/${orderId}/tracking` : null,
@@ -47,12 +49,24 @@ export default function OrderTracking() {
   const [messages, setMessages] = useState<any[]>([]);
   const [chatInput, setChatInput] = useState('');
   const chatRef = useRef<HTMLDivElement>(null);
+  const [myDriverReview, setMyDriverReview] = useState<any>(null);
+  const [starRating, setStarRating] = useState(0);
+  const [rateComment, setRateComment] = useState('');
+  const [submittingRate, setSubmittingRate] = useState(false);
+  const [rateError, setRateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (orderData?.status) {
       setOrderStatus(orderData.status);
     }
   }, [orderData?.status]);
+
+  useEffect(() => {
+    if (!trackingData?.deliveryId) return;
+    api.get(`/driver-reviews/delivery/${trackingData.deliveryId}`)
+      .then(res => setMyDriverReview(res.data?.data ?? null))
+      .catch(() => setMyDriverReview(null));
+  }, [trackingData?.deliveryId]);
 
   useEffect(() => {
     if (trackingData) {
@@ -113,6 +127,24 @@ export default function OrderTracking() {
       setTimeout(() => chatRef.current?.scrollTo(0, chatRef.current.scrollHeight), 50);
     } catch { /* no-op */}
   }, [chatInput, orderId]);
+
+  const submitDriverReview = useCallback(async () => {
+    if (!starRating || !orderId) return;
+    setSubmittingRate(true);
+    setRateError(null);
+    try {
+      const res = await api.post('/driver-reviews', {
+        orderId,
+        rating: starRating,
+        comment: rateComment.trim() || undefined,
+      });
+      setMyDriverReview(res.data?.data ?? res.data);
+    } catch (err: any) {
+      setRateError(err.response?.data?.message || err.message || 'Failed to submit review.');
+    } finally {
+      setSubmittingRate(false);
+    }
+  }, [starRating, rateComment, orderId]);
 
   useEffect(() => {
     if (!mapRef.current || leafletMapRef.current) return;
@@ -337,6 +369,55 @@ export default function OrderTracking() {
                 <span style={styles.badge(trackingData.status)}>{trackingData.status}</span>
               </div>
             </div>
+          )}
+
+          {/* Rate Driver */}
+          {isDelivered && trackingData && orderData?.customerId === user?.id && (
+            myDriverReview ? (
+              <div style={styles.card}>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Driver Review</h3>
+                <div style={{ fontSize: 22, color: '#f59e0b', letterSpacing: 2 }}>
+                  {'★'.repeat(myDriverReview.rating)}{'☆'.repeat(5 - (myDriverReview.rating || 0))}
+                </div>
+                {myDriverReview.comment && (
+                  <div style={{ marginTop: 8, fontSize: 13, color: 'var(--muted)' }}>“{myDriverReview.comment}”</div>
+                )}
+              </div>
+            ) : (
+              <div style={styles.card}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>Rate your driver</h3>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                      key={n}
+                      onClick={() => setStarRating(n)}
+                      style={{
+                        background: 'none', border: 'none', fontSize: 26, cursor: 'pointer',
+                        color: n <= starRating ? '#f59e0b' : '#cbd5e1', padding: 0, lineHeight: 1,
+                      }}
+                      aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
+                    >
+                      ★
+                    </button>
+                  ))}
+                </div>
+                <input
+                  className="input"
+                  style={{ width: '100%', padding: '7px 10px', marginBottom: 10 }}
+                  value={rateComment}
+                  onChange={(e) => setRateComment(e.target.value)}
+                  placeholder="How was the delivery? (optional)"
+                />
+                {rateError && <div style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>{rateError}</div>}
+                <button
+                  className="btn btn-primary"
+                  disabled={!starRating || submittingRate}
+                  onClick={submitDriverReview}
+                >
+                  {submittingRate ? 'Submitting…' : 'Submit Review'}
+                </button>
+              </div>
+            )
           )}
 
           {/* Order Summary */}

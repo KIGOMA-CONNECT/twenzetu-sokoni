@@ -24,6 +24,9 @@ export class GetDeliveryTrackingUseCase {
     deliveryAddress: string;
     estimatedTimeMinutes: number | null;
     distanceKm: number | null;
+    currentLatitude: number | null;
+    currentLongitude: number | null;
+    lastLocationUpdate: string | null;
   }> {
     const delivery = await this.deliveryRepo.findByOrderId(orderId);
     if (!delivery) {
@@ -47,6 +50,9 @@ export class GetDeliveryTrackingUseCase {
       deliveryAddress: delivery.deliveryAddress,
       estimatedTimeMinutes: delivery.estimatedTimeMinutes ?? null,
       distanceKm: delivery.distanceKm ?? null,
+      currentLatitude: delivery.currentLatitude ?? null,
+      currentLongitude: delivery.currentLongitude ?? null,
+      lastLocationUpdate: delivery.lastLocationUpdate ? delivery.lastLocationUpdate.toISOString() : null,
     };
   }
 }

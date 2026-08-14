@@ -177,6 +177,7 @@ export interface TrackingInfo {
   distanceKm: number | null;
   currentLatitude?: number;
   currentLongitude?: number;
+  lastLocationUpdate?: string;
   deliveryLatitude?: number;
   deliveryLongitude?: number;
 }

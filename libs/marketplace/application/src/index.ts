@@ -64,11 +64,14 @@ export * from './lib/use-cases/delivery/get-driver-deliveries.use-case';
 export * from './lib/use-cases/delivery/driver-update-delivery-status.use-case';
 export * from './lib/use-cases/delivery/get-delivery-tracking.use-case';
 export * from './lib/use-cases/delivery/update-driver-location.use-case';
+export * from './lib/use-cases/delivery/assign-driver.use-case';
 
 // Use Cases - Review
 export * from './lib/use-cases/review/create-review.use-case';
 export * from './lib/use-cases/review/find-reviews-by-vendor.use-case';
 export * from './lib/use-cases/review/find-my-reviewed-orders.use-case';
+export * from './lib/use-cases/review/create-driver-review.use-case';
+export * from './lib/use-cases/review/list-driver-reviews.use-case';
 
 // Use Cases - Procurement
 export * from './lib/use-cases/procurement/create-procurement.use-case';

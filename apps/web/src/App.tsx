@@ -33,6 +33,7 @@ import UssdSimulator from './pages/admin/UssdSimulator';
 import OrderTracking from './pages/consumer/OrderTracking';
 import AdminPromotions from './pages/admin/AdminPromotions';
 import AdminDrivers from './pages/admin/AdminDrivers';
+import AdminDeliveries from './pages/admin/AdminDeliveries';
 import AdminManageAdmins from './pages/admin/AdminManageAdmins';
 import AdminReconciliation from './pages/admin/AdminReconciliation';
 import AdminLoans from './pages/admin/AdminLoans';
@@ -133,6 +134,7 @@ function AppRoutes() {
         <Route path="/admin/ussd" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><UssdSimulator /></ProtectedRoute>} />
         <Route path="/admin/promotions" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminPromotions /></ProtectedRoute>} />
         <Route path="/admin/drivers" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDrivers /></ProtectedRoute>} />
+        <Route path="/admin/deliveries" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDeliveries /></ProtectedRoute>} />
         <Route path="/admin/manage-admins" element={<ProtectedRoute roles={['super_admin']}><AdminManageAdmins /></ProtectedRoute>} />
         <Route path="/admin/reconciliation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminReconciliation /></ProtectedRoute>} />
         <Route path="/admin/loans" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminLoans /></ProtectedRoute>} />

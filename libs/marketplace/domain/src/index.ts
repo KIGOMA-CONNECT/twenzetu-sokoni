@@ -49,6 +49,8 @@ export * from './lib/procurement/vendor-quote.repository.interface';
 export * from './lib/address/address.aggregate';
 export * from './lib/review/review.aggregate';
 export * from './lib/review/review.repository.interface';
+export * from './lib/review/driver-review.aggregate';
+export * from './lib/review/driver-review.repository.interface';
 export * from './lib/menu/menu.aggregate';
 // Dispute
 export * from './lib/dispute/dispute-status';

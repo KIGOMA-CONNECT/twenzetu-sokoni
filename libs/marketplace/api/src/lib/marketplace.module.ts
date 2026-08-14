@@ -11,6 +11,7 @@ import { OrdersController } from './orders.controller';
 import { DeliveriesController } from './deliveries.controller';
 import { ProcurementController } from './procurement.controller';
 import { ReviewsController } from './reviews.controller';
+import { DriverReviewsController } from './driver-reviews.controller';
 import { WalletsController } from './wallets.controller';
 import { DisputesController } from './disputes.controller';
 import { SurgeController } from './surge.controller';
@@ -64,6 +65,7 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     DeliveriesController,
     ProcurementController,
     ReviewsController,
+    DriverReviewsController,
     WalletsController,
     DisputesController,
     SurgeController,

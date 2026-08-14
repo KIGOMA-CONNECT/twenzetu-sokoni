@@ -15,7 +15,7 @@ export class UpdateDriverLocationUseCase {
     driverId: string,
     latitude: number,
     longitude: number,
-  ): Promise<{ deliveryId: string; latitude: number; longitude: number; lastLocationUpdate: Date }> {
+  ): Promise<{ deliveryId: string; orderId: string; latitude: number; longitude: number; lastLocationUpdate: Date }> {
     const delivery = await this.deliveryRepo.findByIdAndTenant(deliveryId, tenantId);
     if (!delivery) {
       throw new NotFoundException(`Delivery ${deliveryId} not found`);
@@ -32,6 +32,7 @@ export class UpdateDriverLocationUseCase {
 
     return {
       deliveryId: delivery.id.value,
+      orderId: delivery.orderId.value,
       latitude,
       longitude,
       lastLocationUpdate: delivery.lastLocationUpdate!,

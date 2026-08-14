@@ -11,6 +11,7 @@ export const DISPUTE_REPOSITORY = 'IDisputeRepository';
 export const SURGE_RULE_REPOSITORY = 'ISurgeRuleRepository';
 export const CUSTOMER_POINTS_REPOSITORY = 'ICustomerPointsRepository';
 export const REVIEW_REPOSITORY = 'IReviewRepository';
+export const DRIVER_REVIEW_REPOSITORY = 'IDriverReviewRepository';
 export const PROCUREMENT_REPOSITORY = 'ICustomProcurementRepository';
 export const VENDOR_QUOTE_REPOSITORY = 'IVendorQuoteRepository';
 export const PARTNER_KYC_REPOSITORY = 'IPartnerKycRepository';

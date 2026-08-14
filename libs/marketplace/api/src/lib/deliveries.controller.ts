@@ -1,6 +1,7 @@
 import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
 import { DriverUpdateDeliveryStatusDto } from './dto/driver-update-delivery-status.dto';
@@ -14,6 +15,7 @@ import {
   DriverUpdateDeliveryStatusUseCase,
   GetDeliveryTrackingUseCase,
   UpdateDriverLocationUseCase,
+  AssignDriverUseCase,
   CreateDeliveryCommand,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
@@ -21,6 +23,9 @@ import { MarketplaceGateway } from './gateway';
 import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 import { OrderNotifierService } from './order-notifier.service';
+import { NotificationsService } from './notifications.service';
+
+const ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
 @ApiTags('Deliveries')
 @Controller('deliveries')
@@ -35,9 +40,12 @@ export class DeliveriesController {
     private readonly driverUpdateStatus: DriverUpdateDeliveryStatusUseCase,
     private readonly getDeliveryTracking: GetDeliveryTrackingUseCase,
     private readonly updateDriverLocation: UpdateDriverLocationUseCase,
+    private readonly assignDriver: AssignDriverUseCase,
     private readonly gateway: MarketplaceGateway,
     private readonly orderNotifier: OrderNotifierService,
     private readonly vendorAccess: VendorAccessService,
+    private readonly notifications: NotificationsService,
+    private readonly dataSource: DataSource,
   ) {}
 
   @Post()
@@ -79,6 +87,90 @@ export class DeliveriesController {
     }
     const deliveries = await this.findDeliveries.findByDriver(driverId);
     return { data: deliveries.map(d => d.toDto()) };
+  }
+
+  @Get('admin/queue')
+  @ApiOperation({ summary: 'List orders awaiting driver assignment + available drivers (admin only)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  public async getDispatchQueue(@CurrentUser() user: JwtPayload) {
+    if (!ADMIN_ROLES.includes(user.role)) {
+      throw new ForbiddenException('Admin access required');
+    }
+    const orders = await this.getQueuedOrders(user.tenantId);
+    const drivers = await this.getAvailableDrivers(user.tenantId);
+    return { data: { orders, drivers } };
+  }
+
+  @Post('admin/assign')
+  @ApiOperation({ summary: 'Manually assign a driver to an order (admin only)' })
+  @ApiBody({ schema: { type: 'object', properties: { orderId: { type: 'string' }, driverId: { type: 'string' } } } })
+  @ApiResponse({ status: 201, description: 'Driver assigned' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  public async assign(
+    @Body() body: { orderId: string; driverId: string },
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (!ADMIN_ROLES.includes(user.role)) {
+      throw new ForbiddenException('Admin access required');
+    }
+    const result = await this.assignDriver.execute(user.tenantId, body.orderId, body.driverId);
+
+    await this.notifications.create({
+      tenantId: result.tenantId,
+      userId: result.driverId,
+      title: 'Delivery Assigned',
+      message: `Pick up order ${result.orderId} from ${result.vendorName} and deliver to ${result.deliveryAddress}`,
+      type: 'delivery_assigned',
+      referenceId: result.orderId,
+      referenceType: 'order',
+    });
+
+    this.gateway.notifyDriverDelivery(result.tenantId, result.driverId, {
+      deliveryId: result.deliveryId,
+      orderId: result.orderId,
+      status: 'PENDING',
+    });
+
+    return { data: result };
+  }
+
+  private async getQueuedOrders(tenantId: string) {
+    const rows = await this.dataSource.query(
+      `SELECT o.id, o.status, o.delivery_address AS "deliveryAddress",
+              o.delivery_latitude AS "deliveryLatitude", o.delivery_longitude AS "deliveryLongitude",
+              o.delivery_fee AS "deliveryFee", o.total_amount AS "totalAmount", o.currency,
+              o.created_at AS "createdAt",
+              v.shop_name AS "vendorName"
+       FROM orders o
+       JOIN vendors v ON v.id = o.vendor_id
+       WHERE o.tenant_id = $1
+         AND o.status IN ('PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP')
+         AND NOT EXISTS (
+           SELECT 1 FROM deliveries d
+           WHERE d.order_id = o.id AND d.status <> 'FAILED'
+         )
+       ORDER BY o.created_at ASC
+       LIMIT 50`,
+      [tenantId],
+    );
+    return rows;
+  }
+
+  private async getAvailableDrivers(tenantId: string) {
+    const rows = await this.dataSource.query(
+      `SELECT u.id AS "driverId", u.full_name AS "fullName", u.phone_number AS "phoneNumber",
+              v.vehicle_type AS "vehicleType", v.plate_number AS "plateNumber",
+              v.is_online AS "isOnline", v.is_available AS "isAvailable"
+       FROM users u
+       JOIN vehicles v ON v.driver_id = u.id
+       WHERE u.tenant_id = $1 AND u.role = 'driver' AND v.is_available = true
+       ORDER BY v.is_online DESC, v.updated_at DESC
+       LIMIT 100`,
+      [tenantId],
+    );
+    return rows;
   }
 
   @Get('me')
@@ -143,7 +235,7 @@ export class DeliveriesController {
       body.latitude,
       body.longitude,
     );
-    this.gateway.notifyOrderUpdate(result.deliveryId, {
+    this.gateway.notifyOrderUpdate(result.orderId, {
       type: 'driver-location',
       latitude: body.latitude,
       longitude: body.longitude,

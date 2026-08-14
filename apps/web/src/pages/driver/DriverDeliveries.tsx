@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
@@ -53,6 +53,15 @@ export default function DriverDeliveries() {
   const [filter, setFilter] = useState<FilterStatus>('ALL');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [liveSharing, setLiveSharing] = useState<Record<string, boolean>>({});
+  const liveTimersRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(liveTimersRef.current).forEach(clearInterval);
+      liveTimersRef.current = {};
+    };
+  }, []);
 
   useEffect(() => {
     return subscribe('delivery-update', () => {
@@ -83,6 +92,48 @@ export default function DriverDeliveries() {
     } finally {
       setBusyId(null);
     }
+  };
+
+  const sendLocationUpdate = async (id: string) => {
+    if (!navigator.geolocation) {
+      setActionError('Geolocation not supported by your browser.');
+      return;
+    }
+    try {
+      const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000 })
+      );
+      await api.patch(`/deliveries/${id}/location`, {
+        latitude: pos.coords.latitude,
+        longitude: pos.coords.longitude,
+      });
+      setActionError(null);
+    } catch (err: any) {
+      if (err.code === 1) setActionError('Location permission denied. Please enable GPS.');
+      else setActionError(err.response?.data?.message || err.message || 'Failed to share location.');
+    }
+  };
+
+  const stopLiveSharing = (id: string) => {
+    if (liveTimersRef.current[id]) {
+      clearInterval(liveTimersRef.current[id]);
+      delete liveTimersRef.current[id];
+    }
+    setLiveSharing(prev => ({ ...prev, [id]: false }));
+  };
+
+  const toggleLiveSharing = async (id: string) => {
+    if (liveSharing[id]) {
+      stopLiveSharing(id);
+      return;
+    }
+    if (!navigator.geolocation) {
+      setActionError('Geolocation not supported by your browser.');
+      return;
+    }
+    setLiveSharing(prev => ({ ...prev, [id]: true }));
+    await sendLocationUpdate(id);
+    liveTimersRef.current[id] = setInterval(() => sendLocationUpdate(id), 10000);
   };
 
   const handleAccept = async (id: string) => {
@@ -247,6 +298,17 @@ export default function DriverDeliveries() {
                         )}
                         {d.status === 'IN_TRANSIT' && (
                           <div style={styles.actionWrap}>
+                            <button
+                              style={{
+                                ...styles.locationBtn,
+                                ...(liveSharing[d.id] ? { background: '#16a34a' } : {}),
+                                ...(busy ? styles.disabledBtn : {}),
+                              }}
+                              disabled={busy}
+                              onClick={() => toggleLiveSharing(d.id)}
+                            >
+                              {liveSharing[d.id] ? '● Live Sharing On' : '◎ Live Sharing Off'}
+                            </button>
                             <button
                               style={{ ...styles.locationBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}

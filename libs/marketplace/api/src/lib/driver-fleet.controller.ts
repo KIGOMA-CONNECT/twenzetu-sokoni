@@ -37,11 +37,11 @@ export class DriverFleetController {
       deliveryRepo.count({ where: { driverId, tenantId: user.tenantId } }),
     ]);
 
-    const reviewRepo = this.dataSource.getRepository('reviews');
+    const reviewRepo = this.dataSource.getRepository('driver_reviews');
     const ratingResult = await reviewRepo
       .createQueryBuilder('r')
-      .where('r.target_id = :driverId', { driverId })
-      .andWhere('r.target_type = :targetType', { targetType: 'driver' })
+      .where('r.driverId = :driverId', { driverId })
+      .andWhere('r.tenantId = :tenantId', { tenantId: user.tenantId })
       .select('AVG(r.rating)', 'avg')
       .addSelect('COUNT(r.id)', 'count')
       .getRawOne();

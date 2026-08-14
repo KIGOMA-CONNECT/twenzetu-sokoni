@@ -17,6 +17,7 @@ import {
   TypeOrmWalletTransactionRepository,
   TypeOrmUsedGoodsRepository,
   TypeOrmReviewRepository,
+  TypeOrmDriverReviewRepository,
   TypeOrmCustomProcurementRepository,
   TypeOrmVendorQuoteRepository,
   TypeOrmPartnerKycRepository,
@@ -47,7 +48,7 @@ import {
   DELIVERY_REPOSITORY, PAYMENT_REPOSITORY, DISPUTE_REPOSITORY,
   CUSTOMER_POINTS_REPOSITORY, SURGE_RULE_REPOSITORY,
   WALLET_REPOSITORY, WALLET_TRANSACTION_REPOSITORY, USED_GOODS_REPOSITORY,
-  REVIEW_REPOSITORY, PROCUREMENT_REPOSITORY, VENDOR_QUOTE_REPOSITORY,
+  REVIEW_REPOSITORY, PROCUREMENT_REPOSITORY, VENDOR_QUOTE_REPOSITORY, DRIVER_REVIEW_REPOSITORY,
   PARTNER_KYC_REPOSITORY, MICRO_LOAN_REPOSITORY, CREDIT_SCORE_REPOSITORY,
   BULK_ORDER_REPOSITORY, FIELD_AGENT_REPOSITORY, HYPERLOCAL_POI_REPOSITORY,
   SMS_SERVICE, MOBILE_MONEY_SERVICE, EMAIL_SERVICE, COUNTRY_CONFIG_REPOSITORY, MARKETPLACE_GATEWAY,
@@ -73,6 +74,8 @@ import { CreateDeliveryUseCase } from './use-cases/delivery/create-delivery.use-
 import { FindDeliveriesUseCase } from './use-cases/delivery/find-deliveries.use-case';
 import { CompleteDeliveryUseCase } from './use-cases/delivery/complete-delivery.use-case';
 import { CreateReviewUseCase } from './use-cases/review/create-review.use-case';
+import { CreateDriverReviewUseCase } from './use-cases/review/create-driver-review.use-case';
+import { ListDriverReviewsUseCase } from './use-cases/review/list-driver-reviews.use-case';
 import { CreateProcurementUseCase } from './use-cases/procurement/create-procurement.use-case';
 import { SubmitQuoteUseCase } from './use-cases/procurement/submit-quote.use-case';
 import { CreateDisputeUseCase } from './use-cases/dispute/create-dispute.use-case';
@@ -140,6 +143,7 @@ import { ToggleDriverAvailabilityUseCase } from './use-cases/vehicle/toggle-driv
 import { UpdateUsedGoodsUseCase } from './use-cases/used-goods/update-used-goods.use-case';
 import { GetDeliveryTrackingUseCase } from './use-cases/delivery/get-delivery-tracking.use-case';
 import { UpdateDriverLocationUseCase } from './use-cases/delivery/update-driver-location.use-case';
+import { AssignDriverUseCase } from './use-cases/delivery/assign-driver.use-case';
 import { CreateCategoryUseCase } from './use-cases/category/create-category.use-case';
 import { ListCategoriesUseCase } from './use-cases/category/list-categories.use-case';
 import { CreateAddressUseCase } from './use-cases/address/create-address.use-case';
@@ -212,6 +216,7 @@ const REPOSITORIES = [
   { provide: WALLET_TRANSACTION_REPOSITORY, useClass: TypeOrmWalletTransactionRepository },
   { provide: USED_GOODS_REPOSITORY, useClass: TypeOrmUsedGoodsRepository },
   { provide: REVIEW_REPOSITORY, useClass: TypeOrmReviewRepository },
+  { provide: DRIVER_REVIEW_REPOSITORY, useClass: TypeOrmDriverReviewRepository },
   { provide: PROCUREMENT_REPOSITORY, useClass: TypeOrmCustomProcurementRepository },
   { provide: VENDOR_QUOTE_REPOSITORY, useClass: TypeOrmVendorQuoteRepository },
   { provide: PARTNER_KYC_REPOSITORY, useClass: TypeOrmPartnerKycRepository },
@@ -260,6 +265,8 @@ const USE_CASES = [
   FindDeliveriesUseCase,
   CompleteDeliveryUseCase,
   CreateReviewUseCase,
+  CreateDriverReviewUseCase,
+  ListDriverReviewsUseCase,
   CreateProcurementUseCase,
   SubmitQuoteUseCase,
   CreateDisputeUseCase,
@@ -329,6 +336,7 @@ const USE_CASES = [
   ToggleDriverAvailabilityUseCase,
   UpdateUsedGoodsUseCase,
   UpdateDriverLocationUseCase,
+  AssignDriverUseCase,
   GetDeliveryTrackingUseCase,
   CreateCategoryUseCase,
   ListCategoriesUseCase,
@@ -386,6 +394,6 @@ SetDefaultAddressUseCase,
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}
