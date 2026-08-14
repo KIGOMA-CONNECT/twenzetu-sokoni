@@ -80,4 +80,13 @@ export class AppConfigService {
       simulateEnabled: force === '' ? envDefault : force === 'true' || force === '1',
     };
   }
+
+  public get beem() {
+    return {
+      apiKey: this.config.BEEM_API_KEY,
+      secretKey: this.config.BEEM_SECRET_KEY,
+      ussdCode: this.config.BEEM_USSD_CODE,
+      callbackSecret: this.config.BEEM_CALLBACK_SECRET,
+    };
+  }
 }

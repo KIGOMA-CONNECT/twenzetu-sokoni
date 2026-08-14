@@ -5,4 +5,5 @@ export * from './lib/ussd.controller';
 export * from './lib/ussd-session.service';
 export * from './lib/ussd-session-cleanup.service';
 export * from './lib/ussd.engine';
+export * from './lib/adapters/beem.adapter';
 export * from './lib/entities/ussd-session.entity';

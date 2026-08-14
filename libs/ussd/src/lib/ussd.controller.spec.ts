@@ -20,11 +20,28 @@ const initialRequest: UssdRequest = {
   text: '',
 };
 
+const beemInitiate = {
+  command: 'initiate',
+  msisdn: '255754100003',
+  session_id: 4574,
+  operator: 'vodacom',
+  payload: { request_id: 0, response: 0 },
+};
+
+const beemContinue = {
+  command: 'continue',
+  msisdn: '255754100003',
+  session_id: 4574,
+  operator: 'vodacom',
+  payload: { request_id: 1, response: 2 },
+};
+
 describe('UssdController', () => {
   let controller: UssdController;
   const sessionService = {
     getOrCreateSession: jest.fn(),
     saveSession: jest.fn(),
+    endSession: jest.fn(),
   };
   const engine = {
     getMainMenu: jest.fn(),
@@ -35,12 +52,14 @@ describe('UssdController', () => {
   };
   const config = {
     ussd: { callbackSecret: '', simulateEnabled: true },
+    beem: { callbackSecret: '' },
   };
 
   beforeEach(async () => {
     jest.clearAllMocks();
     config.ussd.callbackSecret = '';
     config.ussd.simulateEnabled = true;
+    config.beem.callbackSecret = '';
     sessionService.getOrCreateSession.mockResolvedValue({
       sessionId: 'sess-1',
       phoneNumber: '+255754100003',
@@ -121,6 +140,75 @@ describe('UssdController', () => {
     it('rejects an oversized text payload', async () => {
       await expect(
         controller.handleCallback({ ...validRequest, text: 'x'.repeat(201) }),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('beem callback', () => {
+    it('serves the main menu on initiate and echoes the Beem contract', async () => {
+      const response = await controller.handleBeemCallback(beemInitiate);
+
+      expect(engine.getMainMenu).toHaveBeenCalledTimes(1);
+      expect(engine.processInput).not.toHaveBeenCalled();
+      expect(sessionService.saveSession).toHaveBeenCalledTimes(1);
+      expect(sessionService.endSession).not.toHaveBeenCalled();
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(response).toEqual({
+        msisdn: '255754100003',
+        operator: 'vodacom',
+        session_id: '4574',
+        command: 'initiate',
+        payload: { request_id: 0, request: 'menu' },
+      });
+    });
+
+    it('routes continue input through the engine', async () => {
+      const response = await controller.handleBeemCallback(beemContinue);
+
+      expect(engine.processInput).toHaveBeenCalledTimes(1);
+      expect(engine.processInput).toHaveBeenCalledWith(
+        expect.objectContaining({ phoneNumber: '+255754100003', currentMenu: 'main' }),
+        '2',
+      );
+      expect(response.command).toBe('continue');
+      expect(response.payload.request_id).toBe(1);
+    });
+
+    it('ends the session on terminate without touching the engine', async () => {
+      const response = await controller.handleBeemCallback({
+        ...beemInitiate,
+        command: 'terminate',
+      });
+
+      expect(sessionService.endSession).toHaveBeenCalledWith('4574', '+255754100003');
+      expect(engine.getMainMenu).not.toHaveBeenCalled();
+      expect(response.command).toBe('terminate');
+      expect(response.payload.request).toBe('');
+    });
+
+    it('rejects when the Beem gateway secret is configured but missing', async () => {
+      config.beem.callbackSecret = 'gw-secret';
+
+      await expect(controller.handleBeemCallback(beemInitiate)).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('rejects an invalid command', async () => {
+      await expect(
+        controller.handleBeemCallback({ ...beemInitiate, command: 'bogus' }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects a missing session_id', async () => {
+      await expect(
+        controller.handleBeemCallback({ ...beemInitiate, session_id: undefined }),
+      ).rejects.toThrow(BadRequestException);
+    });
+
+    it('rejects an invalid msisdn', async () => {
+      await expect(
+        controller.handleBeemCallback({ ...beemInitiate, msisdn: 'abc' }),
       ).rejects.toThrow(BadRequestException);
     });
   });

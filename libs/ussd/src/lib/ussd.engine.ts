@@ -10,11 +10,12 @@ export class UssdEngine {
     session: UssdSession,
     input: string,
   ): Promise<UssdResponse> {
-    if (input === '0') {
+    const menu = session.currentMenu;
+
+    if (input === '0' && menu !== 'main') {
       return this.goBack(session);
     }
 
-    const menu = session.currentMenu;
     const isVendor = session.userRole === 'vendor';
 
     if (menu === 'main') {
@@ -120,6 +121,12 @@ export class UssdEngine {
       case '5':
         session.currentMenu = 'help';
         return this.helpMenu(session);
+      case '0':
+        return {
+          sessionId: session.sessionId,
+          message: 'Thank you for using afriMarket. Kwaheri!',
+          continueSession: false,
+        };
       default:
         return invalidOption(session);
     }
@@ -453,6 +460,12 @@ export class UssdEngine {
       case '5':
         session.currentMenu = 'vendor:wallet';
         return this.vendorWallet(session);
+      case '0':
+        return {
+          sessionId: session.sessionId,
+          message: 'Thank you for using afriMarket Vendor. Kwaheri!',
+          continueSession: false,
+        };
       default:
         return invalidOption(session);
     }

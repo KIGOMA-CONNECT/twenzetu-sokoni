@@ -1,0 +1,25 @@
+# ADR-0008: Beem USSD Hub integration
+
+- Status: Accepted
+- Date: 2026-08-14
+- Decision maker: Owner + Platform Council
+- Context: Engagement L4 hardened the USSD channel behind a shared-secret callback, but the production gateway (the Beem USSD Hub) cannot send HTTP headers, posts a payload shape that differs from the internal `UssdRequest` (`{command: initiate|continue|terminate, msisdn, operator, session_id, payload:{request_id, response}}`), and expects a raw JSON response without the platform's `{success,data,timestamp}` envelope. The carrier also starts dialogs with a `command: initiate` whose `payload.response` value must never be fed to the engine as a "0" (which the engine now treats as go-back/exit).
+- Options considered:
+  1. **Adapt Beem payloads inside `UssdController.handleCallback` (status quo)** — pushes Beem-specific shape into the generic callback and cannot return raw JSON because the global `ResponseInterceptor` wraps every response. Rejected.
+  2. **A dedicated Beem callback route + transport adapter (chosen)** — a `POST /api/ussd/beem/callback` route behind the same constant-time secret gate, parsing through `BeemUssdAdapter` and returning the Beem response contract verbatim by annotating the route with `@SkipResponseTransform()`. The engine handles go-back (`'0'` on non-main menus) and main-menu exit (`'0'` → `continueSession:false`) explicitly, so `initiate` always maps to the main menu and never re-enters the engine with the carrier's `response` value.
+  3. **Wait for carrier-supplied callbacks from the existing aggregator** — out of our control and unavailable; the Beem Hub is the operative production gateway. Rejected for now (migration-ready: the generic callback remains).
+- Decision:
+  1. **Beem callback route.** `UssdController.handleBeemCallback` at `POST /api/ussd/beem/callback`, `@HttpCode(200)`, gated by an optional `BEEM_CALLBACK_SECRET` (same constant-time `x-ussd-secret` compare; unset ⇒ open with a one-time warning). Beem's Hub cannot send HTTP headers, so production leaves `BEEM_CALLBACK_SECRET` empty and relies on the TLS-terminating proxy for transport security. `terminate` ends the session and returns a bare terminate response without touching the engine; `initiate` renders the main menu; `continue` runs `engine.processInput(session, request.response)`.
+  2. **Transport adapter.** `BeemUssdAdapter` validates the `command` (case-insensitive), requires `session_id`, normalizes `msisdn` (`+` handling, `/^[1-9][0-9]{6,14}$/`), defaults `request_id` to 0, and builds responses that echo `msisdn`/`operator`/`session_id`/`request_id` with `command` derived from `continueSession` (`initiate`/`continue` vs `terminate`).
+  3. **Raw response contract.** `@SkipResponseTransform()` (new `@afri-market/core-http` decorator setting `SKIP_RESPONSE_TRANSFORM` metadata, checked handler-first then class by `ResponseInterceptor`) lets the Beem route return raw `{msisdn, operator, session_id, command, payload:{request_id, request}}` JSON as Beem requires, without the global envelope.
+  4. **Engine exit semantics.** `ussd.engine.ts`: `'0'` on any non-main menu is go-back; `'0'` at the main menu terminates the dialog (`continueSession:false`). Main-menu `initiate` is rendered directly via `getMainMenu`, never via `processInput`, so Beem's `payload.response: 0` on initiate is ignored.
+  5. **Configuration.** `env.schema.ts` declares `BEEM_API_KEY`, `BEEM_SECRET_KEY`, `BEEM_USSD_CODE`, `BEEM_CALLBACK_SECRET` (optional, defaults `''`); `AppConfigService.beem` exposes them; `docker-compose.prod.yml` forwards them; `.env.example` documents the Beem callback URL (`https://twenzetusokoni.com/api/ussd/beem/callback`) and credentials.
+- Consequences:
+  - Beem can drive the full USSD flow end-to-end: initiate → main menu, continue → engine navigation, terminate → clean session teardown.
+  - The response contract matches Beem's expectations exactly (raw JSON, echoed fields, case-insensitive commands, `msisdn` without `+`), verified with a live curl against the deployed endpoint.
+  - The generic `POST /api/ussd/callback` remains for aggregators that send headers / the current simulator, so no existing consumer breaks.
+  - Operators register the Beem callback URL with Beem's USSD Hub dashboard. Because the Hub cannot send headers, `BEEM_CALLBACK_SECRET` stays empty in production and the endpoint's transport security comes from the TLS-terminating proxy; the generic callback keeps its required `USSD_CALLBACK_SECRET`.
+  - Outbound Beem APIs (checkout, balance) are not yet called; their credentials are plumbed through config and compose for when USSD-initiated payments land.
+- Constitution check: tenancy isolation preserved (sessions keyed per phone+tenant, single DAR tenant), observability of each command (structured logs), fail-closed posture preserved on the generic callback (6.3) while the Beem route's transport security rides on the TLS proxy, and the live commercial channel keeps its degraded-mode posture (Ch8).
+
+See also ADR-0007 (gateway hardening and notification routing).

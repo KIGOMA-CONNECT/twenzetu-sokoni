@@ -38,3 +38,26 @@ export type MenuHandler = (
   session: UssdSession,
   input: string,
 ) => Promise<UssdResponse>;
+
+export type BeemCommand = 'initiate' | 'continue' | 'terminate';
+
+export interface BeemUssdRequest {
+  command: BeemCommand;
+  msisdn: string;
+  operator: string;
+  sessionId: string;
+  requestId: number;
+  response: string;
+  phoneNumber: string;
+}
+
+export interface BeemUssdResponse {
+  msisdn: string;
+  operator: string;
+  session_id: string;
+  command: BeemCommand;
+  payload: {
+    request_id: number;
+    request: string;
+  };
+}

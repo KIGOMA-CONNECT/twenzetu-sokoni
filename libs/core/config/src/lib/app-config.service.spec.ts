@@ -102,6 +102,30 @@ describe('AppConfigService', () => {
     expect(service.ussd).toEqual({ callbackSecret: '', simulateEnabled: false });
   });
 
+  it('exposes beem config with default-empty credentials', () => {
+    setEnv({});
+    const service = new AppConfigService();
+
+    expect(service.beem).toEqual({ apiKey: '', secretKey: '', ussdCode: '', callbackSecret: '' });
+  });
+
+  it('exposes beem config from the environment', () => {
+    setEnv({
+      BEEM_API_KEY: 'api-key',
+      BEEM_SECRET_KEY: 'secret-key',
+      BEEM_USSD_CODE: '*150*40#',
+      BEEM_CALLBACK_SECRET: 'beem-secret',
+    });
+    const service = new AppConfigService();
+
+    expect(service.beem).toEqual({
+      apiKey: 'api-key',
+      secretKey: 'secret-key',
+      ussdCode: '*150*40#',
+      callbackSecret: 'beem-secret',
+    });
+  });
+
   it('applies defaults for unset variables', () => {
     delete process.env['APP_PORT'];
     delete process.env['APP_NAME'];

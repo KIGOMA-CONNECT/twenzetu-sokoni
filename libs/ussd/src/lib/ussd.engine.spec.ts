@@ -70,6 +70,13 @@ describe('UssdEngine', () => {
       expect(response.message).toContain('Welcome to afriMarket');
     });
 
+    it('exits on 0 at the main menu', async () => {
+      const response = await engine.processInput(makeSession(), '0');
+
+      expect(response.continueSession).toBe(false);
+      expect(response.message).toContain('Kwaheri');
+    });
+
     it('rejects an invalid option', async () => {
       const response = await engine.processInput(makeSession(), '9');
 

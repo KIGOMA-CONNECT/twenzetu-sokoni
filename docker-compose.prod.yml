@@ -95,6 +95,10 @@ services:
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:support@afrimarket.co.tz}
       USSD_CALLBACK_SECRET: ${USSD_CALLBACK_SECRET:-}
       USSD_SIMULATE_ENABLED: ${USSD_SIMULATE_ENABLED:-false}
+      BEEM_API_KEY: ${BEEM_API_KEY:-}
+      BEEM_SECRET_KEY: ${BEEM_SECRET_KEY:-}
+      BEEM_USSD_CODE: ${BEEM_USSD_CODE:-}
+      BEEM_CALLBACK_SECRET: ${BEEM_CALLBACK_SECRET:-}
     depends_on:
       postgres:
         condition: service_healthy

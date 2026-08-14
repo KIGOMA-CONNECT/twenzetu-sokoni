@@ -46,6 +46,9 @@ describe('envSchema', () => {
     expect(env.DEFAULT_CURRENCY).toBe('KES');
     expect(env.USSD_CALLBACK_SECRET).toBe('');
     expect(env.USSD_SIMULATE_ENABLED).toBe('');
+    expect(env.BEEM_API_KEY).toBe('');
+    expect(env.BEEM_SECRET_KEY).toBe('');
+    expect(env.BEEM_USSD_CODE).toBe('');
   });
 
   it('applies defaults for unset variables', () => {
@@ -71,6 +74,17 @@ describe('envSchema', () => {
 
     expect(env.USSD_CALLBACK_SECRET).toBe('gw-secret');
     expect(env.USSD_SIMULATE_ENABLED).toBe('true');
+  });
+
+  it('parses Beem integration credentials', () => {
+    const env = envSchema.parse(
+      validSource({ BEEM_API_KEY: 'api-key', BEEM_SECRET_KEY: 'secret-key', BEEM_USSD_CODE: '*150*40#', BEEM_CALLBACK_SECRET: 'beem-secret' }),
+    );
+
+    expect(env.BEEM_API_KEY).toBe('api-key');
+    expect(env.BEEM_SECRET_KEY).toBe('secret-key');
+    expect(env.BEEM_USSD_CODE).toBe('*150*40#');
+    expect(env.BEEM_CALLBACK_SECRET).toBe('beem-secret');
   });
 
   it('coerces numeric string env vars into numbers', () => {
