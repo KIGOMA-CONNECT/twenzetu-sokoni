@@ -1,6 +1,7 @@
 import { Injectable, ServiceUnavailableException } from '@nestjs/common';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { AzamPayProvider } from './payments/azampay.provider';
+import { BeemPaymentProvider, BeemBalanceResult } from './payments/beem.provider';
 import { MpesaProvider } from './payments/mpesa.provider';
 import { SandboxPaymentProvider } from './payments/sandbox.provider';
 import {
@@ -73,16 +74,19 @@ export interface IMobileMoneyService {
     headers: Record<string, string | string[] | undefined>,
     body?: Record<string, unknown>,
   ): boolean;
+  getBeemBalance(appName?: string): Promise<BeemBalanceResult>;
 }
 
 @Injectable()
 export class MobileMoneyService implements IMobileMoneyService {
   private readonly azamPay: AzamPayProvider;
+  private readonly beem: BeemPaymentProvider;
   private readonly mpesa: MpesaProvider;
   private readonly sandbox: SandboxPaymentProvider;
 
   constructor(private readonly logger: AppLoggerService) {
     this.azamPay = new AzamPayProvider(logger);
+    this.beem = new BeemPaymentProvider(logger);
     this.mpesa = new MpesaProvider(logger);
     this.sandbox = new SandboxPaymentProvider(logger);
   }
@@ -138,6 +142,10 @@ export class MobileMoneyService implements IMobileMoneyService {
   public async initiateCardCheckout(params: CardCheckoutParams): Promise<CardCheckoutResult> {
     if (this.azamPay.isConfigured) {
       return this.azamPay.initiateCardCheckout(params);
+    }
+
+    if (this.beem.isConfigured) {
+      return this.beem.initiateCardCheckout(params);
     }
 
     const demoMode = process.env.PAYMENTS_DEMO_MODE === 'true';
@@ -204,5 +212,9 @@ export class MobileMoneyService implements IMobileMoneyService {
       return true;
     }
     return this.azamPay.verifyCallback(headers, body);
+  }
+
+  public async getBeemBalance(appName?: string): Promise<BeemBalanceResult> {
+    return this.beem.getBalance(appName);
   }
 }

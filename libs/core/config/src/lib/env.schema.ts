@@ -30,6 +30,8 @@ export const envSchema = z.object({
   BEEM_SECRET_KEY: z.string().default(''),
   BEEM_USSD_CODE: z.string().default(''),
   BEEM_CALLBACK_SECRET: z.string().default(''),
+  BEEM_PAYMENT_API_KEY: z.string().default(''),
+  BEEM_PAYMENT_SECRET_KEY: z.string().default(''),
 }).superRefine((val, ctx) => {
   if (val.APP_ENV !== 'production') return;
   const defaults = new Set(['postgres', 'afri_owner_dev_password', 'afri_runtime_dev_password', 'dev-jwt-secret']);

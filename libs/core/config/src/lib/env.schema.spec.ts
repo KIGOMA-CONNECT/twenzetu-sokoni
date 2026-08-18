@@ -49,6 +49,8 @@ describe('envSchema', () => {
     expect(env.BEEM_API_KEY).toBe('');
     expect(env.BEEM_SECRET_KEY).toBe('');
     expect(env.BEEM_USSD_CODE).toBe('');
+    expect(env.BEEM_PAYMENT_API_KEY).toBe('');
+    expect(env.BEEM_PAYMENT_SECRET_KEY).toBe('');
   });
 
   it('applies defaults for unset variables', () => {
@@ -78,13 +80,22 @@ describe('envSchema', () => {
 
   it('parses Beem integration credentials', () => {
     const env = envSchema.parse(
-      validSource({ BEEM_API_KEY: 'api-key', BEEM_SECRET_KEY: 'secret-key', BEEM_USSD_CODE: '*150*40#', BEEM_CALLBACK_SECRET: 'beem-secret' }),
+      validSource({
+        BEEM_API_KEY: 'api-key',
+        BEEM_SECRET_KEY: 'secret-key',
+        BEEM_USSD_CODE: '*150*40#',
+        BEEM_CALLBACK_SECRET: 'beem-secret',
+        BEEM_PAYMENT_API_KEY: 'pay-api-key',
+        BEEM_PAYMENT_SECRET_KEY: 'pay-secret-key',
+      }),
     );
 
     expect(env.BEEM_API_KEY).toBe('api-key');
     expect(env.BEEM_SECRET_KEY).toBe('secret-key');
     expect(env.BEEM_USSD_CODE).toBe('*150*40#');
     expect(env.BEEM_CALLBACK_SECRET).toBe('beem-secret');
+    expect(env.BEEM_PAYMENT_API_KEY).toBe('pay-api-key');
+    expect(env.BEEM_PAYMENT_SECRET_KEY).toBe('pay-secret-key');
   });
 
   it('coerces numeric string env vars into numbers', () => {

@@ -106,7 +106,13 @@ describe('AppConfigService', () => {
     setEnv({});
     const service = new AppConfigService();
 
-    expect(service.beem).toEqual({ apiKey: '', secretKey: '', ussdCode: '', callbackSecret: '' });
+    expect(service.beem).toEqual({
+      apiKey: '',
+      secretKey: '',
+      ussdCode: '',
+      callbackSecret: '',
+      payments: { apiKey: '', secretKey: '' },
+    });
   });
 
   it('exposes beem config from the environment', () => {
@@ -115,6 +121,8 @@ describe('AppConfigService', () => {
       BEEM_SECRET_KEY: 'secret-key',
       BEEM_USSD_CODE: '*150*40#',
       BEEM_CALLBACK_SECRET: 'beem-secret',
+      BEEM_PAYMENT_API_KEY: 'pay-api-key',
+      BEEM_PAYMENT_SECRET_KEY: 'pay-secret-key',
     });
     const service = new AppConfigService();
 
@@ -123,6 +131,7 @@ describe('AppConfigService', () => {
       secretKey: 'secret-key',
       ussdCode: '*150*40#',
       callbackSecret: 'beem-secret',
+      payments: { apiKey: 'pay-api-key', secretKey: 'pay-secret-key' },
     });
   });
 

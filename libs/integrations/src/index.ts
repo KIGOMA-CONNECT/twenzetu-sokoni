@@ -9,6 +9,7 @@ export * from './lib/mobile-money.service';
 export * from './lib/payments/types';
 export * from './lib/payments/http';
 export * from './lib/payments/azampay.provider';
+export * from './lib/payments/beem.provider';
 export * from './lib/payments/mpesa.provider';
 export * from './lib/payments/sandbox.provider';
 export * from './lib/file-upload.service';

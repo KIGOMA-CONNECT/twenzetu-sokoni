@@ -99,6 +99,8 @@ services:
       BEEM_SECRET_KEY: ${BEEM_SECRET_KEY:-}
       BEEM_USSD_CODE: ${BEEM_USSD_CODE:-}
       BEEM_CALLBACK_SECRET: ${BEEM_CALLBACK_SECRET:-}
+      BEEM_PAYMENT_API_KEY: ${BEEM_PAYMENT_API_KEY:-}
+      BEEM_PAYMENT_SECRET_KEY: ${BEEM_PAYMENT_SECRET_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

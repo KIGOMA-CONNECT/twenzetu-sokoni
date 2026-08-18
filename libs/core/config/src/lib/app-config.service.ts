@@ -87,6 +87,10 @@ export class AppConfigService {
       secretKey: this.config.BEEM_SECRET_KEY,
       ussdCode: this.config.BEEM_USSD_CODE,
       callbackSecret: this.config.BEEM_CALLBACK_SECRET,
+      payments: {
+        apiKey: this.config.BEEM_PAYMENT_API_KEY,
+        secretKey: this.config.BEEM_PAYMENT_SECRET_KEY,
+      },
     };
   }
 }
