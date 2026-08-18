@@ -42,14 +42,20 @@ export class GetDeliveryTrackingUseCase {
       }
     }
 
+    const distanceKm = delivery.distanceKm ?? null;
+    // Derive an ETA when the driver never recorded one: assume ~25 km/h urban average.
+    const estimatedTimeMinutes =
+      delivery.estimatedTimeMinutes ??
+      (distanceKm !== null && distanceKm > 0 ? Math.max(1, Math.round((distanceKm / 25) * 60)) : null);
+
     return {
       deliveryId: delivery.id.value,
       status: delivery.status,
       driverId: delivery.driverId.value,
       pickupAddress: delivery.pickupAddress,
       deliveryAddress: delivery.deliveryAddress,
-      estimatedTimeMinutes: delivery.estimatedTimeMinutes ?? null,
-      distanceKm: delivery.distanceKm ?? null,
+      estimatedTimeMinutes,
+      distanceKm,
       currentLatitude: delivery.currentLatitude ?? null,
       currentLongitude: delivery.currentLongitude ?? null,
       lastLocationUpdate: delivery.lastLocationUpdate ? delivery.lastLocationUpdate.toISOString() : null,

@@ -212,7 +212,6 @@ export class DeliveriesController {
       id,
       user.sub,
       body.status,
-      body.driverEarnings,
     );
   }
 
@@ -259,7 +258,6 @@ export class DeliveriesController {
   ) {
     const result = await this.completeDelivery.execute(user.tenantId, {
       deliveryId: id,
-      driverEarnings: body.driverEarnings ?? 0,
       deliveryOtp: body.deliveryOtp,
     }, {
       driverId: user.sub,

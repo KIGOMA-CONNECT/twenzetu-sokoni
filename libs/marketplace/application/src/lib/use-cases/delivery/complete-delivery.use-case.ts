@@ -49,7 +49,6 @@ export class CompleteDeliveryUseCase {
 
   public async execute(tenantId: string, params: {
     deliveryId: string;
-    driverEarnings: number;
     deliveryOtp?: string;
   }, actor?: CompleteDeliveryActor): Promise<{
     deliveryId: string;
@@ -85,8 +84,13 @@ export class CompleteDeliveryUseCase {
       order.verifyOTP();
     }
 
-    const driverEarnings = Money.create(params.driverEarnings);
-    delivery.complete(driverEarnings);
+    // Driver earnings are always derived server-side: the binding escrow split
+    // (payment.driverNet) wins; otherwise the value recorded at assignment
+    // (order.delivery_fee). A client-supplied amount is never trusted.
+    const payment = await this.paymentRepo.findByOrderId(order.id.value);
+    const earnings =
+      payment && payment.driverNet.amount > 0 ? payment.driverNet : delivery.driverEarnings;
+    delivery.complete(earnings);
     await this.deliveryRepo.save(delivery);
 
     order.deliver();
@@ -107,7 +111,6 @@ export class CompleteDeliveryUseCase {
     let vendorAmountCredited = 0;
     let driverAmountCredited = 0;
 
-    const payment = await this.paymentRepo.findByOrderId(order.id.value);
     if (payment && payment.status === 'ESCROW_HELD') {
       const released = await this.paymentRepo.transitionStatus(
         payment.id.value,
@@ -202,7 +205,7 @@ export class CompleteDeliveryUseCase {
       deliveryId: delivery.id.value,
       orderId: order.id.value,
       status: 'DELIVERED',
-      driverEarnings: driverEarnings.amount,
+      driverEarnings: earnings.amount,
       loyaltyPointsEarned: pointsEarned,
       paymentReleased,
       vendorAmountCredited,

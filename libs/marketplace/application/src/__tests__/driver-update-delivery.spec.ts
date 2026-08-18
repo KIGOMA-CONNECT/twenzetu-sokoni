@@ -53,12 +53,25 @@ describe('DriverUpdateDeliveryStatusUseCase', () => {
     expect(result.status).toBe('IN_TRANSIT');
   });
 
-  it('should transition IN_TRANSIT to DELIVERED with earnings', async () => {
-    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(createDelivery('IN_TRANSIT'));
+  it('should transition IN_TRANSIT to DELIVERED preserving stored earnings', async () => {
+    const delivery = Delivery.reconstitute({
+      id: EntityId.from(DELIVERY_ID),
+      tenantId: TenantId.create(TENANT_ID),
+      orderId: EntityId.from('order-789'),
+      driverId: EntityId.from(DRIVER_ID),
+      vehicleType: 'boda',
+      status: 'IN_TRANSIT',
+      pickupAddress: 'Market',
+      deliveryAddress: 'Home',
+      driverEarnings: Money.create(2000),
+      version: 1,
+    });
+    mockDeliveryRepo.findByIdAndTenant.mockResolvedValue(delivery);
 
-    const result = await useCase.execute(TENANT_ID, DELIVERY_ID, DRIVER_ID, 'DELIVERED', 2000);
+    const result = await useCase.execute(TENANT_ID, DELIVERY_ID, DRIVER_ID, 'DELIVERED');
 
     expect(result.status).toBe('DELIVERED');
+    expect(delivery.driverEarnings.amount).toBe(2000);
   });
 
   it('should throw on invalid transition', async () => {

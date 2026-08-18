@@ -1,5 +1,4 @@
 import { Injectable, NotFoundException, BadRequestException, Inject, Optional } from '@nestjs/common';
-import { Money } from '@afri-market/kernel';
 import { IDeliveryRepository, IOrderRepository, OrderStatus } from '@afri-market/marketplace-domain';
 import { DELIVERY_REPOSITORY, ORDER_REPOSITORY, MARKETPLACE_GATEWAY } from '../../tokens';
 
@@ -35,7 +34,6 @@ export class DriverUpdateDeliveryStatusUseCase {
     deliveryId: string,
     driverId: string,
     newStatus: string,
-    driverEarnings?: number,
   ): Promise<{ deliveryId: string; orderId: string; status: string }> {
     const delivery = await this.deliveryRepo.findByIdAndTenant(deliveryId, tenantId);
     if (!delivery) {
@@ -51,8 +49,8 @@ export class DriverUpdateDeliveryStatusUseCase {
       );
     }
 
-    if (newStatus === 'DELIVERED' && driverEarnings !== undefined) {
-      delivery.complete(Money.create(driverEarnings));
+    if (newStatus === 'DELIVERED') {
+      delivery.complete(delivery.driverEarnings);
     } else if (newStatus === 'ASSIGNED') {
       delivery.assign();
     } else if (newStatus === 'PICKED_UP') {

@@ -1,12 +1,7 @@
-import { IsNumber, IsOptional, IsString, Matches } from 'class-validator';
+import { IsOptional, IsString, Matches } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CompleteDeliveryDto {
-  @ApiPropertyOptional({ description: 'Driver earnings' })
-  @IsOptional()
-  @IsNumber()
-  driverEarnings?: number;
-
   @ApiPropertyOptional({ description: 'Delivery confirmation code provided by the customer' })
   @IsOptional()
   @IsString()

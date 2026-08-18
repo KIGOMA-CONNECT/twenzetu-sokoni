@@ -16,6 +16,8 @@ interface DispatchCandidate {
   deliveryFee: string;
   totalAmount: string;
   vendorName: string;
+  specialInstructions: string | null;
+  requiredWeightKg: number;
 }
 
 interface AvailableDriver {
@@ -54,11 +56,12 @@ export class AutoDispatchService {
 
   private async findCandidates(): Promise<DispatchCandidate[]> {
     const rows = await this.dataSource.query(
-      `SELECT o.id, o.tenant_id AS "tenantId", o.customer_id AS "customerId", o.vendor_id AS "vendorId",
-              o.status, o.delivery_address AS "deliveryAddress",
-              o.delivery_latitude AS "deliveryLatitude", o.delivery_longitude AS "deliveryLongitude",
-              o.delivery_fee AS "deliveryFee", o.total_amount AS "totalAmount",
-              v.shop_name AS "vendorName"
+       `SELECT o.id, o.tenant_id AS "tenantId", o.customer_id AS "customerId", o.vendor_id AS "vendorId",
+               o.status, o.delivery_address AS "deliveryAddress",
+               o.delivery_latitude AS "deliveryLatitude", o.delivery_longitude AS "deliveryLongitude",
+               o.delivery_fee AS "deliveryFee", o.total_amount AS "totalAmount",
+               o.special_instructions AS "specialInstructions",
+               v.shop_name AS "vendorName"
        FROM orders o
        JOIN vendors v ON v.id = o.vendor_id
        WHERE NOT EXISTS (
@@ -74,11 +77,20 @@ export class AutoDispatchService {
        ORDER BY o.created_at ASC
        LIMIT 20`,
     );
-    return rows as DispatchCandidate[];
+    return (rows as DispatchCandidate[]).map((order) => ({
+      ...order,
+      requiredWeightKg: this.extractWeightKg(order.specialInstructions),
+    }));
+  }
+
+  private extractWeightKg(specialInstructions: string | null): number {
+    if (!specialInstructions) return 0;
+    const match = /CargoBooking\|[^|]*\|[^|]*\|(\d+)kg/.exec(specialInstructions);
+    return match ? Number(match[1]) : 0;
   }
 
   private async dispatchOrder(order: DispatchCandidate): Promise<void> {
-    const driver = await this.pickDriver(order.tenantId);
+    const driver = await this.pickDriver(order.tenantId, order.requiredWeightKg);
     if (!driver) {
       this.logger.warn(`Auto-dispatch: no available driver for order ${order.id} in tenant ${order.tenantId}`);
       return;
@@ -135,14 +147,16 @@ export class AutoDispatchService {
     this.logger.log(`Auto-dispatch: order ${order.id} -> driver ${driver.driverId} (${driver.vehicleType})`);
   }
 
-  private async pickDriver(tenantId: string): Promise<AvailableDriver | null> {
+  private async pickDriver(tenantId: string, requiredWeightKg: number): Promise<AvailableDriver | null> {
+    const capacityFilter = requiredWeightKg > 0 ? ' AND COALESCE(v.capacity_kg, 0) >= $2' : '';
+    const capacityParams = requiredWeightKg > 0 ? [tenantId, requiredWeightKg] : [tenantId];
     const online = await this.dataSource.query(
       `SELECT v.driver_id AS "driverId", v.vehicle_type AS "vehicleType", v.plate_number AS "plateNumber"
        FROM vehicles v
-       WHERE v.tenant_id = $1 AND v.is_online = true AND v.is_available = true
+       WHERE v.tenant_id = $1 AND v.is_online = true AND v.is_available = true${capacityFilter}
        ORDER BY v.updated_at DESC
        LIMIT 1`,
-      [tenantId],
+      capacityParams,
     );
     if (online.length > 0) {
       return online[0] as AvailableDriver;
@@ -150,10 +164,10 @@ export class AutoDispatchService {
     const anyAvailable = await this.dataSource.query(
       `SELECT v.driver_id AS "driverId", v.vehicle_type AS "vehicleType", v.plate_number AS "plateNumber"
        FROM vehicles v
-       WHERE v.tenant_id = $1 AND v.is_available = true
+       WHERE v.tenant_id = $1 AND v.is_available = true${capacityFilter}
        ORDER BY v.updated_at DESC
        LIMIT 1`,
-      [tenantId],
+      capacityParams,
     );
     if (anyAvailable.length > 0) {
       return anyAvailable[0] as AvailableDriver;

@@ -57,7 +57,7 @@ describe('CompleteDeliveryUseCase', () => {
       deliveryLongitude: 39.2703,
       distanceKm: 5.2,
       estimatedTimeMinutes: 20,
-      driverEarnings: Money.create(0),
+      driverEarnings: Money.create(3000),
       version: 1,
     });
 
@@ -139,11 +139,10 @@ describe('CompleteDeliveryUseCase', () => {
 
     await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(delivery.status).toBe('DELIVERED');
-    expect(delivery.driverEarnings.amount).toBe(2500);
+    expect(delivery.driverEarnings.amount).toBe(3000);
     expect(mockDeliveryRepo.save).toHaveBeenCalledTimes(1);
   });
 
@@ -157,7 +156,6 @@ describe('CompleteDeliveryUseCase', () => {
 
     await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(order.status).toBe('DELIVERED');
@@ -174,12 +172,11 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.loyaltyPointsEarned).toBe(5000);
     expect(result.status).toBe('DELIVERED');
-    expect(result.driverEarnings).toBe(2500);
+    expect(result.driverEarnings).toBe(3000);
     expect(mockPointsRepo.save).toHaveBeenCalledTimes(1);
 
     const savedPoints = mockPointsRepo.save.mock.calls[0][0] as CustomerPoints;
@@ -213,7 +210,6 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.loyaltyPointsEarned).toBe(5000);
@@ -229,7 +225,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
       }),
     ).rejects.toThrow('Delivery not found');
     expect(mockOrderRepo.save).not.toHaveBeenCalled();
@@ -244,7 +239,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
       }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Order not found');
     expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
@@ -260,7 +254,6 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 3000,
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result).toEqual({
@@ -288,7 +281,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
         deliveryOtp: '9999',
       }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Invalid delivery confirmation code');
@@ -313,7 +305,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
       }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Invalid delivery confirmation code');
     expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
@@ -332,7 +323,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
         deliveryOtp: '1234',
       }, { driverId: DRIVER_ID, role: 'driver' }),
     ).rejects.toThrow('Too many failed delivery confirmation attempts');
@@ -352,7 +342,6 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
       deliveryOtp: '1234',
     }, { driverId: DRIVER_ID, role: 'driver' });
 
@@ -388,11 +377,11 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
       deliveryOtp: '1234',
     }, { driverId: DRIVER_ID, role: 'driver' });
 
     expect(result.otpVerified).toBe(true);
+    expect(result.driverEarnings).toBe(2000);
     expect(payment.status).toBe('RELEASED');
     expect(mockPaymentRepo.save).toHaveBeenCalledTimes(1);
   });
@@ -409,7 +398,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
         deliveryOtp: '1234',
       }, { driverId: 'other-driver', role: 'driver' }),
     ).rejects.toThrow('You can only complete deliveries assigned to you');
@@ -432,7 +420,6 @@ describe('CompleteDeliveryUseCase', () => {
     await expect(
       useCase.execute(TENANT_ID, {
         deliveryId: DELIVERY_ID,
-        driverEarnings: 2500,
       }),
     ).rejects.toThrow('You can only complete deliveries assigned to you');
     expect(mockDeliveryRepo.save).not.toHaveBeenCalled();
@@ -449,7 +436,6 @@ describe('CompleteDeliveryUseCase', () => {
 
     const result = await useCase.execute(TENANT_ID, {
       deliveryId: DELIVERY_ID,
-      driverEarnings: 2500,
     }, { driverId: 'ops-user', role: 'operations_admin' });
 
     expect(result.status).toBe('DELIVERED');

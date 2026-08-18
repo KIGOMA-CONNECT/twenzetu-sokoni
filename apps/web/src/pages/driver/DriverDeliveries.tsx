@@ -40,6 +40,7 @@ const styles: Record<string, React.CSSProperties> = {
   acceptBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   declineBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   completeBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  otpInput: { width: '110px', padding: '0.35rem 0.5rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.75rem', textAlign: 'center' },
   locationBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#7c3aed', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
 };
@@ -53,6 +54,7 @@ export default function DriverDeliveries() {
   const [filter, setFilter] = useState<FilterStatus>('ALL');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [deliveryOtp, setDeliveryOtp] = useState<Record<string, string>>({});
   const [liveSharing, setLiveSharing] = useState<Record<string, boolean>>({});
   const liveTimersRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
 
@@ -193,7 +195,8 @@ export default function DriverDeliveries() {
     setBusyId(id);
     setActionError(null);
     try {
-      await api.patch(`/deliveries/${id}/complete`);
+      await api.patch(`/deliveries/${id}/complete`, { deliveryOtp: deliveryOtp[id] || undefined });
+      setDeliveryOtp(prev => ({ ...prev, [id]: '' }));
       await refetch();
     } catch (err: any) {
       setActionError(err.response?.data?.message || err.message || 'Failed to complete delivery.');
@@ -316,6 +319,15 @@ export default function DriverDeliveries() {
                             >
                               📍 Share Location
                             </button>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={6}
+                              placeholder="Delivery OTP"
+                              value={deliveryOtp[d.id] || ''}
+                              onChange={(e) => setDeliveryOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
+                              style={styles.otpInput}
+                            />
                             <button
                               style={{ ...styles.completeBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}
