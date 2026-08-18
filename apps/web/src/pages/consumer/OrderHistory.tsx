@@ -32,6 +32,12 @@ function OrderHistory() {
   const [reviewComment, setReviewComment] = useState('');
   const [reviewBusy, setReviewBusy] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const [driverReviewedOrders, setDriverReviewedOrders] = useState<Record<string, boolean>>({});
+  const [driverReviewOrderId, setDriverReviewOrderId] = useState<string | null>(null);
+  const [driverReviewRating, setDriverReviewRating] = useState(5);
+  const [driverReviewComment, setDriverReviewComment] = useState('');
+  const [driverReviewBusy, setDriverReviewBusy] = useState(false);
+  const [driverReviewError, setDriverReviewError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!orders) return;
@@ -94,6 +100,33 @@ function OrderHistory() {
       setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
     } finally {
       setReviewBusy(false);
+    }
+  };
+
+  const openDriverReview = (o: Order) => {
+    setDriverReviewOrderId(o.id);
+    setDriverReviewRating(5);
+    setDriverReviewComment('');
+    setDriverReviewError(null);
+  };
+
+  const submitDriverReview = async () => {
+    if (!driverReviewOrderId) return;
+    setDriverReviewBusy(true);
+    setDriverReviewError(null);
+    try {
+      await api.post('/driver-reviews', {
+        orderId: driverReviewOrderId,
+        rating: driverReviewRating,
+        comment: driverReviewComment.trim() || undefined,
+      });
+      setDriverReviewedOrders((m) => ({ ...m, [driverReviewOrderId]: true }));
+      setDriverReviewOrderId(null);
+      alert('Thank you for rating your driver!');
+    } catch (err: any) {
+      setDriverReviewError(err.response?.data?.message || err.message || 'Failed to rate driver');
+    } finally {
+      setDriverReviewBusy(false);
     }
   };
 
@@ -171,6 +204,16 @@ function OrderHistory() {
                                 >Rate &amp; Review</button>
                               )
                             )}
+                            {o.status === 'DELIVERED' && (
+                              driverReviewedOrders[o.id] ? (
+                                <span className="btn btn-sm" style={{ background: '#e0f2fe', color: '#075985', border: 'none', cursor: 'default' }}>✓ Driver Rated</span>
+                              ) : (
+                                <button
+                                  className="btn btn-outline btn-sm"
+                                  onClick={(e) => { e.stopPropagation(); openDriverReview(o); }}
+                                >Rate Driver</button>
+                              )
+                            )}
                             <span style={{ fontSize: '0.75rem', color: 'var(--faint)', fontStyle: 'italic' }}>
                               {isExpanded ? '▾ hide' : '▸ details'}
                             </span>
@@ -224,6 +267,57 @@ function OrderHistory() {
             )}
           </div>
         )
+      )}
+
+      {driverReviewOrderId && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}
+          onClick={() => !driverReviewBusy && setDriverReviewOrderId(null)}
+        >
+          <div
+            style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+              Rate Your Driver
+            </div>
+            <div className="field">
+              <label className="field-label">Driver Rating</label>
+              <div className="flex" style={{ gap: '0.4rem' }}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <button
+                    key={n}
+                    onClick={() => setDriverReviewRating(n)}
+                    style={{
+                      fontSize: '1.6rem', border: 'none', background: 'transparent', cursor: 'pointer',
+                      opacity: n <= driverReviewRating ? 1 : 0.3,
+                    }}
+                    aria-label={`${n} stars`}
+                  >
+                    ⭐
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="field">
+              <label className="field-label">Comment (optional)</label>
+              <textarea
+                className="input"
+                style={{ minHeight: '80px' }}
+                value={driverReviewComment}
+                onChange={(e) => setDriverReviewComment(e.target.value)}
+                placeholder="How was your delivery experience?"
+              />
+            </div>
+            {driverReviewError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{driverReviewError}</div>}
+            <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
+              <button className="btn btn-outline" onClick={() => setDriverReviewOrderId(null)} disabled={driverReviewBusy}>Cancel</button>
+              <button className="btn btn-primary" onClick={submitDriverReview} disabled={driverReviewBusy}>
+                {driverReviewBusy ? 'Submitting…' : 'Submit Rating'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {reviewTarget && (

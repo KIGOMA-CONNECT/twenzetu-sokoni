@@ -171,6 +171,7 @@ export * from './lib/use-cases/admin/get-reconciliation-report.use-case';
 // Use Cases - Category
 export * from './lib/use-cases/category/create-category.use-case';
 export * from './lib/use-cases/category/list-categories.use-case';
+export * from './lib/use-cases/category/update-category-marketing.use-case';
 
 // Use Cases - Address
 export * from './lib/use-cases/address/create-address.use-case';
@@ -194,6 +195,9 @@ export * from './lib/use-cases/promotion/list-flash-sales.use-case';
 export * from './lib/use-cases/marketing/list-active-ads.use-case';
 export * from './lib/use-cases/marketing/list-adverts.use-case';
 export * from './lib/use-cases/marketing/create-advert.use-case';
+export * from './lib/use-cases/marketing/create-marketing-campaign.use-case';
+export * from './lib/use-cases/marketing/list-marketing-campaigns.use-case';
+export * from './lib/use-cases/marketing/launch-marketing-campaign.use-case';
 
 // Use Cases - Vendor Staff
 export * from './lib/use-cases/vendor-staff/invite-vendor-staff.use-case';

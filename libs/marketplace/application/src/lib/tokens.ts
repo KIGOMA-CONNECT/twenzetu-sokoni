@@ -36,6 +36,7 @@ export const PURCHASE_ORDER_REPOSITORY = 'IPurchaseOrderRepository';
 
 // Marketing
 export const ADVERT_REPOSITORY = 'IAdvertRepository';
+export const MARKETING_CAMPAIGN_REPOSITORY = 'IMarketingCampaignRepository';
 
 // Gateway
 export const MARKETPLACE_GATEWAY = 'MARKETPLACE_GATEWAY';

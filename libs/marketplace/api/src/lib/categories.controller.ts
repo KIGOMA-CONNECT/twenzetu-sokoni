@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateCategoryDto } from './dto/create-category.dto';
-import { CreateCategoryUseCase, ListCategoriesUseCase } from '@afri-market/marketplace-application';
+import { UpdateCategoryMarketingDto } from './dto/update-category-marketing.dto';
+import { CreateCategoryUseCase, ListCategoriesUseCase, UpdateCategoryMarketingUseCase } from '@afri-market/marketplace-application';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -11,6 +12,7 @@ export class CategoriesController {
   constructor(
     private readonly createCategory: CreateCategoryUseCase,
     private readonly listCategories: ListCategoriesUseCase,
+    private readonly updateCategoryMarketing: UpdateCategoryMarketingUseCase,
   ) {}
 
   @Get()
@@ -33,5 +35,16 @@ export class CategoriesController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async create(@Body() dto: CreateCategoryDto, @CurrentUser() user: JwtPayload) {
     return this.createCategory.execute(user.tenantId, dto);
+  }
+
+  @Patch(':id/marketing')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update marketing copy for a category' })
+  @ApiBody({ type: UpdateCategoryMarketingDto })
+  @ApiResponse({ status: 200, description: 'Category marketing updated' })
+  @ApiResponse({ status: 404, description: 'Category not found' })
+  public async updateMarketing(@Param('id') id: string, @Body() dto: UpdateCategoryMarketingDto, @CurrentUser() user: JwtPayload) {
+    return this.updateCategoryMarketing.execute(user.tenantId, id, dto);
   }
 }

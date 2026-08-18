@@ -86,6 +86,7 @@ export function MainLayout() {
     { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },
+    { label: 'Marketing', path: '/vendor/marketing', show: isVendor && hasVendorPermission('manage_products') },
     { label: 'Settings', path: '/vendor/settings', show: isVendor && isVendorOwner },
     { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
     { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },

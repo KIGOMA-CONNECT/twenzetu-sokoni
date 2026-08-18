@@ -51,6 +51,7 @@ import { VendorSubscriptionsController } from './vendor-subscriptions.controller
 import { CommissionsController } from './commissions.controller';
 import { PublicController } from './public.controller';
 import { AdsController } from './ads.controller';
+import { MarketingCampaignsController } from './marketing-campaigns.controller';
 import { VendorStaffController } from './vendor-staff.controller';
 import { PosController } from './pos.controller';
 import { VendorAccountingController } from './vendor-accounting.controller';
@@ -103,6 +104,7 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     CommissionsController,
     PublicController,
     AdsController,
+    MarketingCampaignsController,
     VendorStaffController,
     PosController,
     VendorAccountingController,

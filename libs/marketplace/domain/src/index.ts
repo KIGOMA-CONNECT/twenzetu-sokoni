@@ -105,6 +105,8 @@ export * from './lib/promotion/flash-sale.repository.interface';
 // Marketing
 export * from './lib/marketing/advert.aggregate';
 export * from './lib/marketing/advert.repository.interface';
+export * from './lib/marketing/campaign.aggregate';
+export * from './lib/marketing/campaign.repository.interface';
 // POS
 export * from './lib/pos/pos-payment-method';
 export * from './lib/pos/pos-sale.aggregate';

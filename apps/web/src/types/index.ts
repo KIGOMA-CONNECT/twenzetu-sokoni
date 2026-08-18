@@ -278,6 +278,20 @@ export interface Advert {
   endsAt: string | null;
 }
 
+export interface MarketingCampaign {
+  id: string;
+  name: string;
+  message: string;
+  channel: 'sms' | 'whatsapp';
+  status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+  sentCount: number;
+  failedCount: number;
+  totalAudience: number;
+  scheduledAt: string | null;
+  startedAt: string | null;
+  completedAt: string | null;
+}
+
 export interface CatalogMatch {
   id: string;
   name: string;

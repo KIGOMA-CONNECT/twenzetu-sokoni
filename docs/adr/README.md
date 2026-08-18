@@ -31,3 +31,4 @@ Every ADR follows this template (from Chapter 9.3):
 | [ADR-0006](ADR-0006-marketing-catalog-public-ads-share-links.md) | Marketing catalog data, public ads API, and shareable category links | Accepted | 2026-08-11 |
 | [ADR-0007](ADR-0007-ussd-hardening-notification-routing.md) | USSD production hardening and stable notification routing | Accepted | 2026-08-14 |
 | [ADR-0008](ADR-0008-beem-ussd-hub-integration.md) | Beem USSD Hub integration | Accepted | 2026-08-14 |
+| [ADR-0009](ADR-0009-marketing-campaigns-vendor-marketing-console.md) | Marketing campaigns (SMS broadcasts) and vendor marketing console | Accepted | 2026-08-18 |

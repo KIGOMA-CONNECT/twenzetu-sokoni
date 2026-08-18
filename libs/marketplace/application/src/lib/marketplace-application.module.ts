@@ -39,6 +39,7 @@ import {
   TypeOrmServiceQuoteRepository,
   TypeOrmCartRepository,
   TypeOrmAdvertRepository,
+  TypeOrmMarketingCampaignRepository,
   TypeOrmSupplierRepository,
   TypeOrmPurchaseOrderRepository,
 } from '@afri-market/marketplace-infrastructure';
@@ -58,6 +59,7 @@ import {
   COUPON_REPOSITORY, FLASH_SALE_REPOSITORY,
   SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY,
   CART_REPOSITORY, ADVERT_REPOSITORY,
+  MARKETING_CAMPAIGN_REPOSITORY,
   SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
@@ -146,6 +148,7 @@ import { UpdateDriverLocationUseCase } from './use-cases/delivery/update-driver-
 import { AssignDriverUseCase } from './use-cases/delivery/assign-driver.use-case';
 import { CreateCategoryUseCase } from './use-cases/category/create-category.use-case';
 import { ListCategoriesUseCase } from './use-cases/category/list-categories.use-case';
+import { UpdateCategoryMarketingUseCase } from './use-cases/category/update-category-marketing.use-case';
 import { CreateAddressUseCase } from './use-cases/address/create-address.use-case';
 import { ListAddressesUseCase } from './use-cases/address/list-addresses.use-case';
 import { DeleteAddressUseCase } from './use-cases/address/delete-address.use-case';
@@ -177,6 +180,9 @@ import { CheckoutCartUseCase } from './use-cases/order/checkout-cart.use-case';
 import { ListActiveAdsUseCase } from './use-cases/marketing/list-active-ads.use-case';
 import { ListAdvertsUseCase } from './use-cases/marketing/list-adverts.use-case';
 import { CreateAdvertUseCase } from './use-cases/marketing/create-advert.use-case';
+import { CreateMarketingCampaignUseCase } from './use-cases/marketing/create-marketing-campaign.use-case';
+import { ListMarketingCampaignsUseCase } from './use-cases/marketing/list-marketing-campaigns.use-case';
+import { LaunchMarketingCampaignUseCase } from './use-cases/marketing/launch-marketing-campaign.use-case';
 import { InviteVendorStaffUseCase } from './use-cases/vendor-staff/invite-vendor-staff.use-case';
 import { ListVendorStaffUseCase } from './use-cases/vendor-staff/list-vendor-staff.use-case';
 import { UpdateVendorStaffUseCase } from './use-cases/vendor-staff/update-vendor-staff.use-case';
@@ -239,6 +245,7 @@ const REPOSITORIES = [
   { provide: SERVICE_QUOTE_REPOSITORY, useClass: TypeOrmServiceQuoteRepository },
   { provide: CART_REPOSITORY, useClass: TypeOrmCartRepository },
   { provide: ADVERT_REPOSITORY, useClass: TypeOrmAdvertRepository },
+  { provide: MARKETING_CAMPAIGN_REPOSITORY, useClass: TypeOrmMarketingCampaignRepository },
   { provide: SUPPLIER_REPOSITORY, useClass: TypeOrmSupplierRepository },
   { provide: PURCHASE_ORDER_REPOSITORY, useClass: TypeOrmPurchaseOrderRepository },
 ];
@@ -341,6 +348,7 @@ const USE_CASES = [
   GetDeliveryTrackingUseCase,
   CreateCategoryUseCase,
   ListCategoriesUseCase,
+  UpdateCategoryMarketingUseCase,
 CreateAddressUseCase,
 ListAddressesUseCase,
 DeleteAddressUseCase,
@@ -372,6 +380,9 @@ SetDefaultAddressUseCase,
   ListActiveAdsUseCase,
   ListAdvertsUseCase,
   CreateAdvertUseCase,
+  CreateMarketingCampaignUseCase,
+  ListMarketingCampaignsUseCase,
+  LaunchMarketingCampaignUseCase,
   InviteVendorStaffUseCase,
   ListVendorStaffUseCase,
   UpdateVendorStaffUseCase,
@@ -396,6 +407,6 @@ SetDefaultAddressUseCase,
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, MARKETING_CAMPAIGN_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
 })
 export class MarketplaceApplicationModule {}
