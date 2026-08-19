@@ -119,6 +119,43 @@ describe('AuthService — self-service account management', () => {
     });
   });
 
+  describe('deactivateAccount', () => {
+    it('suspends the user and revokes every session on success', async () => {
+      const user = makeUser();
+      const mocks = makeService();
+      mocks.userRepo.findById.mockResolvedValue(user);
+
+      const result = await mocks.service.deactivateAccount(user.id.value, 'currentP@ss1');
+
+      expect(result).toEqual({ success: true });
+      expect(user.status).toBe('SUSPENDED');
+      expect(mocks.userRepo.save).toHaveBeenCalled();
+      expect(mocks.sessionService.revokeAllForUser).toHaveBeenCalledWith(user.id.value);
+    });
+
+    it('throws UnauthorizedException when the current password is wrong', async () => {
+      const user = makeUser();
+      const mocks = makeService();
+      mocks.userRepo.findById.mockResolvedValue(user);
+      mocks.hasher.verify.mockResolvedValue(false);
+
+      await expect(
+        mocks.service.deactivateAccount(user.id.value, 'wrong'),
+      ).rejects.toBeInstanceOf(UnauthorizedException);
+      expect(user.status).toBe('ACTIVE');
+      expect(mocks.userRepo.save).not.toHaveBeenCalled();
+    });
+
+    it('throws NotFoundException for an unknown user', async () => {
+      const mocks = makeService();
+      mocks.userRepo.findById.mockResolvedValue(null);
+
+      await expect(
+        mocks.service.deactivateAccount(EntityId.create().value, 'currentP@ss1'),
+      ).rejects.toBeInstanceOf(NotFoundException);
+    });
+  });
+
   describe('forgotPassword', () => {
     it('sends an OTP when the phone is registered', async () => {
       const mocks = makeService();

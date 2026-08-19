@@ -13,6 +13,7 @@ import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { DeactivateAccountDto } from './dto/deactivate-account.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 
@@ -103,6 +104,19 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Current password incorrect or Unauthorized' })
   public async changePassword(@CurrentUser() user: JwtPayload, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(user.sub, dto.currentPassword, dto.newPassword, user.sid);
+  }
+
+  @Post('me/deactivate')
+  @UseGuards(AuthGuard('jwt'))
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Self-service account deactivation: suspends the account and signs out everywhere (requires current password)' })
+  @ApiBody({ type: DeactivateAccountDto })
+  @ApiResponse({ status: 201, description: 'Account deactivated' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 401, description: 'Current password incorrect or Unauthorized' })
+  public async deactivateAccount(@CurrentUser() user: JwtPayload, @Body() dto: DeactivateAccountDto) {
+    return this.authService.deactivateAccount(user.sub, dto.currentPassword);
   }
 
   @Get('me/sessions')

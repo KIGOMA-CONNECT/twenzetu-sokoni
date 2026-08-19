@@ -10,6 +10,7 @@ interface AuthContextType {
   login: (phoneNumber: string, password: string) => Promise<void>;
   sendOtp: (phoneNumber: string) => Promise<void>;
   verifyOtp: (phoneNumber: string, code: string) => Promise<{ registered: boolean }>;
+  updateProfile: (updates: { fullName?: string; email?: string }) => Promise<User>;
   logout: () => Promise<void>;
   refreshVendorAccess: () => Promise<void>;
   vendorAccess: VendorAccessContext | null;
@@ -93,6 +94,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { registered: payload.verified ? payload.registered : false };
   };
 
+  const updateProfile = async (updates: { fullName?: string; email?: string }) => {
+    const res = await api.patch('/auth/me', updates);
+    const updated = (res.data?.data ?? res.data) as User;
+    const merged = { ...user, ...updated } as User;
+    setUser(merged);
+    localStorage.setItem('user', JSON.stringify(merged));
+    return merged;
+  };
+
   const logout = async () => {
     const refreshToken = localStorage.getItem('refreshToken');
     try {
@@ -113,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     sendOtp,
     verifyOtp,
+    updateProfile,
     logout,
     refreshVendorAccess,
     vendorAccess,

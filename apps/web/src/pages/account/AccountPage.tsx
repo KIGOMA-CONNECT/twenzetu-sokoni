@@ -23,11 +23,17 @@ function fmtDate(value: string | null): string {
 }
 
 export default function AccountPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<SessionInfo[]>([]);
   const [sessionsLoading, setSessionsLoading] = useState(true);
   const [sessionsError, setSessionsError] = useState<string | null>(null);
+
+  const [fullName, setFullName] = useState(user?.fullName ?? '');
+  const [email, setEmail] = useState(user?.email ?? '');
+  const [profileMessage, setProfileMessage] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSubmitting, setProfileSubmitting] = useState(false);
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -36,6 +42,12 @@ export default function AccountPage() {
   const [pwError, setPwError] = useState<string | null>(null);
   const [pwSubmitting, setPwSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
+  const [deactivatePassword, setDeactivatePassword] = useState('');
+  const [deactivateConfirm, setDeactivateConfirm] = useState('');
+  const [deactivateMessage, setDeactivateMessage] = useState<string | null>(null);
+  const [deactivateError, setDeactivateError] = useState<string | null>(null);
+  const [deactivateSubmitting, setDeactivateSubmitting] = useState(false);
 
   const loadSessions = useCallback(async () => {
     setSessionsLoading(true);
@@ -54,6 +66,45 @@ export default function AccountPage() {
   useEffect(() => {
     void loadSessions();
   }, [loadSessions]);
+
+  const handleSaveProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    setProfileMessage(null);
+    setProfileError(null);
+    setProfileSubmitting(true);
+    try {
+      await updateProfile({
+        fullName: fullName.trim() || undefined,
+        email: email.trim() || undefined,
+      });
+      setProfileMessage('Profile updated.');
+    } catch (err: unknown) {
+      setProfileError(getErrorMessage(err, 'Could not update profile'));
+    } finally {
+      setProfileSubmitting(false);
+    }
+  };
+
+  const handleDeactivateAccount = async (e: FormEvent) => {
+    e.preventDefault();
+    setDeactivateMessage(null);
+    setDeactivateError(null);
+    if (deactivateConfirm !== 'deactivate') {
+      setDeactivateError('Type "deactivate" to confirm you want to close this account.');
+      return;
+    }
+    setDeactivateSubmitting(true);
+    try {
+      await api.post('/auth/me/deactivate', { currentPassword: deactivatePassword });
+      setDeactivateMessage('Account deactivated. You have been signed out.');
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (err: unknown) {
+      setDeactivateError(getErrorMessage(err, 'Could not deactivate account'));
+    } finally {
+      setDeactivateSubmitting(false);
+    }
+  };
 
   const handleChangePassword = async (e: FormEvent) => {
     e.preventDefault();
@@ -119,6 +170,23 @@ export default function AccountPage() {
         {detailRow('Email', user?.email)}
         {detailRow('Role', user?.role)}
         {detailRow('Status', user?.status)}
+
+        {profileMessage && <div className="alert alert-success mb-2" style={{ marginTop: '0.75rem' }}><span>✅</span><span>{profileMessage}</span></div>}
+        {profileError && <div className="alert alert-error mb-2" style={{ marginTop: '0.75rem' }}><span>⚠️</span><span>{profileError}</span></div>}
+
+        <form onSubmit={handleSaveProfile} style={{ marginTop: '0.75rem' }}>
+          <div className="field">
+            <label className="field-label" htmlFor="profileFullName">Full name</label>
+            <input id="profileFullName" type="text" className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="profileEmail">Email (optional)</label>
+            <input id="profileEmail" type="email" className="input" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@example.com" />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={profileSubmitting}>
+            {profileSubmitting ? 'Saving...' : 'Save profile'}
+          </button>
+        </form>
       </div>
 
       <div className="card" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
@@ -192,6 +260,31 @@ export default function AccountPage() {
           Want to sign out everywhere at once?
         </div>
         <button className="btn btn-danger" onClick={() => void handleLogoutAll()}>Logout from all devices</button>
+      </div>
+
+      <div className="card" style={{ padding: '1.25rem', marginTop: '1rem', borderColor: 'var(--danger)', background: 'var(--surface)' }}>
+        <div style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '0.25rem', color: 'var(--danger)' }}>Deactivate account</div>
+        <div className="text-muted" style={{ fontSize: '0.85rem', marginBottom: '1rem' }}>
+          Closing your account suspends it, signs you out on every device, and prevents sign-in.
+          A platform administrator can restore your account later.
+        </div>
+
+        {deactivateMessage && <div className="alert alert-success mb-2"><span>✅</span><span>{deactivateMessage}</span></div>}
+        {deactivateError && <div className="alert alert-error mb-2"><span>⚠️</span><span>{deactivateError}</span></div>}
+
+        <form onSubmit={handleDeactivateAccount}>
+          <div className="field">
+            <label className="field-label" htmlFor="deactivatePassword">Current password</label>
+            <input id="deactivatePassword" type="password" className="input" value={deactivatePassword} onChange={(e) => setDeactivatePassword(e.target.value)} required autoComplete="current-password" />
+          </div>
+          <div className="field">
+            <label className="field-label" htmlFor="deactivateConfirm">Type <strong>deactivate</strong> to confirm</label>
+            <input id="deactivateConfirm" type="text" className="input" value={deactivateConfirm} onChange={(e) => setDeactivateConfirm(e.target.value)} required />
+          </div>
+          <button type="submit" className="btn btn-danger" disabled={deactivateSubmitting}>
+            {deactivateSubmitting ? 'Deactivating...' : 'Deactivate account'}
+          </button>
+        </form>
       </div>
     </div>
   );

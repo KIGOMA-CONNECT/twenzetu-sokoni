@@ -25,7 +25,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 |---|---|---|
 | Marketplace | **L4** | Live at `twenzetusokoni.com`. Next: L5 — audit trail review, SLAs, enterprise support. |
 | Core Platform (tenancy, audit, finance, queue, tracing, security) | **L4** | Operational. Next: published standards for suite integration. |
-| Identity | **L3** | AuthN/AuthZ live. Next: self-service account, SSO readiness → L4. |
+| Identity | **L4** | AuthN/AuthZ live; self-service account management (profile edit, change password with cross-device revocation, signed-in device management, self-service deactivation) + SMS-OTP account recovery with rate limiting and anti-enumeration. Next: SSO readiness → L5. |
 | Engagement (web, Android/TWA, USSD) | **L4** | USSD hardened (gateway secret, input validation, simulator gating, session cleanup) + stable notification routing (ADR-0007); Beem USSD Hub integration live (`/api/ussd/beem/callback`, raw-response adapter, engine exit semantics) (ADR-0008). Next: L5 — cross-suite engagement analytics, campaign tooling. |
 | Payments | **L2** | AzamPay aggregator built (M-Pesa, YAS/Mixx, Airtel Money, HaloPesa, T-Pesa, AzamPesa) + webhooks + wallets + **card checkout wired end-to-end** (ADR-0004, commit `6865bc1`). Blocked on the **AzamPay production API key** + `AZAMPAY_CARD_SUCCESS_URL`/`AZAMPAY_CARD_FAIL_URL` in `.env.production`; then verify all MNO + card methods (see [payments-readiness](payments-readiness.md)). |
 | Cargo, Express & Logistics | **L4** | Binding server-side fare engine (`CargoFareCalculator`), instant booking with wallet/card/mobile-money/cash, `READY_FOR_PICKUP` auto-promotion (ADR-0005); L4 hardening shipped — server-derived driver earnings, capacity-aware auto-dispatch, delivery ETA, OTP-confirmed completion, consumer "Rate Driver" from Order History (commit `397e041` + `Rate Driver`), pickup-OTP confirmation for driver handoff (pickup code shown to vendor, driver enters it to mark PICKED_UP, commit `0735d5b`). Next: L5 — driver app offline mode, SLA dashboards. |
@@ -48,7 +48,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 - [ ] **SMS L4** — obtain and configure an SMS provider (Africa's Talking / Twilio / Termii) for OTP delivery in production.
 - [x] **Engagement L4** — USSD production hardening; notification routing stable; Beem USSD Hub integration live. (ADR-0007, ADR-0008)
 - [x] **Analytics L2/L3** — tenant-facing reports; defined metric catalog. (Vendor + admin analytics consoles with overview/funnel/customers/deliveries/top products/inventory, CSV export, documented [metric catalog](analytics/metric-catalog.md).)
-- [ ] **Identity L4** — self-service account management; account recovery.
+- [x] **Identity L4** — self-service account management; account recovery. (Profile edit, change password with session revocation, signed-in device management, self-service deactivation `POST /auth/me/deactivate`, SMS-OTP forgot/reset password with rate limiting + anti-enumeration.)
 - [ ] **Enterprise Certification baseline (L5 readiness)** — audit trail completeness, backup/DR runbooks verified, compliance review (PECA 2018/2022).
 - [ ] **First institutional tenants** — multi-tenant onboarding verified with a real second tenant.
 - [ ] **Engineering Institute charter** — first internal training track ("AfriMarket Platform Fundamentals").

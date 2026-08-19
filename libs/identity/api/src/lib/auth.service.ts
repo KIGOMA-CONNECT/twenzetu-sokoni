@@ -244,6 +244,22 @@ export class AuthService {
     return { success: true };
   }
 
+  public async deactivateAccount(userId: string, currentPassword: string): Promise<{ success: boolean }> {
+    const user = await this.userRepo.findById(EntityId.from(userId));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const valid = await this.hasher.verify(user.passwordHash, currentPassword);
+    if (!valid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+    user.suspend();
+    await this.userRepo.save(user);
+    // Self-service deactivation signs the user out on every device.
+    await this.sessionService.revokeAllForUser(user.id.value);
+    return { success: true };
+  }
+
   public async forgotPassword(phoneNumber: string): Promise<{ message: string }> {
     const canonicalPhone = this.canonicalizePhone(phoneNumber);
     if (!this.otpSendLimiter.isAllowed(`forgot:${canonicalPhone}`, OTP_SEND_LIMIT, OTP_SEND_WINDOW_MS)) {
