@@ -23,6 +23,7 @@ describe('marketing campaigns', () => {
       findByIdAndTenant: jest.fn(),
       findByTenant: jest.fn(),
       findAudiencePhoneNumbers: jest.fn(),
+      findDueScheduled: jest.fn(),
     };
     mockSms = {
       send: jest.fn().mockResolvedValue({ success: true, provider: 'mock' }),
@@ -56,6 +57,21 @@ describe('marketing campaigns', () => {
       const useCase = new CreateMarketingCampaignUseCase(mockRepo);
       await expect(useCase.execute('t-1', { name: 'Bad', message: '   ', channel: 'sms' }))
         .rejects.toThrow('message must not be empty');
+    });
+
+    it('should store scheduling and segmentation on the campaign', async () => {
+      const useCase = new CreateMarketingCampaignUseCase(mockRepo);
+      await useCase.execute('t-1', {
+        name: 'Loyalty Blast',
+        message: 'Thanks for your orders!',
+        channel: 'sms',
+        scheduledAt: '2026-12-01T08:00:00.000Z',
+        segment: { minOrders: 3, lastOrderWithinDays: 30 },
+      });
+      const saved = mockRepo.save.mock.calls[0][0] as MarketingCampaign;
+      expect(saved.scheduledAt).toEqual(new Date('2026-12-01T08:00:00.000Z'));
+      expect(saved.segment).toEqual({ minOrders: 3, lastOrderWithinDays: 30 });
+      expect(saved.isScheduled()).toBe(true);
     });
   });
 
@@ -133,6 +149,56 @@ describe('marketing campaigns', () => {
       mockRepo.findByIdAndTenant.mockResolvedValue(null);
       const useCase = new LaunchMarketingCampaignUseCase(mockRepo, mockSms);
       await expect(useCase.execute('t-1', 'missing')).rejects.toThrow('Campaign not found');
+    });
+
+    it('should pass segment criteria to the audience query', async () => {
+      const c = MarketingCampaign.create({
+        tenantId: TenantId.create('t-1'),
+        name: 'Repeat Buyers',
+        message: 'Come back for more!',
+        channel: 'sms',
+        segment: { minOrders: 2, lastOrderWithinDays: 60 },
+      });
+      mockRepo.findByIdAndTenant.mockResolvedValue(c);
+      mockRepo.findAudiencePhoneNumbers.mockResolvedValue(['+255712000001']);
+
+      const useCase = new LaunchMarketingCampaignUseCase(mockRepo, mockSms);
+      await useCase.execute('t-1', c.id.value);
+
+      expect(mockRepo.findAudiencePhoneNumbers).toHaveBeenCalledWith('t-1', {
+        limit: 500,
+        segment: { minOrders: 2, lastOrderWithinDays: 60 },
+      });
+    });
+
+    it('should reject launching a campaign scheduled in the future', async () => {
+      const future = new Date(Date.now() + 60 * 60 * 1000);
+      const c = MarketingCampaign.create({
+        tenantId: TenantId.create('t-1'),
+        name: 'Tomorrow Sale',
+        message: 'Tomorrow only!',
+        channel: 'sms',
+        scheduledAt: future,
+      });
+      mockRepo.findByIdAndTenant.mockResolvedValue(c);
+
+      const useCase = new LaunchMarketingCampaignUseCase(mockRepo, mockSms);
+      await expect(useCase.execute('t-1', c.id.value)).rejects.toThrow('scheduled for');
+      expect(mockSms.send).not.toHaveBeenCalled();
+    });
+
+    it('should reject launching a whatsapp campaign', async () => {
+      const c = MarketingCampaign.create({
+        tenantId: TenantId.create('t-1'),
+        name: 'WA Blast',
+        message: 'Hello WhatsApp',
+        channel: 'whatsapp',
+      });
+      mockRepo.findByIdAndTenant.mockResolvedValue(c);
+
+      const useCase = new LaunchMarketingCampaignUseCase(mockRepo, mockSms);
+      await expect(useCase.execute('t-1', c.id.value)).rejects.toThrow('not configured');
+      expect(mockSms.send).not.toHaveBeenCalled();
     });
   });
 });

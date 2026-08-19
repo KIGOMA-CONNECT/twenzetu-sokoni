@@ -23,7 +23,20 @@ export class LaunchMarketingCampaignUseCase {
       throw new BadRequestException(`Only draft campaigns can be launched (current: ${campaign.status})`);
     }
 
-    const phoneNumbers = await this.campaignRepo.findAudiencePhoneNumbers(tenantId, MAX_AUDIENCE);
+    if (campaign.channel !== 'sms') {
+      throw new BadRequestException(`Campaign channel "${campaign.channel}" is not configured yet; use SMS`);
+    }
+
+    if (campaign.isScheduled() && campaign.scheduledAt!.getTime() > Date.now()) {
+      throw new BadRequestException(
+        `Campaign is scheduled for ${campaign.scheduledAt!.toISOString()}; it will be dispatched automatically`,
+      );
+    }
+
+    const phoneNumbers = await this.campaignRepo.findAudiencePhoneNumbers(tenantId, {
+      limit: MAX_AUDIENCE,
+      segment: campaign.segment,
+    });
     campaign.launch(phoneNumbers.length);
     await this.campaignRepo.save(campaign);
 

@@ -3,12 +3,21 @@ import { AggregateRoot, EntityId, Guard, TenantId } from '@afri-market/kernel';
 export type CampaignChannel = 'sms' | 'whatsapp';
 export type CampaignStatus = 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
+// Audience segmentation criteria for a campaign. When present, the audience
+// query filters ACTIVE customers by order behaviour instead of broadcasting
+// to the whole tenant customer base.
+export interface CampaignSegment {
+  readonly minOrders?: number;
+  readonly lastOrderWithinDays?: number;
+}
+
 export interface CreateCampaignProps {
   readonly tenantId: TenantId;
   readonly name: string;
   readonly message: string;
   readonly channel: CampaignChannel;
   readonly scheduledAt?: Date;
+  readonly segment?: CampaignSegment;
 }
 
 export interface ReconstituteCampaignProps {
@@ -22,6 +31,7 @@ export interface ReconstituteCampaignProps {
   readonly failedCount: number;
   readonly totalAudience: number;
   readonly scheduledAt: Date | undefined;
+  readonly segment: CampaignSegment | undefined;
   readonly startedAt: Date | undefined;
   readonly completedAt: Date | undefined;
   readonly version: number;
@@ -39,6 +49,7 @@ export class MarketingCampaign extends AggregateRoot<EntityId> {
     private _failedCount: number,
     private _totalAudience: number,
     private readonly _scheduledAt: Date | undefined,
+    private readonly _segment: CampaignSegment | undefined,
     private _startedAt: Date | undefined,
     private _completedAt: Date | undefined,
   ) {
@@ -53,7 +64,7 @@ export class MarketingCampaign extends AggregateRoot<EntityId> {
     }
     return new MarketingCampaign(
       EntityId.create(), props.tenantId, props.name, props.message,
-      props.channel, 'DRAFT', 0, 0, 0, props.scheduledAt, undefined, undefined,
+      props.channel, 'DRAFT', 0, 0, 0, props.scheduledAt, props.segment, undefined, undefined,
     );
   }
 
@@ -61,7 +72,7 @@ export class MarketingCampaign extends AggregateRoot<EntityId> {
     return new MarketingCampaign(
       props.id, props.tenantId, props.name, props.message,
       props.channel, props.status, props.sentCount, props.failedCount,
-      props.totalAudience, props.scheduledAt, props.startedAt, props.completedAt,
+      props.totalAudience, props.scheduledAt, props.segment, props.startedAt, props.completedAt,
     );
   }
 
@@ -74,8 +85,13 @@ export class MarketingCampaign extends AggregateRoot<EntityId> {
   public get failedCount(): number { return this._failedCount; }
   public get totalAudience(): number { return this._totalAudience; }
   public get scheduledAt(): Date | undefined { return this._scheduledAt; }
+  public get segment(): CampaignSegment | undefined { return this._segment; }
   public get startedAt(): Date | undefined { return this._startedAt; }
   public get completedAt(): Date | undefined { return this._completedAt; }
+
+  public isScheduled(): boolean {
+    return !!this._scheduledAt;
+  }
 
   public launch(totalAudience: number, now: Date = new Date()): void {
     if (this._status !== 'DRAFT') {
@@ -118,6 +134,7 @@ export class MarketingCampaign extends AggregateRoot<EntityId> {
       failedCount: this._failedCount,
       totalAudience: this._totalAudience,
       scheduledAt: this._scheduledAt ?? null,
+      segment: this._segment ?? null,
       startedAt: this._startedAt ?? null,
       completedAt: this._completedAt ?? null,
     };

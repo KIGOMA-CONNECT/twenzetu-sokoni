@@ -14,6 +14,7 @@ import { AutoDispatchService } from './auto-dispatch.service';
 import { FixedDepositMaturityService } from './fixed-deposit-maturity.service';
 import { SubscriptionBillingService } from './subscription-billing.service';
 import { CommissionSweepService } from './commission-sweep.service';
+import { CampaignDispatchService } from './campaign-dispatch.service';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { CommissionSweepService } from './commission-sweep.service';
     FixedDepositMaturityService,
     SubscriptionBillingService,
     CommissionSweepService,
+    CampaignDispatchService,
     NotificationsService,
     PushService,
   ],

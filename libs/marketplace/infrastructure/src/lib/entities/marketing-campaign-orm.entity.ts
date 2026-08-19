@@ -3,6 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'marketing_campaigns' })
 @Index(['tenantId', 'createdAt'])
+@Index(['status', 'scheduledAt'])
 export class MarketingCampaignOrmEntity extends TenantAwareEntity {
   @Column({ name: 'name', type: 'varchar', length: 160 })
   public name!: string;
@@ -15,6 +16,9 @@ export class MarketingCampaignOrmEntity extends TenantAwareEntity {
 
   @Column({ name: 'audience_type', type: 'varchar', length: 40, default: 'all_customers' })
   public audienceType!: string;
+
+  @Column({ name: 'segment', type: 'jsonb', nullable: true })
+  public segment!: Record<string, unknown> | null;
 
   @Column({ name: 'status', type: 'varchar', length: 20, default: 'DRAFT' })
   public status!: string;

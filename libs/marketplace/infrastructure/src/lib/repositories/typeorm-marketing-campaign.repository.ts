@@ -3,7 +3,9 @@ import { TypeOrmRepository } from '@afri-market/database';
 import { Injectable } from '@nestjs/common';
 import { EntityManager } from 'typeorm';
 import {
+  CampaignAudienceQuery,
   CampaignListResult,
+  CampaignSegment,
   IMarketingCampaignRepository,
   MarketingCampaign,
 } from '@afri-market/marketplace-domain';
@@ -32,19 +34,50 @@ export class TypeOrmMarketingCampaignRepository extends TypeOrmRepository<Market
     return { data: entities.map((e) => this.toDomain(e)), total };
   }
 
-  public async findAudiencePhoneNumbers(tenantId: string, limit = 500): Promise<string[]> {
+  public async findAudiencePhoneNumbers(tenantId: string, opts?: CampaignAudienceQuery): Promise<string[]> {
+    const limit = opts?.limit ?? 500;
+    const segment = opts?.segment;
+    const params: unknown[] = [tenantId];
+    const filters: string[] = [];
+    if (segment?.minOrders && segment.minOrders > 0) {
+      params.push(segment.minOrders);
+      filters.push(
+        `(SELECT COUNT(*) FROM orders o WHERE o.tenant_id = u.tenant_id AND o.customer_id = u.id AND o.status = 'DELIVERED') >= $${params.length}`,
+      );
+    }
+    if (segment?.lastOrderWithinDays && segment.lastOrderWithinDays > 0) {
+      params.push(segment.lastOrderWithinDays);
+      filters.push(
+        `EXISTS (SELECT 1 FROM orders o WHERE o.tenant_id = u.tenant_id AND o.customer_id = u.id AND o.status = 'DELIVERED' AND o.created_at >= NOW() - ($${params.length} * INTERVAL '1 day'))`,
+      );
+    }
+    const filterSql = filters.length ? ` AND ${filters.join(' AND ')}` : '';
+    params.push(limit);
     const rows: Array<{ phone_number: string }> = await this.repository.manager.query(
-      `SELECT DISTINCT phone_number
-         FROM users
-        WHERE tenant_id = $1
-          AND role = 'CUSTOMER'
-          AND status = 'ACTIVE'
-          AND phone_number IS NOT NULL
-          AND phone_number <> ''
-        LIMIT $2`,
-      [tenantId, limit],
+      `SELECT DISTINCT u.phone_number
+         FROM users u
+        WHERE u.tenant_id = $1
+          AND u.role = 'CUSTOMER'
+          AND u.status = 'ACTIVE'
+          AND u.phone_number IS NOT NULL
+          AND u.phone_number <> ''${filterSql}
+        ORDER BY u.phone_number
+        LIMIT $${params.length}`,
+      params,
     );
     return rows.map((r) => r.phone_number);
+  }
+
+  public async findDueScheduled(now: Date, opts?: { limit?: number }): Promise<MarketingCampaign[]> {
+    const entities = await this.repository
+      .createQueryBuilder('c')
+      .where('c.status = :status', { status: 'DRAFT' })
+      .andWhere('c.scheduled_at IS NOT NULL')
+      .andWhere('c.scheduled_at <= :now', { now })
+      .orderBy('c.scheduled_at', 'ASC')
+      .take(opts?.limit ?? 20)
+      .getMany();
+    return entities.map((e) => this.toDomain(e));
   }
 
   public async save(entity: MarketingCampaign): Promise<void> {
@@ -69,6 +102,7 @@ export class TypeOrmMarketingCampaignRepository extends TypeOrmRepository<Market
       failedCount: e.failedCount,
       totalAudience: e.totalAudience,
       scheduledAt: e.scheduledAt ?? undefined,
+      segment: (e.segment as CampaignSegment | null) ?? undefined,
       startedAt: e.startedAt ?? undefined,
       completedAt: e.completedAt ?? undefined,
       version: 1,
@@ -82,7 +116,8 @@ export class TypeOrmMarketingCampaignRepository extends TypeOrmRepository<Market
       name: entity.name,
       message: entity.message,
       channel: entity.channel,
-      audienceType: 'all_customers',
+      audienceType: entity.segment ? 'segmented' : 'all_customers',
+      segment: entity.segment ? { ...entity.segment } : null,
       status: entity.status,
       sentCount: entity.sentCount,
       failedCount: entity.failedCount,

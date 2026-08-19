@@ -279,6 +279,11 @@ export interface Advert {
   endsAt: string | null;
 }
 
+export interface CampaignSegment {
+  minOrders?: number;
+  lastOrderWithinDays?: number;
+}
+
 export interface MarketingCampaign {
   id: string;
   name: string;
@@ -289,6 +294,7 @@ export interface MarketingCampaign {
   failedCount: number;
   totalAudience: number;
   scheduledAt: string | null;
+  segment: CampaignSegment | null;
   startedAt: string | null;
   completedAt: string | null;
 }

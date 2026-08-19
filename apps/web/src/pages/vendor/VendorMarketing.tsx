@@ -9,6 +9,9 @@ import type { Advert, Category, MarketingCampaign } from '../../types';
 interface CampaignForm {
   name: string;
   message: string;
+  scheduledAt: string;
+  minOrders: string;
+  lastOrderWithinDays: string;
 }
 
 interface AdvertForm {
@@ -76,7 +79,7 @@ export default function VendorMarketing() {
   const [formError, setFormError] = useState<string | null>(null);
 
   const [advertForm, setAdvertForm] = useState<AdvertForm>({ title: '', body: '', emoji: '', ctaLabel: '', ctaUrl: '', sortOrder: '' });
-  const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '' });
+  const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '' });
   const [categoryForm, setCategoryForm] = useState<CategoryForm>({ tagline: '', benefits: '', emoji: '' });
 
   const openAdvert = () => {
@@ -109,7 +112,7 @@ export default function VendorMarketing() {
   };
 
   const openCampaign = () => {
-    setCampaignForm({ name: '', message: '' });
+    setCampaignForm({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '' });
     setFormError(null);
     setCampaignModal(true);
   };
@@ -118,10 +121,20 @@ export default function VendorMarketing() {
     const name = campaignForm.name.trim();
     const message = campaignForm.message.trim();
     if (!name || !message) { setFormError('Campaign name and message are required.'); return; }
+    const minOrders = campaignForm.minOrders ? Math.floor(Number(campaignForm.minOrders)) : 0;
+    const lastOrderWithinDays = campaignForm.lastOrderWithinDays ? Math.floor(Number(campaignForm.lastOrderWithinDays)) : 0;
     setSaving(true);
     setFormError(null);
     try {
-      await api.post('/marketing/campaigns', { name, message, channel: 'sms' });
+      await api.post('/marketing/campaigns', {
+        name,
+        message,
+        channel: 'sms',
+        scheduledAt: campaignForm.scheduledAt ? new Date(campaignForm.scheduledAt).toISOString() : undefined,
+        segment: minOrders > 0 || lastOrderWithinDays > 0
+          ? { minOrders: minOrders > 0 ? minOrders : undefined, lastOrderWithinDays: lastOrderWithinDays > 0 ? lastOrderWithinDays : undefined }
+          : undefined,
+      });
       setCampaignModal(false);
       await refetchCampaigns();
     } catch (err: any) {
@@ -181,7 +194,7 @@ export default function VendorMarketing() {
 
       <div style={styles.banner}>
         <p style={styles.bannerTitle}>📣 Grow with SMS campaigns</p>
-        <p style={styles.bannerSub}>Draft a promotional message, then launch it to send by SMS to your active customers.</p>
+        <p style={styles.bannerSub}>Draft a promotional message, target the right customers, and launch now or schedule it to auto-send.</p>
       </div>
 
       {/* ── Campaigns ── */}
@@ -205,9 +218,10 @@ export default function VendorMarketing() {
                   <th style={styles.th}>Name</th>
                   <th style={styles.th}>Message</th>
                   <th style={styles.th}>Status</th>
+                  <th style={styles.th}>Schedule</th>
+                  <th style={styles.th}>Audience</th>
                   <th style={styles.th}>Sent</th>
                   <th style={styles.th}>Failed</th>
-                  <th style={styles.th}>Audience</th>
                   <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
                 </tr>
               </thead>
@@ -215,14 +229,32 @@ export default function VendorMarketing() {
                 {campaigns.map((c) => (
                   <tr key={c.id}>
                     <td style={{ ...styles.td, fontWeight: 600 }}>{c.name}</td>
-                    <td style={{ ...styles.td, maxWidth: '260px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.message}</td>
+                    <td style={{ ...styles.td, maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.message}</td>
                     <td style={styles.td}><StatusBadge status={c.status} /></td>
+                    <td style={styles.td}>
+                      {c.scheduledAt ? (
+                        <span>
+                          {new Date(c.scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                          <div style={styles.hint}>Auto-launches</div>
+                        </span>
+                      ) : (
+                        <span style={{ color: '#94a3b8' }}>—</span>
+                      )}
+                    </td>
+                    <td style={styles.td}>
+                      {c.segment ? [
+                        c.segment.minOrders ? `≥${c.segment.minOrders} orders` : null,
+                        c.segment.lastOrderWithinDays ? `last ${c.segment.lastOrderWithinDays}d` : null,
+                      ].filter(Boolean).join(', ') : 'All customers'}
+                    </td>
                     <td style={styles.td}>{c.sentCount}</td>
                     <td style={styles.td}>{c.failedCount}</td>
-                    <td style={styles.td}>{c.totalAudience}</td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
-                      {c.status === 'DRAFT' && (
+                      {c.status === 'DRAFT' && !c.scheduledAt && (
                         <button style={styles.launchBtn} onClick={() => launchCampaign(c)}>Launch</button>
+                      )}
+                      {c.status === 'DRAFT' && c.scheduledAt && (
+                        <span style={styles.hint}>Queued</span>
                       )}
                     </td>
                   </tr>
@@ -325,8 +357,26 @@ export default function VendorMarketing() {
             <div style={styles.field}>
               <label style={styles.label}>Message</label>
               <textarea style={styles.textarea} value={campaignForm.message} placeholder="e.g. Mangoes 30% off this weekend at your favourite shop! Order now." onChange={(e) => setCampaignForm((f) => ({ ...f, message: e.target.value }))} />
-              <div style={styles.hint}>Sent to your active customers by SMS when you launch.</div>
+              <div style={styles.hint}>Sent to your customers by SMS when launched.</div>
             </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Schedule (optional)</label>
+              <input type="datetime-local" style={styles.input} value={campaignForm.scheduledAt} onChange={(e) => setCampaignForm((f) => ({ ...f, scheduledAt: e.target.value }))} />
+              <div style={styles.hint}>Leave empty to launch manually. If set, the campaign auto-launches at that time.</div>
+            </div>
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ ...styles.field, flex: 1 }}>
+                <label style={styles.label}>Min orders</label>
+                <input type="number" min={1} style={styles.input} value={campaignForm.minOrders} placeholder="e.g. 3" onChange={(e) => setCampaignForm((f) => ({ ...f, minOrders: e.target.value }))} />
+                <div style={styles.hint}>Only customers with ≥ this many delivered orders.</div>
+              </div>
+              <div style={{ ...styles.field, flex: 1 }}>
+                <label style={styles.label}>Ordered within (days)</label>
+                <input type="number" min={1} style={styles.input} value={campaignForm.lastOrderWithinDays} placeholder="e.g. 30" onChange={(e) => setCampaignForm((f) => ({ ...f, lastOrderWithinDays: e.target.value }))} />
+                <div style={styles.hint}>Only customers active within this window.</div>
+              </div>
+            </div>
+            <div style={styles.hint}>(Leave both segmentation fields empty to reach all active customers.)</div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setCampaignModal(false)} disabled={saving}>Cancel</button>

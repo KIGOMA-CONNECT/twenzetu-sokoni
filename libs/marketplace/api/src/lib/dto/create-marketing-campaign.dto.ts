@@ -1,5 +1,20 @@
-import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+
+export class CreateMarketingCampaignSegmentDto {
+  @ApiPropertyOptional({ description: 'Only customers with at least this many delivered orders' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  minOrders?: number;
+
+  @ApiPropertyOptional({ description: 'Only customers who placed an order within this many days' })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  lastOrderWithinDays?: number;
+}
 
 export class CreateMarketingCampaignDto {
   @ApiProperty({ description: 'Campaign name' })
@@ -19,4 +34,10 @@ export class CreateMarketingCampaignDto {
   @IsOptional()
   @IsString()
   scheduledAt?: string;
+
+  @ApiPropertyOptional({ description: 'Audience segmentation criteria (default: all active customers)' })
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreateMarketingCampaignSegmentDto)
+  segment?: CreateMarketingCampaignSegmentDto;
 }
