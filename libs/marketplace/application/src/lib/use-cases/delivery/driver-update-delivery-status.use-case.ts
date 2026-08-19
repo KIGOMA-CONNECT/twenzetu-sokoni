@@ -19,6 +19,8 @@ const DELIVERY_TO_ORDER_STATUS: Record<string, OrderStatus> = {
   FAILED: 'PLACED',
 };
 
+const generatePickupCode = (): string => String(Math.floor(1000 + Math.random() * 9000));
+
 @Injectable()
 export class DriverUpdateDeliveryStatusUseCase {
   constructor(
@@ -34,6 +36,7 @@ export class DriverUpdateDeliveryStatusUseCase {
     deliveryId: string,
     driverId: string,
     newStatus: string,
+    pickupOtp?: string,
   ): Promise<{ deliveryId: string; orderId: string; status: string }> {
     const delivery = await this.deliveryRepo.findByIdAndTenant(deliveryId, tenantId);
     if (!delivery) {
@@ -47,6 +50,21 @@ export class DriverUpdateDeliveryStatusUseCase {
       throw new BadRequestException(
         `Cannot transition from ${delivery.status} to ${newStatus}. Allowed: ${allowed.join(', ') || 'none'}`,
       );
+    }
+
+    let order: Awaited<ReturnType<IOrderRepository['findById']>> | undefined;
+    if (this.orderRepo) {
+      order = await this.orderRepo.findById(delivery.orderId);
+      if (order) {
+        if (newStatus === 'ASSIGNED' && !order.pickupCode) {
+          order.setPickupCode(generatePickupCode());
+        }
+        if (newStatus === 'PICKED_UP' && order.pickupCode) {
+          if (!pickupOtp || pickupOtp.trim() !== order.pickupCode) {
+            throw new BadRequestException('Invalid pickup code. Ask the vendor for the pickup code.');
+          }
+        }
+      }
     }
 
     if (newStatus === 'DELIVERED') {
@@ -65,14 +83,11 @@ export class DriverUpdateDeliveryStatusUseCase {
 
     const orderId = delivery.orderId.value;
 
-    if (this.orderRepo) {
-      const order = await this.orderRepo.findById(delivery.orderId);
-      if (order) {
-        const orderStatus = DELIVERY_TO_ORDER_STATUS[newStatus];
-        if (orderStatus) {
-          order.updateStatus(orderStatus);
-          await this.orderRepo.save(order);
-        }
+    if (order) {
+      const orderStatus = DELIVERY_TO_ORDER_STATUS[newStatus];
+      if (orderStatus) {
+        order.updateStatus(orderStatus);
+        await this.orderRepo!.save(order);
       }
     }
 

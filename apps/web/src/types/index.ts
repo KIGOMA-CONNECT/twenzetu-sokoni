@@ -98,6 +98,7 @@ export interface Order {
   deliveryLongitude?: number;
   specialInstructions?: string;
   otpVerified: boolean;
+  pickupCode?: string;
   createdAt: string;
 }
 

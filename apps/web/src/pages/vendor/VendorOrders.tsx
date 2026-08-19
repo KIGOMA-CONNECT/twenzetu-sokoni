@@ -140,6 +140,7 @@ export default function VendorOrders() {
                     <th style={styles.th}>Order ID</th>
                     <th style={styles.th}>Customer</th>
                     <th style={styles.th}>Status</th>
+                    <th style={styles.th}>Pickup Code</th>
                     <th style={styles.th}>Total</th>
                     <th style={styles.th}>Date</th>
                     <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
@@ -153,6 +154,9 @@ export default function VendorOrders() {
                         <td style={styles.td}>{truncateId(order.id)}</td>
                         <td style={styles.td}>{order.customerId}</td>
                         <td style={styles.td}><StatusBadge status={order.status} /></td>
+                        <td style={{ ...styles.td, fontWeight: 700, letterSpacing: '0.05em' }}>
+                          {order.pickupCode ? order.pickupCode : <span style={{ color: '#94a3b8' }}>—</span>}
+                        </td>
                         <td style={styles.td}>{formatCurrency(order.totalAmount)}</td>
                         <td style={styles.td}>{formatDate(order.createdAt)}</td>
                         <td style={styles.td}>

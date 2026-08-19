@@ -54,6 +54,7 @@ export default function DriverDeliveries() {
   const [filter, setFilter] = useState<FilterStatus>('ALL');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [pickupOtp, setPickupOtp] = useState<Record<string, string>>({});
   const [deliveryOtp, setDeliveryOtp] = useState<Record<string, string>>({});
   const [liveSharing, setLiveSharing] = useState<Record<string, boolean>>({});
   const liveTimersRef = useRef<Record<string, ReturnType<typeof setInterval>>>({});
@@ -169,7 +170,8 @@ export default function DriverDeliveries() {
     setBusyId(id);
     setActionError(null);
     try {
-      await api.patch(`/deliveries/${id}/status`, { status: 'PICKED_UP' });
+      await api.patch(`/deliveries/${id}/status`, { status: 'PICKED_UP', pickupOtp: pickupOtp[id] || undefined });
+      setPickupOtp(prev => ({ ...prev, [id]: '' }));
       await refetch();
     } catch (err: any) {
       setActionError(err.response?.data?.message || err.message || 'Failed to update status.');
@@ -279,6 +281,15 @@ export default function DriverDeliveries() {
                         )}
                         {d.status === 'ASSIGNED' && (
                           <div style={styles.actionWrap}>
+                            <input
+                              type="text"
+                              inputMode="numeric"
+                              maxLength={6}
+                              placeholder="Pickup OTP"
+                              value={pickupOtp[d.id] || ''}
+                              onChange={(e) => setPickupOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
+                              style={styles.otpInput}
+                            />
                             <button
                               style={{ ...styles.pickupBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}

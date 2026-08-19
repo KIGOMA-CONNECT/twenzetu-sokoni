@@ -61,6 +61,9 @@ export class OrderOrmEntity extends TenantAwareEntity {
   @Column({ name: 'otp_attempts', type: 'integer', default: 0 })
   public otpAttempts!: number;
 
+  @Column({ name: 'pickup_code', type: 'varchar', length: 10, nullable: true })
+  public pickupCode!: string | null;
+
   @Column({ type: 'integer', default: 1 })
   public version!: number;
 }

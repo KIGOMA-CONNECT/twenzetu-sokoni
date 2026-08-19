@@ -31,6 +31,7 @@ export interface ReconstituteOrderProps {
   readonly OTPCode: string | undefined;
   readonly OTPVerified: boolean;
   readonly OTPAttempts: number;
+  readonly PickupCode: string | undefined;
   readonly version: number;
   readonly createdAt?: Date;
 }
@@ -57,6 +58,7 @@ export class Order extends AggregateRoot<EntityId> {
     private _otpCode: string | undefined,
     private _otpVerified: boolean,
     private _otpAttempts: number,
+    private _pickupCode: string | undefined,
     private readonly _version: number,
     private readonly _createdAt: Date = new Date(),
   ) {
@@ -69,7 +71,7 @@ export class Order extends AggregateRoot<EntityId> {
       EntityId.create(), props.tenantId, props.customerId, props.vendorId,
       undefined, props.type, 'PLACED', zeroMoney, zeroMoney, zeroMoney, zeroMoney,
       props.deliveryAddress, props.deliveryLatitude, props.deliveryLongitude,
-      props.specialInstructions, undefined, false, 0, 1, new Date(),
+      props.specialInstructions, undefined, false, 0, undefined, 1, new Date(),
     );
   }
 
@@ -79,7 +81,7 @@ export class Order extends AggregateRoot<EntityId> {
       props.driverId, props.type, props.status, props.subtotal, props.deliveryFee,
       props.systemCommission, props.totalAmount, props.deliveryAddress,
       props.deliveryLatitude, props.deliveryLongitude, props.specialInstructions,
-      props.OTPCode, props.OTPVerified, props.OTPAttempts, props.version, props.createdAt ?? new Date(),
+      props.OTPCode, props.OTPVerified, props.OTPAttempts, props.PickupCode, props.version, props.createdAt ?? new Date(),
     );
   }
 
@@ -100,6 +102,7 @@ export class Order extends AggregateRoot<EntityId> {
   public get otpCode(): string | undefined { return this._otpCode; }
   public get otpVerified(): boolean { return this._otpVerified; }
   public get otpAttempts(): number { return this._otpAttempts; }
+  public get pickupCode(): string | undefined { return this._pickupCode; }
   public get version(): number { return this._version; }
   public get createdAt(): Date { return this._createdAt; }
 
@@ -121,6 +124,7 @@ export class Order extends AggregateRoot<EntityId> {
       deliveryLongitude: this._deliveryLongitude,
       specialInstructions: this._specialInstructions,
       otpVerified: this._otpVerified,
+      pickupCode: this._pickupCode,
       createdAt: this._createdAt,
     };
   }
@@ -151,6 +155,7 @@ export class Order extends AggregateRoot<EntityId> {
   }
 
   public setOTP(code: string): void { this._otpCode = code; }
+  public setPickupCode(code: string): void { this._pickupCode = code; }
   public verifyOTP(): void { this._otpVerified = true; }
   public recordOtpFailure(): void { this._otpAttempts += 1; }
   public isOtpLocked(): boolean { return this._otpAttempts >= MAX_OTP_ATTEMPTS; }

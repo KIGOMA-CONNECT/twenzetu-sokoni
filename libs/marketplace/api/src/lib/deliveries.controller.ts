@@ -212,6 +212,7 @@ export class DeliveriesController {
       id,
       user.sub,
       body.status,
+      body.pickupOtp,
     );
   }
 

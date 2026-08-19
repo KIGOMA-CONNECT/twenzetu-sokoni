@@ -122,6 +122,7 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
       OTPCode: e.otpCode ?? undefined,
       OTPVerified: e.otpVerified,
       OTPAttempts: e.otpAttempts,
+      PickupCode: e.pickupCode ?? undefined,
       version: e.version,
       createdAt: e.createdAt ?? new Date(),
     });
@@ -148,6 +149,7 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
       otpCode: entity.otpCode ?? null,
       otpVerified: entity.otpVerified,
       otpAttempts: entity.otpAttempts,
+      pickupCode: entity.pickupCode ?? null,
       version: entity.version,
     };
   }
