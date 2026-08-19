@@ -23,6 +23,7 @@ import {
 
 describe('Admin E2E', () => {
   let app: INestApplication;
+  const auditLogMock = { log: jest.fn() };
   beforeAll(async () => {
     const dashboardUC = { execute: jest.fn().mockResolvedValue({ data: { totalVendors: 3, pendingVendors: 1, activeOrders: 2, totalRevenue: 6500, openDisputes: 0, totalUsers: 6 } }) };
     const analyticsUC = { execute: jest.fn().mockResolvedValue({ data: { period: '7d', orderCount: 5, revenue: 12000, averageOrderValue: 2400, topVendors: [] } }) };
@@ -56,7 +57,7 @@ describe('Admin E2E', () => {
         { provide: VerifyKycUseCase, useValue: verifyKycUC },
         { provide: ListAllVendorsAdminUseCase, useValue: listAllVendorsUC },
         { provide: GetReconciliationReportUseCase, useValue: reconciliationUC },
-        { provide: AuditLogService, useValue: { log: jest.fn() } },
+        { provide: AuditLogService, useValue: auditLogMock },
       ],
     })
       .overrideGuard(AuthGuard('jwt'))
@@ -105,21 +106,37 @@ describe('Admin E2E', () => {
   });
 
   describe('PATCH /api/admin/vendors/:id/approve', () => {
-    it('should approve vendor', async () => {
+    it('should approve vendor and record an audit trail entry', async () => {
       const res = await request(app.getHttpServer())
         .patch('/api/admin/vendors/00000000-0000-0000-0000-000000000001/approve')
         .expect(200);
       expect(res.body.status).toBe('ACTIVE');
       expect(res.body.message).toBe('Vendor approved');
+      expect(auditLogMock.log).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'vendor.approved',
+        actorId: 'b0000000-0000-0000-0000-000000000001',
+        actorRole: 'admin',
+        tenantId: 'a0000000-0000-0000-0000-000000000001',
+        targetType: 'vendor',
+        targetId: '00000000-0000-0000-0000-000000000001',
+      }));
     });
   });
 
   describe('PATCH /api/admin/vendors/:id/suspend', () => {
-    it('should suspend vendor', async () => {
+    it('should suspend vendor and record an audit trail entry', async () => {
       const res = await request(app.getHttpServer())
         .patch('/api/admin/vendors/00000000-0000-0000-0000-000000000001/suspend')
         .expect(200);
       expect(res.body.status).toBe('SUSPENDED');
+      expect(auditLogMock.log).toHaveBeenCalledWith(expect.objectContaining({
+        action: 'vendor.suspended',
+        actorId: 'b0000000-0000-0000-0000-000000000001',
+        actorRole: 'admin',
+        tenantId: 'a0000000-0000-0000-0000-000000000001',
+        targetType: 'vendor',
+        targetId: '00000000-0000-0000-0000-000000000001',
+      }));
     });
   });
 

@@ -155,8 +155,22 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Vendor approved' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async approveVendorEndpoint(@Param('id', ParseUUIDPipe) id: string) {
-    return this.approveVendor.execute(id);
+  public async approveVendorEndpoint(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+    @Req() req: Request,
+  ) {
+    const result = await this.approveVendor.execute(id);
+    await this.auditLog.log({
+      action: 'vendor.approved',
+      actorId: user.sub,
+      actorRole: 'admin',
+      tenantId: user.tenantId,
+      targetType: 'vendor',
+      targetId: id,
+      ipAddress: req.ip,
+    });
+    return result;
   }
 
   @Patch('vendors/:id/suspend')
@@ -166,8 +180,22 @@ export class AdminController {
   @ApiResponse({ status: 200, description: 'Vendor suspended' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async suspendVendorEndpoint(@Param('id', ParseUUIDPipe) id: string) {
-    return this.suspendVendor.execute(id);
+  public async suspendVendorEndpoint(
+    @Param('id', ParseUUIDPipe) id: string,
+    @CurrentUser() user: JwtPayload,
+    @Req() req: Request,
+  ) {
+    const result = await this.suspendVendor.execute(id);
+    await this.auditLog.log({
+      action: 'vendor.suspended',
+      actorId: user.sub,
+      actorRole: 'admin',
+      tenantId: user.tenantId,
+      targetType: 'vendor',
+      targetId: id,
+      ipAddress: req.ip,
+    });
+    return result;
   }
 
   @Get('disputes')

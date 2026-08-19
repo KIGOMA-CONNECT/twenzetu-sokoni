@@ -51,8 +51,8 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 - [x] **Analytics L4** — self-service dashboards for tenants. (Custom `from`/`to` date ranges on every report in the admin console; delivery SLA report; documented metric catalog.)
 - [x] **Identity L4** — self-service account management; account recovery. (Profile edit, change password with session revocation, signed-in device management, self-service deactivation `POST /auth/me/deactivate`, SMS-OTP forgot/reset password with rate limiting + anti-enumeration.)
 - [x] **Google Maps + native push** — delivery distance/ETA via Google Maps Distance Matrix (with haversine fallback), Firebase Cloud Messaging native push channel alongside VAPID web push, and Google Maps embeds on vendor storefronts.
-- [ ] **Enterprise Certification baseline (L5 readiness)** — audit trail completeness, backup/DR runbooks verified, compliance review (PECA 2018/2022).
-- [ ] **First institutional tenants** — multi-tenant onboarding verified with a real second tenant.
+- [x] **Enterprise Certification baseline (L5 readiness)** — audit trail completeness review, backup/DR runbooks verified, compliance review (PECA 2018/2022). (Baseline shipped: audit trail wiring for admin vendor approve/suspend + coverage matrix and remediation plan, `verify-backup-restore.sh` DR drill script, `docs/compliance/enterprise-readiness.md` + `institutional-tenant-onboarding.md` + `verify-tenant.sh`; open gaps tracked in the readiness doc.)
+- [ ] **First institutional tenants** — multi-tenant onboarding verified with a real second tenant. (Runbook + verification tooling ready; execution requires a signed DPA — see [institutional-tenant-onboarding](compliance/institutional-tenant-onboarding.md).)
 - [ ] **Engineering Institute charter** — first internal training track ("AfriMarket Platform Fundamentals").
 
 ### Horizon 2 — Scale (2028–2030)

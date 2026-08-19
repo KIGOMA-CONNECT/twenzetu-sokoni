@@ -23,6 +23,8 @@ The Constitution is the most important document in the project. It is not a tech
 ## Readiness
 
 - [Payments & SMS readiness](payments-readiness.md) — checklist to take the Payments suite from L2 to L4 and enable OTP SMS in production.
+- [Enterprise readiness (L5)](compliance/enterprise-readiness.md) — audit-trail completeness review, backup/DR runbooks, PECA 2018/2022 compliance checklist.
+- [Institutional tenant onboarding](compliance/institutional-tenant-onboarding.md) — runbook + verification script for onboarding a second tenant.
 
 ## Operational references
 
