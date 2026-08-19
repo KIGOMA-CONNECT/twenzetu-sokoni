@@ -65,6 +65,31 @@ export interface TopProductRow {
   share: number;
 }
 
+export interface DeliverySla {
+  total: number;
+  completed: number;
+  active: number;
+  failed: number;
+  withEstimate: number;
+  onTime: number;
+  onTimeRate: number;
+  lateRate: number;
+  averageDistanceKm: number;
+  averageEtaMinutes: number;
+  averageActualMinutes: number;
+}
+
+export interface DriverSlaRow {
+  driverId: string;
+  driverName: string;
+  phoneNumber: string;
+  completed: number;
+  onTime: number;
+  onTimeRate: number;
+  averageDistanceKm: number;
+  averageActualMinutes: number;
+}
+
 export interface InventoryItem {
   id: string;
   name: string;
@@ -324,6 +349,97 @@ export class AnalyticsService {
       orderCount: Number(r.order_count ?? 0),
       share: totalRevenue > 0 ? Math.round((Number(r.revenue ?? 0) / totalRevenue) * 1000) / 10 : 0,
     }));
+  }
+
+  public async deliverySla(
+    tenantId: string,
+    vendorId: string | undefined,
+    range: AccountingDateRange,
+  ): Promise<DeliverySla> {
+    const rows: { total?: string; completed?: string; active?: string; failed?: string; with_estimate?: string; on_time?: string; avg_distance?: string; avg_eta?: string; avg_actual?: string }[] =
+      await this.dataSource.query(
+        `SELECT
+           COUNT(*) AS "total",
+           COUNT(*) FILTER (WHERE d.status = 'DELIVERED') AS "completed",
+           COUNT(*) FILTER (WHERE d.status IN ('ASSIGNED', 'PICKED_UP', 'IN_TRANSIT')) AS "active",
+           COUNT(*) FILTER (WHERE d.status = 'FAILED') AS "failed",
+           COUNT(*) FILTER (WHERE d.status = 'DELIVERED' AND d.estimated_time_minutes IS NOT NULL) AS "with_estimate",
+           COUNT(*) FILTER (
+             WHERE d.status = 'DELIVERED'
+               AND d.estimated_time_minutes IS NOT NULL
+               AND EXTRACT(EPOCH FROM (d.updated_at - d.created_at)) / 60 <= d.estimated_time_minutes
+           ) AS "on_time",
+           COALESCE(AVG(d.distance_km), 0) AS "avg_distance",
+           COALESCE(AVG(d.estimated_time_minutes), 0) AS "avg_eta",
+           COALESCE(AVG(EXTRACT(EPOCH FROM (d.updated_at - d.created_at)) / 60) FILTER (WHERE d.status = 'DELIVERED'), 0) AS "avg_actual"
+         FROM deliveries d
+         JOIN orders o ON o.id = d.order_id
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND d.created_at >= $3 AND d.created_at < $4`,
+        [tenantId, vendorId ?? null, range.since, range.until],
+      );
+    const row = rows[0] ?? {};
+    const completed = Number(row.completed ?? 0);
+    const withEstimate = Number(row.with_estimate ?? 0);
+    const onTime = Number(row.on_time ?? 0);
+    return {
+      total: Number(row.total ?? 0),
+      completed,
+      active: Number(row.active ?? 0),
+      failed: Number(row.failed ?? 0),
+      withEstimate,
+      onTime,
+      onTimeRate: withEstimate > 0 ? Math.round((onTime / withEstimate) * 1000) / 10 : 0,
+      lateRate: withEstimate > 0 ? Math.round(((withEstimate - onTime) / withEstimate) * 1000) / 10 : 0,
+      averageDistanceKm: Math.round(Number(row.avg_distance ?? 0) * 100) / 100,
+      averageEtaMinutes: Math.round(Number(row.avg_eta ?? 0) * 10) / 10,
+      averageActualMinutes: Math.round(Number(row.avg_actual ?? 0) * 10) / 10,
+    };
+  }
+
+  public async deliverySlaByDriver(
+    tenantId: string,
+    vendorId: string | undefined,
+    range: AccountingDateRange,
+    limit: number,
+  ): Promise<DriverSlaRow[]> {
+    const rows: { driver_id?: string; driver_name?: string | null; phone_number?: string | null; completed?: string; on_time?: string; avg_distance?: string; avg_actual?: string }[] =
+      await this.dataSource.query(
+        `SELECT
+           d.driver_id AS "driver_id",
+           u.full_name AS "driver_name",
+           u.phone_number AS "phone_number",
+           COUNT(*) FILTER (WHERE d.status = 'DELIVERED') AS "completed",
+           COUNT(*) FILTER (
+             WHERE d.status = 'DELIVERED'
+               AND d.estimated_time_minutes IS NOT NULL
+               AND EXTRACT(EPOCH FROM (d.updated_at - d.created_at)) / 60 <= d.estimated_time_minutes
+           ) AS "on_time",
+           COALESCE(AVG(d.distance_km) FILTER (WHERE d.status = 'DELIVERED'), 0) AS "avg_distance",
+           COALESCE(AVG(EXTRACT(EPOCH FROM (d.updated_at - d.created_at)) / 60) FILTER (WHERE d.status = 'DELIVERED'), 0) AS "avg_actual"
+         FROM deliveries d
+         JOIN orders o ON o.id = d.order_id
+         LEFT JOIN users u ON u.id = d.driver_id
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND d.created_at >= $3 AND d.created_at < $4
+         GROUP BY d.driver_id, u.full_name, u.phone_number
+         HAVING COUNT(*) FILTER (WHERE d.status = 'DELIVERED') > 0
+         ORDER BY "completed" DESC
+         LIMIT $5`,
+        [tenantId, vendorId ?? null, range.since, range.until, limit],
+      );
+    return rows.map((r) => {
+      const completed = Number(r.completed ?? 0);
+      const onTime = Number(r.on_time ?? 0);
+      return {
+        driverId: r.driver_id ?? '',
+        driverName: r.driver_name ?? 'Unknown driver',
+        phoneNumber: r.phone_number ?? '',
+        completed,
+        onTime,
+        onTimeRate: completed > 0 ? Math.round((onTime / completed) * 1000) / 10 : 0,
+        averageDistanceKm: Math.round(Number(r.avg_distance ?? 0) * 100) / 100,
+        averageActualMinutes: Math.round(Number(r.avg_actual ?? 0) * 10) / 10,
+      };
+    });
   }
 
   public async inventory(

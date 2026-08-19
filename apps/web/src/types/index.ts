@@ -695,6 +695,31 @@ export interface AnalyticsInventoryReport {
   items: AnalyticsInventoryItem[];
 }
 
+export interface AnalyticsDeliverySla {
+  total: number;
+  completed: number;
+  active: number;
+  failed: number;
+  withEstimate: number;
+  onTime: number;
+  onTimeRate: number;
+  lateRate: number;
+  averageDistanceKm: number;
+  averageEtaMinutes: number;
+  averageActualMinutes: number;
+}
+
+export interface AnalyticsDriverSlaRow {
+  driverId: string;
+  driverName: string;
+  phoneNumber: string;
+  completed: number;
+  onTime: number;
+  onTimeRate: number;
+  averageDistanceKm: number;
+  averageActualMinutes: number;
+}
+
 export interface MetricDefinition {
   key: string;
   name: string;

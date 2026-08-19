@@ -225,3 +225,67 @@ describe('AnalyticsService.metricCatalog', () => {
     expect(ACCOUNTING_PERIODS).toContain('30d');
   });
 });
+
+describe('AnalyticsService.deliverySla', () => {
+  it('computes on-time rate from actual duration vs estimated ETA', async () => {
+    const slaRow = {
+      total: '10',
+      completed: '8',
+      active: '1',
+      failed: '1',
+      with_estimate: '6',
+      on_time: '5',
+      avg_distance: '4.5',
+      avg_eta: '25',
+      avg_actual: '28',
+    };
+    const service = new AnalyticsService(
+      makeDataSource({ deliveries: [slaRow] }),
+    );
+    const result = await service.deliverySla(TENANT_ID, undefined, resolvePeriodRange('30d'));
+
+    expect(result.total).toBe(10);
+    expect(result.completed).toBe(8);
+    expect(result.withEstimate).toBe(6);
+    expect(result.onTime).toBe(5);
+    expect(result.onTimeRate).toBe(83.3);
+    expect(result.lateRate).toBe(16.7);
+    expect(result.averageDistanceKm).toBe(4.5);
+    expect(result.averageEtaMinutes).toBe(25);
+    expect(result.averageActualMinutes).toBe(28);
+  });
+
+  it('returns zeros for on-time rate when no completed delivery has an estimate', async () => {
+    const service = new AnalyticsService(
+      makeDataSource({ deliveries: [{ total: '0', completed: '0', active: '0', failed: '0', with_estimate: '0', on_time: '0', avg_distance: '0', avg_eta: '0', avg_actual: '0' }] }),
+    );
+    const result = await service.deliverySla(TENANT_ID, undefined, resolvePeriodRange('30d'));
+    expect(result.onTimeRate).toBe(0);
+    expect(result.lateRate).toBe(0);
+  });
+
+  it('passes the tenant-scoped vendorId as a nullable filter param', async () => {
+    const ds = makeDataSource({ deliveries: [{ total: '1', completed: '1', active: '0', failed: '0', with_estimate: '1', on_time: '1', avg_distance: '1', avg_eta: '10', avg_actual: '8' }] });
+    const service = new AnalyticsService(ds);
+    await service.deliverySla(TENANT_ID, VENDOR_ID, resolvePeriodRange('30d'));
+    const call = ds.query.mock.calls.find((c: unknown[]) => String(c[0]).includes('estimated_time_minutes IS NOT NULL'));
+    expect(call?.[1]).toEqual([TENANT_ID, VENDOR_ID, expect.any(Date), expect.any(Date)]);
+  });
+});
+
+describe('AnalyticsService.deliverySlaByDriver', () => {
+  it('ranks drivers by completed deliveries with on-time rate', async () => {
+    const rows = [
+      { driver_id: 'd1', driver_name: 'Juma', phone_number: '+2557', completed: '4', on_time: '3', avg_distance: '3.2', avg_actual: '22' },
+      { driver_id: 'd2', driver_name: null, phone_number: null, completed: '2', on_time: '1', avg_distance: '5', avg_actual: '40' },
+    ];
+    const service = new AnalyticsService(
+      makeDataSource({ deliveries: rows }),
+    );
+    const result = await service.deliverySlaByDriver(TENANT_ID, undefined, resolvePeriodRange('30d'), 25);
+
+    expect(result).toHaveLength(2);
+    expect(result[0]).toMatchObject({ driverId: 'd1', driverName: 'Juma', completed: 4, onTime: 3, onTimeRate: 75, averageActualMinutes: 22 });
+    expect(result[1]).toMatchObject({ driverName: 'Unknown driver', onTimeRate: 50 });
+  });
+});

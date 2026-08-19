@@ -7,6 +7,8 @@ import type {
   AnalyticsOverview,
   AnalyticsTopProduct,
   AnalyticsInventoryReport,
+  AnalyticsDeliverySla,
+  AnalyticsDriverSlaRow,
   MetricDefinition,
 } from '../../types';
 
@@ -25,6 +27,7 @@ const TABS = [
   { key: 'overview', label: 'Overview' },
   { key: 'products', label: 'Top Products' },
   { key: 'inventory', label: 'Inventory' },
+  { key: 'deliverySla', label: 'Delivery SLA' },
   { key: 'catalog', label: 'Metric Catalog' },
   { key: 'disputes', label: 'Disputes' },
 ] as const;
@@ -103,6 +106,14 @@ export default function AdminAnalytics() {
   const { data: catalogRaw, loading: catalogLoading, error: catalogError } = useApi<MetricDefinition[]>('/admin/analytics/metric-catalog');
   const catalog: MetricDefinition[] = Array.isArray(catalogRaw) ? catalogRaw : [];
 
+  const slaQuery = `/admin/analytics/delivery-sla?period=${period}`;
+  const { data: slaRaw, loading: slaLoading, error: slaError } = useApi<AnalyticsDeliverySla>(slaQuery, [slaQuery]);
+  const sla: AnalyticsDeliverySla | null = slaRaw && typeof slaRaw === 'object' && 'onTimeRate' in slaRaw ? slaRaw : null;
+
+  const driversQuery = `/admin/analytics/delivery-sla/drivers?period=${period}&limit=25`;
+  const { data: driversRaw, loading: driversLoading, error: driversError } = useApi<AnalyticsDriverSlaRow[]>(driversQuery, [driversQuery]);
+  const drivers: AnalyticsDriverSlaRow[] = Array.isArray(driversRaw) ? driversRaw : [];
+
   const { data: disputesRaw, loading: disputesLoading, error: disputesError } = useApi<DisputeMetrics>('/admin/analytics/disputes');
   const disputes: DisputeMetrics | null = disputesRaw && typeof disputesRaw === 'object' ? disputesRaw : null;
 
@@ -153,6 +164,25 @@ export default function AdminAnalytics() {
         ['Average Resolution Time (hours)', disputes.averageResolutionTimeHours],
         ...Object.entries(disputes.byReason).map(([k, v]) => [`Reason: ${k}`, v]),
         ...Object.entries(disputes.bySeverity).map(([k, v]) => [`Severity: ${k}`, v]),
+      ]);
+    } else if (tab === 'deliverySla' && sla) {
+      downloadCsv(`platform-analytics-delivery-sla-${period}-${stamp}.csv`, [
+        ['Metric', 'Value'],
+        ['Deliveries', sla.total],
+        ['Completed', sla.completed],
+        ['Active', sla.active],
+        ['Failed', sla.failed],
+        ['With ETA Estimate', sla.withEstimate],
+        ['On-Time', sla.onTime],
+        ['On-Time Rate %', sla.onTimeRate],
+        ['Late Rate %', sla.lateRate],
+        ['Average Distance (km)', sla.averageDistanceKm],
+        ['Average ETA (min)', sla.averageEtaMinutes],
+        ['Average Actual (min)', sla.averageActualMinutes],
+      ]);
+      downloadCsv(`platform-analytics-driver-sla-${period}-${stamp}.csv`, [
+        ['Driver', 'Phone', 'Completed', 'On-Time', 'On-Time Rate %', 'Avg Distance (km)', 'Avg Actual (min)'],
+        ...drivers.map((d) => [d.driverName, d.phoneNumber, d.completed, d.onTime, d.onTimeRate, d.averageDistanceKm, d.averageActualMinutes]),
       ]);
     }
   };
@@ -395,6 +425,91 @@ export default function AdminAnalytics() {
                       <td style={styles.td}>
                         <span style={i.status === 'ACTIVE' ? styles.pos : styles.neg}>{i.status}</span>
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </>
+      ))}
+
+      {tab === 'deliverySla' && (slaLoading ? (
+        <LoadingSpinner />
+      ) : slaError ? (
+        <ErrorMessage message={slaError} />
+      ) : !sla ? (
+        <div style={styles.empty}>No delivery SLA data for this period</div>
+      ) : (
+        <>
+          <div style={styles.cards}>
+            {renderStatCard('Deliveries', String(sla.total), `${sla.completed} completed`)}
+            {renderStatCard('On-Time Rate', `${sla.onTimeRate}%`, `${sla.onTime}/${sla.withEstimate} within ETA`)}
+            {renderStatCard('Late Rate', `${sla.lateRate}%`, 'vs estimated ETA')}
+            {renderStatCard('Avg Distance', `${fmt(sla.averageDistanceKm)} km`)}
+            {renderStatCard('Avg ETA', `${fmt(sla.averageEtaMinutes)} min`, 'estimated')}
+            {renderStatCard('Avg Actual', `${fmt(sla.averageActualMinutes)} min`, 'delivered')}
+            {renderStatCard('Active', String(sla.active))}
+            {renderStatCard('Failed', String(sla.failed))}
+          </div>
+          <div style={styles.panel}>
+            <div style={styles.panelHeader}>
+              <span>On-Time Rate vs Estimated ETA</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                {sla.withEstimate} completed deliveries with an ETA estimate
+              </span>
+            </div>
+            {sla.withEstimate === 0 ? (
+              <div style={styles.empty}>No completed deliveries have an ETA estimate yet — estimates are populated when a route is measured at delivery creation.</div>
+            ) : (
+              <div style={{ padding: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <div style={{ ...styles.barTrack, flex: 1 }}>
+                    <div style={{ ...styles.barFill, width: `${Math.min(100, sla.onTimeRate)}%`, background: sla.onTimeRate >= 80 ? '#047857' : sla.onTimeRate >= 60 ? '#b45309' : '#dc2626' }} />
+                  </div>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', minWidth: '3.5rem' }}>{sla.onTimeRate}%</span>
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={styles.panel}>
+            <div style={styles.panelHeader}>
+              <span>Driver SLA</span>
+              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                {driversLoading ? 'loading…' : `${drivers.length} drivers with completed deliveries`}
+              </span>
+            </div>
+            {driversLoading ? (
+              <LoadingSpinner />
+            ) : driversError ? (
+              <ErrorMessage message={driversError} />
+            ) : drivers.length === 0 ? (
+              <div style={styles.empty}>No completed deliveries by driver in this period</div>
+            ) : (
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>Driver</th>
+                    <th style={styles.th}>Phone</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Completed</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>On-Time</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Rate</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Avg Distance</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>Avg Actual</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {drivers.map((d) => (
+                    <tr key={d.driverId}>
+                      <td style={{ ...styles.td, fontWeight: 600 }}>{d.driverName}</td>
+                      <td style={styles.td}>{d.phoneNumber || '—'}</td>
+                      <td style={styles.tdRight}>{d.completed}</td>
+                      <td style={styles.tdRight}>{d.onTime}</td>
+                      <td style={{ ...styles.tdRight, fontWeight: 700, ...(d.onTimeRate >= 80 ? styles.pos : d.onTimeRate >= 60 ? styles.warn : styles.neg) }}>
+                        {d.onTimeRate}%
+                      </td>
+                      <td style={styles.tdRight}>{fmt(d.averageDistanceKm)} km</td>
+                      <td style={styles.tdRight}>{fmt(d.averageActualMinutes)} min</td>
                     </tr>
                   ))}
                 </tbody>

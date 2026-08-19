@@ -126,6 +126,28 @@ export class AdminController {
     return { data };
   }
 
+  @Get('analytics/delivery-sla')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'Tenant-wide delivery SLA: on-time rate vs estimated ETA, average distance and actual duration (requires view_analytics)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsDeliverySla(@CurrentUser() user: JwtPayload, @Query() query: ReportQueryDto) {
+    const range = this.resolveReportRange(query);
+    const data = await this.analyticsService.deliverySla(user.tenantId, undefined, range);
+    return { data };
+  }
+
+  @Get('analytics/delivery-sla/drivers')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'Per-driver delivery SLA performance (requires view_analytics)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsDeliverySlaDrivers(@CurrentUser() user: JwtPayload, @Query() query: ReportQueryDto) {
+    const range = this.resolveReportRange(query);
+    const data = await this.analyticsService.deliverySlaByDriver(user.tenantId, undefined, range, query.limit ?? 25);
+    return { data };
+  }
+
   @Patch('vendors/:id/approve')
   @RequirePermissions('manage_vendors')
   @ApiOperation({ summary: 'Approve a vendor' })

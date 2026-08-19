@@ -21,7 +21,7 @@ reports. Every metric has a stable `key`, a display `name`, a `category`, a `uni
 | ORDERS | order_count, completed_orders, cancelled_orders, cancellation_rate, order_funnel |
 | CUSTOMERS | unique_customers, new_customers, returning_customers |
 | INVENTORY | low_stock_products, out_of_stock_products, inventory_value |
-| DELIVERY | deliveries_completed, deliveries_active, deliveries_failed, average_delivery_distance, driver_earnings |
+| DELIVERY | deliveries_completed, deliveries_active, deliveries_failed, average_delivery_distance, driver_earnings, delivery_on_time_rate, delivery_late_rate, average_delivery_eta, average_delivery_duration |
 
 ## Definitions
 
@@ -48,6 +48,10 @@ reports. Every metric has a stable `key`, a display `name`, a `category`, a `uni
 | deliveries_failed | Failed Deliveries | COUNT | `deliveries.status = FAILED` | Deliveries marked failed in the period. |
 | average_delivery_distance | Average Delivery Distance | DISTANCE | `deliveries.distance_km` | Average distance in kilometres of completed deliveries. |
 | driver_earnings | Driver Earnings Paid | TZS | `deliveries.driver_earnings` | Sum of driver earnings paid on completed deliveries in the period. |
+| delivery_on_time_rate | Delivery On-Time Rate | RATE | `estimated_time_minutes` vs actual | Share of completed deliveries with an ETA estimate whose actual duration was within the estimate. |
+| delivery_late_rate | Delivery Late Rate | RATE | `estimated_time_minutes` vs actual | Share of completed deliveries with an ETA estimate whose actual duration exceeded the estimate. |
+| average_delivery_eta | Average Delivery ETA | COUNT | `deliveries.estimated_time_minutes` | Average estimated delivery duration in minutes. |
+| average_delivery_duration | Average Delivery Duration | COUNT | `deliveries.updated_at - created_at` | Average actual delivery duration in minutes for completed deliveries. |
 
 ## Computed by
 
