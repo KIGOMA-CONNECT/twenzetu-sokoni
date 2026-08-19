@@ -88,14 +88,24 @@ function downloadCsv(filename: string, rows: string[][]) {
 
 export default function AdminAnalytics() {
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
+  const [from, setFrom] = useState<string>('');
+  const [to, setTo] = useState<string>('');
   const [tab, setTab] = useState<string>('overview');
   const [threshold, setThreshold] = useState<number>(5);
 
-  const overviewQuery = `/admin/analytics/overview?period=${period}`;
+  const customActive = from !== '' && to !== '';
+  const rangeSuffix = customActive ? `&from=${from}&to=${to}` : '';
+  const rangeLabel = customActive
+    ? `${from} → ${to}`
+    : period === 'all_time'
+      ? 'all time'
+      : `last ${period}`;
+
+  const overviewQuery = `/admin/analytics/overview?period=${period}${rangeSuffix}`;
   const { data: overviewRaw, loading: overviewLoading, error: overviewError, refetch } = useApi<AnalyticsOverview>(overviewQuery, [overviewQuery]);
   const overview: AnalyticsOverview | null = overviewRaw && typeof overviewRaw === 'object' && 'summary' in overviewRaw ? overviewRaw : null;
 
-  const productsQuery = `/admin/analytics/top-products?period=${period}&limit=10`;
+  const productsQuery = `/admin/analytics/top-products?period=${period}&limit=10${rangeSuffix}`;
   const { data: productsRaw, loading: productsLoading, error: productsError } = useApi<AnalyticsTopProduct[]>(productsQuery, [productsQuery]);
   const products: AnalyticsTopProduct[] = Array.isArray(productsRaw) ? productsRaw : [];
 
@@ -106,11 +116,11 @@ export default function AdminAnalytics() {
   const { data: catalogRaw, loading: catalogLoading, error: catalogError } = useApi<MetricDefinition[]>('/admin/analytics/metric-catalog');
   const catalog: MetricDefinition[] = Array.isArray(catalogRaw) ? catalogRaw : [];
 
-  const slaQuery = `/admin/analytics/delivery-sla?period=${period}`;
+  const slaQuery = `/admin/analytics/delivery-sla?period=${period}${rangeSuffix}`;
   const { data: slaRaw, loading: slaLoading, error: slaError } = useApi<AnalyticsDeliverySla>(slaQuery, [slaQuery]);
   const sla: AnalyticsDeliverySla | null = slaRaw && typeof slaRaw === 'object' && 'onTimeRate' in slaRaw ? slaRaw : null;
 
-  const driversQuery = `/admin/analytics/delivery-sla/drivers?period=${period}&limit=25`;
+  const driversQuery = `/admin/analytics/delivery-sla/drivers?period=${period}&limit=25${rangeSuffix}`;
   const { data: driversRaw, loading: driversLoading, error: driversError } = useApi<AnalyticsDriverSlaRow[]>(driversQuery, [driversQuery]);
   const drivers: AnalyticsDriverSlaRow[] = Array.isArray(driversRaw) ? driversRaw : [];
 
@@ -218,12 +228,30 @@ export default function AdminAnalytics() {
           {PERIODS.map((p) => (
             <button
               key={p.value}
-              style={period === p.value ? styles.periodBtnActive : styles.periodBtn}
-              onClick={() => setPeriod(p.value)}
+              style={!customActive && period === p.value ? styles.periodBtnActive : styles.periodBtn}
+              onClick={() => { setPeriod(p.value); setFrom(''); setTo(''); }}
             >
               {p.label}
             </button>
           ))}
+          <input
+            style={{ ...styles.input, width: '118px', fontFamily: 'inherit' }}
+            type="date"
+            value={from}
+            aria-label="Custom range start"
+            onChange={(e) => setFrom(e.target.value)}
+          />
+          <span style={{ color: '#64748b', fontSize: '0.8rem' }}>→</span>
+          <input
+            style={{ ...styles.input, width: '118px', fontFamily: 'inherit' }}
+            type="date"
+            value={to}
+            aria-label="Custom range end"
+            onChange={(e) => setTo(e.target.value)}
+          />
+          {customActive && (
+            <span style={{ fontSize: '0.75rem', color: '#1d4ed8', fontWeight: 600 }}>custom</span>
+          )}
           {tab === 'inventory' && (
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#334155' }}>
               Low stock ≤
@@ -342,7 +370,7 @@ export default function AdminAnalytics() {
         <div style={styles.panel}>
           <div style={styles.panelHeader}>
             <span>Top Products by Revenue</span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>period: {period === 'all_time' ? 'all time' : `last ${period}`}</span>
+            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>period: {rangeLabel}</span>
           </div>
           <table style={styles.table}>
             <thead>
