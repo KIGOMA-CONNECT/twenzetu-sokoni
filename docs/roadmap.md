@@ -19,7 +19,7 @@ Every platform is measured on the L0–L7 scale defined in [Constitution, Chapte
 
 Level changes are [recorded decisions](adr/README.md) with evidence.
 
-## Current posture (2026-08-18)
+## Current posture (2026-08-19)
 
 | Platform | Level | Status / next step to advance |
 |---|---|---|
@@ -28,7 +28,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 | Identity | **L3** | AuthN/AuthZ live. Next: self-service account, SSO readiness → L4. |
 | Engagement (web, Android/TWA, USSD) | **L4** | USSD hardened (gateway secret, input validation, simulator gating, session cleanup) + stable notification routing (ADR-0007); Beem USSD Hub integration live (`/api/ussd/beem/callback`, raw-response adapter, engine exit semantics) (ADR-0008). Next: L5 — cross-suite engagement analytics, campaign tooling. |
 | Payments | **L2** | AzamPay aggregator built (M-Pesa, YAS/Mixx, Airtel Money, HaloPesa, T-Pesa, AzamPesa) + webhooks + wallets + **card checkout wired end-to-end** (ADR-0004, commit `6865bc1`). Blocked on the **AzamPay production API key** + `AZAMPAY_CARD_SUCCESS_URL`/`AZAMPAY_CARD_FAIL_URL` in `.env.production`; then verify all MNO + card methods (see [payments-readiness](payments-readiness.md)). |
-| Cargo, Express & Logistics | **L3** | Binding server-side fare engine (`CargoFareCalculator`), instant booking with wallet/card/mobile-money/cash, `READY_FOR_PICKUP` auto-promotion (ADR-0005); L4 hardening shipped — server-derived driver earnings, capacity-aware auto-dispatch, delivery ETA, OTP-confirmed completion, consumer "Rate Driver" from Order History (commit `397e041` + `Rate Driver`). Remaining for L4: driver PWA for pickup/delivery OTP. |
+| Cargo, Express & Logistics | **L4** | Binding server-side fare engine (`CargoFareCalculator`), instant booking with wallet/card/mobile-money/cash, `READY_FOR_PICKUP` auto-promotion (ADR-0005); L4 hardening shipped — server-derived driver earnings, capacity-aware auto-dispatch, delivery ETA, OTP-confirmed completion, consumer "Rate Driver" from Order History (commit `397e041` + `Rate Driver`), pickup-OTP confirmation for driver handoff (pickup code shown to vendor, driver enters it to mark PICKED_UP, commit `0735d5b`). Next: L5 — driver app offline mode, SLA dashboards. |
 | Marketing & Growth | **L3** | Tenant-managed category marketing data (tagline/benefits/emoji), public tenant-aware `/api/public/ads` + `/api/public/catalog`, in-app Matangazo page with copyable share links, public read-only browse pages, landing-page discovery, static OpenGraph/social cards (ADR-0006); SMS campaign broadcasts (`/api/marketing/campaigns` create/list/launch with send/failure accounting, capped audience) + per-tenant category copy management (`PATCH /categories/:id/marketing`) + vendor marketing console (`/vendor/marketing`) (ADR-0009). Next: WhatsApp channel, campaign scheduling/queue → L4. |
 | Analytics | **L1** | Metrics exposed (`/api/metrics`) + monitoring stack. Next: tenant-facing reports → L2/L3. |
 | AI | **L0** | Concept. Next: charter + use cases (recommendations, forecasting). |
@@ -43,7 +43,7 @@ Level changes are [recorded decisions](adr/README.md) with evidence.
 
 ### Horizon 1 — Prove (2026–2027)
 - [ ] **Payments L4** — receive AzamPay production API key; set `AZAMPAY_*` + `AZAMPAY_CARD_SUCCESS_URL`/`AZAMPAY_CARD_FAIL_URL`; activate and verify all MNO + card methods; reconciliation verified. (See [payments-readiness](payments-readiness.md).)
-- [ ] **Cargo, Express & Logistics L4** — driver PWA for pickup/delivery OTP (driver earnings, capacity dispatch, ETA, OTP completion and consumer driver ratings shipped).
+- [ ] **Cargo, Express & Logistics L5** — driver app offline mode, delivery SLA dashboards, bulk fleet ops. (L4 shipped: driver earnings, capacity dispatch, ETA, delivery + pickup OTP, consumer driver ratings.)
 - [ ] **Marketing & Growth L4** — WhatsApp campaign channel, scheduled/queued delivery, audience segmentation. (SMS campaigns + vendor marketing console shipped with L3, ADR-0009.)
 - [ ] **SMS L4** — obtain and configure an SMS provider (Africa's Talking / Twilio / Termii) for OTP delivery in production.
 - [x] **Engagement L4** — USSD production hardening; notification routing stable; Beem USSD Hub integration live. (ADR-0007, ADR-0008)
