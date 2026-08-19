@@ -201,6 +201,20 @@ describe('AnalyticsService.inventory', () => {
   });
 });
 
+describe('AnalyticsService tenant-wide reports', () => {
+  it('should omit the vendor filter and pass null when vendorId is not scoped', async () => {
+    const ds = makeDataSource({ summary: [summaryRow] });
+    const service = new AnalyticsService(ds);
+    const result = await service.overview(TENANT_ID, undefined, resolvePeriodRange('30d'));
+
+    expect(result.summary.totalRevenue).toBe(1000000);
+    const summaryCall = ds.query.mock.calls.find((c: unknown[]) => String(c[0]).includes('SUM(CASE WHEN'));
+    const sql = String(summaryCall?.[0] ?? '');
+    expect(sql).toContain('$2::uuid IS NULL OR o.vendor_id = $2');
+    expect(summaryCall?.[1]).toEqual([TENANT_ID, null, expect.any(Date), expect.any(Date)]);
+  });
+});
+
 describe('AnalyticsService.metricCatalog', () => {
   it('should expose the defined metric catalog', () => {
     const service = new AnalyticsService(makeDataSource([]));

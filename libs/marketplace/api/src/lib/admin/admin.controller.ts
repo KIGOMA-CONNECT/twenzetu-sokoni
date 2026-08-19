@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards, Req,
+  BadRequestException, Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards, Req,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { Throttle } from '@nestjs/throttler';
@@ -7,6 +7,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload, Roles, RolesGuard, RequirePermissions, PermissionsGuard } from '@afri-market/identity-infrastructure';
 import {
+  AnalyticsService,
+  resolveCustomRange,
+  resolvePeriodRange,
   GetAdminDashboardUseCase,
   GetAdminAnalyticsUseCase,
   ApproveVendorAdminUseCase,
@@ -24,6 +27,7 @@ import {
 } from '@afri-market/marketplace-application';
 import { AuditLogService } from '../audit-log.service';
 import { ResolveDisputeAdminDto, AnalyticsQueryDto, VerifyKycAdminDto, ListDisputesQueryDto, ListPendingVendorsQueryDto, ListRecentOrdersQueryDto } from './admin.dto';
+import { AnalyticsQueryDto as ReportQueryDto } from '../dto/analytics-query.dto';
 
 @ApiTags('Admin')
 @ApiBearerAuth()
@@ -35,6 +39,7 @@ export class AdminController {
   constructor(
     private readonly dashboard: GetAdminDashboardUseCase,
     private readonly analytics: GetAdminAnalyticsUseCase,
+    private readonly analyticsService: AnalyticsService,
     private readonly approveVendor: ApproveVendorAdminUseCase,
     private readonly suspendVendor: SuspendVendorAdminUseCase,
     private readonly listDisputes: ListAdminDisputesUseCase,
@@ -66,6 +71,59 @@ export class AdminController {
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getAnalytics(@CurrentUser() user: JwtPayload, @Query() query: AnalyticsQueryDto) {
     return this.analytics.execute(user.tenantId, query.period);
+  }
+
+  private resolveReportRange(dto: ReportQueryDto) {
+    try {
+      if (dto.from || dto.to) {
+        return resolveCustomRange(dto.from, dto.to);
+      }
+      return resolvePeriodRange(dto.period);
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  @Get('analytics/overview')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'Tenant-wide analytics overview: sales summary, daily series, order funnel, customer acquisition and delivery performance (requires view_analytics)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsOverview(@CurrentUser() user: JwtPayload, @Query() query: ReportQueryDto) {
+    const range = this.resolveReportRange(query);
+    const data = await this.analyticsService.overview(user.tenantId, undefined, range);
+    return { data };
+  }
+
+  @Get('analytics/top-products')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'Best-selling products across the tenant by revenue (requires view_analytics)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsTopProducts(@CurrentUser() user: JwtPayload, @Query() query: ReportQueryDto) {
+    const range = this.resolveReportRange(query);
+    const data = await this.analyticsService.topProducts(user.tenantId, undefined, range, query.limit ?? 10);
+    return { data };
+  }
+
+  @Get('analytics/inventory')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'Tenant-wide inventory report with low-stock and out-of-stock products (requires view_analytics)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsInventory(@CurrentUser() user: JwtPayload, @Query() query: ReportQueryDto) {
+    const data = await this.analyticsService.inventory(user.tenantId, undefined, query.threshold ?? 5);
+    return { data };
+  }
+
+  @Get('analytics/metric-catalog')
+  @RequirePermissions('view_analytics')
+  @ApiOperation({ summary: 'The defined metric catalog for platform reporting (names, units, sources)' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async getAnalyticsMetricCatalog() {
+    const data = this.analyticsService.metricCatalog();
+    return { data };
   }
 
   @Patch('vendors/:id/approve')

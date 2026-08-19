@@ -105,7 +105,7 @@ export class AnalyticsService {
 
   public async overview(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<AnalyticsOverview> {
     const [summary, daily, funnel, customers, deliveries] = await Promise.all([
@@ -120,7 +120,7 @@ export class AnalyticsService {
 
   private async salesSummary(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<SalesSummary> {
     const rows: { revenue?: string; commission?: string; delivery_fee?: string; order_count?: string; completed?: string; cancelled?: string; unique?: string }[] =
@@ -134,8 +134,8 @@ export class AnalyticsService {
            COUNT(*) FILTER (WHERE o.status IN ('CANCELLED', 'REFUNDED')) AS "cancelled",
            COUNT(DISTINCT o.customer_id) AS "unique"
          FROM orders o
-         WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND o.created_at >= $3 AND o.created_at < $4`,
-        [tenantId, vendorId, range.since, range.until],
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND o.created_at >= $3 AND o.created_at < $4`,
+        [tenantId, vendorId ?? null, range.since, range.until],
       );
     const row = rows[0] ?? {};
     const totalRevenue = Number(row.revenue ?? 0);
@@ -159,7 +159,7 @@ export class AnalyticsService {
 
   private async dailySeries(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<AnalyticsDailyRow[]> {
     const rows: { date?: string; orders?: string; revenue?: string; commission?: string }[] =
@@ -170,10 +170,10 @@ export class AnalyticsService {
            COALESCE(SUM(CASE WHEN ${REVENUE_ORDERS} THEN o.total_amount ELSE 0 END), 0) AS "revenue",
            COALESCE(SUM(CASE WHEN ${REVENUE_ORDERS} THEN o.system_commission ELSE 0 END), 0) AS "commission"
          FROM orders o
-         WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND o.created_at >= $3 AND o.created_at < $4
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND o.created_at >= $3 AND o.created_at < $4
          GROUP BY 1
          ORDER BY 1 ASC`,
-        [tenantId, vendorId, range.since, range.until],
+        [tenantId, vendorId ?? null, range.since, range.until],
       );
     return rows.map((r) => ({
       date: r.date ?? '',
@@ -185,15 +185,15 @@ export class AnalyticsService {
 
   private async orderFunnel(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<OrderFunnelRow[]> {
     const rows: { status?: string; count?: string; value?: string }[] = await this.dataSource.query(
       `SELECT o.status AS "status", COUNT(*) AS "count", COALESCE(SUM(o.total_amount), 0) AS "value"
          FROM orders o
-         WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND o.created_at >= $3 AND o.created_at < $4
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND o.created_at >= $3 AND o.created_at < $4
          GROUP BY o.status`,
-      [tenantId, vendorId, range.since, range.until],
+      [tenantId, vendorId ?? null, range.since, range.until],
     );
     const byStatus = new Map<string, OrderFunnelRow>();
     for (const r of rows) {
@@ -206,39 +206,39 @@ export class AnalyticsService {
 
   private async customerAcquisition(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<CustomerAcquisition> {
     const [uniqueRows, newRows, returningRows] = await Promise.all([
       this.dataSource.query(
         `SELECT COUNT(DISTINCT o.customer_id) AS "unique"
            FROM orders o
-          WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND ${REVENUE_ORDERS}
+          WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND ${REVENUE_ORDERS}
             AND o.created_at >= $3 AND o.created_at < $4`,
-        [tenantId, vendorId, range.since, range.until],
+        [tenantId, vendorId ?? null, range.since, range.until],
       ),
       this.dataSource.query(
         `SELECT COUNT(*) AS "new"
            FROM (
              SELECT o.customer_id, MIN(o.created_at) AS first_order
                FROM orders o
-              WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND ${REVENUE_ORDERS}
+              WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND ${REVENUE_ORDERS}
               GROUP BY o.customer_id
            ) t
           WHERE t.first_order >= $3 AND t.first_order < $4`,
-        [tenantId, vendorId, range.since, range.until],
+        [tenantId, vendorId ?? null, range.since, range.until],
       ),
       this.dataSource.query(
         `SELECT COUNT(*) AS "returning"
            FROM (
              SELECT o.customer_id
                FROM orders o
-              WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND ${REVENUE_ORDERS}
+              WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND ${REVENUE_ORDERS}
                 AND o.created_at >= $3 AND o.created_at < $4
               GROUP BY o.customer_id
               HAVING COUNT(*) >= 2
            ) t`,
-        [tenantId, vendorId, range.since, range.until],
+        [tenantId, vendorId ?? null, range.since, range.until],
       ),
     ]);
     const uniqueCustomers = Number(uniqueRows[0]?.unique ?? 0);
@@ -255,7 +255,7 @@ export class AnalyticsService {
 
   private async deliveryPerformance(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
   ): Promise<DeliveryPerformance> {
     const rows: { total?: string; completed?: string; active?: string; failed?: string; avg_distance?: string; avg_seconds?: string; driver_earnings?: string; delivery_fee?: string }[] =
@@ -271,8 +271,8 @@ export class AnalyticsService {
            COALESCE(SUM(o.delivery_fee) FILTER (WHERE o.status = 'DELIVERED'), 0) AS "delivery_fee"
          FROM deliveries d
          JOIN orders o ON o.id = d.order_id
-         WHERE o.tenant_id = $1 AND o.vendor_id = $2 AND d.created_at >= $3 AND d.created_at < $4`,
-        [tenantId, vendorId, range.since, range.until],
+         WHERE o.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND d.created_at >= $3 AND d.created_at < $4`,
+        [tenantId, vendorId ?? null, range.since, range.until],
       );
     const row = rows[0] ?? {};
     const avgSeconds = Number(row.avg_seconds ?? 0);
@@ -290,7 +290,7 @@ export class AnalyticsService {
 
   public async topProducts(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     range: AccountingDateRange,
     limit: number,
   ): Promise<TopProductRow[]> {
@@ -303,17 +303,17 @@ export class AnalyticsService {
            COALESCE(SUM(oi.total_price), 0) AS "revenue",
            COUNT(DISTINCT oi.order_id) AS "order_count",
            COALESCE((SELECT SUM(o2.total_amount) FROM orders o2
-              WHERE o2.tenant_id = $1 AND o2.vendor_id = $2
+              WHERE o2.tenant_id = $1 AND ($2::uuid IS NULL OR o2.vendor_id = $2)
                 AND o2.created_at >= $3 AND o2.created_at < $4
                 AND ${REVENUE_ORDERS.replace('o.', 'o2.')}), 0) AS "total"
          FROM order_items oi
          JOIN orders o ON o.id = oi.order_id
-         WHERE oi.tenant_id = $1 AND o.vendor_id = $2 AND ${REVENUE_ORDERS}
+         WHERE oi.tenant_id = $1 AND ($2::uuid IS NULL OR o.vendor_id = $2) AND ${REVENUE_ORDERS}
            AND o.created_at >= $3 AND o.created_at < $4
          GROUP BY oi.product_id, oi.product_name
          ORDER BY "revenue" DESC
          LIMIT $5`,
-        [tenantId, vendorId, range.since, range.until, limit],
+        [tenantId, vendorId ?? null, range.since, range.until, limit],
       );
     const totalRevenue = Number(rows[0]?.total ?? 0);
     return (rows as { product_id?: string; product_name?: string; quantity?: string; revenue?: string; order_count?: string }[]).map((r) => ({
@@ -328,7 +328,7 @@ export class AnalyticsService {
 
   public async inventory(
     tenantId: string,
-    vendorId: string,
+    vendorId: string | undefined,
     threshold: number,
   ): Promise<InventoryReport> {
     const rows: { id?: string; name?: string; sku?: string | null; unit?: string; status?: string; stock_quantity?: string; price?: string; currency?: string; stock_value?: string }[] =
@@ -344,9 +344,9 @@ export class AnalyticsService {
            p.currency AS "currency",
            (p.stock_quantity * p.price) AS "stock_value"
          FROM products p
-         WHERE p.tenant_id = $1 AND p.vendor_id = $2 AND p.status IS DISTINCT FROM 'DELETED'
+         WHERE p.tenant_id = $1 AND ($2::uuid IS NULL OR p.vendor_id = $2) AND p.status IS DISTINCT FROM 'DELETED'
          ORDER BY p.stock_quantity ASC, p.name ASC`,
-        [tenantId, vendorId],
+        [tenantId, vendorId ?? null],
       );
     const items: InventoryItem[] = rows.map((r) => ({
       id: r.id ?? '',
