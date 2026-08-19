@@ -7,6 +7,7 @@ import {
 } from '@afri-market/marketplace-domain';
 import { ORDER_REPOSITORY, DELIVERY_REPOSITORY } from '../../tokens';
 import { CreateDeliveryCommand } from '../../commands/create-delivery.command';
+import { DeliveryRouteEstimator } from '../../services/delivery-route-estimator';
 
 export interface IDeliveryRepository {
   findById(id: EntityId): Promise<Delivery | null>;
@@ -28,6 +29,7 @@ export class CreateDeliveryUseCase {
   constructor(
     @Inject(DELIVERY_REPOSITORY) private readonly deliveryRepo: IDeliveryRepository,
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
+    private readonly routeEstimator: DeliveryRouteEstimator,
   ) {}
 
   public async execute(
@@ -72,6 +74,19 @@ export class CreateDeliveryUseCase {
     });
 
     await this.deliveryRepo.save(delivery);
+
+    if (
+      command.pickupLatitude !== undefined &&
+      command.pickupLongitude !== undefined &&
+      command.deliveryLatitude !== undefined &&
+      command.deliveryLongitude !== undefined
+    ) {
+      await this.routeEstimator.estimateAndPersist(
+        delivery.id.value,
+        { latitude: command.pickupLatitude, longitude: command.pickupLongitude },
+        { latitude: command.deliveryLatitude, longitude: command.deliveryLongitude },
+      );
+    }
 
     return { deliveryId: delivery.id.value };
   }

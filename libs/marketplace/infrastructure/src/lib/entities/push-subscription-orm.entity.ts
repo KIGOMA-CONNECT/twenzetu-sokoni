@@ -11,12 +11,15 @@ export class PushSubscriptionOrmEntity extends GlobalEntity {
   @Column({ name: 'user_id', type: 'uuid' })
   public userId!: string;
 
-  @Column({ type: 'text' })
-  public endpoint!: string;
+  @Column({ type: 'text', nullable: true })
+  public endpoint!: string | null;
 
-  @Column({ type: 'text' })
-  public p256dh!: string;
+  @Column({ type: 'text', nullable: true })
+  public p256dh!: string | null;
 
-  @Column({ type: 'text' })
-  public auth!: string;
+  @Column({ type: 'text', nullable: true })
+  public auth!: string | null;
+
+  @Column({ name: 'fcm_token', type: 'text', nullable: true })
+  public fcmToken!: string | null;
 }

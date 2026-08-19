@@ -16,3 +16,4 @@ export * from './lib/file-upload.service';
 export * from './lib/email.service';
 export * from './lib/commission.engine';
 export * from './lib/currencies';
+export * from './lib/maps/google-maps.service';

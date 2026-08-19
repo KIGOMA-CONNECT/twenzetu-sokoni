@@ -101,6 +101,8 @@ services:
       BEEM_CALLBACK_SECRET: ${BEEM_CALLBACK_SECRET:-}
       BEEM_PAYMENT_API_KEY: ${BEEM_PAYMENT_API_KEY:-}
       BEEM_PAYMENT_SECRET_KEY: ${BEEM_PAYMENT_SECRET_KEY:-}
+      GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+      GOOGLE_FCM_SERVER_KEY: ${GOOGLE_FCM_SERVER_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

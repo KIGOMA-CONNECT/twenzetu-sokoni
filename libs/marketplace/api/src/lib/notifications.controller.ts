@@ -62,7 +62,7 @@ export class NotificationsController {
   }
 
   @Post('push-subscriptions')
-  @ApiOperation({ summary: 'Save a web push subscription for the current user' })
+  @ApiOperation({ summary: 'Save a push subscription (web push or FCM token) for the current user' })
   @ApiResponse({ status: 201, description: 'Subscription saved' })
   public async saveSubscription(
     @Body() dto: SavePushSubscriptionDto,
@@ -73,13 +73,16 @@ export class NotificationsController {
   }
 
   @Delete('push-subscriptions')
-  @ApiOperation({ summary: 'Remove a web push subscription for the current user' })
+  @ApiOperation({ summary: 'Remove a push subscription (web push or FCM token) for the current user' })
   @ApiResponse({ status: 200, description: 'Subscription removed' })
   public async removeSubscription(
-    @Query('endpoint') endpoint: string,
     @CurrentUser() user: JwtPayload,
+    @Query('endpoint') endpoint?: string,
+    @Query('fcmToken') fcmToken?: string,
   ) {
-    if (endpoint) {
+    if (fcmToken) {
+      await this.pushService.removeFcmToken(user.sub, fcmToken);
+    } else if (endpoint) {
       await this.pushService.removeSubscription(user.sub, endpoint);
     }
     return { success: true };

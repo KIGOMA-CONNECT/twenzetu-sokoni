@@ -93,4 +93,16 @@ export class AppConfigService {
       },
     };
   }
+
+  public get googleMaps() {
+    return {
+      apiKey: this.config.GOOGLE_MAPS_API_KEY,
+    };
+  }
+
+  public get fcm() {
+    return {
+      serverKey: this.config.GOOGLE_FCM_SERVER_KEY,
+    };
+  }
 }

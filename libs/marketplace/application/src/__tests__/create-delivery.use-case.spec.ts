@@ -21,6 +21,9 @@ describe('CreateDeliveryUseCase', () => {
     delete: jest.Mock;
     exists: jest.Mock;
   };
+  let mockRouteEstimator: {
+    estimateAndPersist: jest.Mock;
+  };
 
   const TENANT_ID = 'test-tenant';
   const ORDER_ID = 'order-1';
@@ -84,7 +87,28 @@ describe('CreateDeliveryUseCase', () => {
       exists: jest.fn(),
     };
 
-    useCase = new CreateDeliveryUseCase(mockDeliveryRepo, mockOrderRepo);
+    mockRouteEstimator = {
+      estimateAndPersist: jest.fn().mockResolvedValue(undefined),
+    };
+
+    useCase = new CreateDeliveryUseCase(mockDeliveryRepo, mockOrderRepo, mockRouteEstimator);
+  });
+
+  it('should estimate the route when coordinates are provided', async () => {
+    mockOrderRepo.findById.mockResolvedValue(createOrder());
+    const result = await useCase.execute(TENANT_ID, command(), {
+      userId: 'user-1',
+      role: 'vendor',
+      vendorId: VENDOR_ID,
+    });
+    expect(result.deliveryId).toBeDefined();
+    expect(mockDeliveryRepo.save).toHaveBeenCalledTimes(1);
+    expect(mockRouteEstimator.estimateAndPersist).toHaveBeenCalledTimes(1);
+    expect(mockRouteEstimator.estimateAndPersist).toHaveBeenCalledWith(
+      result.deliveryId,
+      { latitude: -6.8, longitude: 39.2 },
+      { latitude: -6.9, longitude: 39.3 },
+    );
   });
 
   it('should create a delivery when actor is the order vendor', async () => {

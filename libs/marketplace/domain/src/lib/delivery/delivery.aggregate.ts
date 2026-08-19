@@ -113,6 +113,11 @@ export class Delivery extends AggregateRoot<EntityId> {
     this._lastLocationUpdate = new Date();
   }
 
+  public setRouteEstimate(distanceKm: number, estimatedTimeMinutes: number): void {
+    this._distanceKm = Math.round(distanceKm * 100) / 100;
+    this._estimatedTimeMinutes = Math.max(1, Math.round(estimatedTimeMinutes));
+  }
+
   public toDto() {
     return {
       id: this.id.value,

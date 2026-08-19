@@ -1,33 +1,43 @@
 import { IsNotEmpty, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 class PushKeysDto {
-  @ApiProperty({ description: 'P-256 public key (base64url)' })
+  @ApiPropertyOptional({ description: 'P-256 public key (base64url)' })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  p256dh!: string;
+  p256dh?: string;
 
-  @ApiProperty({ description: 'Auth secret (base64url)' })
+  @ApiPropertyOptional({ description: 'Auth secret (base64url)' })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  auth!: string;
+  auth?: string;
 }
 
 export class SavePushSubscriptionDto {
-  @ApiProperty({ description: 'Push service endpoint URL' })
+  @ApiPropertyOptional({ description: 'Push service endpoint URL (web push)' })
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  endpoint!: string;
+  endpoint?: string;
 
   @ApiPropertyOptional({ description: 'Subscription expiration time (ms)' })
   @IsOptional()
   @IsNumber()
   expirationTime?: number | null;
 
-  @ApiProperty({ type: () => PushKeysDto, description: 'Subscription keys' })
+  @ApiPropertyOptional({ type: () => PushKeysDto, description: 'Subscription keys (web push)' })
+  @IsOptional()
   @IsObject()
   @ValidateNested()
   @Type(() => PushKeysDto)
-  keys!: PushKeysDto;
+  keys?: PushKeysDto;
+
+  @ApiPropertyOptional({ description: 'Firebase Cloud Messaging registration token (native)' })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  fcmToken?: string;
 }

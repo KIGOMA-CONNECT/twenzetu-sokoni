@@ -107,6 +107,8 @@ export class TypeOrmDeliveryRepository extends TypeOrmRepository<Delivery, Deliv
       deliveryAddress: entity.deliveryAddress,
       driverEarnings: entity.driverEarnings.amount,
       currency: entity.driverEarnings.currency,
+      distanceKm: entity.distanceKm ?? null,
+      estimatedTimeMinutes: entity.estimatedTimeMinutes ?? null,
       currentLatitude: entity.currentLatitude ?? null,
       currentLongitude: entity.currentLongitude ?? null,
       lastLocationUpdate: entity.lastLocationUpdate ?? null,

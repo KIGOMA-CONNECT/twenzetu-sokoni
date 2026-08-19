@@ -43,7 +43,7 @@ import {
   TypeOrmSupplierRepository,
   TypeOrmPurchaseOrderRepository,
 } from '@afri-market/marketplace-infrastructure';
-import { SmsService, MobileMoneyService, EmailService } from '@afri-market/integrations';
+import { SmsService, MobileMoneyService, EmailService, GoogleMapsService } from '@afri-market/integrations';
 import {
   VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, ORDER_REPOSITORY, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY,
   DELIVERY_REPOSITORY, PAYMENT_REPOSITORY, DISPUTE_REPOSITORY,
@@ -192,6 +192,7 @@ import { CreatePosSaleUseCase } from './use-cases/pos/create-pos-sale.use-case';
 import { GetPosDayReportUseCase } from './use-cases/pos/get-pos-day-report.use-case';
 import { VendorAccountingService } from './use-cases/vendor-accounting/vendor-accounting.service';
 import { AnalyticsService } from './use-cases/analytics/analytics.service';
+import { DeliveryRouteEstimator } from './services/delivery-route-estimator';
 import {
   CreateSupplierUseCase,
   ListSuppliersUseCase,
@@ -256,6 +257,8 @@ const SERVICES = [
   { provide: EMAIL_SERVICE, useClass: EmailService },
   { provide: 'IPasswordHasher', useClass: ArgonPasswordHasher },
   { provide: MARKETPLACE_GATEWAY, useValue: null },
+  GoogleMapsService,
+  DeliveryRouteEstimator,
 ];
 
 const USE_CASES = [
@@ -407,6 +410,6 @@ SetDefaultAddressUseCase,
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, MARKETING_CAMPAIGN_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, MARKETING_CAMPAIGN_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY, GoogleMapsService, DeliveryRouteEstimator],
 })
 export class MarketplaceApplicationModule {}

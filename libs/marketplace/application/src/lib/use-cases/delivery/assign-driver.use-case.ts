@@ -1,12 +1,15 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { randomUUID } from 'crypto';
+import { DeliveryRouteEstimator } from '../../services/delivery-route-estimator';
 
 interface OrderCandidate {
   id: string;
   tenantId: string;
   vendorName: string;
   deliveryAddress: string;
+  vendorLatitude: string | null;
+  vendorLongitude: string | null;
   deliveryLatitude: string | null;
   deliveryLongitude: string | null;
   deliveryFee: string;
@@ -14,7 +17,10 @@ interface OrderCandidate {
 
 @Injectable()
 export class AssignDriverUseCase {
-  constructor(private readonly dataSource: DataSource) {}
+  constructor(
+    private readonly dataSource: DataSource,
+    private readonly routeEstimator: DeliveryRouteEstimator,
+  ) {}
 
   public async execute(
     tenantId: string,
@@ -73,8 +79,22 @@ export class AssignDriverUseCase {
       ],
     );
 
+    const createdDeliveryId = (deliveryId[0] as { id: string }).id;
+    if (
+      order.vendorLatitude != null &&
+      order.vendorLongitude != null &&
+      order.deliveryLatitude != null &&
+      order.deliveryLongitude != null
+    ) {
+      await this.routeEstimator.estimateAndPersist(
+        createdDeliveryId,
+        { latitude: Number(order.vendorLatitude), longitude: Number(order.vendorLongitude) },
+        { latitude: Number(order.deliveryLatitude), longitude: Number(order.deliveryLongitude) },
+      );
+    }
+
     return {
-      deliveryId: (deliveryId[0] as { id: string }).id,
+      deliveryId: createdDeliveryId,
       orderId,
       driverId,
       tenantId,
@@ -97,6 +117,7 @@ export class AssignDriverUseCase {
     const rows = await this.dataSource.query(
       `SELECT o.id, o.tenant_id AS "tenantId", v.shop_name AS "vendorName",
               o.delivery_address AS "deliveryAddress",
+              v.latitude AS "vendorLatitude", v.longitude AS "vendorLongitude",
               o.delivery_latitude AS "deliveryLatitude", o.delivery_longitude AS "deliveryLongitude",
               o.delivery_fee AS "deliveryFee"
        FROM orders o

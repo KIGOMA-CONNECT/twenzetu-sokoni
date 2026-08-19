@@ -2,6 +2,7 @@ import { BadRequestException, Controller, Get, Inject, Param, Query, Req } from 
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiQuery } from '@nestjs/swagger';
 import { Request } from 'express';
 import { EntityManager } from 'typeorm';
+import { AppConfigService } from '@afri-market/core-config';
 import {
   ListActiveAdsUseCase,
   ListCategoriesUseCase,
@@ -25,6 +26,7 @@ export class PublicController {
     private readonly searchVendors: SearchVendorsUseCase,
     private readonly searchProducts: SearchProductsUseCase,
     private readonly findProducts: FindProductsUseCase,
+    private readonly config: AppConfigService,
     @Inject(EntityManager) private readonly entityManager: EntityManager,
   ) {}
 
@@ -168,6 +170,18 @@ export class PublicController {
       [id, tenantId, limit ?? 10],
     );
     return { data: result };
+  }
+
+  @Get('maps-key')
+  @ApiOperation({ summary: 'Google Maps embed key for storefront map embeds' })
+  @ApiResponse({ status: 200, description: 'Maps key (empty when unconfigured)' })
+  public mapsKey() {
+    return {
+      data: {
+        key: this.config.googleMaps.apiKey,
+        configured: Boolean(this.config.googleMaps.apiKey),
+      },
+    };
   }
 
   @Get('cargo/fare')

@@ -54,6 +54,8 @@ export interface Vendor {
   status: string;
   averageRating: number;
   totalOrders: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface Product {

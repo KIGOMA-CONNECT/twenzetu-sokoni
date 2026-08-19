@@ -3,6 +3,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { DataSource } from 'typeorm';
 import { randomUUID } from 'crypto';
 import { NotificationsService, MarketplaceGateway } from '@afri-market/marketplace-api';
+import { DeliveryRouteEstimator } from '@afri-market/marketplace-application';
 
 interface DispatchCandidate {
   id: string;
@@ -11,6 +12,8 @@ interface DispatchCandidate {
   vendorId: string;
   status: string;
   deliveryAddress: string;
+  vendorLatitude: string | null;
+  vendorLongitude: string | null;
   deliveryLatitude: string | null;
   deliveryLongitude: string | null;
   deliveryFee: string;
@@ -34,6 +37,7 @@ export class AutoDispatchService {
     private readonly dataSource: DataSource,
     private readonly notifService: NotificationsService,
     private readonly gateway: MarketplaceGateway,
+    private readonly routeEstimator: DeliveryRouteEstimator,
   ) {}
 
   @Cron(CronExpression.EVERY_MINUTE, { waitForCompletion: true })
@@ -59,9 +63,10 @@ export class AutoDispatchService {
        `SELECT o.id, o.tenant_id AS "tenantId", o.customer_id AS "customerId", o.vendor_id AS "vendorId",
                o.status, o.delivery_address AS "deliveryAddress",
                o.delivery_latitude AS "deliveryLatitude", o.delivery_longitude AS "deliveryLongitude",
-               o.delivery_fee AS "deliveryFee", o.total_amount AS "totalAmount",
-               o.special_instructions AS "specialInstructions",
-               v.shop_name AS "vendorName"
+                o.delivery_fee AS "deliveryFee", o.total_amount AS "totalAmount",
+                o.special_instructions AS "specialInstructions",
+                v.shop_name AS "vendorName",
+                v.latitude AS "vendorLatitude", v.longitude AS "vendorLongitude"
        FROM orders o
        JOIN vendors v ON v.id = o.vendor_id
        WHERE NOT EXISTS (
@@ -132,6 +137,19 @@ export class AutoDispatchService {
     );
 
     const delivery = { deliveryId: (deliveryId[0] as { id: string }).id, orderId: order.id, status: 'PENDING' };
+
+    if (
+      order.vendorLatitude != null &&
+      order.vendorLongitude != null &&
+      order.deliveryLatitude != null &&
+      order.deliveryLongitude != null
+    ) {
+      await this.routeEstimator.estimateAndPersist(
+        delivery.deliveryId,
+        { latitude: Number(order.vendorLatitude), longitude: Number(order.vendorLongitude) },
+        { latitude: Number(order.deliveryLatitude), longitude: Number(order.deliveryLongitude) },
+      );
+    }
 
     await this.notifService.create({
       tenantId: order.tenantId,

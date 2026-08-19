@@ -10,6 +10,7 @@ function createMocks() {
   return {
     notifService: { create: jest.fn().mockResolvedValue({}) },
     gateway: { notifyDriverDelivery: jest.fn() },
+    routeEstimator: { estimateAndPersist: jest.fn().mockResolvedValue(undefined) },
   };
 }
 
@@ -39,8 +40,8 @@ describe('AutoDispatchService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     dataSource = createMockDataSource();
-    const { notifService, gateway } = createMocks();
-    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never);
+    const { notifService, gateway, routeEstimator } = createMocks();
+    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never, routeEstimator as never);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
     warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
     errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
@@ -68,8 +69,8 @@ describe('AutoDispatchService', () => {
       .mockResolvedValueOnce([DRIVER])
       .mockResolvedValueOnce([{ id: 'order-1' }])
       .mockResolvedValueOnce([{ id: 'delivery-1' }]);
-    const { notifService, gateway } = createMocks();
-    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never);
+    const { notifService, gateway, routeEstimator } = createMocks();
+    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never, routeEstimator as never);
 
     await service.handleDispatch();
 
@@ -122,8 +123,8 @@ describe('AutoDispatchService', () => {
       .mockResolvedValueOnce([DRIVER])
       .mockResolvedValueOnce([{ id: 'order-1' }])
       .mockResolvedValueOnce([{ id: 'delivery-1' }]);
-    const { notifService, gateway } = createMocks();
-    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never);
+    const { notifService, gateway, routeEstimator } = createMocks();
+    service = new AutoDispatchService(dataSource as unknown as DataSource, notifService as never, gateway as never, routeEstimator as never);
 
     await service.handleDispatch();
 

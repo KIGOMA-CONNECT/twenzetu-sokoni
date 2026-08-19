@@ -20,6 +20,7 @@ function ProductList() {
     [vendorId]
   );
   const { data: vendors } = useApi<Vendor[]>('/public/vendors');
+  const { data: mapsConfig } = useApi<{ key?: string; configured?: boolean }>('/public/maps-key');
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   const { cart, activeVendorId, setActiveVendor, addItem, updateItem, removeItem, mutation, error: cartError } = useCart();
@@ -60,6 +61,23 @@ function ProductList() {
         title={currentVendor?.shopName || t('product.title')}
         subtitle={t('product.subtitle')}
       />
+
+      {currentVendor?.latitude != null &&
+        currentVendor.longitude != null &&
+        mapsConfig?.configured &&
+        mapsConfig.key && (
+          <div className="card" style={{ marginBottom: '1.25rem', padding: '0.75rem' }}>
+            <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--ink)' }}>📍 {t('vendor.location', 'Shop Location')}</div>
+            <iframe
+              title={`${currentVendor.shopName} location`}
+              src={`https://www.google.com/maps?q=${currentVendor.latitude},${currentVendor.longitude}&z=15&output=embed&key=${mapsConfig.key}`}
+              style={{ width: '100%', height: 240, border: 0, borderRadius: 10 }}
+              loading="lazy"
+              allowFullScreen
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+          </div>
+        )}
 
       <div className="grid responsive-grid-2col" style={{ gridTemplateColumns: '1fr 340px', alignItems: 'start' }}>
         <div>
