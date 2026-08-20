@@ -95,9 +95,12 @@ throwaway database. Exit code `0` means the backup is restorable and consistent.
 
 ### 2.3 Open gaps
 
-- No automated off-site upload configured yet (rclone remotes are optional and not verified on the host).
+- No automated S3 off-site upload configured yet (Google Drive off-site copy IS verified working).
 - No scheduled DR drill; the `verify-backup-restore.sh` script is the first step toward one.
 - No RPO/RTO target documented. Recommended: RPO ≤ 24h (daily dump), RTO ≤ 1h (custom-format restore is fast at this scale).
+- **Resilience note (fixed 2026-08-20):** after a ~9h silent outage, the stack now self-heals
+  (`scripts/monitor.sh` restarts the stack and emails on recovery), alerting was fixed, and the
+  monitor/auto-deploy/backup crons were restored. See [performance audit](../performance-audit.md) §9.
 
 ---
 
@@ -117,7 +120,7 @@ This checklist is a working baseline, not legal advice.
 | 3 | Data minimisation | Partial | Verification risk scores, NIN/business-reg numbers collected at registration/KYC; no review of necessity |
 | 4 | Accuracy / rectification | Partial | Profile edit exists; no data-accuracy review workflow |
 | 5 | Storage limitation / retention | Partial | Backups retained 30 days; **no data-lifecycle/retention schedule for personal data** |
-| 6 | Security of processing | **Implemented** | TLS 1.2/1.3 + HSTS/CSP, RLS on 26+ marketplace tables, non-root containers, secrets in `.env.production` (gitignored), dependency security overrides (ADR-0002) |
+| 6 | Security of processing | **Implemented** | TLS 1.2/1.3 + HSTS/CSP, non-root containers, secrets in `.env.production` (gitignored), dependency security overrides (ADR-0002). Note: **RLS policies exist but are disabled** (verified 2026-08-20); tenant isolation is app-layer `tenant_id` filtering — track as a decision (see [performance audit](../performance-audit.md) §2). |
 | 7 | Data-subject rights — access | Gap | No DSAR endpoint/process |
 | 8 | Data-subject rights — erasure | Gap | No erasure/deletion endpoint or anonymisation job |
 | 9 | Data-subject rights — portability | Gap | No data-export endpoint (CSV exports are analytics only) |

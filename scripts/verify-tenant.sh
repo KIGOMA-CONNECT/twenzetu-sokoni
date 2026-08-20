@@ -65,8 +65,11 @@ check "tenant-scoped request rejected without header" \
   bash -c "! curl -sk -o /dev/null '$API_BASE/api/public/vendors'"
 
 echo "3. Row-level security isolation"
-check "RLS enabled on marketplace tables" \
+check "RLS policies defined on marketplace tables" \
   sh -c "echo \"$(psql "SELECT count(*) FROM pg_policies WHERE tablename IN ('orders','deliveries','products','wallets') AND policyname LIKE 'tenant_isolation_%'")\" | grep -qE '^[4-9]$|^[1-9][0-9]+$'"
+
+check "RLS actually ENABLED on marketplace tables (rowsecurity)" \
+  sh -c "echo \"$(psql "SELECT count(*) FROM pg_tables t WHERE t.schemaname='public' AND t.tablename IN ('orders','deliveries','products','wallets') AND t.rowsecurity")\" | grep -qE '^[4-9]$|^[1-9][0-9]+$'"
 
 check "orders scoped to tenant return rows only for that tenant" \
   sh -c "psql() { docker compose -f '$COMPOSE_FILE' exec -T postgres psql -U '$DB_BOOTSTRAP_USER' -d '$DB_NAME' -tAc \"\$1\"; }; [ -z \"\$(psql \"SELECT count(*) FROM (SELECT o.id FROM orders o WHERE o.tenant_id <> '$TENANT_ID') x\")\" ] || [ \"\$(psql \"SELECT count(*) FROM orders\")\" -ge \"\$(psql \"SELECT count(*) FROM orders WHERE tenant_id = '$TENANT_ID'\")\" ]"
