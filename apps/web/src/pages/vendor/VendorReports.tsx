@@ -26,34 +26,34 @@ const TABS = [
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '900px', margin: '0 auto' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', fontSize: '0.85rem' },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
+  subtitle: { color: 'var(--muted)', fontSize: '0.85rem' },
   controls: { display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' },
   periodBtn: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
-  periodBtnActive: { padding: '0.45rem 0.85rem', border: '1px solid #2563eb', background: '#2563eb', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
+  periodBtnActive: { padding: '0.45rem 0.85rem', border: '1px solid #2563eb', background: 'var(--info)', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
   refreshBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
-  exportBtn: { padding: '0.5rem 1rem', border: '1px solid #047857', background: '#047857', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
+  exportBtn: { padding: '0.5rem 1rem', border: '1px solid #047857', background: 'var(--success)', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
   printBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
   tabs: { display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' },
-  tab: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: '#334155' },
-  tabActive: { padding: '0.5rem 1rem', border: '1px solid #2563eb', background: '#eff6ff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: '#1d4ed8' },
+  tab: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: 'var(--text)' },
+  tabActive: { padding: '0.5rem 1rem', border: '1px solid #2563eb', background: 'var(--info-soft)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: '#1d4ed8' },
   panel: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', marginBottom: '1.25rem', overflow: 'hidden' },
-  panelHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  panelHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid #e2e8f0', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  tdRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9', textAlign: 'right' },
-  total: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#0f172a', borderBottom: '1px solid #f1f5f9', fontWeight: 800 },
-  totalRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#0f172a', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontWeight: 800 },
-  note: { padding: '0.75rem 1rem', fontSize: '0.78rem', color: '#64748b', background: '#f8fafc', borderTop: '1px solid #e2e8f0' },
-  empty: { textAlign: 'center', color: '#94a3b8', padding: '2rem' },
-  pos: { color: '#047857' },
-  neg: { color: '#dc2626' },
+  th: { textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  tdRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9', textAlign: 'right' },
+  total: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink)', borderBottom: '1px solid #f1f5f9', fontWeight: 800 },
+  totalRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink)', borderBottom: '1px solid #f1f5f9', textAlign: 'right', fontWeight: 800 },
+  note: { padding: '0.75rem 1rem', fontSize: '0.78rem', color: 'var(--muted)', background: 'var(--bg)', borderTop: '1px solid #e2e8f0' },
+  empty: { textAlign: 'center', color: 'var(--faint)', padding: '2rem' },
+  pos: { color: 'var(--success)' },
+  neg: { color: 'var(--danger)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '440px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
 };
 
@@ -258,7 +258,7 @@ export default function VendorReports() {
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
                 <span>Income Statement</span>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                   {period === 'all_time' ? 'All time' : `Last ${period}`} · {report.incomeStatement.currency}
                 </span>
               </div>
@@ -284,7 +284,7 @@ export default function VendorReports() {
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
                 <span>Cash Flow Statement</span>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{report.cashFlow.currency}</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{report.cashFlow.currency}</span>
               </div>
               <table style={styles.table}>
                 <tbody>
@@ -308,7 +308,7 @@ export default function VendorReports() {
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
                 <span>Trial Balance</span>
-                <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                   Totals: {fmt(totalTrialDebit)} / {fmt(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
                 </span>
               </div>
@@ -327,8 +327,8 @@ export default function VendorReports() {
                     {report.trialBalance.map((r) => (
                       <tr key={r.account}>
                         <td style={styles.td}>{r.account}</td>
-                        <td style={{ ...styles.tdRight, color: r.debit !== 0 ? '#0f172a' : '#cbd5e1' }}>{r.debit !== 0 ? fmt(r.debit) : '—'}</td>
-                        <td style={{ ...styles.tdRight, color: r.credit !== 0 ? '#0f172a' : '#cbd5e1' }}>{r.credit !== 0 ? fmt(r.credit) : '—'}</td>
+                        <td style={{ ...styles.tdRight, color: r.debit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.debit !== 0 ? fmt(r.debit) : '—'}</td>
+                        <td style={{ ...styles.tdRight, color: r.credit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.credit !== 0 ? fmt(r.credit) : '—'}</td>
                       </tr>
                     ))}
                     <tr>
@@ -347,21 +347,21 @@ export default function VendorReports() {
               <div style={styles.panel}>
                 <div style={styles.panelHeader}>
                   <span>Balance Sheet</span>
-                  <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                     As of {new Date(report.asOf).toLocaleDateString()} · {report.financialPosition.currency}
                   </span>
                 </div>
                 <table style={styles.table}>
                   <tbody>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Assets</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Assets</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.assets.map((l, i) => (
                       <tr key={`asset-${i}`}>
                         <td style={styles.td}>
                           {l.label}
-                          {l.auto && <span style={{ color: '#94a3b8', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
                         </td>
                         <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(l.amount)}</td>
                       </tr>
@@ -371,14 +371,14 @@ export default function VendorReports() {
                       <td style={styles.totalRight}>{fmt(report.financialPosition.totalAssets)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Liabilities</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Liabilities</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.liabilities.map((l, i) => (
                       <tr key={`liability-${i}`}>
                         <td style={styles.td}>
                           {l.label}
-                          {l.auto && <span style={{ color: '#94a3b8', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
                         </td>
                         <td style={{ ...styles.tdRight, ...styles.neg }}>{fmt(l.amount)}</td>
                       </tr>
@@ -388,7 +388,7 @@ export default function VendorReports() {
                       <td style={styles.totalRight}>{fmt(report.financialPosition.totalLiabilities)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: '#f8fafc' }}>Owner's Equity</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Owner's Equity</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     <tr>
@@ -447,7 +447,7 @@ export default function VendorReports() {
                           <td style={{ ...styles.tdRight, whiteSpace: 'nowrap' }}>
                             <button style={{ ...styles.refreshBtn, marginRight: '0.4rem' }} onClick={() => openEditAccount(a)}>Edit</button>
                             <button
-                              style={{ ...styles.refreshBtn, borderColor: '#fecaca', color: '#dc2626' }}
+                              style={{ ...styles.refreshBtn, borderColor: '#fecaca', color: 'var(--danger)' }}
                               onClick={() => removeAccount(a)}
                               disabled={accountBusyId === a.id}
                             >
@@ -496,7 +496,7 @@ export default function VendorReports() {
                         placeholder="0"
                       />
                     </div>
-                    {accountError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{accountError}</div>}
+                    {accountError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{accountError}</div>}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
                       <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>Cancel</button>
                       <button

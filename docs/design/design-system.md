@@ -3,7 +3,25 @@
 Evolution proposal grounded in a study of Apple HIG, Airbnb DLS, Spotify, Stripe, Linear,
 and Uber Base — applied to the existing token foundation in `apps/web/src/styles/globals.css`.
 
-Status: **proposal** · Owner: Platform design + web engineering
+Status: **proposal — implementation underway** · Owner: Platform design + web engineering
+
+Implementation progress (updated 2026-08-20):
+
+- ✅ **Step 1 — Tokens:** spacing + motion token sets and the `prefers-reduced-motion`
+  block landed in `globals.css`.
+- ✅ **Step 2 — Inline-style refactor:** hardcoded hex colors replaced with CSS token
+  variables across ~50 admin/vendor/consumer pages (AdminAnalytics named offender
+  fully tokenised; neutral + semantic hex → `--ink/-muted/-faint/-line/-surface/-bg`
+  and `--success/-danger/-warning/-info/-accent`). Chart-palette colors left as-is.
+- ✅ **Step 3 — Component sweep:** buttons/inputs/cards/chips/tables now use the
+  motion token set; `:focus-visible` ring states added; inputs gain `aria-invalid`
+  danger styling; new **Skeleton** (`Skeleton.tsx` — block/text/circle + card/list
+  presets) and **Toast** (`Toast.tsx` — `ToastStack` + `createToast`, success/danger/
+  info, auto-dismiss, `aria-live`) components and their CSS; modal becomes a
+  **bottom sheet** on mobile with a drag handle.
+- ✅ **Step 4 — Image treatment:** product cards already render images edge-to-edge
+  (`aspect-ratio: 1/1`, `object-fit: cover`, no text over images) — verified.
+- ⏳ **Step 5 — Dark mode:** token mapping to a Spotify-style surface set (future).
 
 ---
 

@@ -146,7 +146,7 @@ export default function UssdSimulator() {
         {history.map((entry, i) => (
           <div key={i} style={{ marginBottom: 12 }}>
             {entry.type === 'request' ? (
-              <div style={{ color: '#94a3b8' }}>
+              <div style={{ color: 'var(--faint)' }}>
                 &gt; {entry.text}
               </div>
             ) : (
@@ -216,7 +216,7 @@ export default function UssdSimulator() {
         </div>
       )}
 
-      <div style={{ marginTop: 24, padding: 12, background: '#f8fafc', borderRadius: 8, fontSize: 12, color: '#666' }}>
+      <div style={{ marginTop: 24, padding: 12, background: 'var(--bg)', borderRadius: 8, fontSize: 12, color: '#666' }}>
         <strong>Quick Guide:</strong><br />
         0 = Back/Exit &nbsp;|&nbsp; 1-5 = Menu options &nbsp;|&nbsp;
         Customer: Shop → Categories → Products → Add to Cart → Checkout<br />

@@ -18,33 +18,33 @@ const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0,
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', fontSize: '0.85rem', marginTop: '0.15rem' },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
+  subtitle: { color: 'var(--muted)', fontSize: '0.85rem', marginTop: '0.15rem' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', background: '#f8fafc', color: '#475569', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.7rem 1rem', borderBottom: '1px solid #f1f5f9', color: '#1e293b', verticalAlign: 'top' },
-  empty: { padding: '2.5rem', textAlign: 'center', color: '#94a3b8' },
-  actionBtn: { background: 'none', border: '1px solid #cbd5e1', color: '#334155', borderRadius: '6px', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, margin: '0.15rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '0.7rem 1rem', borderBottom: '1px solid #f1f5f9', color: 'var(--ink-soft)', verticalAlign: 'top' },
+  empty: { padding: '2.5rem', textAlign: 'center', color: 'var(--faint)' },
+  actionBtn: { background: 'none', border: '1px solid #cbd5e1', color: 'var(--text)', borderRadius: '6px', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, margin: '0.15rem' },
   actionPrimary: { background: '#1e40af', borderColor: '#1e40af', color: '#fff' },
-  actionGreen: { background: '#16a34a', borderColor: '#16a34a', color: '#fff' },
-  actionRed: { background: 'none', borderColor: '#fecaca', color: '#dc2626' },
+  actionGreen: { background: 'var(--success)', borderColor: 'var(--success)', color: '#fff' },
+  actionRed: { background: 'none', borderColor: '#fecaca', color: 'var(--danger)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '640px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   lineRow: { display: 'grid', gridTemplateColumns: '1.6fr 0.7fr 0.9fr auto', gap: '0.5rem', alignItems: 'center', marginBottom: '0.5rem' },
-  lineTotal: { fontWeight: 700, fontSize: '0.85rem', color: '#0f172a' },
-  removeBtn: { background: 'none', border: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 },
+  lineTotal: { fontWeight: 700, fontSize: '0.85rem', color: 'var(--ink)' },
+  removeBtn: { background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 },
   footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' },
   buttons: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: '#334155' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700 },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
-  totals: { fontWeight: 800, fontSize: '1.05rem', color: '#0f172a' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
+  totals: { fontWeight: 800, fontSize: '1.05rem', color: 'var(--ink)' },
 };
 
 export default function VendorPurchaseOrders() {
@@ -208,12 +208,12 @@ export default function VendorPurchaseOrders() {
                   <tr key={o.id}>
                     <td style={styles.td}>
                       <div style={{ fontWeight: 700 }}>{o.poNumber}</div>
-                      <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>{new Date(o.createdAt).toLocaleDateString()}</div>
+                      <div style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>{new Date(o.createdAt).toLocaleDateString()}</div>
                     </td>
                     <td style={styles.td}>{supplier?.name || '—'}</td>
                     <td style={styles.td}>
                       {o.items.length} line{o.items.length === 1 ? '' : 's'}
-                      <div style={{ color: '#94a3b8', fontSize: '0.75rem' }}>
+                      <div style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
                         {o.items.slice(0, 2).map((i) => i.productName).join(', ')}{o.items.length > 2 ? '…' : ''}
                       </div>
                     </td>

@@ -36,22 +36,22 @@ export default function AdminAuditLog() {
     if (action.includes('approve')) return '#22c55e';
     if (action.includes('suspend') || action.includes('rejected')) return '#ef4444';
     if (action.includes('resolve')) return '#3b82f6';
-    return '#64748b';
+    return 'var(--muted)';
   };
 
-  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading audit logs...</div>;
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>Loading audit logs...</div>;
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0 }}>Audit Log</h2>
-        <div style={{ color: '#94a3b8', fontSize: '0.9rem' }}>{total} total entries</div>
+        <div style={{ color: 'var(--faint)', fontSize: '0.9rem' }}>{total} total entries</div>
       </div>
 
       <div style={{ background: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+            <tr style={{ background: 'var(--bg)', borderBottom: '2px solid #e2e8f0' }}>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Action</th>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Actor</th>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Target</th>
@@ -83,7 +83,7 @@ export default function AdminAuditLog() {
                 <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>
                   {log.ipAddress || '-'}
                 </td>
-                <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.85rem', color: '#64748b' }}>
+                <td style={{ padding: '0.75rem', textAlign: 'right', fontSize: '0.85rem', color: 'var(--muted)' }}>
                   {new Date(log.createdAt).toLocaleString()}
                 </td>
               </tr>
@@ -100,7 +100,7 @@ export default function AdminAuditLog() {
         >
           Previous
         </button>
-        <span style={{ padding: '0.5rem', color: '#64748b' }}>
+        <span style={{ padding: '0.5rem', color: 'var(--muted)' }}>
           Page {page + 1} of {Math.ceil(total / limit)}
         </span>
         <button

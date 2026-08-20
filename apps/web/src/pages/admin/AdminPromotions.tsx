@@ -5,23 +5,23 @@ type Tab = 'coupons' | 'flash-sales';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  header: { fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', margin: 0 },
+  header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
   tabRow: { display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' },
-  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' },
+  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: 'var(--muted)', cursor: 'pointer' },
   tabActive: { background: '#1e40af', color: '#fff', border: '1px solid #1e40af' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: '#334155' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', marginRight: '0.4rem' },
   primaryBtn: { background: '#1e40af', color: '#fff' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   formRow: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap' as const, alignItems: 'flex-end' },
   input: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem' },
-  label: { fontSize: '0.8rem', color: '#475569', fontWeight: 600, marginBottom: '0.25rem', display: 'block' },
+  label: { fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600, marginBottom: '0.25rem', display: 'block' },
   fieldGroup: { display: 'flex', flexDirection: 'column' as const },
-  error: { color: '#dc2626', fontSize: '0.85rem' },
-  success: { color: '#16a34a', fontSize: '0.85rem' },
+  error: { color: 'var(--danger)', fontSize: '0.85rem' },
+  success: { color: 'var(--success)', fontSize: '0.85rem' },
 };
 
 export default function AdminPromotions() {
@@ -112,7 +112,7 @@ export default function AdminPromotions() {
       {tab === 'coupons' && (
         <>
           <div style={styles.card}>
-            <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>Create Coupon</h3>
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>Create Coupon</h3>
             <form onSubmit={createCoupon}>
               <div style={styles.formRow}>
                 <div style={styles.fieldGroup}>
@@ -145,7 +145,7 @@ export default function AdminPromotions() {
           </div>
 
           <div style={styles.card}>
-            <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>All Coupons</h3>
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>All Coupons</h3>
             {loading ? <div style={styles.empty}>Loading...</div> : coupons.length > 0 ? (
               <table style={styles.table}>
                 <thead>
@@ -179,7 +179,7 @@ export default function AdminPromotions() {
       {tab === 'flash-sales' && (
         <>
           <div style={styles.card}>
-            <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>Create Flash Sale</h3>
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>Create Flash Sale</h3>
             <form onSubmit={createFlashSale}>
               <div style={styles.formRow}>
                 <div style={styles.fieldGroup}>
@@ -217,7 +217,7 @@ export default function AdminPromotions() {
           </div>
 
           <div style={styles.card}>
-            <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>All Flash Sales</h3>
+            <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>All Flash Sales</h3>
             {loading ? <div style={styles.empty}>Loading...</div> : flashSales.length > 0 ? (
               <table style={styles.table}>
                 <thead>

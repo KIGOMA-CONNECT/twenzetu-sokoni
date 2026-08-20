@@ -28,12 +28,12 @@ function TreeNode({ unit, onRefresh }: { unit: OrgUnit; onRefresh: () => void })
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #f1f5f9' }}>
         {hasChildren ? <span onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer', width: '16px', textAlign: 'center', userSelect: 'none' }}>{expanded ? '▼' : '▶'}</span> : <span style={{ width: '16px' }} />}
         {renaming ? (
-          <><input style={s.input} value={newName} onChange={e => setNewName(e.target.value)} /><button style={{ ...s.btn, background: '#10b981' }} onClick={rename}>Save</button><button style={{ ...s.btn, background: '#64748b' }} onClick={() => setRenaming(false)}>Cancel</button></>
+          <><input style={s.input} value={newName} onChange={e => setNewName(e.target.value)} /><button style={{ ...s.btn, background: '#10b981' }} onClick={rename}>Save</button><button style={{ ...s.btn, background: 'var(--muted)' }} onClick={() => setRenaming(false)}>Cancel</button></>
         ) : (
-          <><span style={{ fontWeight: 500 }}>{unit.name}</span><span style={{ fontSize: '0.75rem', color: '#94a3b8', background: '#f1f5f9', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>{unit.typeName || '?'}</span></>
+          <><span style={{ fontWeight: 500 }}>{unit.name}</span><span style={{ fontSize: '0.75rem', color: 'var(--faint)', background: 'var(--line-soft)', padding: '0.15rem 0.4rem', borderRadius: '4px' }}>{unit.typeName || '?'}</span></>
         )}
-        <span style={{ fontSize: '0.75rem', color: unit.isActive ? '#16a34a' : '#dc2626' }}>({unit.isActive ? 'Active' : 'Inactive'})</span>
-        {!renaming && <><button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setRenaming(true)}>Rename</button><button style={{ ...s.btn, background: '#f59e0b' }} onClick={() => setShowMove(!showMove)}>Move</button>
+        <span style={{ fontSize: '0.75rem', color: unit.isActive ? 'var(--success)' : 'var(--danger)' }}>({unit.isActive ? 'Active' : 'Inactive'})</span>
+        {!renaming && <><button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setRenaming(true)}>Rename</button><button style={{ ...s.btn, background: 'var(--warning)' }} onClick={() => setShowMove(!showMove)}>Move</button>
           {unit.isActive ? <button style={{ ...s.btn, background: '#ef4444' }} onClick={deactivate}>Deactivate</button> : <button style={{ ...s.btn, background: '#10b981' }} onClick={reactivate}>Reactivate</button>}
         </>}
       </div>
@@ -70,15 +70,15 @@ export default function AdminOrgUnits() {
         <button style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600 }} onClick={() => setShowCreate(!showCreate)}>{showCreate ? 'Cancel' : '+ New Unit'}</button>
       </div>
       {showCreate && (
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'flex-end' }}>
-          <div><div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>Name</div><input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>Type</div><select style={s.sel} value={form.typeId} onChange={e => setForm(f => ({ ...f, typeId: e.target.value }))}><option value="">Select...</option>{types?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
-          <div><div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>Parent</div><select style={s.sel} value={form.parentId} onChange={e => setForm(f => ({ ...f, parentId: e.target.value }))}><option value="">Root</option>{units?.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'flex-end' }}>
+          <div><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Name</div><input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Type</div><select style={s.sel} value={form.typeId} onChange={e => setForm(f => ({ ...f, typeId: e.target.value }))}><option value="">Select...</option>{types?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}</select></div>
+          <div><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Parent</div><select style={s.sel} value={form.parentId} onChange={e => setForm(f => ({ ...f, parentId: e.target.value }))}><option value="">Root</option>{units?.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>
           <button style={{ padding: '0.45rem 1rem', borderRadius: '6px', border: 'none', background: '#10b981', color: '#fff', fontWeight: 600 }} disabled={creating || !form.name.trim() || !form.typeId} onClick={create}>{creating ? 'Creating...' : 'Create'}</button>
         </div>
       )}
       <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', padding: '0.5rem 0' }}>
-        {units?.length ? units.map(u => <TreeNode key={u.id} unit={u} onRefresh={refetch} />) : <div style={{ padding: '1rem', color: '#64748b', textAlign: 'center' }}>No org units yet</div>}
+        {units?.length ? units.map(u => <TreeNode key={u.id} unit={u} onRefresh={refetch} />) : <div style={{ padding: '1rem', color: 'var(--muted)', textAlign: 'center' }}>No org units yet</div>}
       </div>
     </div>
   );

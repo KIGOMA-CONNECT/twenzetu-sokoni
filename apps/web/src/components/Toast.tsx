@@ -1,0 +1,59 @@
+import { useEffect } from 'react';
+
+export interface ToastItem {
+  id: string;
+  title?: string;
+  message: string;
+  variant?: 'success' | 'danger' | 'info';
+}
+
+export function ToastStack({
+  toasts,
+  onDismiss,
+  autoDismissMs = 4000,
+}: {
+  toasts: ToastItem[];
+  onDismiss: (id: string) => void;
+  autoDismissMs?: number;
+}) {
+  useEffect(() => {
+    if (toasts.length === 0) return;
+    const timers = toasts.map((t) =>
+      window.setTimeout(() => onDismiss(t.id), autoDismissMs),
+    );
+    return () => timers.forEach((id) => window.clearTimeout(id));
+  }, [toasts, onDismiss, autoDismissMs]);
+
+  if (toasts.length === 0) return null;
+
+  return (
+    <div className="toast-stack" role="status" aria-live="polite">
+      {toasts.map((t) => (
+        <div key={t.id} className={`toast toast-${t.variant ?? 'info'}`}>
+          <div style={{ minWidth: 0 }}>
+            {t.title && <div className="toast-title">{t.title}</div>}
+            <div>{t.message}</div>
+          </div>
+          <button
+            className="toast-close"
+            aria-label="Dismiss notification"
+            onClick={() => onDismiss(t.id)}
+          >
+            ✕
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+let toastCounter = 0;
+
+export function createToast(
+  setToasts: (updater: (prev: ToastItem[]) => ToastItem[]) => void,
+  toast: Omit<ToastItem, 'id'>,
+): string {
+  const id = `t${++toastCounter}-${Date.now()}`;
+  setToasts((prev) => [...prev.slice(-3), { id, ...toast }]);
+  return id;
+}

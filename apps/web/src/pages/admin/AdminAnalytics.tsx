@@ -35,35 +35,35 @@ const TABS = [
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1080px', margin: '0 auto' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', fontSize: '0.85rem' },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
+  subtitle: { color: 'var(--muted)', fontSize: '0.85rem' },
   controls: { display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' },
-  periodBtn: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
-  periodBtnActive: { padding: '0.45rem 0.85rem', border: '1px solid #2563eb', background: '#2563eb', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
-  refreshBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
-  exportBtn: { padding: '0.5rem 1rem', border: '1px solid #047857', background: '#047857', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
+  periodBtn: { padding: '0.45rem 0.85rem', border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit', color: 'var(--text)' },
+  periodBtnActive: { padding: '0.45rem 0.85rem', border: '1px solid var(--brand)', background: 'var(--brand)', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.8rem', fontFamily: 'inherit' },
+  refreshBtn: { padding: '0.5rem 1rem', border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit', color: 'var(--text)' },
+  exportBtn: { padding: '0.5rem 1rem', border: '1px solid var(--success)', background: 'var(--success)', color: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
   tabs: { display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.25rem' },
-  tab: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: '#334155' },
-  tabActive: { padding: '0.5rem 1rem', border: '1px solid #2563eb', background: '#eff6ff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: '#1d4ed8' },
-  panel: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', marginBottom: '1.25rem', overflow: 'hidden' },
-  panelHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  tab: { padding: '0.5rem 1rem', border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: 'var(--text)' },
+  tabActive: { padding: '0.5rem 1rem', border: '1px solid var(--brand)', background: 'var(--brand-soft)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, fontFamily: 'inherit', color: 'var(--brand)' },
+  panel: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', marginBottom: '1.25rem', overflow: 'hidden' },
+  panelHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid var(--line)', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)', fontSize: '0.9rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  tdRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9', textAlign: 'right' },
+  th: { textAlign: 'left', padding: '0.6rem 1rem', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line-soft)' },
+  tdRight: { padding: '0.6rem 1rem', fontSize: '0.85rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line-soft)', textAlign: 'right' },
   cards: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.75rem', marginBottom: '1.25rem' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '0.9rem 1rem' },
-  cardLabel: { fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: '#64748b', fontWeight: 600 },
-  cardValue: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginTop: '0.3rem' },
-  cardSub: { fontSize: '0.75rem', color: '#94a3b8', marginTop: '0.15rem' },
-  empty: { textAlign: 'center', color: '#94a3b8', padding: '2rem' },
-  pos: { color: '#047857' },
-  neg: { color: '#dc2626' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', padding: '0.9rem 1rem' },
+  cardLabel: { fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', fontWeight: 600 },
+  cardValue: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginTop: '0.3rem' },
+  cardSub: { fontSize: '0.75rem', color: 'var(--faint)', marginTop: '0.15rem' },
+  empty: { textAlign: 'center', color: 'var(--faint)', padding: '2rem' },
+  pos: { color: 'var(--success)' },
+  neg: { color: 'var(--danger)' },
   warn: { color: '#b45309' },
-  bad: { color: '#dc2626' },
-  barTrack: { background: '#e2e8f0', borderRadius: '999px', height: '6px', width: '100%', overflow: 'hidden' },
-  barFill: { background: '#2563eb', height: '100%', borderRadius: '999px' },
-  input: { padding: '0.45rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.8rem', width: '90px', fontFamily: 'inherit' },
+  bad: { color: 'var(--danger)' },
+  barTrack: { background: 'var(--line)', borderRadius: '999px', height: '6px', width: '100%', overflow: 'hidden' },
+  barFill: { background: 'var(--brand)', height: '100%', borderRadius: '999px' },
+  input: { padding: '0.45rem 0.7rem', border: '1px solid var(--line)', borderRadius: '8px', fontSize: '0.8rem', width: '90px', fontFamily: 'inherit', color: 'var(--ink)' },
 };
 
 interface DisputeMetrics {
@@ -241,7 +241,7 @@ export default function AdminAnalytics() {
             aria-label="Custom range start"
             onChange={(e) => setFrom(e.target.value)}
           />
-          <span style={{ color: '#64748b', fontSize: '0.8rem' }}>→</span>
+          <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>→</span>
           <input
             style={{ ...styles.input, width: '118px', fontFamily: 'inherit' }}
             type="date"
@@ -253,7 +253,7 @@ export default function AdminAnalytics() {
             <span style={{ fontSize: '0.75rem', color: '#1d4ed8', fontWeight: 600 }}>custom</span>
           )}
           {tab === 'inventory' && (
-            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: '#334155' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text)' }}>
               Low stock ≤
               <input
                 style={styles.input}
@@ -303,7 +303,7 @@ export default function AdminAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Order Funnel</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{funnelTotal} orders</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{funnelTotal} orders</span>
             </div>
             <table style={styles.table}>
               <thead>
@@ -330,7 +330,7 @@ export default function AdminAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Daily Revenue</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>date · orders · revenue · commission</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>date · orders · revenue · commission</span>
             </div>
             {overview.daily.length === 0 ? (
               <div style={styles.empty}>No orders in this period</div>
@@ -370,7 +370,7 @@ export default function AdminAnalytics() {
         <div style={styles.panel}>
           <div style={styles.panelHeader}>
             <span>Top Products by Revenue</span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>period: {rangeLabel}</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>period: {rangeLabel}</span>
           </div>
           <table style={styles.table}>
             <thead>
@@ -422,7 +422,7 @@ export default function AdminAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Stock by Product</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                 low stock ≤ {inventory.threshold} units · {inventory.items.length} products
               </span>
             </div>
@@ -483,7 +483,7 @@ export default function AdminAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>On-Time Rate vs Estimated ETA</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                 {sla.withEstimate} completed deliveries with an ETA estimate
               </span>
             </div>
@@ -493,9 +493,9 @@ export default function AdminAnalytics() {
               <div style={{ padding: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                   <div style={{ ...styles.barTrack, flex: 1 }}>
-                    <div style={{ ...styles.barFill, width: `${Math.min(100, sla.onTimeRate)}%`, background: sla.onTimeRate >= 80 ? '#047857' : sla.onTimeRate >= 60 ? '#b45309' : '#dc2626' }} />
+                    <div style={{ ...styles.barFill, width: `${Math.min(100, sla.onTimeRate)}%`, background: sla.onTimeRate >= 80 ? 'var(--success)' : sla.onTimeRate >= 60 ? '#b45309' : 'var(--danger)' }} />
                   </div>
-                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0f172a', minWidth: '3.5rem' }}>{sla.onTimeRate}%</span>
+                  <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', minWidth: '3.5rem' }}>{sla.onTimeRate}%</span>
                 </div>
               </div>
             )}
@@ -503,7 +503,7 @@ export default function AdminAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Driver SLA</span>
-              <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                 {driversLoading ? 'loading…' : `${drivers.length} drivers with completed deliveries`}
               </span>
             </div>
@@ -555,7 +555,7 @@ export default function AdminAnalytics() {
         <div style={styles.panel}>
           <div style={styles.panelHeader}>
             <span>Defined Metric Catalog</span>
-            <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: 500 }}>{catalog.length} metrics</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{catalog.length} metrics</span>
           </div>
           <table style={styles.table}>
             <thead>
@@ -573,8 +573,8 @@ export default function AdminAnalytics() {
                   <td style={{ ...styles.td, fontWeight: 600 }}>{m.name}</td>
                   <td style={styles.td}>{m.category}</td>
                   <td style={styles.td}>{m.unit}</td>
-                  <td style={{ ...styles.td, fontSize: '0.78rem', color: '#475569' }}>{m.source}</td>
-                  <td style={{ ...styles.td, fontSize: '0.78rem', color: '#475569' }}>{m.description}</td>
+                  <td style={{ ...styles.td, fontSize: '0.78rem', color: 'var(--muted)' }}>{m.source}</td>
+                  <td style={{ ...styles.td, fontSize: '0.78rem', color: 'var(--muted)' }}>{m.description}</td>
                 </tr>
               ))}
             </tbody>

@@ -9,21 +9,21 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  header: { fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', margin: 0 },
-  subheader: { color: '#64748b', fontSize: '0.95rem', marginTop: '0.25rem' },
+  header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
+  subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: '#334155' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer' },
-  approveBtn: { background: '#16a34a', color: '#fff' },
-  rejectBtn: { background: '#fff', color: '#dc2626', border: '1px solid #dc2626' },
+  approveBtn: { background: 'var(--success)', color: '#fff' },
+  rejectBtn: { background: '#fff', color: 'var(--danger)', border: '1px solid #dc2626' },
   disabledBtn: { opacity: 0.6, cursor: 'not-allowed' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   riskLow: { color: '#166534' },
   riskMed: { color: '#b45309' },
-  riskHigh: { color: '#dc2626' },
-  reason: { fontSize: '0.8rem', color: '#64748b', maxWidth: '220px' },
+  riskHigh: { color: 'var(--danger)' },
+  reason: { fontSize: '0.8rem', color: 'var(--muted)', maxWidth: '220px' },
 };
 
 function RiskScore({ score }: { score: number | null | undefined }) {

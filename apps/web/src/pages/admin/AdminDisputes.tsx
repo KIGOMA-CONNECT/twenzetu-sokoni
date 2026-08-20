@@ -10,25 +10,25 @@ import type { Dispute } from '../../types';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  header: { fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', margin: 0 },
-  subheader: { color: '#64748b', fontSize: '0.95rem', marginTop: '0.25rem' },
+  header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
+  subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem' },
   filterRow: { display: 'flex', gap: '0.5rem', marginBottom: '1rem' },
-  filterBtn: { padding: '0.4rem 0.9rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', cursor: 'pointer' },
-  filterBtnActive: { background: '#1e293b', color: '#fff', borderColor: '#1e293b' },
+  filterBtn: { padding: '0.4rem 0.9rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: 'var(--muted)', cursor: 'pointer' },
+  filterBtnActive: { background: 'var(--ink-soft)', color: '#fff', borderColor: 'var(--ink-soft)' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: '#334155', maxWidth: '250px' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)', maxWidth: '250px' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', background: '#3b82f6', color: '#fff' },
   resolveBtn: { background: '#3b82f6', color: '#fff' },
   modalOverlay: { position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', minWidth: '400px', display: 'flex', flexDirection: 'column', gap: '1rem' },
-  modalTitle: { fontSize: '1.1rem', fontWeight: 600, color: '#1e293b', margin: 0 },
-  label: { fontSize: '0.85rem', fontWeight: 600, color: '#475569', marginBottom: '0.25rem' },
+  modalTitle: { fontSize: '1.1rem', fontWeight: 600, color: 'var(--ink-soft)', margin: 0 },
+  label: { fontSize: '0.85rem', fontWeight: 600, color: 'var(--muted)', marginBottom: '0.25rem' },
   input: { width: '100%', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box' },
   textarea: { width: '100%', padding: '0.5rem', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.875rem', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' },
   modalActions: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' },
-  cancelBtn: { padding: '0.4rem 0.9rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', cursor: 'pointer' },
+  cancelBtn: { padding: '0.4rem 0.9rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: 'var(--muted)', cursor: 'pointer' },
 };
 
 type Filter = 'ALL' | 'OPEN' | 'RESOLVED';
@@ -128,7 +128,7 @@ export default function AdminDisputes() {
                         Resolve
                       </button>
                     ) : (
-                      <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>—</span>
+                      <span style={{ color: 'var(--faint)', fontSize: '0.8rem' }}>—</span>
                     )}
                   </td>
                 </tr>

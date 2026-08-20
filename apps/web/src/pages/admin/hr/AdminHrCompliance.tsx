@@ -30,23 +30,23 @@ export default function AdminHrCompliance() {
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Compliance & Reporting</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
-        <button onClick={() => setTab('requirements')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'requirements' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'requirements' ? '#eff6ff' : '#fff', fontWeight: 500, color: tab === 'requirements' ? '#3b82f6' : '#475569' }}>Requirements</button>
-        <button onClick={() => setTab('records')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'records' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'records' ? '#eff6ff' : '#fff', fontWeight: 500, color: tab === 'records' ? '#3b82f6' : '#475569' }}>Employee Records</button>
+        <button onClick={() => setTab('requirements')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'requirements' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'requirements' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'requirements' ? '#3b82f6' : 'var(--muted)' }}>Requirements</button>
+        <button onClick={() => setTab('records')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'records' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'records' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'records' ? '#3b82f6' : 'var(--muted)' }}>Employee Records</button>
       </div>
 
       {tab === 'requirements' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Requirement'}</button>
-        {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', alignItems: 'flex-end' }}>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Name *</div><input style={s.input} value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} /></div>
-          <div style={{ width: '140px' }}><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Frequency</div><select style={s.input} value={f.frequency} onChange={e => setF(p => ({ ...p, frequency: e.target.value }))}><option value="ONE_TIME">One Time</option><option value="ANNUAL">Annual</option><option value="QUARTERLY">Quarterly</option><option value="MONTHLY">Monthly</option></select></div>
+        {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end' }}>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Name *</div><input style={s.input} value={f.name} onChange={e => setF(p => ({ ...p, name: e.target.value }))} /></div>
+          <div style={{ width: '140px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Frequency</div><select style={s.input} value={f.frequency} onChange={e => setF(p => ({ ...p, frequency: e.target.value }))}><option value="ONE_TIME">One Time</option><option value="ANNUAL">Annual</option><option value="QUARTERLY">Quarterly</option><option value="MONTHLY">Monthly</option></select></div>
           <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !f.name.trim()} onClick={create}>{saving ? 'Saving...' : 'Create'}</button>
         </div>}
         <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead><tr style={{ background: '#f8fafc' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>Frequency</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>Frequency</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
             <tbody>{reqs?.map(r => <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
               <td style={{ padding: '0.6rem', fontWeight: 500 }}>{r.name}</td><td style={{ padding: '0.6rem' }}>{r.frequency}</td>
-              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: r.isActive ? '#dcfce7' : '#fef2f2', color: r.isActive ? '#16a34a' : '#dc2626', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{r.isActive ? 'Active' : 'Inactive'}</span></td>
+              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: r.isActive ? 'var(--success-soft)' : 'var(--danger-soft)', color: r.isActive ? 'var(--success)' : 'var(--danger)', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{r.isActive ? 'Active' : 'Inactive'}</span></td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>{r.isActive && <button style={{ ...s.btn, background: '#ef4444' }} onClick={() => deactivate(r.id)}>Deactivate</button>}</td>
             </tr>)}</tbody>
           </table>
@@ -55,19 +55,19 @@ export default function AdminHrCompliance() {
 
       {tab === 'records' && <div>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Employee</div><select style={s.input} value={selEmpId} onChange={e => setSelEmpId(e.target.value)}><option value="">Select...</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select></div>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Requirement</div><select style={s.input} value={selReqId || ''} onChange={e => setSelReqId(e.target.value || null)}><option value="">Select...</option>{reqs?.filter(r => r.isActive).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Employee</div><select style={s.input} value={selEmpId} onChange={e => setSelEmpId(e.target.value)}><option value="">Select...</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Requirement</div><select style={s.input} value={selReqId || ''} onChange={e => setSelReqId(e.target.value || null)}><option value="">Select...</option>{reqs?.filter(r => r.isActive).map(r => <option key={r.id} value={r.id}>{r.name}</option>)}</select></div>
           <button style={{ ...s.btn, background: '#3b82f6' }} disabled={!selEmpId || !selReqId} onClick={addRecord}>Add Record</button>
         </div>
         {selEmpId && <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead><tr style={{ background: '#f8fafc' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Requirement</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Due</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Requirement</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Due</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
             <tbody>{records?.map(r => <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
               <td style={{ padding: '0.6rem' }}>{r.requirementName || r.requirementId.slice(0, 8)}</td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>{new Date(r.dueDate).toLocaleDateString()}</td>
-              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: r.status === 'COMPLIANT' ? '#dcfce7' : r.status === 'OVERDUE' ? '#fef2f2' : r.status === 'EXEMPT' ? '#f0fdf4' : '#fefce8', color: r.status === 'COMPLIANT' ? '#16a34a' : r.status === 'OVERDUE' ? '#dc2626' : r.status === 'EXEMPT' ? '#16a34a' : '#ca8a04', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{r.status}</span></td>
+              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: r.status === 'COMPLIANT' ? 'var(--success-soft)' : r.status === 'OVERDUE' ? 'var(--danger-soft)' : r.status === 'EXEMPT' ? 'var(--success-soft)' : '#fefce8', color: r.status === 'COMPLIANT' ? 'var(--success)' : r.status === 'OVERDUE' ? 'var(--danger)' : r.status === 'EXEMPT' ? 'var(--success)' : '#ca8a04', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{r.status}</span></td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                {r.status === 'PENDING' && <><button style={{ ...s.btn, background: '#10b981', marginRight: '0.3rem' }} onClick={() => updateRecord(r.id, 'mark-compliant')}>Compliant</button><button style={{ ...s.btn, background: '#f59e0b', marginRight: '0.3rem' }} onClick={() => updateRecord(r.id, 'mark-overdue')}>Overdue</button><button style={{ ...s.btn, background: '#64748b' }} onClick={() => updateRecord(r.id, 'mark-exempt')}>Exempt</button></>}
+                {r.status === 'PENDING' && <><button style={{ ...s.btn, background: '#10b981', marginRight: '0.3rem' }} onClick={() => updateRecord(r.id, 'mark-compliant')}>Compliant</button><button style={{ ...s.btn, background: 'var(--warning)', marginRight: '0.3rem' }} onClick={() => updateRecord(r.id, 'mark-overdue')}>Overdue</button><button style={{ ...s.btn, background: 'var(--muted)' }} onClick={() => updateRecord(r.id, 'mark-exempt')}>Exempt</button></>}
               </td>
             </tr>)}</tbody>
           </table>

@@ -180,7 +180,7 @@ export default function TailoringOrderPage() {
               onChange={(e) => setVoiceNote(e.target.files?.[0] || null)}
               style={{ fontSize: '0.85rem' }}
             />
-            {voiceNote && <span style={{ fontSize: '0.75rem', color: '#16a34a', marginLeft: '0.5rem' }}>✓ Imewekwa</span>}
+            {voiceNote && <span style={{ fontSize: '0.75rem', color: 'var(--success)', marginLeft: '0.5rem' }}>✓ Imewekwa</span>}
           </div>
 
           {/* Photo */}
@@ -193,7 +193,7 @@ export default function TailoringOrderPage() {
               onChange={(e) => setPhoto(e.target.files?.[0] || null)}
               style={{ fontSize: '0.85rem' }}
             />
-            {photo && <span style={{ fontSize: '0.75rem', color: '#16a34a', marginLeft: '0.5rem' }}>✓ Imewekwa</span>}
+            {photo && <span style={{ fontSize: '0.75rem', color: 'var(--success)', marginLeft: '0.5rem' }}>✓ Imewekwa</span>}
           </div>
 
           {/* Extra notes */}

@@ -322,7 +322,7 @@ export default function OrderTracking() {
                 {isDelivered ? 'Delivery Location' : 'Driver Location'}
               </h3>
               <div ref={mapRef} style={{ width: '100%', height: 260, borderRadius: 10, overflow: 'hidden' }} />
-              <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: '#64748b' }}>
+              <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: 'var(--muted)' }}>
                 <span>🛵 Driver</span>
                 <span>📍 Drop-off</span>
                 {trackingData?.distanceKm != null && <span>📏 {trackingData.distanceKm.toFixed(1)} km</span>}
@@ -376,7 +376,7 @@ export default function OrderTracking() {
             myDriverReview ? (
               <div style={styles.card}>
                 <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Driver Review</h3>
-                <div style={{ fontSize: 22, color: '#f59e0b', letterSpacing: 2 }}>
+                <div style={{ fontSize: 22, color: 'var(--warning)', letterSpacing: 2 }}>
                   {'★'.repeat(myDriverReview.rating)}{'☆'.repeat(5 - (myDriverReview.rating || 0))}
                 </div>
                 {myDriverReview.comment && (
@@ -393,7 +393,7 @@ export default function OrderTracking() {
                       onClick={() => setStarRating(n)}
                       style={{
                         background: 'none', border: 'none', fontSize: 26, cursor: 'pointer',
-                        color: n <= starRating ? '#f59e0b' : '#cbd5e1', padding: 0, lineHeight: 1,
+                        color: n <= starRating ? 'var(--warning)' : 'var(--line)', padding: 0, lineHeight: 1,
                       }}
                       aria-label={`Rate ${n} star${n > 1 ? 's' : ''}`}
                     >

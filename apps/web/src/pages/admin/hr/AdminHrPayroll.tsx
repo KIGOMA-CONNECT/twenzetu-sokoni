@@ -34,27 +34,27 @@ export default function AdminHrPayroll() {
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Payroll</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
-        <button onClick={() => setTab('periods')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'periods' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'periods' ? '#eff6ff' : '#fff', fontWeight: 500, color: tab === 'periods' ? '#3b82f6' : '#475569' }}>Pay Periods</button>
-        <button onClick={() => setTab('payslips')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'payslips' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'payslips' ? '#eff6ff' : '#fff', fontWeight: 500, color: tab === 'payslips' ? '#3b82f6' : '#475569' }}>Payslips</button>
+        <button onClick={() => setTab('periods')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'periods' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'periods' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'periods' ? '#3b82f6' : 'var(--muted)' }}>Pay Periods</button>
+        <button onClick={() => setTab('payslips')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'payslips' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'payslips' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'payslips' ? '#3b82f6' : 'var(--muted)' }}>Payslips</button>
       </div>
 
       {tab === 'periods' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowPeriodForm(!showPeriodForm)}>{showPeriodForm ? 'Cancel' : '+ New Period'}</button>
-        {showPeriodForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: '#f8fafc', borderRadius: '8px', alignItems: 'flex-end' }}>
-          <div style={{ flex: 1 }}><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Name *</div><input style={s.input} value={pf.name} onChange={e => setPf(f => ({ ...f, name: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Start</div><input type="date" style={s.input} value={pf.startDate} onChange={e => setPf(f => ({ ...f, startDate: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>End</div><input type="date" style={s.input} value={pf.endDate} onChange={e => setPf(f => ({ ...f, endDate: e.target.value }))} /></div>
+        {showPeriodForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end' }}>
+          <div style={{ flex: 1 }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Name *</div><input style={s.input} value={pf.name} onChange={e => setPf(f => ({ ...f, name: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Start</div><input type="date" style={s.input} value={pf.startDate} onChange={e => setPf(f => ({ ...f, startDate: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>End</div><input type="date" style={s.input} value={pf.endDate} onChange={e => setPf(f => ({ ...f, endDate: e.target.value }))} /></div>
           <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !pf.name.trim() || !pf.startDate || !pf.endDate} onClick={createPeriod}>{saving ? 'Saving...' : 'Create'}</button>
         </div>}
         <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead><tr style={{ background: '#f8fafc' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>Period</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>Period</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
             <tbody>{periods?.map(p => <tr key={p.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
               <td style={{ padding: '0.6rem', fontWeight: 500 }}>{p.name}</td>
-              <td style={{ padding: '0.6rem', color: '#64748b' }}>{new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}</td>
-              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: p.status === 'OPEN' ? '#fefce8' : '#f1f5f9', color: p.status === 'OPEN' ? '#ca8a04' : '#64748b', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{p.status}</span></td>
+              <td style={{ padding: '0.6rem', color: 'var(--muted)' }}>{new Date(p.startDate).toLocaleDateString()} - {new Date(p.endDate).toLocaleDateString()}</td>
+              <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: p.status === 'OPEN' ? '#fefce8' : 'var(--line-soft)', color: p.status === 'OPEN' ? '#ca8a04' : 'var(--muted)', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{p.status}</span></td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                {p.status === 'OPEN' && <><button style={{ ...s.btn, background: '#3b82f6', marginRight: '0.3rem' }} onClick={() => { setSelectedPeriod(p.id); setTab('payslips'); }}>Payslips</button><button style={{ ...s.btn, background: '#f59e0b' }} onClick={() => closePeriod(p.id)}>Close</button></>}
+                {p.status === 'OPEN' && <><button style={{ ...s.btn, background: '#3b82f6', marginRight: '0.3rem' }} onClick={() => { setSelectedPeriod(p.id); setTab('payslips'); }}>Payslips</button><button style={{ ...s.btn, background: 'var(--warning)' }} onClick={() => closePeriod(p.id)}>Close</button></>}
               </td>
             </tr>)}</tbody>
           </table>
@@ -63,7 +63,7 @@ export default function AdminHrPayroll() {
 
       {tab === 'payslips' && <div>
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', alignItems: 'flex-end' }}>
-          <div><div style={{ fontSize: '0.75rem', color: '#64748b' }}>Period</div><select style={{ padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }} value={selectedPeriod || ''} onChange={e => setSelectedPeriod(e.target.value || null)}><option value="">All periods</option>{periods?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Period</div><select style={{ padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }} value={selectedPeriod || ''} onChange={e => setSelectedPeriod(e.target.value || null)}><option value="">All periods</option>{periods?.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
           {selectedPeriod && employees && <div style={{ display: 'flex', gap: '0.3rem' }}>
             <select style={{ padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', background: '#fff' }} id="genEmpId"><option value="">Select employee...</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select>
             <button style={{ ...s.btn, background: '#10b981' }} onClick={() => { const el = document.getElementById('genEmpId') as HTMLSelectElement; if (el.value) generatePayslip(selectedPeriod, el.value); }}>Generate</button>
@@ -72,14 +72,14 @@ export default function AdminHrPayroll() {
         {selectedPeriod ? (
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead><tr style={{ background: '#f8fafc' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Employee</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Gross</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Deductions</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Tax</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Net</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+              <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Employee</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Gross</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Deductions</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Tax</th><th style={{ padding: '0.6rem', textAlign: 'right' }}>Net</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
               <tbody>{payslips?.map(ps => <tr key={ps.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={{ padding: '0.6rem' }}>{ps.employeeName || ps.employeeId.slice(0, 8)}</td>
                 <td style={{ padding: '0.6rem', textAlign: 'right' }}>{ps.grossPay.toLocaleString()} {ps.currency}</td>
                 <td style={{ padding: '0.6rem', textAlign: 'right' }}>{ps.deductions.toLocaleString()}</td>
                 <td style={{ padding: '0.6rem', textAlign: 'right' }}>{ps.taxDeduction.toLocaleString()}</td>
                 <td style={{ padding: '0.6rem', textAlign: 'right', fontWeight: 600 }}>{ps.netPay.toLocaleString()} {ps.currency}</td>
-                <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: ps.status === 'PAID' ? '#dcfce7' : ps.status === 'APPROVED' ? '#fefce8' : '#f1f5f9', color: ps.status === 'PAID' ? '#16a34a' : ps.status === 'APPROVED' ? '#ca8a04' : '#64748b', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{ps.status}</span></td>
+                <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: ps.status === 'PAID' ? 'var(--success-soft)' : ps.status === 'APPROVED' ? '#fefce8' : 'var(--line-soft)', color: ps.status === 'PAID' ? 'var(--success)' : ps.status === 'APPROVED' ? '#ca8a04' : 'var(--muted)', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{ps.status}</span></td>
                 <td style={{ padding: '0.6rem', textAlign: 'center' }}>
                   {ps.status === 'DRAFT' && <button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => approvePayslip(ps.id)}>Approve</button>}
                   {ps.status === 'APPROVED' && <button style={{ ...s.btn, background: '#10b981' }} onClick={() => markPaid(ps.id)}>Mark Paid</button>}
@@ -87,7 +87,7 @@ export default function AdminHrPayroll() {
               </tr>)}</tbody>
             </table>
           </div>
-        ) : <div style={{ color: '#94a3b8', textAlign: 'center', padding: '2rem' }}>Select a pay period to view payslips</div>}
+        ) : <div style={{ color: 'var(--faint)', textAlign: 'center', padding: '2rem' }}>Select a pay period to view payslips</div>}
       </div>}
     </div>
   );

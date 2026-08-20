@@ -29,32 +29,32 @@ const PRICING_MODELS = [
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   tabWrap: { display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' },
-  tab: { padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#334155' },
+  tab: { padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' },
   tabActive: { background: '#1e40af', color: '#fff', borderColor: '#1e40af' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '90vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', minHeight: '70px', boxSizing: 'border-box', fontFamily: 'inherit' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: '#334155' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
-  smallNote: { fontSize: '0.78rem', color: '#64748b' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
+  smallNote: { fontSize: '0.78rem', color: 'var(--muted)' },
   reqRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', gap: '1rem', flexWrap: 'wrap' },
-  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: '#334155' },
-  chatBox: { border: '1px solid #e2e8f0', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: '#f8fafc' },
+  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text)' },
+  chatBox: { border: '1px solid #e2e8f0', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--bg)' },
   chatMsg: { marginBottom: '0.5rem', fontSize: '0.85rem' },
   chatMe: { textAlign: 'right' },
   chatBubble: { display: 'inline-block', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.4rem 0.7rem', maxWidth: '80%' },
@@ -231,7 +231,7 @@ export default function VendorServices() {
                       <td style={styles.td}>{formatCurrency(l.basePrice)}</td>
                       <td style={styles.td}><StatusBadge status={l.isActive ? 'ACTIVE' : 'INACTIVE'} /></td>
                       <td style={{ ...styles.td, textAlign: 'right' }}>
-                        <button style={{ ...styles.buttonSecondary, color: '#dc2626', borderColor: '#fecaca' }} onClick={() => deleteListing(l.id, l.name)} disabled={deletingId === l.id}>
+                        <button style={{ ...styles.buttonSecondary, color: 'var(--danger)', borderColor: '#fecaca' }} onClick={() => deleteListing(l.id, l.name)} disabled={deletingId === l.id}>
                           {deletingId === l.id ? 'Deleting…' : 'Delete'}
                         </button>
                       </td>
@@ -256,7 +256,7 @@ export default function VendorServices() {
             requests.map((r) => (
               <div key={r.id} style={styles.reqRow}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.title}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {r.details || 'No details'}</div>
                   {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#1e40af' }}>🕐 Requested for: {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.photoUrls?.length > 0 && (
@@ -264,7 +264,7 @@ export default function VendorServices() {
                       {r.photoUrls.slice(0, 4).map((u, i) => <img key={i} src={u} alt={`req ${i + 1}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }} />)}
                     </div>
                   )}
-                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: '#0f172a', marginTop: '0.3rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
+                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: 'var(--ink)', marginTop: '0.3rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <StatusBadge status={r.status} />
@@ -334,7 +334,7 @@ export default function VendorServices() {
         <div style={styles.overlay} onClick={() => setActiveReq(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalTitle}>Service Request — {activeReq.title}</div>
-            <div style={{ fontSize: '0.85rem', color: '#334155', marginBottom: '0.75rem' }}>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginBottom: '0.75rem' }}>
               {activeReq.quantity} {activeReq.unitLabel} • {activeReq.details || 'No details'}
             </div>
             {activeReq.scheduledAt && (
@@ -362,7 +362,7 @@ export default function VendorServices() {
               </div>
             )}
             {activeReq.status !== 'PENDING' && (
-              <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: '#334155' }}>
+              <div style={{ marginBottom: '0.75rem', fontSize: '0.85rem', color: 'var(--text)' }}>
                 Request status: <StatusBadge status={activeReq.status} />
               </div>
             )}
@@ -370,7 +370,7 @@ export default function VendorServices() {
               {messages.length === 0 && <div style={styles.smallNote}>No messages yet.</div>}
               {messages.map((m) => (
                 <div key={m.id} style={{ ...styles.chatMsg, ...(m.senderId === user?.id ? styles.chatMe : {}) }}>
-                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
                   <div>
                     <span style={{ ...styles.chatBubble, ...(m.senderId === user?.id ? styles.chatBubbleMe : {}) }}>{m.message}</span>
                   </div>

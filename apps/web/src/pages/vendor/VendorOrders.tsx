@@ -14,7 +14,7 @@ const PAGE_SIZE = 10;
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   select: {
     padding: '0.5rem 0.75rem',
     border: '1px solid #cbd5e1',
@@ -22,7 +22,7 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '0.875rem',
     background: '#fff',
     cursor: 'pointer',
-    color: '#334155',
+    color: 'var(--text)',
   },
   card: {
     background: '#fff',
@@ -32,21 +32,21 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   actionWrap: { display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' },
-  acceptBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer', fontWeight: 600 },
-  rejectBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#dc2626', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  acceptBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--success)', color: '#fff', cursor: 'pointer', fontWeight: 600 },
+  rejectBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--danger)', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   viewBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: '#1e40af', cursor: 'pointer', fontWeight: 600 },
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
-  smallNote: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.3rem' },
+  smallNote: { fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.3rem' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '520px', maxWidth: '90vw', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   modalRow: { display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', fontSize: '0.875rem' },
-  modalLabel: { color: '#64748b' },
-  modalValue: { fontWeight: 600, color: '#1e293b' },
+  modalLabel: { color: 'var(--muted)' },
+  modalValue: { fontWeight: 600, color: 'var(--ink-soft)' },
   closeModalBtn: { marginTop: '1rem', padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem' },
   pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '1rem' },
   pageBtn: { padding: '0.35rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '0.8rem' },
@@ -107,7 +107,7 @@ export default function VendorOrders() {
       <div style={styles.headerRow}>
         <h1 style={styles.title}>Orders</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: '#334155' }}>Status:</label>
+          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Status:</label>
           <select
             id="status-filter"
             style={styles.select}
@@ -155,7 +155,7 @@ export default function VendorOrders() {
                         <td style={styles.td}>{order.customerId}</td>
                         <td style={styles.td}><StatusBadge status={order.status} /></td>
                         <td style={{ ...styles.td, fontWeight: 700, letterSpacing: '0.05em' }}>
-                          {order.pickupCode ? order.pickupCode : <span style={{ color: '#94a3b8' }}>—</span>}
+                          {order.pickupCode ? order.pickupCode : <span style={{ color: 'var(--faint)' }}>—</span>}
                         </td>
                         <td style={styles.td}>{formatCurrency(order.totalAmount)}</td>
                         <td style={styles.td}>{formatDate(order.createdAt)}</td>
@@ -194,7 +194,7 @@ export default function VendorOrders() {
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
                   >Prev</button>
-                  <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Page {page} of {totalPages}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Page {page} of {totalPages}</span>
                   <button
                     style={{ ...styles.pageBtn, ...(page >= totalPages ? styles.pageBtnDisabled : {}) }}
                     disabled={page >= totalPages}
@@ -221,14 +221,14 @@ export default function VendorOrders() {
             <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Items</div>
               {itemsLoading ? <LoadingSpinner /> : orderItems.length === 0 ? (
-                <div style={{ color: '#64748b', fontSize: '0.85rem' }}>No items found.</div>
+                <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>No items found.</div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: '0.4rem', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>Item</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: '#64748b', borderBottom: '1px solid #e2e8f0' }}>Price</th>
+                      <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Item</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Qty</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Price</th>
                     </tr>
                   </thead>
                   <tbody>

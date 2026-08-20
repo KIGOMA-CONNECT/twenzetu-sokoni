@@ -57,7 +57,7 @@ export default function AdminOrgProfile() {
   return (
     <div>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {profileTypes.map(t => <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: '0.4rem 1rem', borderRadius: '6px', border: tab === t.key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t.key ? '#eff6ff' : '#fff', fontWeight: 500, color: tab === t.key ? '#3b82f6' : '#475569' }}>{t.label}</button>)}
+        {profileTypes.map(t => <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: '0.4rem 1rem', borderRadius: '6px', border: tab === t.key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t.key ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === t.key ? '#3b82f6' : 'var(--muted)' }}>{t.label}</button>)}
       </div>
 
       {p.error && <ErrorMessage message={p.error} />}
@@ -68,8 +68,8 @@ export default function AdminOrgProfile() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
               {Object.entries(p.data).map(([key, val]) => (
                 <div key={key}>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', textTransform: 'capitalize', marginBottom: '0.15rem' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</div>
-                  <div style={{ fontWeight: 500 }}>{val != null && String(val) ? String(val) : <span style={{ color: '#94a3b8' }}>Not set</span>}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'capitalize', marginBottom: '0.15rem' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                  <div style={{ fontWeight: 500 }}>{val != null && String(val) ? String(val) : <span style={{ color: 'var(--faint)' }}>Not set</span>}</div>
                 </div>
               ))}
             </div>
@@ -77,11 +77,11 @@ export default function AdminOrgProfile() {
           </div>
         ) : p.loading ? <LoadingSpinner /> : (
           <div>
-            <p style={{ color: '#64748b', marginBottom: '1rem' }}>No {tab} profile yet. Create one below.</p>
+            <p style={{ color: 'var(--muted)', marginBottom: '1rem' }}>No {tab} profile yet. Create one below.</p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
               {Object.entries(form).map(([key, val]) => (
                 <div key={key}>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b', marginBottom: '0.15rem', textTransform: 'capitalize' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.15rem', textTransform: 'capitalize' }}>{key.replace(/([A-Z])/g, ' $1').trim()}</div>
                   <input style={{ width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem' }} value={val} onChange={e => setForm(f => ({ ...f, [key]: e.target.value }))} />
                 </div>
               ))}

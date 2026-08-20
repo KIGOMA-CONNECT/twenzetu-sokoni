@@ -196,7 +196,7 @@ function OrderHistory() {
                             )}
                             {o.status === 'DELIVERED' && (
                               reviewedOrders[o.id] ? (
-                                <span className="btn btn-sm" style={{ background: '#dcfce7', color: '#166534', border: 'none', cursor: 'default' }}>✓ Reviewed</span>
+                                <span className="btn btn-sm" style={{ background: 'var(--success-soft)', color: '#166534', border: 'none', cursor: 'default' }}>✓ Reviewed</span>
                               ) : (
                                 <button
                                   className="btn btn-outline btn-sm"
@@ -278,7 +278,7 @@ function OrderHistory() {
             style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' }}>
               Rate Your Driver
             </div>
             <div className="field">
@@ -309,7 +309,7 @@ function OrderHistory() {
                 placeholder="How was your delivery experience?"
               />
             </div>
-            {driverReviewError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{driverReviewError}</div>}
+            {driverReviewError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{driverReviewError}</div>}
             <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
               <button className="btn btn-outline" onClick={() => setDriverReviewOrderId(null)} disabled={driverReviewBusy}>Cancel</button>
               <button className="btn btn-primary" onClick={submitDriverReview} disabled={driverReviewBusy}>
@@ -329,7 +329,7 @@ function OrderHistory() {
             style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
             onClick={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' }}>
+            <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' }}>
               Rate &amp; Review — {reviewTarget.vendorName}
             </div>
             <div className="field">
@@ -360,7 +360,7 @@ function OrderHistory() {
                 placeholder="How was your order?"
               />
             </div>
-            {reviewError && <div style={{ color: '#dc2626', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{reviewError}</div>}
+            {reviewError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{reviewError}</div>}
             <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
               <button className="btn btn-outline" onClick={() => setReviewTarget(null)} disabled={reviewBusy}>Cancel</button>
               <button className="btn btn-primary" onClick={submitReview} disabled={reviewBusy}>

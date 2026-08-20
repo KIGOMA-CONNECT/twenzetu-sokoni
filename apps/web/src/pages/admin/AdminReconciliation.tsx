@@ -46,13 +46,13 @@ export default function AdminReconciliation() {
 
   const card = (title: string, value: string, sub?: string) => (
     <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-      <div style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>{value}</div>
-      {sub && <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>{sub}</div>}
+      <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-soft)' }}>{value}</div>
+      {sub && <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>{sub}</div>}
     </div>
   );
 
-  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading report...</div>;
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>Loading report...</div>;
 
   return (
     <div>
@@ -67,8 +67,8 @@ export default function AdminReconciliation() {
                 padding: '0.4rem 0.8rem',
                 border: '1px solid #cbd5e1',
                 borderRadius: '6px',
-                background: period === p ? '#1e293b' : '#fff',
-                color: period === p ? '#fff' : '#334155',
+                background: period === p ? 'var(--ink-soft)' : '#fff',
+                color: period === p ? '#fff' : 'var(--text)',
                 cursor: 'pointer',
                 fontWeight: period === p ? 600 : 400,
               }}

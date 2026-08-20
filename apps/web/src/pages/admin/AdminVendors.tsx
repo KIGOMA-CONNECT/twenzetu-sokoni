@@ -11,22 +11,22 @@ type VendorTab = 'PENDING' | 'ALL';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  header: { fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', margin: 0 },
-  subheader: { color: '#64748b', fontSize: '0.95rem', marginTop: '0.25rem' },
+  header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
+  subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
   tabRow: { display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' },
-  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: '#475569', cursor: 'pointer' },
+  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: 'var(--muted)', cursor: 'pointer' },
   tabActive: { background: '#1e40af', color: '#fff', border: '1px solid #1e40af' },
   searchRow: { display: 'flex', gap: '0.5rem', alignItems: 'center' },
   searchInput: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', flex: 1, maxWidth: '300px' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: '#334155' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', marginRight: '0.4rem' },
-  approveBtn: { background: '#16a34a', color: '#fff' },
-  suspendBtn: { background: '#dc2626', color: '#fff' },
+  approveBtn: { background: 'var(--success)', color: '#fff' },
+  suspendBtn: { background: 'var(--danger)', color: '#fff' },
   disabledBtn: { opacity: 0.6, cursor: 'not-allowed' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
 };
 
 export default function AdminVendors() {

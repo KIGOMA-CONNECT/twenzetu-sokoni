@@ -15,37 +15,37 @@ const SERVICE_CATEGORIES = ['cleaning', 'tailoring', 'laundry', 'food', 'general
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   tabWrap: { display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' },
-  tab: { padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: '#334155' },
+  tab: { padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' },
   tabActive: { background: '#1e40af', color: '#fff', borderColor: '#1e40af' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
   grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' },
-  listingImage: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px', background: '#f1f5f9' },
-  listingName: { fontSize: '1rem', fontWeight: 700, color: '#0f172a', margin: '0.6rem 0 0.2rem' },
-  listingDesc: { fontSize: '0.8rem', color: '#64748b', margin: '0 0 0.6rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties,
-  badge: { fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '999px', background: '#eff6ff', color: '#1e40af', display: 'inline-block', marginBottom: '0.5rem' },
+  listingImage: { width: '100%', height: '140px', objectFit: 'cover', borderRadius: '8px', background: 'var(--line-soft)' },
+  listingName: { fontSize: '1rem', fontWeight: 700, color: 'var(--ink)', margin: '0.6rem 0 0.2rem' },
+  listingDesc: { fontSize: '0.8rem', color: 'var(--muted)', margin: '0 0 0.6rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' } as React.CSSProperties,
+  badge: { fontSize: '0.72rem', fontWeight: 700, padding: '0.2rem 0.5rem', borderRadius: '999px', background: 'var(--info-soft)', color: '#1e40af', display: 'inline-block', marginBottom: '0.5rem' },
   button: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, width: '100%' },
-  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: '#334155' },
+  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '560px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', minHeight: '80px', boxSizing: 'border-box', fontFamily: 'inherit' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
-  smallNote: { fontSize: '0.78rem', color: '#64748b' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2.5rem' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
+  smallNote: { fontSize: '0.78rem', color: 'var(--muted)' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2.5rem' },
   reqRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 0', borderBottom: '1px solid #f1f5f9', gap: '1rem', flexWrap: 'wrap' },
-  chatBox: { border: '1px solid #e2e8f0', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: '#f8fafc' },
+  chatBox: { border: '1px solid #e2e8f0', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--bg)' },
   chatMsg: { marginBottom: '0.5rem', fontSize: '0.85rem' },
   chatMe: { textAlign: 'right' },
   chatBubble: { display: 'inline-block', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.4rem 0.7rem', maxWidth: '80%' },
   chatBubbleMe: { background: '#1e40af', color: '#fff', borderColor: '#1e40af' },
   quoteRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.6rem', border: '1px solid #e2e8f0', borderRadius: '8px', marginBottom: '0.5rem', gap: '0.5rem', flexWrap: 'wrap' },
-  select: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', background: '#fff', cursor: 'pointer', color: '#334155' },
+  select: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', background: '#fff', cursor: 'pointer', color: 'var(--text)' },
 };
 
 const unitLabelFor = (m: string) => (m === 'per_sqm' ? 'm²' : m === 'per_hour' ? 'hour' : m === 'per_room' ? 'room' : 'unit');
@@ -264,14 +264,14 @@ export default function ConsumerServices() {
                   <h3 style={styles.listingName}>{l.name}</h3>
                   <p style={styles.listingDesc}>{l.description}</p>
                   {l.vendorRating ? (
-                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.4rem' }}>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.4rem' }}>
                       ⭐ {l.vendorRating.toFixed(1)} {l.vendorName ? `· ${l.vendorName}` : ''}
                     </div>
                   ) : (
-                    <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginBottom: '0.4rem' }}>No ratings yet</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginBottom: '0.4rem' }}>No ratings yet</div>
                   )}
-                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#0f172a', marginBottom: '0.6rem' }}>
-                    {formatCurrency(l.basePrice)}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: '#64748b' }}> / {l.unitLabel || unitLabelFor(l.pricingModel)}</span>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.6rem' }}>
+                    {formatCurrency(l.basePrice)}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted)' }}> / {l.unitLabel || unitLabelFor(l.pricingModel)}</span>
                   </div>
                   <button style={styles.button} onClick={() => openRequest(l)}>Request Service</button>
                 </div>
@@ -293,12 +293,12 @@ export default function ConsumerServices() {
             myRequests.map((r) => (
               <div key={r.id} style={styles.reqRow}>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, color: '#0f172a' }}>{r.title}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {new Date(r.createdAt).toLocaleDateString()}</div>
-                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: '#0f172a', marginTop: '0.2rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
-                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#475569' }}>🕐 {new Date(r.scheduledAt).toLocaleString()}</div>}
+                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: 'var(--ink)', marginTop: '0.2rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
+                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: 'var(--muted)' }}>🕐 {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.status === 'ORDERED' && r.orderId && (
-                    <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#475569' }}>
+                    <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: 'var(--muted)' }}>
                       <span>Order #{r.orderId.slice(0, 8)}</span>{' '}
                       <a href="/orders" style={{ color: '#1e40af', fontWeight: 700 }}>Track Order →</a>
                     </div>
@@ -351,7 +351,7 @@ export default function ConsumerServices() {
                 )}
               </div>
             </div>
-            <div style={{ fontSize: '0.9rem', color: '#0f172a', fontWeight: 700, margin: '0.5rem 0' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--ink)', fontWeight: 700, margin: '0.5rem 0' }}>
               Estimated: {formatCurrency(estimate(selected))}
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
@@ -373,7 +373,7 @@ export default function ConsumerServices() {
               {messages.length === 0 && <div style={styles.smallNote}>No messages yet. Introduce your request to the vendor.</div>}
               {messages.map((m) => (
                 <div key={m.id} style={{ ...styles.chatMsg, ...(m.senderId === user?.id ? styles.chatMe : {}) }}>
-                  <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
                   <div>
                     <span style={{ ...styles.chatBubble, ...(m.senderId === user?.id ? styles.chatBubbleMe : {}) }}>{m.message}</span>
                   </div>
@@ -390,7 +390,7 @@ export default function ConsumerServices() {
                 {activeReq.quotes?.map((q) => (
                   <div key={q.id} style={styles.quoteRow}>
                     <div>
-                      <span style={{ fontWeight: 800, color: '#0f172a' }}>{formatCurrency(q.price)}</span>
+                      <span style={{ fontWeight: 800, color: 'var(--ink)' }}>{formatCurrency(q.price)}</span>
                       <div style={styles.smallNote}>{q.message || 'No message'}</div>
                     </div>
                     {q.status === 'OPEN' && activeReq.status !== 'ORDERED' && activeReq.status !== 'CANCELLED' && (

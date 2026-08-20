@@ -18,14 +18,14 @@ export default function AdminOrgTypes() {
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Org Unit Types</h2>
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', alignItems: 'flex-end' }}>
-        <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>Name</div><input style={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Department" /></div>
-        <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '0.25rem' }}>Description</div><input style={s.input} value={desc} onChange={e => setDesc(e.target.value)} placeholder="Optional" /></div>
+        <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Name</div><input style={s.input} value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Department" /></div>
+        <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Description</div><input style={s.input} value={desc} onChange={e => setDesc(e.target.value)} placeholder="Optional" /></div>
         <button style={{ ...s.btn, background: '#3b82f6' }} disabled={saving || !name.trim()} onClick={create}>{saving ? 'Saving...' : 'Create'}</button>
       </div>
       <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead><tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}><th style={{ padding: '0.75rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.75rem', textAlign: 'left' }}>Description</th><th style={{ padding: '0.75rem', textAlign: 'center' }}>Status</th></tr></thead>
-          <tbody>{types?.map(t => <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}><td style={{ padding: '0.75rem', fontWeight: 500 }}>{t.name}</td><td style={{ padding: '0.75rem', color: '#64748b' }}>{t.description || '-'}</td><td style={{ padding: '0.75rem', textAlign: 'center' }}><span style={{ background: t.isActive ? '#dcfce7' : '#fef2f2', color: t.isActive ? '#16a34a' : '#dc2626', padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem' }}>{t.isActive ? 'Active' : 'Inactive'}</span></td></tr>)}</tbody>
+          <thead><tr style={{ background: 'var(--bg)', borderBottom: '2px solid #e2e8f0' }}><th style={{ padding: '0.75rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.75rem', textAlign: 'left' }}>Description</th><th style={{ padding: '0.75rem', textAlign: 'center' }}>Status</th></tr></thead>
+          <tbody>{types?.map(t => <tr key={t.id} style={{ borderBottom: '1px solid #f1f5f9' }}><td style={{ padding: '0.75rem', fontWeight: 500 }}>{t.name}</td><td style={{ padding: '0.75rem', color: 'var(--muted)' }}>{t.description || '-'}</td><td style={{ padding: '0.75rem', textAlign: 'center' }}><span style={{ background: t.isActive ? 'var(--success-soft)' : 'var(--danger-soft)', color: t.isActive ? 'var(--success)' : 'var(--danger)', padding: '0.15rem 0.5rem', borderRadius: '999px', fontSize: '0.8rem' }}>{t.isActive ? 'Active' : 'Inactive'}</span></td></tr>)}</tbody>
         </table>
       </div>
     </div>

@@ -41,11 +41,11 @@ const STATUS_LABELS: Record<string, string> = {
 
 const STATUS_COLORS: Record<string, string> = {
   pending: '#b45309',
-  approved: '#2563eb',
+  approved: 'var(--info)',
   active: '#059669',
   paid: '#059669',
-  defaulted: '#dc2626',
-  rejected: '#dc2626',
+  defaulted: 'var(--danger)',
+  rejected: 'var(--danger)',
 };
 
 const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleDateString() : '—';
@@ -90,9 +90,9 @@ export default function AdminLoans() {
 
   const card = (title: string, value: string, sub?: string) => (
     <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
-      <div style={{ color: '#64748b', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: '#1e293b' }}>{value}</div>
-      {sub && <div style={{ fontSize: '0.8rem', color: '#94a3b8', marginTop: '0.25rem' }}>{sub}</div>}
+      <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-soft)' }}>{value}</div>
+      {sub && <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>{sub}</div>}
     </div>
   );
 
@@ -109,8 +109,8 @@ export default function AdminLoans() {
                 padding: '0.4rem 0.8rem',
                 border: '1px solid #cbd5e1',
                 borderRadius: '6px',
-                background: filter === f ? '#1e293b' : '#fff',
-                color: filter === f ? '#fff' : '#334155',
+                background: filter === f ? 'var(--ink-soft)' : '#fff',
+                color: filter === f ? '#fff' : 'var(--text)',
                 cursor: 'pointer',
                 fontWeight: filter === f ? 600 : 400,
                 textTransform: 'capitalize',
@@ -140,9 +140,9 @@ export default function AdminLoans() {
       )}
 
       {loading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#64748b' }}>Loading loans...</div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>Loading loans...</div>
       ) : loans.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '8px', padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
+        <div style={{ background: '#fff', borderRadius: '8px', padding: '2rem', textAlign: 'center', color: 'var(--faint)' }}>
           No {filter === 'all' ? '' : STATUS_LABELS[filter].toLowerCase() + ' '}loans found.
         </div>
       ) : (
@@ -166,14 +166,14 @@ export default function AdminLoans() {
                 <tr key={l.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <td style={{ padding: '0.5rem' }}>
                     <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{l.borrowerType}</div>
-                    <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#94a3b8' }}>{(l.id || '').slice(0, 8)}</div>
+                    <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--faint)' }}>{(l.id || '').slice(0, 8)}</div>
                   </td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCurrency(l.principal)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{formatCurrency(l.monthlyPayment)}</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right' }}>{l.termMonths} mo</td>
                   <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600 }}>{formatCurrency(l.remainingBalance)}</td>
                   <td style={{ padding: '0.5rem' }}>
-                    <span style={{ color: STATUS_COLORS[l.status] || '#334155', fontWeight: 600, textTransform: 'capitalize' }}>
+                    <span style={{ color: STATUS_COLORS[l.status] || 'var(--text)', fontWeight: 600, textTransform: 'capitalize' }}>
                       {STATUS_LABELS[l.status] ?? l.status}
                     </span>
                   </td>
@@ -184,7 +184,7 @@ export default function AdminLoans() {
                       <button
                         onClick={() => act(l.id, 'approve')}
                         disabled={busyId === l.id}
-                        style={{ padding: '0.3rem 0.7rem', borderRadius: '6px', border: 'none', background: '#2563eb', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}
+                        style={{ padding: '0.3rem 0.7rem', borderRadius: '6px', border: 'none', background: 'var(--info)', color: '#fff', cursor: 'pointer', fontSize: '0.85rem' }}
                       >
                         Approve
                       </button>
@@ -198,7 +198,7 @@ export default function AdminLoans() {
                         Disburse
                       </button>
                     )}
-                    {busyId === l.id && <span style={{ marginLeft: '0.5rem', color: '#94a3b8', fontSize: '0.8rem' }}>Working...</span>}
+                    {busyId === l.id && <span style={{ marginLeft: '0.5rem', color: 'var(--faint)', fontSize: '0.8rem' }}>Working...</span>}
                   </td>
                 </tr>
               ))}

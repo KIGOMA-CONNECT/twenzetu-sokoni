@@ -85,7 +85,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 };
 
 const CATEGORY_BG: Record<string, string> = {
-  '🍲': '#ccfbf1', '🥬': '#dcfce7', '🍚': '#fef9c3', '✂️': '#fce7f3',
+  '🍲': '#ccfbf1', '🥬': 'var(--success-soft)', '🍚': '#fef9c3', '✂️': '#fce7f3',
   '🧹': '#e0f2fe', '🧺': '#dbeafe', '🛍️': '#ddd6fe', '🚚': '#fef3c7',
   '♻️': '#fde68a', '🍖': '#fecaca', '🐟': '#bae6fd', '🍗': '#fed7aa',
   '🍟': '#fef9c3', '🥣': '#e0f2fe', '👩‍🍳': '#ffedd5',
@@ -93,8 +93,8 @@ const CATEGORY_BG: Record<string, string> = {
   '👩‍🔧': '#dbeafe', '🏠': '#e0f2fe',
   '👔': '#dbeafe', '👗': '#fce7f3', '👰': '#fef3c7', '🦺': '#fef9c3',
   '📱': '#ddd6fe', '🛋️': '#fef3c7', '🚗': '#dbeafe', '🔨': '#d1fae5',
-  '📡': '#e0e7ff', '⚽': '#dcfce7', '📚': '#fef9c3',
-  '👕': '#fbcfe8', '⚙️': '#e2e8f0', '🔧': '#d1fae5',
+  '📡': '#e0e7ff', '⚽': 'var(--success-soft)', '📚': '#fef9c3',
+  '👕': '#fbcfe8', '⚙️': 'var(--line)', '🔧': '#d1fae5',
   '📦': '#fef9c3', '⚡': '#fef3c7', '🏢': '#e0e7ff', '🚛': '#dbeafe',
 };
 

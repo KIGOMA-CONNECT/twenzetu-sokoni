@@ -34,30 +34,30 @@ const ROLE_LABELS: Record<string, string> = Object.fromEntries(
 
 const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
-  header: { fontSize: '1.75rem', fontWeight: 700, color: '#1e293b', margin: 0 },
-  subheader: { color: '#64748b', fontSize: '0.95rem', marginTop: '0.25rem' },
+  header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
+  subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: '#64748b', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: '#334155' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', marginRight: '0.4rem', marginBottom: '0.2rem' },
   primaryBtn: { background: '#1e40af', color: '#fff' },
-  dangerBtn: { background: '#dc2626', color: '#fff' },
-  successBtn: { background: '#16a34a', color: '#fff' },
-  outlineBtn: { background: 'transparent', color: '#475569', border: '1px solid #cbd5e1' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  dangerBtn: { background: 'var(--danger)', color: '#fff' },
+  successBtn: { background: 'var(--success)', color: '#fff' },
+  outlineBtn: { background: 'transparent', color: 'var(--muted)', border: '1px solid #cbd5e1' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   badgeAdmin: { display: 'inline-block', padding: '0.15rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: '#dbeafe', color: '#1e40af' },
   badgeSuper: { display: 'inline-block', padding: '0.15rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: '#f3e8ff', color: '#6b21a8' },
-  badgeActive: { display: 'inline-block', padding: '0.15rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: '#dcfce7', color: '#166534' },
-  badgePerm: { display: 'inline-block', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', background: '#f1f5f9', color: '#475569', margin: '0.15rem' },
+  badgeActive: { display: 'inline-block', padding: '0.15rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem', fontWeight: 600, background: 'var(--success-soft)', color: '#166534' },
+  badgePerm: { display: 'inline-block', padding: '0.1rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', background: 'var(--line-soft)', color: 'var(--muted)', margin: '0.15rem' },
   formRow: { display: 'flex', gap: '0.75rem', flexWrap: 'wrap' as const, alignItems: 'flex-end' },
   input: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem' },
-  label: { fontSize: '0.8rem', color: '#475569', fontWeight: 600, marginBottom: '0.25rem', display: 'block' },
+  label: { fontSize: '0.8rem', color: 'var(--muted)', fontWeight: 600, marginBottom: '0.25rem', display: 'block' },
   fieldGroup: { display: 'flex', flexDirection: 'column' as const },
-  error: { color: '#dc2626', fontSize: '0.85rem' },
-  success: { color: '#16a34a', fontSize: '0.85rem' },
+  error: { color: 'var(--danger)', fontSize: '0.85rem' },
+  success: { color: 'var(--success)', fontSize: '0.85rem' },
   permRow: { display: 'flex', flexWrap: 'wrap' as const, gap: '0.3rem', marginTop: '0.3rem' },
-  permCheck: { display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: '#334155' },
+  permCheck: { display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', color: 'var(--text)' },
 };
 
 export default function AdminManageAdmins() {
@@ -136,7 +136,7 @@ export default function AdminManageAdmins() {
       {result && <div style={styles.success}>{result}</div>}
 
       <div style={styles.card}>
-        <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>Create New Admin</h3>
+        <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>Create New Admin</h3>
         <form onSubmit={handleCreate}>
           <div style={styles.formRow}>
             <div style={styles.fieldGroup}>
@@ -168,7 +168,7 @@ export default function AdminManageAdmins() {
       </div>
 
       <div style={styles.card}>
-        <h3 style={{ margin: '0 0 1rem', color: '#1e293b' }}>All Administrators</h3>
+        <h3 style={{ margin: '0 0 1rem', color: 'var(--ink-soft)' }}>All Administrators</h3>
         {loading ? <div style={styles.empty}>Loading...</div> : admins.length > 0 ? (
           <table style={styles.table}>
             <thead>
@@ -211,11 +211,11 @@ export default function AdminManageAdmins() {
                     ) : (
                       <div>
                         {a.role === 'super_admin' ? (
-                          <span style={{ fontSize: '0.8rem', color: '#64748b' }}>All permissions</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>All permissions</span>
                         ) : a.permissions.length > 0 ? (
                           a.permissions.map(p => <span key={p} style={styles.badgePerm}>{p.replace(/_/g, ' ')}</span>)
                         ) : (
-                          <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>No specific permissions</span>
+                          <span style={{ fontSize: '0.8rem', color: 'var(--faint)' }}>No specific permissions</span>
                         )}
                         {a.role !== 'super_admin' && editingPermissions !== a.id && (
                           <button style={{ ...styles.btn, ...styles.outlineBtn, fontSize: '0.7rem' }} onClick={() => { setSelectedPerms(a.permissions); setEditingPermissions(a.id); }}>Edit</button>
@@ -225,7 +225,7 @@ export default function AdminManageAdmins() {
                   </td>
                   <td style={styles.td}>
                     {a.role === 'super_admin' ? (
-                      <span style={{ fontSize: '0.8rem', color: '#64748b' }}>Full access</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Full access</span>
                     ) : (
                       <>
                         {a.role === 'admin' && (

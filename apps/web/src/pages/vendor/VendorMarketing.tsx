@@ -32,36 +32,36 @@ interface CategoryForm {
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', fontSize: '0.875rem', marginTop: '0.25rem' },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
+  subtitle: { color: 'var(--muted)', fontSize: '0.875rem', marginTop: '0.25rem' },
   section: { marginTop: '2rem' },
-  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', margin: '0 0 0.25rem' },
-  sectionSub: { color: '#64748b', fontSize: '0.85rem', marginBottom: '0.75rem' },
+  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', margin: '0 0 0.25rem' },
+  sectionSub: { color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.75rem' },
   card: {
     background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9', verticalAlign: 'top' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9', verticalAlign: 'top' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
-  launchBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: '#16a34a', color: '#fff', cursor: 'pointer' },
-  editBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: '#334155' },
+  launchBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--success)', color: '#fff', cursor: 'pointer' },
+  editBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: 'var(--text)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit', minHeight: '90px', resize: 'vertical' },
-  hint: { fontSize: '0.75rem', color: '#64748b', marginTop: '0.25rem' },
+  hint: { fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: '#334155' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
-  notice: { background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1e40af', padding: '0.9rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
+  notice: { background: 'var(--info-soft)', border: '1px solid #bfdbfe', color: '#1e40af', padding: '0.9rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', marginBottom: '1rem' },
   banner: { background: 'linear-gradient(135deg, #1e40af, #4f46e5)', color: '#fff', borderRadius: '12px', padding: '1.2rem 1.4rem', marginBottom: '1.5rem' },
   bannerTitle: { fontSize: '1.2rem', fontWeight: 700, margin: 0 },
   bannerSub: { fontSize: '0.85rem', opacity: 0.9, margin: '0.25rem 0 0' },
@@ -238,7 +238,7 @@ export default function VendorMarketing() {
                           <div style={styles.hint}>Auto-launches</div>
                         </span>
                       ) : (
-                        <span style={{ color: '#94a3b8' }}>—</span>
+                        <span style={{ color: 'var(--faint)' }}>—</span>
                       )}
                     </td>
                     <td style={styles.td}>
@@ -294,7 +294,7 @@ export default function VendorMarketing() {
                   <tr key={a.id}>
                     <td style={styles.td}>
                       <div style={{ fontWeight: 600 }}>{a.emoji ? `${a.emoji} ` : ''}{a.title}</div>
-                      {a.body && <div style={{ color: '#64748b', fontSize: '0.8rem' }}>{a.body}</div>}
+                      {a.body && <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{a.body}</div>}
                     </td>
                     <td style={styles.td}>{a.ctaLabel ? `${a.ctaLabel} → ${a.ctaUrl || ''}` : '—'}</td>
                     <td style={styles.td}>{a.sortOrder}</td>

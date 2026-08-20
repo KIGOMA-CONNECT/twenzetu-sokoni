@@ -475,7 +475,7 @@ export default function CargoPage() {
 
           {fareError && (
             <div style={{
-              background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c',
+              background: 'var(--danger-soft)', border: '1px solid #fecaca', color: '#b91c1c',
               borderRadius: 'var(--radius)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
             }}>
               {fareError}
@@ -484,7 +484,7 @@ export default function CargoPage() {
 
           {submitError && (
             <div style={{
-              background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c',
+              background: 'var(--danger-soft)', border: '1px solid #fecaca', color: '#b91c1c',
               borderRadius: 'var(--radius)', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem',
             }}>
               {submitError}

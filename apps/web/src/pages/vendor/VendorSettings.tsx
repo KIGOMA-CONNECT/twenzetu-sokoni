@@ -10,23 +10,23 @@ import type { VendorProfile } from '../../types';
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '760px', margin: '0 auto' },
   header: { marginBottom: '1.25rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
-  subtitle: { color: '#64748b', fontSize: '0.85rem' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem' },
-  cardTitle: { fontSize: '0.95rem', fontWeight: 700, color: '#0f172a', margin: '0 0 1rem' },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
+  subtitle: { color: 'var(--muted)', fontSize: '0.85rem' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', padding: '1.25rem', marginBottom: '1rem' },
+  cardTitle: { fontSize: '0.95rem', fontWeight: 700, color: 'var(--ink)', margin: '0 0 1rem' },
   field: { marginBottom: '1rem' },
-  label: { display: 'block', fontSize: '0.78rem', fontWeight: 600, color: '#334155', marginBottom: '0.35rem' },
-  input: { width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'inherit', color: '#1e293b', boxSizing: 'border-box' },
-  textarea: { width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'inherit', color: '#1e293b', boxSizing: 'border-box', minHeight: '80px', resize: 'vertical' },
+  label: { display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.35rem' },
+  input: { width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'inherit', color: 'var(--ink-soft)', boxSizing: 'border-box' },
+  textarea: { width: '100%', padding: '0.6rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.875rem', fontFamily: 'inherit', color: 'var(--ink-soft)', boxSizing: 'border-box', minHeight: '80px', resize: 'vertical' },
   row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' },
-  hint: { fontSize: '0.72rem', color: '#94a3b8', marginTop: '0.25rem' },
+  hint: { fontSize: '0.72rem', color: 'var(--faint)', marginTop: '0.25rem' },
   actions: { display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1rem' },
-  saveBtn: { padding: '0.6rem 1.5rem', background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'inherit' },
-  saveBtnDisabled: { padding: '0.6rem 1.5rem', background: '#94a3b8', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'not-allowed', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'inherit' },
+  saveBtn: { padding: '0.6rem 1.5rem', background: 'var(--brand)', color: 'var(--surface)', border: 'none', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'inherit' },
+  saveBtnDisabled: { padding: '0.6rem 1.5rem', background: 'var(--faint)', color: 'var(--surface)', border: 'none', borderRadius: '8px', cursor: 'not-allowed', fontSize: '0.9rem', fontWeight: 600, fontFamily: 'inherit' },
   status: { fontSize: '0.85rem', fontWeight: 600 },
-  statusOk: { color: '#047857' },
-  statusErr: { color: '#dc2626' },
-  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #e2e8f0', background: '#f1f5f9' },
+  statusOk: { color: 'var(--success)' },
+  statusErr: { color: 'var(--danger)' },
+  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #e2e8f0', background: 'var(--line-soft)' },
 };
 
 const S = (obj: Record<string, unknown> | undefined, key: string) =>
@@ -155,7 +155,7 @@ export default function VendorSettings() {
                 {logoUrl ? (
                   <img src={logoUrl} alt="Shop logo" style={styles.logo} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', fontSize: '1.6rem' }}>🏪</div>
+                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>🏪</div>
                 )}
                 <label style={{ ...styles.saveBtn, fontSize: '0.8rem', padding: '0.45rem 1rem', cursor: 'pointer', display: 'inline-block' }}>
                   {uploadingLogo ? 'Uploading…' : logoUrl ? 'Change Logo' : 'Upload Logo'}

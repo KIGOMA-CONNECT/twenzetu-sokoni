@@ -115,7 +115,7 @@ const emptyForm: NewProduct = {
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   headerActions: { display: 'flex', gap: '0.6rem' },
   addButton: {
     background: '#1e40af',
@@ -146,10 +146,10 @@ const styles: Record<string, React.CSSProperties> = {
     overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle' },
-  thumb: { width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#f8fafc' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle' },
+  thumb: { width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'var(--bg)' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   actionBtn: {
     padding: '0.35rem 0.7rem',
     fontSize: '0.75rem',
@@ -158,22 +158,22 @@ const styles: Record<string, React.CSSProperties> = {
     background: '#fff',
     cursor: 'pointer',
     marginRight: '0.4rem',
-    color: '#334155',
+    color: 'var(--text)',
   },
-  deleteBtn: { color: '#dc2626', borderColor: '#fecaca' },
+  deleteBtn: { color: 'var(--danger)', borderColor: '#fecaca' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
   modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '460px', maxWidth: '92vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', minHeight: '70px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: '#334155' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
-  smallSuccess: { color: '#16a34a', fontSize: '0.8rem', marginTop: '0.5rem' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
+  smallSuccess: { color: 'var(--success)', fontSize: '0.8rem', marginTop: '0.5rem' },
   preview: { marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem' },
   previewImg: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' },
   linkBtn: { background: 'none', border: 'none', color: '#1e40af', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem', padding: 0 },
@@ -487,12 +487,12 @@ export default function VendorProducts() {
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} style={styles.thumb} />
                     ) : (
-                      <div style={{ ...styles.thumb, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', fontSize: '1.1rem' }}>🖼️</div>
+                      <div style={{ ...styles.thumb, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--line)', fontSize: '1.1rem' }}>🖼️</div>
                     )}
                   </td>
                   <td style={styles.td}>
                     <div style={{ fontWeight: 600 }}>{product.name}</div>
-                    {product.sku && <div style={{ fontSize: '0.75rem', color: '#64748b' }}>SKU: {product.sku}</div>}
+                    {product.sku && <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>SKU: {product.sku}</div>}
                   </td>
                   <td style={styles.td}>{formatCurrency(product.price)}</td>
                   <td style={styles.td}>{product.stockQuantity} {product.unit}</td>
@@ -589,11 +589,11 @@ export default function VendorProducts() {
                 style={{ fontSize: '0.8rem' }}
                 onChange={(e) => uploadImage(e.target.files?.[0])}
               />
-              {uploading && <div style={{ fontSize: '0.8rem', color: '#64748b' }}>Uploading…</div>}
+              {uploading && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Uploading…</div>}
               {form.imageUrl && (
                 <div style={styles.preview}>
                   <img src={form.imageUrl} alt="Product preview" style={styles.previewImg} />
-                  <span style={{ fontSize: '0.78rem', color: '#64748b', wordBreak: 'break-all', flex: 1 }}>{form.imageUrl}</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--muted)', wordBreak: 'break-all', flex: 1 }}>{form.imageUrl}</span>
                   <button
                     style={styles.linkBtn}
                     onClick={() => updateField('imageUrl', '')}
@@ -635,7 +635,7 @@ export default function VendorProducts() {
             <div style={styles.bulkBody}>
               <div>
                 <button style={styles.linkBtn} onClick={downloadTemplate}>Download CSV template</button>
-                <span style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                   {' '}— columns: name, price, type, category, stock, unit, sku, barcode, description, imageUrl
                 </span>
               </div>
@@ -647,7 +647,7 @@ export default function VendorProducts() {
                   style={{ fontSize: '0.8rem' }}
                   onChange={(e) => handleBulkFile(e.target.files?.[0])}
                 />
-                {bulkFileName && <div style={{ fontSize: '0.8rem', color: '#64748b' }}>File: {bulkFileName}</div>}
+                {bulkFileName && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>File: {bulkFileName}</div>}
               </div>
               <div>
                 <label style={styles.label}>Or paste CSV / JSON below</label>
@@ -660,18 +660,18 @@ export default function VendorProducts() {
               </div>
               {bulkError && (
                 <div style={styles.resultBox}>
-                  <div style={{ color: '#dc2626', fontWeight: 600, marginBottom: '0.4rem' }}>Fix these rows:</div>
+                  <div style={{ color: 'var(--danger)', fontWeight: 600, marginBottom: '0.4rem' }}>Fix these rows:</div>
                   {bulkError.split('\n').map((l, i) => <div key={i}>{l}</div>)}
                 </div>
               )}
               {bulkResult && (
                 <div style={styles.resultBox}>
-                  <div style={{ color: '#16a34a', fontWeight: 600 }}>✅ {bulkResult.created.length} product(s) created</div>
+                  <div style={{ color: 'var(--success)', fontWeight: 600 }}>✅ {bulkResult.created.length} product(s) created</div>
                   {bulkResult.failed.length > 0 && (
-                    <div style={{ color: '#dc2626', fontWeight: 600, marginTop: '0.4rem' }}>{bulkResult.failed.length} failed:</div>
+                    <div style={{ color: 'var(--danger)', fontWeight: 600, marginTop: '0.4rem' }}>{bulkResult.failed.length} failed:</div>
                   )}
                   {bulkResult.failed.map((f, i) => (
-                    <div key={i} style={{ color: '#dc2626' }}>• {f.name}: {f.error}</div>
+                    <div key={i} style={{ color: 'var(--danger)' }}>• {f.name}: {f.error}</div>
                   ))}
                 </div>
               )}
