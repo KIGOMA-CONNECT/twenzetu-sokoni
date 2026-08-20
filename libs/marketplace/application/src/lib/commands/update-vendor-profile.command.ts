@@ -7,6 +7,7 @@ export class UpdateVendorProfileCommand extends CommandBase {
     public readonly category?: string,
     public readonly latitude?: number | null,
     public readonly longitude?: number | null,
+    public readonly settings?: Record<string, unknown> | null,
   ) {
     super();
   }

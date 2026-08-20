@@ -26,6 +26,7 @@ export interface ReconstituteVendorProps {
   readonly version: number;
   readonly latitude?: number;
   readonly longitude?: number;
+  readonly settings?: Record<string, unknown>;
 }
 
 import { VendorStatus } from './vendor-status';
@@ -45,6 +46,7 @@ export class Vendor extends AggregateRoot<EntityId> {
     private readonly _version: number,
     private _latitude?: number,
     private _longitude?: number,
+    private _settings: Record<string, unknown> = {},
   ) {
     super(id);
   }
@@ -81,6 +83,7 @@ export class Vendor extends AggregateRoot<EntityId> {
   public get version(): number { return this._version; }
   public get latitude(): number | undefined { return this._latitude; }
   public get longitude(): number | undefined { return this._longitude; }
+  public get settings(): Record<string, unknown> { return this._settings; }
 
   public toDto() {
     return {
@@ -94,6 +97,7 @@ export class Vendor extends AggregateRoot<EntityId> {
       totalOrders: this._totalOrders,
       latitude: this._latitude,
       longitude: this._longitude,
+      settings: this._settings,
     };
   }
 
@@ -108,6 +112,7 @@ export class Vendor extends AggregateRoot<EntityId> {
     category?: string;
     latitude?: number | null;
     longitude?: number | null;
+    settings?: Record<string, unknown> | null;
   }): void {
     if (updates.shopName !== undefined) {
       Guard.assert(Guard.againstEmptyString(updates.shopName, 'shopName'));
@@ -125,6 +130,9 @@ export class Vendor extends AggregateRoot<EntityId> {
     }
     if (updates.longitude !== undefined) {
       this._longitude = updates.longitude ?? undefined;
+    }
+    if (updates.settings !== undefined) {
+      this._settings = updates.settings ?? {};
     }
   }
 

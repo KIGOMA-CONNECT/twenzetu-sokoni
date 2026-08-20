@@ -41,6 +41,11 @@ function ProductList() {
   }, [products]);
 
   const currentVendor = (vendors || []).find((v) => v.id === vendorId);
+  const vendorSettings = currentVendor?.settings ?? {};
+  const logoUrl = typeof vendorSettings.logoUrl === 'string' ? vendorSettings.logoUrl : '';
+  const shopPhone = typeof vendorSettings.phone === 'string' ? vendorSettings.phone : '';
+  const shopStreet = typeof vendorSettings.street === 'string' ? vendorSettings.street : '';
+  const shopCity = typeof vendorSettings.city === 'string' ? vendorSettings.city : '';
 
   const handleAdd = async (p: Product) => {
     if (!vendorId) return;
@@ -57,10 +62,30 @@ function ProductList() {
 
   return (
     <div className="page">
-      <PageHeader
-        title={currentVendor?.shopName || t('product.title')}
-        subtitle={t('product.subtitle')}
-      />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '0.5rem' }}>
+        {logoUrl && (
+          <img
+            src={logoUrl}
+            alt={currentVendor?.shopName || 'shop logo'}
+            style={{ width: 64, height: 64, borderRadius: 12, objectFit: 'cover', border: '1px solid var(--line)', background: 'var(--surface)' }}
+            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <PageHeader
+            title={currentVendor?.shopName || t('product.title')}
+            subtitle={t('product.subtitle')}
+          />
+        </div>
+      </div>
+
+      {(shopPhone || shopStreet || shopCity) && (
+        <div className="card" style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+          {shopPhone && <span>📞 {shopPhone}</span>}
+          {(shopPhone && (shopStreet || shopCity)) && <span style={{ margin: '0 0.5rem', opacity: 0.5 }}>•</span>}
+          {(shopStreet || shopCity) && <span>📍 {[shopStreet, shopCity].filter(Boolean).join(', ')}</span>}
+        </div>
+      )}
 
       {currentVendor?.latitude != null &&
         currentVendor.longitude != null &&

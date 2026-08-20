@@ -36,6 +36,9 @@ export class VendorOrmEntity extends TenantAwareEntity {
   @Column({ name: 'longitude', type: 'decimal', precision: 10, scale: 7, nullable: true })
   public longitude!: number | null;
 
+  @Column({ type: 'jsonb', default: {} })
+  public settings!: Record<string, unknown>;
+
   @Column({ type: 'integer', default: 1 })
   public version!: number;
 }

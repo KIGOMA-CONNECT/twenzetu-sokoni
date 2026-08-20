@@ -56,6 +56,7 @@ export interface Vendor {
   totalOrders: number;
   latitude?: number;
   longitude?: number;
+  settings?: Record<string, unknown>;
 }
 
 export interface Product {
@@ -543,6 +544,7 @@ export interface VendorProfile {
   totalOrders: number;
   latitude?: number | null;
   longitude?: number | null;
+  settings?: Record<string, unknown>;
 }
 
 export interface VendorIncomeStatement {

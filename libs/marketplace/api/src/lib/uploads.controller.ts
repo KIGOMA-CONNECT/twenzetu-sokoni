@@ -79,4 +79,14 @@ export class UploadsController {
     if (!file) throw new BadRequestException('File is required');
     return this.fileUploadService.upload({ file: file.buffer, fileName: file.originalname, contentType: file.mimetype, folder: `avatars/${user.tenantId}` });
   }
+
+  @Post('loan-document')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: docFilter }))
+  @ApiOperation({ summary: 'Upload a loan application document (PDF/JPEG/PNG)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ schema: { type: 'object', properties: { file: { type: 'string', format: 'binary' } }, required: ['file'] } })
+  async uploadLoanDocument(@UploadedFile() file: MulterFile, @CurrentUser() user: JwtPayload) {
+    if (!file) throw new BadRequestException('File is required');
+    return this.fileUploadService.upload({ file: file.buffer, fileName: file.originalname, contentType: file.mimetype, folder: `loan-documents/${user.tenantId}` });
+  }
 }

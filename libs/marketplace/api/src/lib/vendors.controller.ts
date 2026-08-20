@@ -160,6 +160,7 @@ export class VendorsController {
       dto.category,
       dto.latitude,
       dto.longitude,
+      dto.settings,
     );
     return this.updateVendorProfile.execute(ctx.vendorId, command);
   }

@@ -113,6 +113,7 @@ export class TypeOrmVendorRepository extends TypeOrmRepository<Vendor, VendorOrm
       version: e.version,
       latitude: e.latitude == null ? undefined : Number(e.latitude),
       longitude: e.longitude == null ? undefined : Number(e.longitude),
+      settings: e.settings ?? {},
     });
   }
 
@@ -131,6 +132,7 @@ export class TypeOrmVendorRepository extends TypeOrmRepository<Vendor, VendorOrm
       version: entity.version,
       latitude: entity.latitude ?? null,
       longitude: entity.longitude ?? null,
+      settings: entity.settings ?? {},
     };
   }
 }

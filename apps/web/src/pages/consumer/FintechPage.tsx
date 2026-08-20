@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import LoanManagement from './LoanManagement';
 import api from '../../api/client';
 
 type Tab = 'savings' | 'deposits' | 'loans' | 'subscription' | 'commissions';
@@ -35,25 +36,6 @@ interface FixedDeposit {
   maturityAmount: number;
   status: string;
   createdAt: string;
-}
-
-interface Loan {
-  id: string;
-  borrowerType: string;
-  principal: number;
-  interestRate: number;
-  termMonths: number;
-  monthlyPayment: number;
-  remainingBalance: number;
-  status: string;
-  dueDate?: string;
-  createdAt: string;
-}
-
-interface LoanConfig {
-  vendor: { annual: number; minAmount: number; maxAmount: number; maxTerm: number };
-  driver: { annual: number; minAmount: number; maxAmount: number; maxTerm: number };
-  customer: { annual: number; minAmount: number; maxAmount: number; maxTerm: number };
 }
 
 interface SubscriptionTier {
@@ -146,7 +128,7 @@ export default function FintechPage() {
       </div>
       {activeTab === 'savings' && <SavingsTab />}
       {activeTab === 'deposits' && <DepositsTab />}
-      {activeTab === 'loans' && <LoansTab />}
+      {activeTab === 'loans' && <LoanManagement />}
       {activeTab === 'subscription' && <SubscriptionTab />}
       {activeTab === 'commissions' && <CommissionsTab />}
     </div>
@@ -353,125 +335,6 @@ export default function FintechPage() {
                       <td><strong>{formatCurrency(fd.maturityAmount)}</strong></td>
                       <td>{formatDate(fd.maturityDate)}</td>
                       <td><span className={`badge ${fd.status === 'active' ? 'badge-green' : 'badge-amber'}`}>{fd.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  function LoansTab() {
-    const { data: config } = useApi<LoanConfig>('/fintech/loans/config');
-    const { data: myLoans, loading, error, refetch } = useApi<Loan[]>('/fintech/loans/me');
-    const [principal, setPrincipal] = useState(100000);
-    const [term, setTerm] = useState(12);
-    const [purpose, setPurpose] = useState('');
-    const [busy, setBusy] = useState(false);
-    const [msg, setMsg] = useState('');
-    const [err, setErr] = useState('');
-
-    const borrowerKey = isVendor ? 'vendor' : isDriver ? 'driver' : 'customer';
-    const myConfig = config?.[borrowerKey];
-
-    const monthlyPayment = useMemo(() => {
-      if (!myConfig || principal < myConfig.minAmount || principal > myConfig.maxAmount || term > myConfig.maxTerm) return null;
-      const r = myConfig.annual / 12;
-      return Math.round((principal * r * Math.pow(1 + r, term)) / (Math.pow(1 + r, term) - 1) * 100) / 100;
-    }, [principal, term, myConfig]);
-
-    const handleApply = async () => {
-      setBusy(true); setMsg(''); setErr('');
-      try {
-        await api.post('/fintech/loans', { principal, termMonths: term, purpose: purpose || undefined });
-        setMsg('Loan application submitted. An admin will review it.');
-        refetch();
-      } catch (e: any) {
-        setErr(e.response?.data?.error?.message || e.response?.data?.message || e.message || 'Failed to apply');
-      } finally {
-        setBusy(false);
-      }
-    };
-
-    const handleRepay = async (loanId: string) => {
-      const amount = window.prompt('Enter repayment amount (TZS):', '50000');
-      if (!amount) return;
-      try {
-        await api.post(`/fintech/loans/${loanId}/repay`, { amount: Number(amount) });
-        refetch();
-      } catch (e: any) {
-        alert(e.response?.data?.error?.message || e.response?.data?.message || e.message || 'Repayment failed');
-      }
-    };
-
-    return (
-      <div className="card" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          <h3 className="section-title">Apply for a Loan ({borrowerKey})</h3>
-          {myConfig && (
-            <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-              Annual rate: {(myConfig.annual * 100).toFixed(0)}% · Min {formatCurrency(myConfig.minAmount)} · Max {formatCurrency(myConfig.maxAmount)} · Max term {myConfig.maxTerm} months
-            </div>
-          )}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <label className="field-label">Principal</label>
-            <input type="number" className="input" value={principal} min={1} onChange={(e) => setPrincipal(Number(e.target.value))} style={{ width: 160 }} />
-            <label className="field-label">Term (months)</label>
-            <input type="number" className="input" value={term} min={1} onChange={(e) => setTerm(Number(e.target.value))} style={{ width: 120 }} />
-            <label className="field-label">Purpose</label>
-            <input type="text" className="input" value={purpose} onChange={(e) => setPurpose(e.target.value)} placeholder="e.g. stock, repairs" style={{ width: 200 }} />
-            <button className="btn btn-primary" disabled={busy} onClick={handleApply}>Apply</button>
-          </div>
-          {monthlyPayment != null && (
-            <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Estimated monthly payment: <strong style={{ color: 'var(--ink)' }}>{formatCurrency(monthlyPayment)}</strong>
-            </div>
-          )}
-          {msg && <div style={{ color: 'var(--success)', fontSize: '0.85rem' }}>{msg}</div>}
-          {err && <div style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{err}</div>}
-        </div>
-
-        <div>
-          <h3 className="section-title">My Loans</h3>
-          {loading ? (
-            <LoadingSpinner />
-          ) : error ? (
-            <ErrorMessage message={error} />
-          ) : !myLoans || myLoans.length === 0 ? (
-            <EmptyState icon="💰" title="No loans yet" sub="Apply above to request a loan" />
-          ) : (
-            <div className="table-wrap">
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Principal</th>
-                    <th>Rate</th>
-                    <th>Term</th>
-                    <th>Monthly</th>
-                    <th>Remaining</th>
-                    <th>Status</th>
-                    <th>Due</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {myLoans.map((loan) => (
-                    <tr key={loan.id}>
-                      <td>{formatCurrency(loan.principal)}</td>
-                      <td>{(loan.interestRate * 100).toFixed(0)}%</td>
-                      <td>{loan.termMonths} mo</td>
-                      <td>{formatCurrency(loan.monthlyPayment)}</td>
-                      <td><strong>{formatCurrency(loan.remainingBalance)}</strong></td>
-                      <td><span className={`badge ${loan.status === 'active' ? 'badge-green' : loan.status === 'pending' ? 'badge-amber' : 'badge-blue'}`}>{loan.status}</span></td>
-                      <td>{loan.dueDate ? formatDate(loan.dueDate) : '-'}</td>
-                      <td>
-                        {loan.status === 'active' && (
-                          <button className="btn btn-primary btn-sm" onClick={() => handleRepay(loan.id)}>Repay</button>
-                        )}
-                      </td>
                     </tr>
                   ))}
                 </tbody>

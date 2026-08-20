@@ -1,4 +1,4 @@
-import { IsNumber, IsOptional, IsString, Max, Min } from 'class-validator';
+import { IsNumber, IsObject, IsOptional, IsString, Max, Min } from 'class-validator';
 
 export class UpdateVendorProfileDto {
   @IsOptional()
@@ -24,4 +24,9 @@ export class UpdateVendorProfileDto {
   @Min(-180)
   @Max(180)
   longitude?: number;
+
+  /** Extensible JSONB settings: logoUrl, phone, email, bank, mpesa, etc. */
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
 }

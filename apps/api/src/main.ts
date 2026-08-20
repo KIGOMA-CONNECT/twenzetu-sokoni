@@ -11,6 +11,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
 import { join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
+import { FileUploadService } from '@afri-market/integrations';
 import { AppModule } from './app/app.module';
 
 const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
@@ -57,6 +58,28 @@ async function bootstrap(): Promise<void> {
   }
 
   app.use((req: Request, res: Response, next: NextFunction) => {
+    if (req.path.startsWith('/api/uploads/') && req.method === 'GET') {
+      try {
+        const uploads = app.get(FileUploadService);
+        const key = decodeURIComponent(req.path.replace(/^\/api\/uploads\//, ''));
+        const fullPath = uploads.resolvePath(key);
+        if (uploads.pathExists(key)) {
+          const ext = fullPath.split('.').pop()?.toLowerCase() || '';
+          const mime: Record<string, string> = {
+            js: 'application/javascript', css: 'text/css', html: 'text/html',
+            svg: 'image/svg+xml', png: 'image/png', jpg: 'image/jpeg',
+            jpeg: 'image/jpeg', gif: 'image/gif', ico: 'image/x-icon',
+            json: 'application/json', webp: 'image/webp', txt: 'text/plain',
+            pdf: 'application/pdf',
+          };
+          res.type(mime[ext] || 'application/octet-stream').send(readFileSync(fullPath));
+          return;
+        }
+        return res.status(404).send('Not found');
+      } catch {
+        return res.status(400).send('Bad request');
+      }
+    }
     if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics') || req.path.startsWith('/docs') || req.path.startsWith('/swagger')) {
       return next();
     }

@@ -25,6 +25,7 @@ export class UpdateVendorProfileUseCase {
       category: command.category,
       latitude: command.latitude,
       longitude: command.longitude,
+      settings: command.settings,
     });
 
     await this.vendorRepo.save(vendor);
