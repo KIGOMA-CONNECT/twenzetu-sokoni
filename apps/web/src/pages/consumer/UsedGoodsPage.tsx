@@ -1,4 +1,5 @@
-﻿import { useNavigate, useParams } from 'react-router-dom';
+﻿import { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useApi } from '../../hooks/useApi';
 import { useCart } from '../../context/CartContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -27,8 +28,9 @@ const SUBCAT_BG: Record<string, string> = {
 export default function UsedGoodsPage() {
   const navigate = useNavigate();
   const { categoryId } = useParams<{ categoryId?: string }>();
+  const [cartError, setCartError] = useState<string | null>(null);
   const { data: categories, loading: catsLoading, error: catsError } = useApi<Category[]>('/public/categories', []);
-  const { addItem } = useCart();
+  const { addItem, setActiveVendor } = useCart();
 
   const subcategories = (categories ?? []).filter((c) => c.parentId === USED_PARENT_ID);
   const selectedCat = subcategories.find((c) => c.id === categoryId);
@@ -43,7 +45,13 @@ export default function UsedGoodsPage() {
       navigate('/login');
       return;
     }
-    try { await addItem(p.id); } catch { /* noop */ }
+    setCartError(null);
+    try {
+      setActiveVendor(p.vendorId);
+      await addItem(p.id);
+    } catch (err: any) {
+      setCartError(err?.response?.data?.message || err?.message || 'Imeshindikana kuongeza kwenye kikapu');
+    }
   };
 
   if (catsLoading) return <LoadingSpinner />;
@@ -63,6 +71,11 @@ export default function UsedGoodsPage() {
         >
           ‹ Rudi kwenye subcategories
         </button>
+        {cartError && (
+          <div className="card" style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: '0.85rem', padding: '0.7rem 1rem', marginBottom: '1rem' }}>
+            ⚠️ {cartError}
+          </div>
+        )}
         {prodsLoading && <LoadingSpinner />}
         {prodsError && <ErrorMessage message={prodsError} />}
         {!prodsLoading && !prodsError && (
