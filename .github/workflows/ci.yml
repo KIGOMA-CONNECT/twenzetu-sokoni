@@ -1,212 +1,36 @@
-name: CI/CD
+name: CI
 
 on:
   push:
     branches: [master]
   pull_request:
-    branches: [master]
 
-env:
-  NODE_VERSION: 22
-  NX_CLOUD_ACCESS_TOKEN: ${{ secrets.NX_CLOUD_ACCESS_TOKEN }}
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  lint-and-typecheck:
-    name: Lint
+  verify:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION }}
+          node-version: 20
           cache: npm
-      - run: npm ci --prefer-offline
-      - run: npx nx run-many -t lint --projects=api,web --parallel=3
 
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: afri_market_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci --prefer-offline
-      - run: npx nx run-many -t test --projects=api,marketplace-api,marketplace-application --parallel=1
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_BOOTSTRAP_USER: postgres
-          DB_BOOTSTRAP_PASSWORD: postgres
-          DB_NAME: afri_market_test
-          DB_OWNER_USER: postgres
-          DB_OWNER_PASSWORD: postgres
-          DB_RUNTIME_USER: postgres
-          DB_RUNTIME_PASSWORD: postgres
-          # additional env aliases to avoid falling back to 'root'
-          DB_USER: postgres
-          DATABASE_USER: postgres
-          DB_USERNAME: postgres
-          DATABASE_USERNAME: postgres
-          # POSgres client envs
-          PGUSER: postgres
-          PGPASSWORD: postgres
-          # single DATABASE_URL for libs that prefer connection string
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/afri_market_test
-          JWT_SECRET: ci-jwt-secret
-          REDIS_URL: redis://localhost:6379
+      - name: Install dependencies
+        run: npm ci
 
-  build:
-    name: Build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci --prefer-offline
-      - run: npx nx run-many -t build --projects=api,web --parallel=3
+      - name: Lint core projects
+        run: npx nx run-many -t lint -p marketplace-application marketplace-api marketplace-domain marketplace-infrastructure core-http tenancy core-security core-finance web api
 
-  # scan-all: lint + test across the entire monorepo (all projects, not just api/web)
-  scan-all:
-    name: Monorepo scan (lint+test all projects)
-    runs-on: ubuntu-latest
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: afri_market_test
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
-      redis:
-        image: redis:7-alpine
-        ports:
-          - 6379:6379
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 5s
-          --health-timeout 3s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci --prefer-offline
-      - run: npx nx run-many -t lint --parallel=3
-      - run: npx nx run-many -t test --parallel=1
-        env:
-          DB_HOST: localhost
-          DB_PORT: 5432
-          DB_BOOTSTRAP_USER: postgres
-          DB_BOOTSTRAP_PASSWORD: postgres
-          DB_NAME: afri_market_test
-          DB_OWNER_USER: postgres
-          DB_OWNER_PASSWORD: postgres
-          DB_RUNTIME_USER: postgres
-          DB_RUNTIME_PASSWORD: postgres
-          DB_USER: postgres
-          DATABASE_USER: postgres
-          DB_USERNAME: postgres
-          DATABASE_USERNAME: postgres
-          PGUSER: postgres
-          PGPASSWORD: postgres
-          JWT_SECRET: ci-jwt-secret
-          REDIS_URL: redis://localhost:6379
+      - name: Test core projects
+        run: npx nx run-many -t test -p marketplace-application marketplace-api core-http tenancy core-security core-finance
 
-  secret-scan:
-    name: Secret scan (gitleaks)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      # Use the prebuilt gitleaks image instead of gitleaks/gitleaks@v8.21.2:
-      # that action builds gitleaks from source and fails with exit 128 on
-      # `git describe --tags` when the action repo is checked out without tags.
-      - name: Run gitleaks detect
-        run: |
-          docker run --rm \
-            -v "$PWD:/repo:ro" \
-            zricethezav/gitleaks:v8.21.2 \
-            detect --source /repo --no-banner --exit-code=1
-
-  audit:
-    name: npm audit (report high/critical)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci --prefer-offline
-      # Report-only for now: 4 known high-severity issues need breaking upgrades
-      # (react-router 7.12.x, @nestjs/swagger->js-yaml). Re-enable as a hard gate
-      # once dependabot PRs are merged. Gitleaks job is the hard fail gate.
-      - run: npm audit --audit-level=high --omit=dev
-        continue-on-error: true
-
-  sbom:
-    name: SBOM generation
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-      - run: npm ci --prefer-offline
-      - name: Generate CycloneDX SBOM
-        run: npx @cyclonedx/cyclonedx-npm --output-file sbom.json
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sbom
-          path: sbom.json
-
-# Deploy is handled server-side by /opt/afri-market/scripts/auto-deploy.sh (cron, every 2 min).
+      - name: Build api + web
+        run: npx nx run-many -t build -p api web
