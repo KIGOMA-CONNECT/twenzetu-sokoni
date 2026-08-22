@@ -27,9 +27,14 @@ describe('TenantMiddleware', () => {
     const middleware = new TenantMiddleware(store, resolver);
     const next: NextFunction = jest.fn();
 
+    // Maps to HTTP 401: a request without tenant context on protected routes
+    // is an unauthenticated request (middleware runs before guards).
     await expect(middleware.use({} as Request, {} as Response, next)).rejects.toThrow(
       'Unable to resolve tenant from request',
     );
+    await expect(middleware.use({} as Request, {} as Response, jest.fn())).rejects.toMatchObject({
+      status: 401,
+    });
     expect(next).not.toHaveBeenCalled();
   });
 

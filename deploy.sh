@@ -75,6 +75,10 @@ echo "6. Checking service status..."
 docker compose -f docker-compose.prod.yml ps
 
 echo ""
+echo "7. Ensuring ops crons are installed..."
+bash scripts/install-crons.sh || echo "  (cron install skipped)"
+
+echo ""
 echo "========================================="
 echo "  Deployment complete!"
 echo ""

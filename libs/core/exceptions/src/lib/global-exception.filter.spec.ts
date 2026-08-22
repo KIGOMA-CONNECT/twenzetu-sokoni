@@ -5,7 +5,7 @@ import {
   NotFoundException,
   ValidationDomainException,
 } from '@afri-market/kernel';
-import { ArgumentsHost, BadRequestException, HttpStatus } from '@nestjs/common';
+import { ArgumentsHost, BadRequestException, HttpStatus, UnauthorizedException } from '@nestjs/common';
 import type { Response } from 'express';
 import { GlobalExceptionFilter } from './global-exception.filter';
 
@@ -130,6 +130,26 @@ describe('GlobalExceptionFilter', () => {
     expect(response.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
     expect(response.json).toHaveBeenCalledWith(
       expect.objectContaining({ error: expect.objectContaining({ code: 'HTTP.400' }) }),
+    );
+  });
+
+  it('maps an unauthenticated HttpException (e.g. tenant middleware) to 401, not 500', () => {
+    const logger = fakeLogger();
+    const filter = new GlobalExceptionFilter(logger);
+    const response = fakeResponse();
+
+    // TenantResolutionException now extends UnauthorizedException; any
+    // unauthenticated HttpException must surface as 401 with HTTP.401 code.
+    filter.catch(
+      new UnauthorizedException('Unable to resolve tenant from request'),
+      fakeHost(response),
+    );
+
+    expect(response.status).toHaveBeenCalledWith(HttpStatus.UNAUTHORIZED);
+    expect(response.json).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: expect.objectContaining({ code: 'HTTP.401' }),
+      }),
     );
   });
 

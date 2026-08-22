@@ -11,8 +11,8 @@ test('platform is up: web renders and health API responds', async ({ page, reque
   expect(health.status()).toBe(200);
 });
 
-test('vendor marketplace lists vendors', async ({ request }) => {
-  const res = await request.get(`${apiBaseURL}/vendors`);
+test('public vendor marketplace lists vendors without auth', async ({ request }) => {
+  const res = await request.get(`${apiBaseURL}/public/vendors`);
   expect(res.status()).toBe(200);
   const body = await res.json();
   // Response envelope may be { data: [...] } or a bare array depending on version.
@@ -20,12 +20,21 @@ test('vendor marketplace lists vendors', async ({ request }) => {
   expect(Array.isArray(list)).toBe(true);
 });
 
+test('protected APIs answer 401 (never 500) for anonymous callers', async ({ request }) => {
+  // Regression guard: tenant middleware once turned these into INTERNAL 500s.
+  for (const path of ['/vendors', '/orders', '/wallets']) {
+    const res = await request.get(`${apiBaseURL}${path}`);
+    expect(res.status(), `${path} for anonymous caller`).toBe(401);
+  }
+});
+
 test('login rejects bad credentials without crashing', async ({ page }) => {
   await page.goto('/login');
-  await page.fill('input[type="email"], input[name="email"]', 'e2e-smoke@example.com');
-  await page.fill('input[type="password"]', 'wrong-password-123');
+  // Login is phone-based: #phoneNumber + #password.
+  await page.fill('#phoneNumber', '+255754000000');
+  await page.fill('#password', 'wrong-password-123');
   await page.click('button[type="submit"]');
-  // Either an inline error appears or we stay on /login; never a 5xx crash page.
+  // Either an inline error appears or we stay on /login; never a crash page.
   await expect(page).toHaveURL(/\/login/);
   await expect(page.locator('body')).not.toContainText('Internal Server Error');
 });
