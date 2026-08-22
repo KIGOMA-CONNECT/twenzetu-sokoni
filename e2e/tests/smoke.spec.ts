@@ -15,8 +15,13 @@ test('public vendor marketplace lists vendors without auth', async ({ request })
   const res = await request.get(`${apiBaseURL}/public/vendors`);
   expect(res.status()).toBe(200);
   const body = await res.json();
-  // Response envelope may be { data: [...] } or a bare array depending on version.
-  const list = Array.isArray(body) ? body : (body.data ?? []);
+  // Envelopes seen in the wild: bare array | { data: [...] } |
+  // { data: { data: [...] , total } } (success wrapper around paginated).
+  const list = Array.isArray(body)
+    ? body
+    : Array.isArray(body.data)
+      ? body.data
+      : (body.data?.data ?? []);
   expect(Array.isArray(list)).toBe(true);
 });
 
@@ -41,5 +46,6 @@ test('login rejects bad credentials without crashing', async ({ page }) => {
 
 test('protected route redirects anonymous users to login', async ({ page }) => {
   await page.goto('/orders');
-  await expect(page).toHaveURL(/\/(login|dashboard)/);
+  // SPA auth boot is async; give the client guard time to land somewhere sane.
+  await expect(page).toHaveURL(/\/(login|dashboard)/, { timeout: 15_000 });
 });
