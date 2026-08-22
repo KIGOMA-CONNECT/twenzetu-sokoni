@@ -59,14 +59,16 @@ export function MainLayout() {
     setQuery('');
   };
 
-  const showMarketplace = !user || (isCustomer && !isVendor) || isAdmin;
+  // Marketplace nav is a ROLE matter: every customer shops, even one that
+  // also owns a vendor shop. `isVendor` (role OR vendorAccess) must not hide it.
+  const showMarketplace = !user || isCustomer || isAdmin;
 
   const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
 
   const menuItems: { label: string; path: string; show: boolean; group: string }[] = [
-    { label: 'Dashboard', path: '/dashboard', show: !!user && !isVendor && !isDriver, group: 'Marketplace' },
+    { label: 'Dashboard', path: '/dashboard', show: !!user && user.role !== 'vendor' && user.role !== 'driver', group: 'Marketplace' },
     { label: 'Browse Vendors', path: '/vendors', show: showMarketplace, group: 'Marketplace' },
-    { label: 'Services', path: '/services', show: (isCustomer && !isVendor) || isAdmin, group: 'Marketplace' },
+    { label: 'Services', path: '/services', show: isCustomer || isAdmin, group: 'Marketplace' },
     { label: 'My Orders', path: '/orders', show: isCustomer, group: 'Marketplace' },
     { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor, group: 'Marketplace' },
     { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver, group: 'Marketplace' },
@@ -160,8 +162,8 @@ export function MainLayout() {
   const bottomNav = [
     { label: 'Home', ico: '🏠', path: user ? '/dashboard' : '/vendors', show: true },
     { label: 'Vendors', ico: '🏪', path: '/vendors', show: showMarketplace },
-    { label: 'Services', ico: '🧰', path: '/services', show: (isCustomer && !isVendor) || isAdmin },
-    { label: 'Cart', ico: '🛒', path: '/cart', show: (isCustomer && !isVendor) || isAdmin, badge: itemCount },
+    { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
+    { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
     { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
     { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
     { label: 'Finance', ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },

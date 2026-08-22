@@ -180,13 +180,15 @@ function AppRoutes() {
 }
 
 function DashboardRedirect() {
-  const { user, vendorAccess } = useAuth();
+  const { user } = useAuth();
   if (!user) return <Navigate to="/login" />;
   if (STAFF_ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin/dashboard" />;
   if (user.role === 'vendor') return <Navigate to="/vendor/dashboard" />;
   if (user.role === 'driver') return <Navigate to="/driver/dashboard" />;
   if (user.role === 'customer') {
-    if (vendorAccess) return <Navigate to="/vendor/dashboard" />;
+    // Buyers always land in the consumer experience, even when they own a
+    // vendor shop (e.g. onboarded via Become a Vendor). The Vendor Panel
+    // stays reachable through its sidebar link instead of hijacking login.
     return <ConsumerDashboard />;
   }
   return <Navigate to="/login" />;
