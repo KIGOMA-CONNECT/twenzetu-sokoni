@@ -39,6 +39,11 @@ ci_wait() {
     total=$(echo "$API" | grep -c '"conclusion":' || true)
     completed=$(echo "$API" | grep -c '"status": "completed"' || true)
     failures=$(echo "$API" | grep -c '"conclusion": "failure"' || true)
+    if [ "$total" -eq 0 ]; then
+      echo "$(date '+%F %T') no checks reported for $TARGET" >> "$LOG"
+      [ "${REQUIRE_CI:-0}" = "1" ] && exit 1
+      return 0
+    fi
     if [ "$failures" -gt 0 ]; then
       echo "$(date '+%F %T') CI FAILED on $TARGET -> deploy skipped" >> "$LOG"
       exit 1
