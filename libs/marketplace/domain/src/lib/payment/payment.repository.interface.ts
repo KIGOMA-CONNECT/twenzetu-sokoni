@@ -24,6 +24,6 @@ export interface IPaymentRepository extends IRepository<Payment, EntityId> {
     id: string,
     fromStatus: string,
     toStatus: string,
-    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt'>>,
+    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt' | 'receiptNumber'>>,
   ): Promise<boolean>;
 }

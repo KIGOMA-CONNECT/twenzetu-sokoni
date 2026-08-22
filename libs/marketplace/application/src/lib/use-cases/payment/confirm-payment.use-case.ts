@@ -30,13 +30,30 @@ export class ConfirmPaymentUseCase {
       return { paymentId: payment.id.value, status: payment.status, message: `Payment already ${payment.status}` };
     }
 
+    // Atomic claim: concurrent webhook retries racing on the same
+    // transactionRef can only flip PENDING -> ESCROW_HELD once. Losers of the
+    // race observe the post-claim status instead of double-firing side
+    // effects (order promotion, gateway fan-out, notifications).
+    const claimed = await this.paymentRepo.transitionStatus(
+      payment.id.value,
+      'PENDING',
+      'ESCROW_HELD',
+      {
+        confirmedAt: new Date(),
+        ...(params.receiptNumber ? { receiptNumber: params.receiptNumber } : {}),
+      },
+    );
+    if (!claimed) {
+      const current = await this.paymentRepo.findById(payment.id);
+      return { paymentId: payment.id.value, status: current?.status ?? payment.status, message: `Payment already ${current?.status ?? payment.status}` };
+    }
+
     payment.confirmEscrow();
     // Store the provider receipt separately — transactionRef stays as the
     // original checkoutRequestId so webhook retries still resolve this row.
     if (params.receiptNumber) {
       payment.setReceiptNumber(params.receiptNumber);
     }
-    await this.paymentRepo.save(payment);
 
     // Cargo bookings are paid-for transport, not shop orders waiting to be
     // prepared: once the money is in escrow the order becomes ready for a

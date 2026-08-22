@@ -62,6 +62,7 @@ export class Payment extends AggregateRoot<EntityId> {
       props.vendorId, props.amount, props.method, initialStatus,
       props.systemCommission, props.vendorNet, props.driverNet,
       undefined,
+      undefined,
       props.method === 'cash' ? undefined : now,
       undefined, 1,
     );

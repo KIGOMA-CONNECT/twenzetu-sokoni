@@ -56,7 +56,7 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
     id: string,
     fromStatus: string,
     toStatus: string,
-    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt'>>,
+    extra?: Partial<Pick<Payment, 'transactionRef' | 'confirmedAt' | 'receiptNumber'>>,
   ): Promise<boolean> {
     const update: Record<string, unknown> = {
       status: toStatus,
@@ -67,6 +67,9 @@ export class TypeOrmPaymentRepository extends TypeOrmRepository<Payment, Payment
     }
     if (extra?.confirmedAt !== undefined) {
       update.confirmed_at = extra.confirmedAt;
+    }
+    if (extra?.receiptNumber !== undefined) {
+      update.receipt_number = extra.receiptNumber;
     }
     const result = await this.repository
       .createQueryBuilder()
