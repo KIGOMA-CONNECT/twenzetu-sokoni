@@ -42,6 +42,9 @@ export class PaymentOrmEntity extends TenantAwareEntity {
   @Column({ name: 'transaction_ref', type: 'varchar', length: 100, nullable: true })
   public transactionRef!: string | null;
 
+  @Column({ name: 'receipt_number', type: 'varchar', length: 100, nullable: true })
+  public receiptNumber!: string | null;
+
   @Column({ name: 'initiated_at', type: 'timestamptz', nullable: true })
   public initiatedAt!: Date | null;
 

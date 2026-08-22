@@ -287,6 +287,38 @@ export interface CampaignSegment {
   lastOrderWithinDays?: number;
 }
 
+export interface CampaignVariant {
+  index: number;
+  label?: string;
+  message: string;
+}
+
+export interface CampaignVariantAnalytics {
+  variantIndex: number;
+  label: string;
+  sent: number;
+  failed: number;
+  converted: number;
+  conversionRate: number;
+  winner: boolean;
+}
+
+export interface CampaignAnalytics {
+  campaignId: string;
+  name: string;
+  status: string;
+  testEnabled: boolean;
+  totalAudience: number;
+  sentCount: number;
+  failedCount: number;
+  deliveredCount: number;
+  conversionCount: number;
+  conversionRate: number;
+  deliveryRate: number;
+  winningVariantIndex: number | null;
+  variants: CampaignVariantAnalytics[];
+}
+
 export interface MarketingCampaign {
   id: string;
   name: string;
@@ -295,9 +327,14 @@ export interface MarketingCampaign {
   status: 'DRAFT' | 'ACTIVE' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
   sentCount: number;
   failedCount: number;
+  deliveredCount?: number;
+  clickCount?: number;
+  conversionCount?: number;
   totalAudience: number;
   scheduledAt: string | null;
   segment: CampaignSegment | null;
+  testEnabled?: boolean;
+  variants?: CampaignVariant[];
   startedAt: string | null;
   completedAt: string | null;
 }

@@ -17,7 +17,8 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
   }
 
   public async findByVendorId(vendorId: string): Promise<Product[]> {
-    const entities = await this.repository.find({ where: { vendorId } });
+    // Hard cap keeps the query bounded even for very large catalogues.
+    const entities = await this.repository.find({ where: { vendorId }, take: 500, order: { createdAt: 'DESC' } });
     return entities.map((e) => this.toDomain(e));
   }
 

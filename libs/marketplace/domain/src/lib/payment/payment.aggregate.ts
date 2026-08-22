@@ -26,6 +26,7 @@ export interface ReconstitutePaymentProps {
   readonly vendorNet: Money;
   readonly driverNet: Money;
   readonly transactionRef: string | undefined;
+  readonly receiptNumber?: string | undefined;
   readonly initiatedAt: Date | undefined;
   readonly confirmedAt: Date | undefined;
   readonly version: number;
@@ -45,6 +46,7 @@ export class Payment extends AggregateRoot<EntityId> {
     private _vendorNet: Money,
     private _driverNet: Money,
     private _transactionRef: string | undefined,
+    private _receiptNumber: string | undefined,
     private _initiatedAt: Date | undefined,
     private _confirmedAt: Date | undefined,
     private readonly _version: number,
@@ -70,7 +72,7 @@ export class Payment extends AggregateRoot<EntityId> {
       props.id, props.tenantId, props.orderId, props.customerId,
       props.vendorId, props.amount, props.method, props.status,
       props.systemCommission, props.vendorNet, props.driverNet,
-      props.transactionRef, props.initiatedAt, props.confirmedAt, props.version,
+      props.transactionRef, props.receiptNumber, props.initiatedAt, props.confirmedAt, props.version,
     );
   }
 
@@ -85,6 +87,7 @@ export class Payment extends AggregateRoot<EntityId> {
   public get vendorNet(): Money { return this._vendorNet; }
   public get driverNet(): Money { return this._driverNet; }
   public get transactionRef(): string | undefined { return this._transactionRef; }
+  public get receiptNumber(): string | undefined { return this._receiptNumber; }
   public get initiatedAt(): Date | undefined { return this._initiatedAt; }
   public get confirmedAt(): Date | undefined { return this._confirmedAt; }
   public get version(): number { return this._version; }
@@ -97,6 +100,11 @@ export class Payment extends AggregateRoot<EntityId> {
 
   public setTransactionRef(transactionRef: string): void {
     this._transactionRef = transactionRef;
+  }
+
+  /** Provider receipt (e.g. M-Pesa code). Never overwrites transactionRef, which is the idempotency key webhooks look up. */
+  public setReceiptNumber(receiptNumber: string): void {
+    this._receiptNumber = receiptNumber;
   }
 
   public confirmEscrow(): void {
@@ -123,6 +131,7 @@ export class Payment extends AggregateRoot<EntityId> {
       vendorNet: this._vendorNet.amount,
       driverNet: this._driverNet.amount,
       transactionRef: this._transactionRef,
+      receiptNumber: this._receiptNumber,
       initiatedAt: this._initiatedAt,
       confirmedAt: this._confirmedAt,
       version: this._version,

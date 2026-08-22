@@ -1,8 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { EntityId } from '@afri-market/kernel';
-import { Delivery } from '@afri-market/marketplace-domain';
+import { Delivery, IDeliveryRepository } from '@afri-market/marketplace-domain';
 import { DELIVERY_REPOSITORY } from '../../tokens';
-import { IDeliveryRepository } from './create-delivery.use-case';
 
 @Injectable()
 export class FindDeliveriesUseCase {
@@ -10,8 +9,12 @@ export class FindDeliveriesUseCase {
     @Inject(DELIVERY_REPOSITORY) private readonly deliveryRepo: IDeliveryRepository,
   ) {}
 
-  public async findByDriver(driverId: string): Promise<Delivery[]> {
-    return this.deliveryRepo.findByDriverId(driverId);
+  public async findByDriver(
+    tenantId: string,
+    driverId: string,
+    opts: { status?: string; limit?: number; offset?: number } = {},
+  ): Promise<{ data: Delivery[]; total: number }> {
+    return this.deliveryRepo.findByTenantAndDriver(tenantId, driverId, opts);
   }
 
   public async findByOrder(orderId: string): Promise<Delivery | null> {

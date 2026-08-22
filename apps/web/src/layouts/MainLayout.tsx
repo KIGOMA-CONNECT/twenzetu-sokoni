@@ -6,11 +6,13 @@ import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { CurrencySwitcher } from '../components/CurrencySwitcher';
 import { NotificationBell } from '../components/NotificationBell';
 import { CartIcon } from '../components/CartIcon';
+import { useTheme } from '../hooks/useTheme';
 import { VENDOR_CATEGORIES } from '../constants/categories';
 
 export function MainLayout() {
   const { user, vendorAccess, logout, isAdmin, isSuperAdmin, isVendor, isVendorOwner, hasVendorPermission, isCustomer, isDriver } = useAuth();
   const { itemCount } = useCart();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -61,55 +63,90 @@ export function MainLayout() {
 
   const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
 
-  const menuItems: { label: string; path: string; show: boolean }[] = [
-    { label: 'Dashboard', path: '/dashboard', show: !!user && !isVendor && !isDriver },
-    { label: 'Browse Vendors', path: '/vendors', show: showMarketplace },
-    { label: 'Services', path: '/services', show: (isCustomer && !isVendor) || isAdmin },
-    { label: 'My Orders', path: '/orders', show: isCustomer },
-    { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor },
-    { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver },
-    { label: 'Addresses', path: '/addresses', show: isCustomer },
-    { label: 'Loyalty', path: '/loyalty', show: isCustomer },
-    { label: 'Matangazo', path: '/matangazo', show: showMarketplace },
-    { label: 'Reviews', path: '/reviews', show: isCustomer },
-    { label: 'Verify Identity', path: '/kyc', show: isCustomer },
-    { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer && !isVendor },
-    { label: 'Vendor Panel', path: '/vendor/dashboard', show: isVendor },
-    { label: 'My Products', path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products') },
-    { label: 'My Services', path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products') },
-    { label: 'Vendor Orders', path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')) },
-    { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos') },
-    { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports') },
-    { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports') },
-    { label: 'Reports', path: '/vendor/reports', show: isVendor && hasVendorPermission('view_reports') },
-    { label: 'Analytics', path: '/vendor/analytics', show: isVendor && hasVendorPermission('view_reports') },
-    { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products') },
-    { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products') },
-    { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner },
-    { label: 'Marketing', path: '/vendor/marketing', show: isVendor && hasVendorPermission('manage_products') },
-    { label: 'Settings', path: '/vendor/settings', show: isVendor && isVendorOwner },
-    { label: 'Admin Panel', path: '/admin/dashboard', show: isAdmin },
-    { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors') },
-    { label: 'Disputes', path: '/admin/disputes', show: isAdmin && p('manage_disputes') },
-    { label: 'Analytics', path: '/admin/analytics', show: isAdmin && p('view_analytics') },
-    { label: 'Promotions', path: '/admin/promotions', show: isAdmin && p('manage_promotions') },
-    { label: 'Drivers', path: '/admin/drivers', show: isAdmin && p('manage_drivers') },
-    { label: 'Deliveries', path: '/admin/deliveries', show: isAdmin && p('manage_drivers') },
-    { label: 'Verifications', path: '/admin/verifications', show: isAdmin },
-    { label: 'USSD Simulator', path: '/admin/ussd', show: isAdmin },
-    { label: 'Reconciliation', path: '/admin/reconciliation', show: isAdmin && p('manage_finance') },
-    { label: 'Loans', path: '/admin/loans', show: isAdmin && p('manage_finance') },
-    { label: 'Audit Log', path: '/admin/audit-log', show: isAdmin && p('manage_admins') },
-    { label: 'Notifications', path: '/notifications', show: true },
-    { label: 'Account', path: '/account', show: !!user },
-    { label: 'Manage Admins', path: '/admin/manage-admins', show: isSuperAdmin },
-    { label: 'Driver Panel', path: '/driver/dashboard', show: isDriver },
-    { label: 'Deliveries', path: '/driver/deliveries', show: isDriver },
-    { label: 'Earnings', path: '/driver/earnings', show: isDriver },
-    { label: 'My Vehicle', path: '/driver/vehicle', show: isDriver },
+  const menuItems: { label: string; path: string; show: boolean; group: string }[] = [
+    { label: 'Dashboard', path: '/dashboard', show: !!user && !isVendor && !isDriver, group: 'Marketplace' },
+    { label: 'Browse Vendors', path: '/vendors', show: showMarketplace, group: 'Marketplace' },
+    { label: 'Services', path: '/services', show: (isCustomer && !isVendor) || isAdmin, group: 'Marketplace' },
+    { label: 'My Orders', path: '/orders', show: isCustomer, group: 'Marketplace' },
+    { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor, group: 'Marketplace' },
+    { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver, group: 'Marketplace' },
+    { label: 'Addresses', path: '/addresses', show: isCustomer, group: 'Marketplace' },
+    { label: 'Loyalty', path: '/loyalty', show: isCustomer, group: 'Marketplace' },
+    { label: 'Matangazo', path: '/matangazo', show: showMarketplace, group: 'Marketplace' },
+    { label: 'Reviews', path: '/reviews', show: isCustomer, group: 'Marketplace' },
+    { label: 'Verify Identity', path: '/kyc', show: isCustomer, group: 'Marketplace' },
+    { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer && !isVendor, group: 'Marketplace' },
+    { label: 'Dashboard', path: '/vendor/dashboard', show: isVendor, group: 'Vendor Panel' },
+    { label: 'My Products', path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: 'My Services', path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: 'Orders', path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')), group: 'Vendor Panel' },
+    { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos'), group: 'Vendor Panel' },
+    { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: 'Reports', path: '/vendor/reports', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: 'Analytics', path: '/vendor/analytics', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
+    { label: 'Marketing', path: '/vendor/marketing', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: 'Settings', path: '/vendor/settings', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
+    { label: 'Dashboard', path: '/admin/dashboard', show: isAdmin, group: 'Admin Panel' },
+    { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors'), group: 'Admin Panel' },
+    { label: 'Disputes', path: '/admin/disputes', show: isAdmin && p('manage_disputes'), group: 'Admin Panel' },
+    { label: 'Analytics', path: '/admin/analytics', show: isAdmin && p('view_analytics'), group: 'Admin Panel' },
+    { label: 'Promotions', path: '/admin/promotions', show: isAdmin && p('manage_promotions'), group: 'Admin Panel' },
+    { label: 'Drivers', path: '/admin/drivers', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
+    { label: 'Deliveries', path: '/admin/deliveries', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
+    { label: 'Verifications', path: '/admin/verifications', show: isAdmin, group: 'Admin Panel' },
+    { label: 'USSD Simulator', path: '/admin/ussd', show: isAdmin, group: 'Admin Panel' },
+    { label: 'Reconciliation', path: '/admin/reconciliation', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
+    { label: 'Loans', path: '/admin/loans', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
+    { label: 'Audit Log', path: '/admin/audit-log', show: isAdmin && p('manage_admins'), group: 'Admin Panel' },
+    { label: 'Manage Admins', path: '/admin/manage-admins', show: isSuperAdmin, group: 'Admin Panel' },
+    { label: 'Dashboard', path: '/driver/dashboard', show: isDriver, group: 'Driver Panel' },
+    { label: 'Deliveries', path: '/driver/deliveries', show: isDriver, group: 'Driver Panel' },
+    { label: 'Earnings', path: '/driver/earnings', show: isDriver, group: 'Driver Panel' },
+    { label: 'My Vehicle', path: '/driver/vehicle', show: isDriver, group: 'Driver Panel' },
+    { label: 'Notifications', path: '/notifications', show: true, group: 'Account' },
+    { label: 'Account', path: '/account', show: !!user, group: 'Account' },
   ];
 
   const visibleItems = menuItems.filter(m => m.show);
+
+  const navGroups = ['Marketplace', 'Vendor Panel', 'Admin Panel', 'Driver Panel', 'Account']
+    .map((name) => ({ name, items: visibleItems.filter(i => i.group === name) }))
+    .filter(g => g.items.length > 0);
+
+  const renderNav = () => (
+    <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
+      {navGroups.map(group => (
+        <div key={group.name}>
+          <div style={{
+            padding: '0.9rem 1.5rem 0.3rem', fontSize: '0.68rem', fontWeight: 800,
+            textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b',
+          }}>{group.name}</div>
+          {group.items.map(item => (
+            <button
+              key={item.path}
+              onClick={() => go(item.path)}
+              style={{
+                display: 'block',
+                width: '100%',
+                textAlign: 'left',
+                padding: '0.6rem 1.5rem',
+                background: isActive(item.path) ? '#334155' : 'transparent',
+                border: 'none',
+                color: isActive(item.path) ? '#ffffff' : '#cbd5e1',
+                fontSize: '0.9rem',
+                cursor: 'pointer',
+                borderLeft: isActive(item.path) ? '3px solid #14b8a6' : '3px solid transparent',
+              }}
+            >{item.label}</button>
+          ))}
+        </div>
+      ))}
+    </nav>
+  );
 
   const isActive = (path: string) =>
     location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
@@ -139,30 +176,11 @@ export function MainLayout() {
           <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
         )}
       </div>
-      <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
-        {visibleItems.map(item => (
-          <button
-            key={item.path}
-            onClick={() => go(item.path)}
-            style={{
-              display: 'block',
-              width: '100%',
-              textAlign: 'left',
-              padding: '0.6rem 1.5rem',
-              background: isActive(item.path) ? '#334155' : 'transparent',
-              border: 'none',
-              color: isActive(item.path) ? '#ffffff' : '#cbd5e1',
-              fontSize: '0.9rem',
-              cursor: 'pointer',
-              borderLeft: isActive(item.path) ? '3px solid #14b8a6' : '3px solid transparent',
-            }}
-          >{item.label}</button>
-        ))}
-      </nav>
+      {renderNav()}
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-            {user ? `${user.fullName} (${vendorAccess ? vendorAccess.staffRole : user.role})` : 'Mgeni'}
+            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : 'Mgeni'}
           </div>
           {user && <NotificationBell />}
         </div>
@@ -203,6 +221,9 @@ export function MainLayout() {
           )}
 
           <div className="topbar-actions">
+            <button className="icon-btn" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+              {theme === 'dark' ? '☀️' : '🌙'}
+            </button>
             {isCustomer && (
               <button className="icon-btn" onClick={() => go('/wallet')} aria-label="Wallet">
                 💳
@@ -287,22 +308,9 @@ export function MainLayout() {
               {isVendor ? 'Vendor Panel' : isDriver ? 'Driver Panel' : 'Admin Panel'}
             </span>
           </div>
-          <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
-            {visibleItems.map(item => (
-              <button
-                key={item.path}
-                onClick={() => go(item.path)}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left', padding: '0.6rem 1.5rem',
-                  background: isActive(item.path) ? '#334155' : 'transparent', border: 'none',
-                  color: isActive(item.path) ? '#ffffff' : '#cbd5e1', fontSize: '0.9rem', cursor: 'pointer',
-                  borderLeft: isActive(item.path) ? '3px solid #14b8a6' : '3px solid transparent',
-                }}
-              >{item.label}</button>
-            ))}
-          </nav>
+          {renderNav()}
           <div style={{ padding: '0.85rem 1.5rem', borderTop: '1px solid #334155', fontSize: '0.78rem', color: '#94a3b8' }}>
-            {user ? `${user.fullName} (${vendorAccess ? vendorAccess.staffRole : user.role})` : 'Mgeni'}
+            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : 'Mgeni'}
           </div>
         </aside>
       )}

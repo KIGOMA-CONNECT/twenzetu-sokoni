@@ -16,9 +16,16 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
     return entity ? this.toDomain(entity) : null;
   }
 
-  public async findByCustomerId(customerId: string): Promise<Order[]> {
-    const entities = await this.repository.find({ where: { customerId } });
-    return entities.map((e) => this.toDomain(e));
+  public async findByCustomerId(customerId: string, opts?: { status?: string; limit?: number; offset?: number }): Promise<{ data: Order[]; total: number }> {
+    const where: Record<string, unknown> = { customerId };
+    if (opts?.status) where.status = opts.status;
+    const [entities, total] = await this.repository.findAndCount({
+      where,
+      order: { createdAt: 'DESC' },
+      take: opts?.limit,
+      skip: opts?.offset,
+    });
+    return { data: entities.map((e) => this.toDomain(e)), total };
   }
 
   public async findByVendorId(vendorId: string): Promise<Order[]> {

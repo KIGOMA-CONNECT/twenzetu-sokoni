@@ -1,5 +1,5 @@
 import { useState, FormEvent, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '../../api/client';
 
 function AuthSidePanel() {
@@ -42,6 +42,16 @@ export default function RegisterPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [defaultTenantId, setDefaultTenantId] = useState<string | null>(null);
+  const [searchParams] = useSearchParams();
+
+  // Referral attribution: honor ?ref= from shared links and remember it if the
+  // visitor browses before signing up.
+  const refCode = searchParams.get('ref') ?? localStorage.getItem('afrimarket-ref') ?? '';
+  useEffect(() => {
+    if (searchParams.get('ref')) {
+      localStorage.setItem('afrimarket-ref', searchParams.get('ref') as string);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     api
@@ -66,6 +76,13 @@ export default function RegisterPage() {
       if (ninOrRegNo.trim()) payload.ninOrRegNo = ninOrRegNo.trim();
       if (city.trim()) payload.city = city.trim();
       await api.post('/auth/register', payload);
+      // Attribute the signup to the referrer (best-effort; never block signup).
+      if (refCode) {
+        api
+          .post('/referrals/register', { referralCode: refCode, referredPhone: payload.phoneNumber })
+          .then(() => localStorage.removeItem('afrimarket-ref'))
+          .catch(() => undefined);
+      }
       setMsg('Account created successfully! Redirecting to login...');
       setTimeout(() => navigate('/login'), 1500);
     } catch (err: any) {

@@ -7,7 +7,7 @@ export interface OrderCountFilters {
 }
 
 export interface IOrderRepository extends IRepository<Order, EntityId> {
-  findByCustomerId(customerId: string): Promise<Order[]>;
+  findByCustomerId(customerId: string, opts?: { status?: string; limit?: number; offset?: number }): Promise<{ data: Order[]; total: number }>;
   findByVendorId(vendorId: string): Promise<Order[]>;
   findByDriverId(driverId: string): Promise<Order[]>;
   findPendingByVendor(vendorId: string): Promise<Order[]>;

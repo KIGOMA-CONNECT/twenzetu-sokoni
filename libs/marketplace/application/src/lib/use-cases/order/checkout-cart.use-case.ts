@@ -78,8 +78,11 @@ export class CheckoutCartUseCase {
       currency: string;
     }>;
 
+    // One batched query instead of one SELECT per cart item.
+    const products = await this.productRepo.findByIds(cart!.items.map((i) => i.productId.value));
+    const byId = new Map(products.map((p) => [p.id.value, p]));
     for (const item of cart!.items) {
-      const product = await this.productRepo.findById(item.productId);
+      const product = byId.get(item.productId.value);
       Guard.assert(product, `Product ${item.productName} is no longer available`);
       Guard.assert(product!.status === 'ACTIVE', `Product ${item.productName} is not available`);
       Guard.assert(product!.vendorId.value === cart!.vendorId.value, `Product ${item.productName} does not belong to this vendor`);
@@ -129,6 +132,26 @@ export class CheckoutCartUseCase {
       Guard.assert(false, 'Cart has already been checked out');
     }
 
+    // Claim stock atomically BEFORE any order rows are written: every
+    // decrement is guarded in the UPDATE itself and the loop runs inside a
+    // transaction, so a mid-way failure rolls back all claims instead of
+    // leaving partial reservations behind.
+    const reserved: { productId: string; quantity: number }[] = [];
+    await this.ds.transaction(async (em) => {
+      for (const item of validated) {
+        const result = await em.query(
+          `UPDATE products SET stock_quantity = stock_quantity - $1, updated_at = NOW()
+           WHERE id = $2 AND stock_quantity >= $1 AND status = 'ACTIVE'
+           RETURNING id`,
+          [item.quantity, item.productId],
+        );
+        if (!Array.isArray(result) || result.length === 0) {
+          throw new Error(`Insufficient stock for ${item.productName}`);
+        }
+        reserved.push({ productId: item.productId, quantity: item.quantity });
+      }
+    });
+
     const order = Order.create({
       tenantId: TenantId.create(input.tenantId),
       customerId: EntityId.from(input.userId),
@@ -165,42 +188,21 @@ export class CheckoutCartUseCase {
 
     await this.paymentRepo.save(payment);
 
-    for (const item of validated) {
-      await this.ds.query(
-        `INSERT INTO order_items (id, tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
-        [input.tenantId, order.id.value, item.productId, item.productName, item.quantity, item.unitPrice, item.unitPrice * item.quantity, item.currency],
+    // Single multi-row INSERT instead of one round-trip per item.
+    const values: unknown[] = [];
+    const rows = validated.map((item, idx) => {
+      const o = idx * 8;
+      values.push(
+        input.tenantId, order.id.value, item.productId, item.productName,
+        item.quantity, item.unitPrice, item.unitPrice * item.quantity, item.currency,
       );
-    }
-
-    // Atomic stock reservation: only succeeds while sufficient stock remains,
-    // preventing concurrent checkouts from overselling the same product.
-    const reserved: { productId: string; quantity: number }[] = [];
-    for (const item of validated) {
-      const result = await this.ds.query(
-        `UPDATE products SET stock_quantity = stock_quantity - $1, updated_at = NOW()
-         WHERE id = $2 AND stock_quantity >= $1 AND status = 'ACTIVE'
-         RETURNING id`,
-        [item.quantity, item.productId],
-      );
-      if (result.length === 0) {
-        for (const r of reserved) {
-          await this.ds.query(
-            `UPDATE products SET stock_quantity = stock_quantity + $1, updated_at = NOW()
-             WHERE id = $2`,
-            [r.quantity, r.productId],
-          );
-        }
-        await this.ds.query(
-          `UPDATE carts SET status = 'ACTIVE', updated_at = NOW() WHERE id = $1`,
-          [input.cartId],
-        );
-        await this.orderRepo.delete(order.id);
-        await this.paymentRepo.delete(payment.id);
-        Guard.assert(false, `Insufficient stock for ${item.productName}`);
-      }
-      reserved.push({ productId: item.productId, quantity: item.quantity });
-    }
+      return `($${o + 1}, $${o + 2}, $${o + 3}, $${o + 4}, $${o + 5}, $${o + 6}, $${o + 7}, $${o + 8}, NOW(), NOW())`;
+    });
+    await this.ds.query(
+      `INSERT INTO order_items (tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
+       VALUES ${rows.join(', ')}`,
+      values,
+    );
 
     let paymentInitiated = false;
     if (input.customerPhone) {

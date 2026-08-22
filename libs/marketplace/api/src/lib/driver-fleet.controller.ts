@@ -1,9 +1,14 @@
-import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
-import { ToggleDriverAvailabilityUseCase } from '@afri-market/marketplace-application';
+import {
+  BulkSetDriverStatusUseCase,
+  BulkVerifyDriversUseCase,
+  ToggleDriverAvailabilityUseCase,
+} from '@afri-market/marketplace-application';
 import { DataSource } from 'typeorm';
+import { BulkSetDriverStatusDto, BulkVerifyDriversDto } from './dto/bulk-fleet-ops.dto';
 
 @ApiTags('Driver Fleet')
 @Controller('driver-fleet')
@@ -13,6 +18,8 @@ export class DriverFleetController {
   constructor(
     private readonly dataSource: DataSource,
     private readonly toggleDriverAvailability: ToggleDriverAvailabilityUseCase,
+    private readonly bulkVerifyDrivers: BulkVerifyDriversUseCase,
+    private readonly bulkSetDriverStatus: BulkSetDriverStatusUseCase,
   ) {}
 
   @Patch(':vehicleId/availability')
@@ -117,5 +124,23 @@ export class DriverFleetController {
     await vehicleRepo.update({ driverId, tenantId: user.tenantId }, { verifiedAt: new Date() });
 
     return { success: true, message: 'Driver verified' };
+  }
+
+  @Post('bulk/verify')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Verify a batch of drivers (admin only)' })
+  public async bulkVerify(@Body() dto: BulkVerifyDriversDto, @CurrentUser() user: JwtPayload) {
+    const result = await this.bulkVerifyDrivers.execute(user.tenantId, dto.driverIds);
+    return { data: result };
+  }
+
+  @Post('bulk/status')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  @ApiOperation({ summary: 'Bulk activate/suspend drivers (admin only)' })
+  public async bulkStatus(@Body() dto: BulkSetDriverStatusDto, @CurrentUser() user: JwtPayload) {
+    const result = await this.bulkSetDriverStatus.execute(user.tenantId, dto.driverIds, dto.status);
+    return { data: result };
   }
 }

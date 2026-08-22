@@ -1,3 +1,4 @@
+import { decimalNumber } from './decimal-number.transformer';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity('subscription_invoices')
@@ -8,7 +9,7 @@ export class SubscriptionInvoiceEntity {
   @Column({ name: 'subscription_id', type: 'uuid' })
   subscriptionId!: string;
 
-  @Column({ name: 'amount', type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'amount', type: 'decimal', transformer: decimalNumber, precision: 10, scale: 2 })
   amount!: number;
 
   @Column({ name: 'currency', type: 'varchar', length: 3, default: 'TZS' })

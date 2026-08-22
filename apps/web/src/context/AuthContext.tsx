@@ -58,7 +58,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token && storedUser && storedUser !== 'undefined') {
       try {
         const parsed = JSON.parse(storedUser);
-        if (parsed && parsed.id) {
+        // Require a complete cached user: partial/stale objects (e.g. missing
+        // `role`) would render "undefined" across the UI until next login.
+        if (parsed && parsed.id && parsed.role) {
           setUser(parsed);
           void refreshVendorAccess();
         } else {

@@ -113,10 +113,6 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
     this.server?.to(`order:${orderId}`).emit('order-update', { orderId, ...update });
   }
 
-  public notifyVendorOrder(tenantId: string, vendorId: string, order: Record<string, unknown>): void {
-    this.server?.to(`tenant:${tenantId}`).emit('new-order', { vendorId, ...order });
-  }
-
   public notifyDriverDelivery(tenantId: string, driverId: string, delivery: Record<string, unknown>): void {
     this.server?.to(`user:${driverId}`).emit('delivery-update', { tenantId, ...delivery });
   }
@@ -134,8 +130,16 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
     this.server?.to(`user:${driverId}`).emit('delivery-update', delivery);
   }
 
-  public notifyDisputeCreated(tenantId: string, dispute: Record<string, unknown>): void {
-    this.server?.to(`tenant:${tenantId}`).emit('dispute-created', dispute);
+  // Scoped to the two parties of the dispute instead of the whole tenant room,
+  // which fanned out O(tenant users) messages per event.
+  public notifyDisputeCreated(
+    tenantId: string,
+    dispute: Record<string, unknown>,
+    participants: { customerId: string; vendorId: string },
+  ): void {
+    const payload = { tenantId, ...dispute };
+    this.server?.to(`user:${participants.customerId}`).emit('dispute-created', payload);
+    this.server?.to(`user:${participants.vendorId}`).emit('dispute-created', payload);
   }
 
   public notifyNewOrder(vendorId: string, order: Record<string, unknown>): void {

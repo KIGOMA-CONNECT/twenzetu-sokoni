@@ -9,8 +9,11 @@ export class FindOrdersUseCase {
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
   ) {}
 
-  public async findByCustomer(customerId: string): Promise<Order[]> {
-    return this.orderRepo.findByCustomerId(customerId);
+  public async findByCustomer(
+    customerId: string,
+    opts?: { status?: string; limit?: number; offset?: number },
+  ): Promise<{ data: Order[]; total: number }> {
+    return this.orderRepo.findByCustomerId(customerId, opts);
   }
 
   public async findByVendor(vendorId: string): Promise<Order[]> {

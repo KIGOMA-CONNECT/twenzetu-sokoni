@@ -72,7 +72,11 @@ async function bootstrap(): Promise<void> {
             json: 'application/json', webp: 'image/webp', txt: 'text/plain',
             pdf: 'application/pdf',
           };
-          res.type(mime[ext] || 'application/octet-stream').send(readFileSync(fullPath));
+          res.type(mime[ext] || 'application/octet-stream');
+          // Upload keys are content-addressed by unique folder/name — safe to
+          // cache hard at the edge/browser and skip repeat bandwidth.
+          res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+          res.send(readFileSync(fullPath));
           return;
         }
         return res.status(404).send('Not found');
@@ -100,10 +104,20 @@ async function bootstrap(): Promise<void> {
         json: 'application/json', webp: 'image/webp', txt: 'text/plain',
         wasm: 'application/wasm', map: 'application/json',
       };
-      res.type(mime[ext] || 'application/octet-stream').send(readFileSync(resolvedAssetPath));
+      res.type(mime[ext] || 'application/octet-stream');
+      if (ext === 'html') {
+        // Never cache the SPA shell — deployments must be picked up instantly.
+        res.setHeader('Cache-Control', 'no-cache');
+      } else {
+        // Vite emits content-hashed asset filenames — immutable caching is safe.
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+      }
+      res.send(readFileSync(resolvedAssetPath));
       return;
     }
-    res.type('html').send(webIndex);
+    res.type('html');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.send(webIndex);
   });
 
   app.setGlobalPrefix('api');

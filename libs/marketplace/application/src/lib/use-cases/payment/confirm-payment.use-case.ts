@@ -31,8 +31,10 @@ export class ConfirmPaymentUseCase {
     }
 
     payment.confirmEscrow();
+    // Store the provider receipt separately — transactionRef stays as the
+    // original checkoutRequestId so webhook retries still resolve this row.
     if (params.receiptNumber) {
-      payment.setTransactionRef(params.receiptNumber);
+      payment.setReceiptNumber(params.receiptNumber);
     }
     await this.paymentRepo.save(payment);
 

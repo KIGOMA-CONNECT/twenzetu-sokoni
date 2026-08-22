@@ -1,5 +1,6 @@
-import { BadRequestException, Controller, Get, Inject, Param, Query, Req } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Inject, Param, Query, Req, UseInterceptors } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiQuery } from '@nestjs/swagger';
+import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { Request } from 'express';
 import { EntityManager } from 'typeorm';
 import { AppConfigService } from '@afri-market/core-config';
@@ -19,6 +20,10 @@ const DEFAULT_TENANT_ID = 'a0000000-0000-0000-0000-000000000002';
 
 @ApiTags('Public')
 @Controller('public')
+// Hot public reads are served from Redis (wired globally via RedisCacheModule).
+// Any successful mutation on products/vendors/orders routes triggers the
+// CacheInvalidationInterceptor's reset(), so staleness is bounded by TTL.
+@UseInterceptors(CacheInterceptor)
 export class PublicController {
   constructor(
     private readonly listActiveAds: ListActiveAdsUseCase,
@@ -30,6 +35,7 @@ export class PublicController {
     @Inject(EntityManager) private readonly entityManager: EntityManager,
   ) {}
 
+  @CacheTTL(60000)
   @Get('ads')
   @ApiOperation({ summary: 'Public list of active marketing adverts' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -40,6 +46,7 @@ export class PublicController {
     return { data: ads.map((a) => a.toDto()) };
   }
 
+  @CacheTTL(300000)
   @Get('catalog')
   @ApiOperation({ summary: 'Public catalog of active categories with marketing data' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -50,6 +57,7 @@ export class PublicController {
     return { data: categories.map((c) => c.toDto()) };
   }
 
+  @CacheTTL(300000)
   @Get('categories')
   @ApiOperation({ summary: 'Public list of active categories' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -60,6 +68,7 @@ export class PublicController {
     return { data: categories.map((c) => c.toDto()) };
   }
 
+  @CacheTTL(60000)
   @Get('vendors')
   @ApiOperation({ summary: 'Public list/search of vendors' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -89,6 +98,7 @@ export class PublicController {
     return paginatedResult(result.data.map((v) => v.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
+  @CacheTTL(60000)
   @Get('products')
   @ApiOperation({ summary: 'Public list/search of products' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })

@@ -38,6 +38,7 @@ describe('CreateOrderUseCase', () => {
   };
   let mockProductRepo: {
     findById: jest.Mock;
+    findByIds: jest.Mock;
     save: jest.Mock;
   };
   let mockSmsService: {
@@ -51,6 +52,7 @@ describe('CreateOrderUseCase', () => {
     dispatchOrderStatusChanged: jest.Mock;
     dispatchDeliveryCompleted: jest.Mock;
   };
+  let mockDs: { query: jest.Mock; transaction: jest.Mock };
 
   const TENANT_ID = 'test-tenant';
   const VENDOR_ID = 'vendor-123';
@@ -96,6 +98,17 @@ describe('CreateOrderUseCase', () => {
         }
         return Promise.resolve(null);
       }),
+      findByIds: jest.fn().mockImplementation((ids: string[]) =>
+        Promise.resolve(
+          ids
+            .map((key) => {
+              if (key === 'p1') return createProduct('p1', 'Pizza', 500);
+              if (key === 'p2') return createProduct('p2', 'Soda', 200);
+              return null;
+            })
+            .filter((p) => p !== null),
+        ),
+      ),
       save: jest.fn().mockResolvedValue(undefined),
     };
 
@@ -112,12 +125,19 @@ describe('CreateOrderUseCase', () => {
       dispatchDeliveryCompleted: jest.fn(),
     };
 
+    mockDs = {
+      query: jest.fn().mockResolvedValue([]),
+      transaction: jest.fn(async (cb: (em: unknown) => Promise<void>) => {
+        await cb({ query: jest.fn().mockResolvedValue([{ id: 'claimed' }]) });
+      }),
+    };
+
     useCase = new CreateOrderUseCase(
       mockOrderRepo,
       mockVendorRepo,
       mockPaymentRepo,
       mockProductRepo,
-      { query: jest.fn().mockResolvedValue([]) } as never,
+      mockDs as never,
       { execute: jest.fn().mockResolvedValue({ balance: Money.create(0), currency: 'TZS' }) } as never,
       { execute: jest.fn().mockResolvedValue({ success: true }) } as never,
       { findByUserId: jest.fn().mockResolvedValue(null) } as never,
@@ -360,7 +380,7 @@ describe('CreateOrderUseCase', () => {
   it('should throw if a product is not available', async () => {
     const vendor = createActiveVendor();
     mockVendorRepo.findById.mockResolvedValue(vendor);
-    mockProductRepo.findById.mockResolvedValue(null);
+    mockProductRepo.findByIds.mockResolvedValue([]);
 
     const command = new CreateOrderCommand(
       CUSTOMER_ID,
@@ -380,7 +400,7 @@ describe('CreateOrderUseCase', () => {
   it('should throw if product does not belong to the vendor', async () => {
     const vendor = createActiveVendor();
     mockVendorRepo.findById.mockResolvedValue(vendor);
-    mockProductRepo.findById.mockResolvedValue(
+    mockProductRepo.findByIds.mockResolvedValue([
       Product.reconstitute({
         id: EntityId.from('p-other'),
         tenantId: TenantId.create(TENANT_ID),
@@ -396,7 +416,7 @@ describe('CreateOrderUseCase', () => {
         status: 'ACTIVE',
         version: 1,
       }),
-    );
+    ]);
 
     const command = new CreateOrderCommand(
       CUSTOMER_ID,
@@ -415,7 +435,7 @@ describe('CreateOrderUseCase', () => {
   it('should throw if stock is insufficient', async () => {
     const vendor = createActiveVendor();
     mockVendorRepo.findById.mockResolvedValue(vendor);
-    mockProductRepo.findById.mockResolvedValue(
+    mockProductRepo.findByIds.mockResolvedValue([
       Product.reconstitute({
         id: EntityId.from('p1'),
         tenantId: TenantId.create(TENANT_ID),
@@ -431,7 +451,7 @@ describe('CreateOrderUseCase', () => {
         status: 'ACTIVE',
         version: 1,
       }),
-    );
+    ]);
 
     const command = new CreateOrderCommand(
       CUSTOMER_ID,
@@ -472,9 +492,10 @@ describe('CreateOrderUseCase', () => {
 
     await useCase.execute(TENANT_ID, command);
 
-    expect(mockProductRepo.save).toHaveBeenCalled();
-    const savedProduct = mockProductRepo.save.mock.calls[0][0];
-    expect(savedProduct.stockQuantity).toBe(98);
+    // Stock is claimed atomically via a transactional guarded UPDATE —
+    // no read-modify-write through the product repository anymore.
+    expect(mockProductRepo.save).not.toHaveBeenCalled();
+    expect(mockDs.transaction).toHaveBeenCalledTimes(1);
   });
 
   it('should create a service order without requiring a real product row', async () => {
@@ -507,8 +528,9 @@ describe('CreateOrderUseCase', () => {
     expect(result.orderId).toBeDefined();
     expect(result.total).toBe(25000);
     // product lookup must NOT be attempted for service orders
-    expect(mockProductRepo.findById).not.toHaveBeenCalled();
+    expect(mockProductRepo.findByIds).not.toHaveBeenCalled();
     expect(mockProductRepo.save).not.toHaveBeenCalled();
+    expect(mockDs.transaction).not.toHaveBeenCalled();
     expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
   });
 });

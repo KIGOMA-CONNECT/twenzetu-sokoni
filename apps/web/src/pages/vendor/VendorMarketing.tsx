@@ -4,7 +4,12 @@ import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
-import type { Advert, Category, MarketingCampaign } from '../../types';
+import type { Advert, Category, CampaignAnalytics, MarketingCampaign } from '../../types';
+
+interface VariantForm {
+  label: string;
+  message: string;
+}
 
 interface CampaignForm {
   name: string;
@@ -12,6 +17,8 @@ interface CampaignForm {
   scheduledAt: string;
   minOrders: string;
   lastOrderWithinDays: string;
+  testEnabled: boolean;
+  variants: VariantForm[];
 }
 
 interface AdvertForm {
@@ -65,6 +72,21 @@ const styles: Record<string, React.CSSProperties> = {
   banner: { background: 'linear-gradient(135deg, #1e40af, #4f46e5)', color: '#fff', borderRadius: '12px', padding: '1.2rem 1.4rem', marginBottom: '1.5rem' },
   bannerTitle: { fontSize: '1.2rem', fontWeight: 700, margin: 0 },
   bannerSub: { fontSize: '0.85rem', opacity: 0.9, margin: '0.25rem 0 0' },
+  abToggleRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.85rem 0' },
+  abCheckbox: { width: '16px', height: '16px', cursor: 'pointer' },
+  abLabel: { fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)', cursor: 'pointer' },
+  variantBox: { border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.6rem', background: 'var(--bg)' },
+  variantHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' },
+  variantTitle: { fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink)' },
+  removeVariantBtn: { border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 },
+  addVariantBtn: { border: '1px dashed #94a3b8', background: 'transparent', color: '#1e40af', padding: '0.45rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, width: '100%' },
+  analyticsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1rem' },
+  statCard: { background: 'var(--bg)', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.7rem 0.9rem' },
+  statValue: { fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)' },
+  statLabel: { fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', marginTop: '0.15rem' },
+  winnerBadge: { display: 'inline-block', background: '#dcfce7', color: '#166534', fontSize: '0.68rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '999px', marginLeft: '0.4rem' },
+  abBadge: { display: 'inline-block', background: '#ede9fe', color: '#5b21b6', fontSize: '0.68rem', fontWeight: 700, padding: '0.12rem 0.45rem', borderRadius: '999px', marginLeft: '0.35rem' },
+  analyticsBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: 'var(--text)', marginRight: '0.35rem' },
 };
 
 export default function VendorMarketing() {
@@ -75,11 +97,13 @@ export default function VendorMarketing() {
   const [advertModal, setAdvertModal] = useState(false);
   const [campaignModal, setCampaignModal] = useState(false);
   const [categoryModal, setCategoryModal] = useState<Category | null>(null);
+  const [analyticsFor, setAnalyticsFor] = useState<CampaignAnalytics | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const [advertForm, setAdvertForm] = useState<AdvertForm>({ title: '', body: '', emoji: '', ctaLabel: '', ctaUrl: '', sortOrder: '' });
-  const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '' });
+  const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '', testEnabled: false, variants: [] });
   const [categoryForm, setCategoryForm] = useState<CategoryForm>({ tagline: '', benefits: '', emoji: '' });
 
   const openAdvert = () => {
@@ -112,7 +136,7 @@ export default function VendorMarketing() {
   };
 
   const openCampaign = () => {
-    setCampaignForm({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '' });
+    setCampaignForm({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '', testEnabled: false, variants: [] });
     setFormError(null);
     setCampaignModal(true);
   };
@@ -121,6 +145,13 @@ export default function VendorMarketing() {
     const name = campaignForm.name.trim();
     const message = campaignForm.message.trim();
     if (!name || !message) { setFormError('Campaign name and message are required.'); return; }
+    const variants = campaignForm.variants
+      .map((v) => ({ label: v.label.trim() || undefined, message: v.message.trim() }))
+      .filter((v) => v.message);
+    if (campaignForm.testEnabled && variants.length < 2) {
+      setFormError('A/B testing needs at least two variant messages.');
+      return;
+    }
     const minOrders = campaignForm.minOrders ? Math.floor(Number(campaignForm.minOrders)) : 0;
     const lastOrderWithinDays = campaignForm.lastOrderWithinDays ? Math.floor(Number(campaignForm.lastOrderWithinDays)) : 0;
     setSaving(true);
@@ -134,6 +165,8 @@ export default function VendorMarketing() {
         segment: minOrders > 0 || lastOrderWithinDays > 0
           ? { minOrders: minOrders > 0 ? minOrders : undefined, lastOrderWithinDays: lastOrderWithinDays > 0 ? lastOrderWithinDays : undefined }
           : undefined,
+        testEnabled: campaignForm.testEnabled || undefined,
+        variants: campaignForm.testEnabled ? variants : undefined,
       });
       setCampaignModal(false);
       await refetchCampaigns();
@@ -151,6 +184,19 @@ export default function VendorMarketing() {
       await refetchCampaigns();
     } catch (err: any) {
       alert(err.response?.data?.message || err.message || 'Failed to launch campaign.');
+    }
+  };
+
+  const openAnalytics = async (c: MarketingCampaign) => {
+    setAnalyticsLoading(true);
+    setAnalyticsFor(null);
+    try {
+      const res = await api.get<CampaignAnalytics>(`/marketing/campaigns/${c.id}/analytics`);
+      setAnalyticsFor(res.data);
+    } catch (err: any) {
+      alert(err.response?.data?.message || err.message || 'Failed to load analytics.');
+    } finally {
+      setAnalyticsLoading(false);
     }
   };
 
@@ -221,6 +267,7 @@ export default function VendorMarketing() {
                   <th style={styles.th}>Schedule</th>
                   <th style={styles.th}>Audience</th>
                   <th style={styles.th}>Sent</th>
+                  <th style={styles.th}>Delivered</th>
                   <th style={styles.th}>Failed</th>
                   <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
                 </tr>
@@ -228,7 +275,10 @@ export default function VendorMarketing() {
               <tbody>
                 {campaigns.map((c) => (
                   <tr key={c.id}>
-                    <td style={{ ...styles.td, fontWeight: 600 }}>{c.name}</td>
+                    <td style={{ ...styles.td, fontWeight: 600 }}>
+                      {c.name}
+                      {c.testEnabled && <span style={styles.abBadge}>A/B</span>}
+                    </td>
                     <td style={{ ...styles.td, maxWidth: '240px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.message}</td>
                     <td style={styles.td}><StatusBadge status={c.status} /></td>
                     <td style={styles.td}>
@@ -248,8 +298,12 @@ export default function VendorMarketing() {
                       ].filter(Boolean).join(', ') : 'All customers'}
                     </td>
                     <td style={styles.td}>{c.sentCount}</td>
+                    <td style={styles.td}>{c.deliveredCount ?? 0}</td>
                     <td style={styles.td}>{c.failedCount}</td>
-                    <td style={{ ...styles.td, textAlign: 'right' }}>
+                    <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
+                      {(c.status === 'COMPLETED' || c.status === 'ACTIVE') && (
+                        <button style={styles.analyticsBtn} onClick={() => openAnalytics(c)}>Analytics</button>
+                      )}
                       {c.status === 'DRAFT' && !c.scheduledAt && (
                         <button style={styles.launchBtn} onClick={() => launchCampaign(c)}>Launch</button>
                       )}
@@ -359,6 +413,75 @@ export default function VendorMarketing() {
               <textarea style={styles.textarea} value={campaignForm.message} placeholder="e.g. Mangoes 30% off this weekend at your favourite shop! Order now." onChange={(e) => setCampaignForm((f) => ({ ...f, message: e.target.value }))} />
               <div style={styles.hint}>Sent to your customers by SMS when launched.</div>
             </div>
+            <div style={styles.abToggleRow}>
+              <input
+                type="checkbox"
+                id="ab-test-toggle"
+                style={styles.abCheckbox}
+                checked={campaignForm.testEnabled}
+                onChange={(e) =>
+                  setCampaignForm((f) => ({
+                    ...f,
+                    testEnabled: e.target.checked,
+                    variants: e.target.checked && f.variants.length === 0
+                      ? [{ label: 'Variant A', message: '' }, { label: 'Variant B', message: '' }]
+                      : f.variants,
+                  }))
+                }
+              />
+              <label htmlFor="ab-test-toggle" style={styles.abLabel}>A/B test this campaign</label>
+            </div>
+            {campaignForm.testEnabled && (
+              <div style={{ marginBottom: '0.85rem' }}>
+                <label style={styles.label}>Message Variants</label>
+                <div style={{ ...styles.hint, marginTop: 0, marginBottom: '0.5rem' }}>
+                  Customers are split evenly (deterministically) and each group receives one variant. After launch, the analytics view shows which variant converted best.
+                </div>
+                {campaignForm.variants.map((v, i) => (
+                  <div key={i} style={styles.variantBox}>
+                    <div style={styles.variantHeader}>
+                      <span style={styles.variantTitle}>{v.label || `Variant ${String.fromCharCode(65 + i)}`}</span>
+                      {campaignForm.variants.length > 2 && (
+                        <button
+                          type="button"
+                          style={styles.removeVariantBtn}
+                          onClick={() => setCampaignForm((f) => ({ ...f, variants: f.variants.filter((_, idx) => idx !== i) }))}
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      style={{ ...styles.input, marginBottom: '0.4rem' }}
+                      value={v.label}
+                      placeholder={`Label (e.g. Discount ${i + 1})`}
+                      onChange={(e) =>
+                        setCampaignForm((f) => ({
+                          ...f,
+                          variants: f.variants.map((vv, idx) => (idx === i ? { ...vv, label: e.target.value } : vv)),
+                        }))
+                      }
+                    />
+                    <textarea
+                      style={{ ...styles.textarea, minHeight: '60px' }}
+                      value={v.message}
+                      placeholder={`SMS body for ${v.label || `variant ${String.fromCharCode(65 + i)}`}`}
+                      onChange={(e) =>
+                        setCampaignForm((f) => ({
+                          ...f,
+                          variants: f.variants.map((vv, idx) => (idx === i ? { ...vv, message: e.target.value } : vv)),
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+                {campaignForm.variants.length < 4 && (
+                  <button type="button" style={styles.addVariantBtn} onClick={() => setCampaignForm((f) => ({ ...f, variants: [...f.variants, { label: `Variant ${String.fromCharCode(65 + f.variants.length)}`, message: '' }] }))}>
+                    + Add Variant
+                  </button>
+                )}
+              </div>
+            )}
             <div style={styles.field}>
               <label style={styles.label}>Schedule (optional)</label>
               <input type="datetime-local" style={styles.input} value={campaignForm.scheduledAt} onChange={(e) => setCampaignForm((f) => ({ ...f, scheduledAt: e.target.value }))} />
@@ -452,6 +575,72 @@ export default function VendorMarketing() {
                 {saving ? 'Saving…' : 'Save'}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* ── Campaign analytics modal ── */}
+      {(analyticsLoading || analyticsFor) && (
+        <div style={styles.overlay} onClick={() => setAnalyticsFor(null)}>
+          <div style={{ ...styles.modal, width: '560px' }} onClick={(e) => e.stopPropagation()}>
+            {analyticsLoading || !analyticsFor ? (
+              <LoadingSpinner />
+            ) : (
+              <>
+                <div style={styles.modalTitle}>
+                  Analytics — {analyticsFor.name}
+                  {analyticsFor.testEnabled && <span style={styles.abBadge}>A/B</span>}
+                </div>
+                <div style={styles.analyticsGrid}>
+                  <div style={styles.statCard}>
+                    <div style={styles.statValue}>{analyticsFor.deliveredCount}</div>
+                    <div style={styles.statLabel}>Delivered</div>
+                  </div>
+                  <div style={styles.statCard}>
+                    <div style={styles.statValue}>{Math.round(analyticsFor.deliveryRate * 100)}%</div>
+                    <div style={styles.statLabel}>Delivery rate</div>
+                  </div>
+                  <div style={styles.statCard}>
+                    <div style={styles.statValue}>{analyticsFor.conversionCount}</div>
+                    <div style={styles.statLabel}>Conversions (7d)</div>
+                  </div>
+                </div>
+                {analyticsFor.variants.length === 0 ? (
+                  <div style={styles.empty}>No recipient data recorded for this campaign.</div>
+                ) : (
+                  <table style={styles.table}>
+                    <thead>
+                      <tr>
+                        <th style={styles.th}>Variant</th>
+                        <th style={styles.th}>Sent</th>
+                        <th style={styles.th}>Failed</th>
+                        <th style={styles.th}>Conversions</th>
+                        <th style={styles.th}>Conv. rate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analyticsFor.variants.map((v) => (
+                        <tr key={v.variantIndex}>
+                          <td style={{ ...styles.td, fontWeight: 600 }}>
+                            {v.label}
+                            {v.winner && <span style={styles.winnerBadge}>Winner</span>}
+                          </td>
+                          <td style={styles.td}>{v.sent}</td>
+                          <td style={styles.td}>{v.failed}</td>
+                          <td style={styles.td}>{v.converted}</td>
+                          <td style={styles.td}>{(v.conversionRate * 100).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+                <div style={styles.hint}>
+                  A conversion is a customer who placed a delivered order within 7 days of receiving the message.
+                </div>
+                <div style={styles.footer}>
+                  <button style={styles.cancelBtn} onClick={() => setAnalyticsFor(null)}>Close</button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

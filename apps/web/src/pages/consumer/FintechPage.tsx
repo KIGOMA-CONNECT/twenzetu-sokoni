@@ -142,12 +142,13 @@ export default function FintechPage() {
     const [msg, setMsg] = useState('');
     const [err, setErr] = useState('');
 
-    const handleSubmit = async () => {
+    const handleSubmit = async (kind: 'deposit' | 'withdraw') => {
       if (amount <= 0) { setErr('Enter a valid amount'); return; }
+      setAction(kind);
       setBusy(true); setMsg(''); setErr('');
       try {
-        await api.post(`/savings/${action}`, { amount });
-        setMsg(action === 'deposit' ? 'Deposit successful' : 'Withdrawal successful');
+        await api.post(`/savings/${kind}`, { amount });
+        setMsg(kind === 'deposit' ? 'Deposit successful' : 'Withdrawal successful');
         refetch();
       } catch (e: any) {
         setErr(e.response?.data?.error?.message || e.response?.data?.message || e.message || 'Action failed');
@@ -185,10 +186,10 @@ export default function FintechPage() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-              <button className="btn btn-primary" disabled={busy || action !== 'deposit'} onClick={() => { setAction('deposit'); handleSubmit(); }}>
+              <button className="btn btn-primary" disabled={busy || action === 'withdraw'} onClick={() => handleSubmit('deposit')}>
                 Deposit
               </button>
-              <button className="btn btn-outline" disabled={busy || action !== 'withdraw'} onClick={() => { setAction('withdraw'); handleSubmit(); }}>
+              <button className="btn btn-outline" disabled={busy || action === 'deposit'} onClick={() => handleSubmit('withdraw')}>
                 Withdraw
               </button>
             </div>

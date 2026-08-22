@@ -9,7 +9,7 @@ export class CreateDisputeUseCase {
   constructor(
     @Inject(DISPUTE_REPOSITORY) private readonly disputeRepo: IDisputeRepository,
     @Inject(ORDER_REPOSITORY) private readonly orderRepo: IOrderRepository,
-    @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyDisputeCreated(tenantId: string, dispute: Record<string, unknown>): void } | undefined,
+    @Optional() @Inject(MARKETPLACE_GATEWAY) private readonly gateway: { notifyDisputeCreated(tenantId: string, dispute: Record<string, unknown>, participants: { customerId: string; vendorId: string }): void } | undefined,
     @Optional() @Inject(EMAIL_SERVICE) private readonly emailService?: IEmailService,
   ) {}
 
@@ -47,12 +47,16 @@ export class CreateDisputeUseCase {
       });
     }
 
-    this.gateway?.notifyDisputeCreated(tenantId, {
-      disputeId: dispute.id.value,
-      orderId: params.orderId,
-      reason: params.reason,
-      severity: dispute.severity,
-    });
+    this.gateway?.notifyDisputeCreated(
+      tenantId,
+      {
+        disputeId: dispute.id.value,
+        orderId: params.orderId,
+        reason: params.reason,
+        severity: dispute.severity,
+      },
+      { customerId: params.customerId, vendorId: params.vendorId },
+    );
 
     return { disputeId: dispute.id.value };
   }

@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import api from '../api/client';
+import { useSocket } from '../hooks/useSocket';
 
 interface Notification {
   id: string;
@@ -51,11 +52,22 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Real-time delivery: the server emits `notification` over Socket.IO the
+  // moment one is created. Polling stays only as a slow fallback for clients
+  // that never open a socket (cuts /notifications traffic by ~95%).
+  const { connected, subscribe } = useSocket();
+  const refetchRef = useRef(refetch);
+  refetchRef.current = refetch;
+
   useEffect(() => {
     refetch();
-    const interval = setInterval(refetch, 30000);
+    const interval = setInterval(() => refetchRef.current(), connected ? 300000 : 60000);
     return () => clearInterval(interval);
-  }, [refetch]);
+  }, [refetch, connected]);
+
+  useEffect(() =>
+    subscribe('notification', () => { void refetchRef.current(); })
+  , [subscribe]);
 
   const markRead = async (id: string) => {
     try {

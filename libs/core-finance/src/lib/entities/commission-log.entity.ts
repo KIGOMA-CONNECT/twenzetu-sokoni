@@ -1,3 +1,4 @@
+import { decimalNumber } from './decimal-number.transformer';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, Index } from 'typeorm';
 
 @Entity('commission_logs')
@@ -19,13 +20,13 @@ export class CommissionLogEntity {
   @Column({ name: 'payer_id', type: 'uuid' })
   payerId!: string;
 
-  @Column({ name: 'order_amount', type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'order_amount', type: 'decimal', transformer: decimalNumber, precision: 12, scale: 2 })
   orderAmount!: number;
 
-  @Column({ name: 'commission_rate', type: 'decimal', precision: 5, scale: 4, default: 0.10 })
+  @Column({ name: 'commission_rate', type: 'decimal', transformer: decimalNumber, precision: 5, scale: 4, default: 0.10 })
   commissionRate!: number;
 
-  @Column({ name: 'commission_amount', type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'commission_amount', type: 'decimal', transformer: decimalNumber, precision: 12, scale: 2 })
   commissionAmount!: number;
 
   @Column({ name: 'status', type: 'varchar', length: 20, default: 'pending' })

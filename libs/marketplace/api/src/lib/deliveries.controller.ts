@@ -16,6 +16,7 @@ import {
   GetDeliveryTrackingUseCase,
   UpdateDriverLocationUseCase,
   AssignDriverUseCase,
+  BulkAssignDeliveriesUseCase,
   CreateDeliveryCommand,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
@@ -24,6 +25,7 @@ import { CacheInvalidationInterceptor } from './cache';
 import { parsePagination, paginatedResult } from './pagination';
 import { OrderNotifierService } from './order-notifier.service';
 import { NotificationsService } from './notifications.service';
+import { BulkAssignDeliveriesDto } from './dto/bulk-fleet-ops.dto';
 
 const ADMIN_ROLES = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'support_admin', 'compliance_admin', 'marketing_admin'];
 
@@ -41,6 +43,7 @@ export class DeliveriesController {
     private readonly getDeliveryTracking: GetDeliveryTrackingUseCase,
     private readonly updateDriverLocation: UpdateDriverLocationUseCase,
     private readonly assignDriver: AssignDriverUseCase,
+    private readonly bulkAssignDeliveries: BulkAssignDeliveriesUseCase,
     private readonly gateway: MarketplaceGateway,
     private readonly orderNotifier: OrderNotifierService,
     private readonly vendorAccess: VendorAccessService,
@@ -80,13 +83,20 @@ export class DeliveriesController {
   @ApiOperation({ summary: 'List deliveries by driver' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  public async findByDriver(@Param('driverId', ParseUUIDPipe) driverId: string, @CurrentUser() user: JwtPayload) {
+  public async findByDriver(
+    @Param('driverId', ParseUUIDPipe) driverId: string,
+    @CurrentUser() user: JwtPayload,
+    @Query('status') status?: string,
+    @Query('limit') _limit?: number,
+    @Query('offset') _offset?: number,
+  ) {
     const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'compliance_admin', 'support_admin', 'marketing_admin'];
     if (user.sub !== driverId && !adminRoles.includes(user.role)) {
       throw new ForbiddenException('You can only view your own deliveries');
     }
-    const deliveries = await this.findDeliveries.findByDriver(driverId);
-    return { data: deliveries.map(d => d.toDto()) };
+    const { limit, offset } = parsePagination({ limit: _limit, offset: _offset });
+    const { data, total } = await this.findDeliveries.findByDriver(user.tenantId, driverId, { status, limit, offset });
+    return paginatedResult(data.map(d => d.toDto()), total, limit, offset);
   }
 
   @Get('admin/queue')
@@ -132,6 +142,50 @@ export class DeliveriesController {
       orderId: result.orderId,
       status: 'PENDING',
     });
+
+    return { data: result };
+  }
+
+  @Post('admin/bulk-assign')
+  @ApiOperation({ summary: 'Assign a batch of queued orders to available drivers, least-loaded first (admin only)' })
+  @ApiResponse({ status: 201, description: 'Bulk assignment result' })
+  @ApiResponse({ status: 400, description: 'Bad Request' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  public async bulkAssign(
+    @Body() dto: BulkAssignDeliveriesDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    if (!ADMIN_ROLES.includes(user.role)) {
+      throw new ForbiddenException('Admin access required');
+    }
+    const result = await this.bulkAssignDeliveries.execute(user.tenantId, dto.orderIds, dto.driverIds);
+
+    // Notify drivers + push socket events for every successful assignment.
+    for (const item of result.results) {
+      if (!item.success || !item.driverId || !item.deliveryId) continue;
+      const order = await this.dataSource.query(
+        `SELECT v.shop_name AS "vendorName", o.delivery_address AS "deliveryAddress"
+           FROM orders o JOIN vendors v ON v.id = o.vendor_id
+          WHERE o.id = $1`,
+        [item.orderId],
+      );
+      const vendorName = order[0]?.vendorName ?? 'the vendor';
+      const deliveryAddress = order[0]?.deliveryAddress ?? '';
+      await this.notifications.create({
+        tenantId: user.tenantId,
+        userId: item.driverId,
+        title: 'Delivery Assigned',
+        message: `Pick up order ${item.orderId} from ${vendorName} and deliver to ${deliveryAddress}`,
+        type: 'delivery_assigned',
+        referenceId: item.orderId,
+        referenceType: 'order',
+      });
+      this.gateway.notifyDriverDelivery(user.tenantId, item.driverId, {
+        deliveryId: item.deliveryId,
+        orderId: item.orderId,
+        status: 'PENDING',
+      });
+    }
 
     return { data: result };
   }

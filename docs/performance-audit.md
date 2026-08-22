@@ -47,6 +47,15 @@ recurring request volume.
 a transaction; (P3) decide deliberately whether to enable RLS or document the app-layer
 isolation model as the security control.
 
+**RLS decision (made 2026-08-21):** keep app-layer tenant isolation as the security
+control; RLS stays disabled. Rationale: every repository query is tenant-scoped via a
+mandatory resolved `tenantId`, and enabling RLS properly would require dedicated non-owner
+DB roles plus a `SET app.tenant_id` GUC plumbed through every TypeORM connection — a
+cross-cutting migration with real regression risk and no current threat driver (single API
+owns the DB; tenants have no direct DB access). Revisit when any of these become true:
+(a) external/BI consumers get direct DB access, (b) per-tenant DB credentials are
+introduced, (c) a compliance framework demands defense-in-depth at the storage layer.
+
 ## 3. Caching strategy
 
 - Redis is provisioned and wired, **but there is effectively no read caching**:
@@ -106,16 +115,19 @@ emits to the relevant user room instead of the whole tenant; (P3) lower `maxHttp
 
 ## 7. Rate limiting
 
-- Global `ThrottlerGuard` = **300 req/min** (`app.module.ts`), **in-memory store** (per
-  process; resets on restart; not shared across replicas).
+- Global `ThrottlerGuard` = **300 req/min** (`app.module.ts`), now backed by
+  **Redis** (`ThrottlerRedisStorage`) — limits survive restarts and are shared across replicas.
 - Per-route caps: register-tenant 3/min, send-otp 2/min, login 20/min, register 10/min,
   orders/checkout 10/min, admin class 30/min, USSD class 600/min. `@SkipThrottle` on
   health/metrics.
-- A Redis-backed `PerUserRateLimitGuard`/`StrictRateLimitGuard` exists but is **dead code**.
+- The old `PerUserRateLimitGuard`/`StrictRateLimitGuard` were **removed** (2026-08-21):
+  they were dead code with a non-atomic get-then-set race. Their purpose (identity/IP-based
+  caps on sensitive routes) is fully covered by the per-route `@Throttle` overrides, which
+  now count atomically in Redis through the shared storage — one rate-limiting system
+  instead of two competing ones.
 
-**Actions:** (P1) move the throttler store to Redis (`@keyv/redis` ThrottlerStorage) so limits
-survive restarts and multi-replica; (P2) enable the per-user Redis guards on auth + order
-mutation routes.
+**Actions:** (P1) ~~move the throttler store to Redis~~ **Done**; (P2) ~~enable the per-user
+Redis guards~~ **Resolved by removal** — per-route `@Throttle` caps are Redis-backed and atomic.
 
 ## 8. Logging
 
@@ -154,21 +166,38 @@ On 2026-08-19 the **whole stack was stopped cleanly** (`docker compose stop`) an
   is down it restarts the stack, re-checks, and reports recovery in the alert. This file is
   now versioned in the repo.
 
-**Remaining (P1):** none blocking — self-healing + alerts are now in place. Consider (P2)
-sending the daily backup status to the same alert email, and (P3) moving postgres backups
-off-host (S3 bucket configured via `BACKUP_S3_BUCKET`; gdrive already active).
+**Remaining (P1):** none blocking — self-healing + alerts are now in place. (P2) ~~daily
+backup status to the alert email~~ **Done (2026-08-21)** — `backup-db-prod.sh` now emails a
+daily `BACKUP OK` confirmation, a `BACKUP DEGRADED` alert when off-site uploads fail or are
+skipped, and a `BACKUP FAILED` alert via an ERR trap if the dump itself dies; it reuses the
+monitor.sh SMTP channel and is a no-op when the host has no SMTP config. Consider (P3)
+moving postgres backups off-host beyond gdrive (S3 bucket configured via `BACKUP_S3_BUCKET`).
 
 ## Priority summary
 
-| Priority | Item |
-| --- | --- |
-| P1 | `orders (tenant_id, created_at)` index |
-| P1 | Redis throttler store |
-| P1 | Cache hot read endpoints (public products/vendors/catalog/ads) |
-| P1 | Cap `GET /notifications` limit; clamp driver reviews |
-| P1 | Notification push over Socket.IO instead of 30s polling |
-| P2 | Fix gateway `authenticate` contract; scope tenant-room fan-out |
-| P2 | Transactional checkout + batched product lookups |
-| P2 | SQL-side ordering + LIMIT on `/orders`, `findByVendorId`, `findByDriverId` |
-| P2 | Request logging at INFO; log rotation/max-size on containers |
-| P3 | Keyset pagination; HTTP cache headers; pre-aggregated analytics; enable per-user rate-limit guards |
+| Priority | Item | Status |
+| --- | --- | --- |
+| P1 | `orders (tenant_id, created_at)` index | **Done** — migration `1700000000046` adds it for orders + deliveries |
+| P1 | Redis throttler store | **Done** — custom `ThrottlerRedisStorage` (atomic INCR/PTTL, shadow block key) wired into `ThrottlerModule.forRoot` in app.module.ts; limits now survive restarts and are shared across replicas. The v6 multi-throttler collapse bug remains documented — keep using a single named throttler + `@Throttle` overrides |
+| P1 | Cache hot read endpoints (public products/vendors/catalog/ads) | **Done** — `CacheInterceptor` on `PublicController` with per-route TTLs (ads/vendors/products 60s, catalog/categories 5min, rest default 5min); served from the existing Redis store; mutations still flush via CacheInvalidationInterceptor |
+| P1 | Cap `GET /notifications` limit; clamp driver reviews | **Done** — limit clamped to [1,100] in notifications.controller.ts; driver reviews were already paginated |
+| P1 | Notification push over Socket.IO instead of 30s polling | **Done** — `NotificationsService.create` now emits `notification` to the user's socket room; client subscribes and drops polling to a 5-min fallback while connected (60s when offline) |
+| P2 | Fix gateway `authenticate` contract; scope tenant-room fan-out | **Done** — client sends `{ token }` per server contract; `dispute-created` now emits only to the customer + vendor user rooms; the dead tenant-wide `notifyVendorOrder` was removed (order flows already used the vendor-scoped `notifyNewOrder`). No frontend listened to either event, so nothing breaks |
+| P2 | Transactional checkout + batched product lookups | **Done** — both order paths now do one batched `findByIds` lookup, one multi-row `order_items` INSERT, and claim stock inside `ds.transaction` with guarded atomic UPDATEs *before* any order rows are written. The remaining compensation logic covers only external payment-initiation failure (STK push), which by design cannot live inside a DB transaction — this matches the industry saga pattern rather than a single mega-transaction |
+| P2 | SQL-side ordering + LIMIT on `/orders`, `findByVendorId`, `findByDriverId` | **Done** — `findByCustomerId` paginated in SQL with status filter + total count; deliveries-by-driver uses paginated `findByTenantAndDriver`; `findByVendorId` products capped at 500 |
+| P2 | Request logging at INFO; log rotation/max-size on containers | **Done** — `RequestLoggingInterceptor` now logs every request at INFO (health/metrics probes stay DEBUG to avoid monitor.sh spam); `logging: json-file max-size 10m / max-file 3` added to all services in docker-compose.prod.yml (host must `docker compose up -d` to apply). Local stray logs (`web-lint7.log`, 35MB `.nx/daemon.log`) deleted |
+| P2 | Savings/loan decimal arithmetic corruption (`"0.00" + amount` string concat on pg NUMERIC reads) | **Done** — `decimalNumber` ValueTransformer applied to all core-finance decimal columns; fixes savings deposits recording balance 0 and loan `totalRepaid +=` corruption |
+| P3 | Keyset pagination; pre-aggregated analytics; RLS | **Decided/closed** — HTTP Cache-Control shipped earlier; per-user rate-limit guards resolved by removing the dead non-atomic guards (per-route `@Throttle` caps are Redis-backed and atomic); RLS decision documented in §2 (app-layer isolation is the control, with explicit revisit triggers); keyset pagination + pre-aggregated analytics remain deliberately deferred until table size/load demands them |
+
+### Also fixed during this pass (ops, 2026-08-21)
+
+- Backup alerting: `scripts/backup-db-prod.sh` sends daily success confirmations,
+  degraded-upload alerts, and failure alerts through the same SMTP channel as monitor.sh.
+
+### Also fixed during this pass (vendor console production-readiness)
+
+- Stale cached user objects without `role` rendered "(undefined)" in the sidebar;
+  hydration now requires a complete user record and the label falls back safely.
+- Sidebar navigation grouped into Marketplace / Vendor Panel / Admin Panel /
+  Driver Panel / Account sections so vendor catalogue, settings and reports are
+  discoverable (they existed but were visually lost in one flat list).

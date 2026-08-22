@@ -120,19 +120,21 @@ not replaced**.
 ## 4. Typography
 
 Keep **Plus Jakarta Sans** as the single family (geometric-humanist, close in spirit to Airbnb
-Cereal / Inter; supports the Latin + Swahili alphabet cleanly). Add a true **modular type
-scale** as tokens and drop ad-hoc sizes.
+Cereal / Inter; supports the Latin + Swahili alphabet cleanly). A modular type scale is now
+implemented as tokens in `globals.css`:
 
-| Token | Size | Line-height | Weight | Tracking | Use |
-| --- | --- | --- | --- | --- | --- |
-| `--text-display` | 40–56 (clamp) | 1.08 | 800 | -0.03em | Hero, campaign pages |
-| `--text-h1` | 28–32 (clamp) | 1.15 | 800 | -0.02em | Page titles |
-| `--text-h2` | 22 | 1.25 | 800 | -0.015em | Section titles |
-| `--text-h3` | 18 | 1.3 | 700 | -0.01em | Card titles |
-| `--text-body` | 16 | 1.55 | 400 | 0 | Body (legibility floor — Apple 17pt equivalent) |
-| `--text-body-sm` | 14 | 1.5 | 400 | 0 | Secondary text |
-| `--text-caption` | 12 | 1.5 | 600 | +0.02em | Metadata, labels |
-| `--text-label` | 11 | 1.4 | 800 | +0.06em | Uppercase stat labels, table headers |
+| Token | Size | Use |
+| --- | --- | --- |
+| `--text-3xl` | clamp(1.9rem, 3vw, 2.4rem) | Page titles (desktop), hero |
+| `--text-2xl` | 1.5rem | Page titles (mobile) |
+| `--text-xl` | 1.25rem | Section titles |
+| `--text-lg` | 1.125rem | Emphasized body, card titles |
+| `--text-base` | 1rem | Body (legibility floor — Apple 17pt equivalent) |
+| `--text-sm` | 0.875rem | Secondary text, table cells |
+| `--text-xs` | 0.75rem | Captions, badges |
+
+Shared modifiers: `--leading-tight: 1.2` (headings), `--leading-normal: 1.5` (body),
+`--tracking-tight: -0.02em` (headings).
 
 Rules:
 - Hierarchy by weight first, size second (Apple).
@@ -152,6 +154,22 @@ success/danger/warning/info). Add **usage rules** and a few refinements:
 | Neutrals carry content | Ink (`#0f172a`), text (`#334155`), muted (`#64748b`), faint (`#94a3b8`), line (`#e2e8f0`) — content reads in neutral; color is for meaning. |
 | Dark surfaces | `--ink-soft` (`#1e293b`/`#0f172a`) for top bar, footer, and a future dark mode; green/teal pops on it (Spotify). |
 | Accessible contrast | All text meets WCAG AA on its background; hover/focus states shift color consistently (Airbnb pattern). |
+
+### Dark mode (shipped)
+
+Implemented as a pure token remap — `[data-theme='dark']` on `<html>` overrides the semantic
+tokens in `globals.css`; every component reading `var(--*)` follows automatically.
+
+| Aspect | Decision |
+| --- | --- |
+| Surfaces | `--bg #0b1220`, `--surface #111a2c` (blue-slate, not pure black — Spotify/Linear model) |
+| Text | Inverted slate scale: ink `#f1f5f9`, text `#cbd5e1`, muted `#94a3b8` |
+| Brand lift | Teal lightened to `#2dd4bf` for AA contrast on dark surfaces; gradients re-tuned |
+| Semantic softs | Light-mode pastel tints become deep tints (`--success-soft #052e16`, etc.) |
+| Shadows | Heavier (black-based) since shadows must read against dark backgrounds |
+| Legacy overrides | A small block of `[data-theme='dark']` rules covers components with baked-in light colors (hero gradient, skeleton shimmer, alert borders, product-image placeholder) |
+| Activation | `useTheme()` hook: localStorage `afrimarket-theme` → `prefers-color-scheme` fallback → attribute applied before first paint (no flash); 🌙/☀️ toggle in the topbar |
+| Reduced motion | Dark-theme transitions collapse under the existing `prefers-reduced-motion` rule |
 
 ## 6. Spacing
 

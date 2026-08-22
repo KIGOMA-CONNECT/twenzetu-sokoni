@@ -1,8 +1,17 @@
+x-default-logging: &default-logging
+  # Cap container stdout logs so the json-file sink cannot grow unbounded and
+  # fill the host disk. 10MB x 3 files per container is ample for debugging.
+  driver: json-file
+  options:
+    max-size: '10m'
+    max-file: '3'
+
 services:
   postgres:
     image: postgres:16-alpine
     container_name: afri-market-postgres
     restart: unless-stopped
+    logging: *default-logging
     environment:
       POSTGRES_USER: ${DB_BOOTSTRAP_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_BOOTSTRAP_PASSWORD:?Set DB_BOOTSTRAP_PASSWORD in .env.production}
@@ -30,6 +39,7 @@ services:
     image: redis:7-alpine
     container_name: afri-market-redis
     restart: unless-stopped
+    logging: *default-logging
     command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env.production} --maxmemory 512mb --maxmemory-policy allkeys-lru --appendonly yes
     volumes:
       - afri-market-redis-data:/data
@@ -55,6 +65,7 @@ services:
       dockerfile: Dockerfile
     container_name: afri-market-api
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - '127.0.0.1:3300:3000'
     environment:
@@ -131,6 +142,7 @@ services:
       dockerfile: web.Dockerfile
     container_name: afri-market-web
     restart: unless-stopped
+    logging: *default-logging
     ports:
       - '127.0.0.1:3301:80'
     healthcheck:
@@ -154,6 +166,7 @@ services:
     image: nginx:alpine
     container_name: afri-market-nginx
     restart: unless-stopped
+    logging: *default-logging
     profiles:
       - legacy-nginx
     ports:

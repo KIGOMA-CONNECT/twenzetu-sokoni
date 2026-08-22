@@ -91,8 +91,11 @@ export class CreateOrderUseCase {
         });
       }
     } else {
+      // One batched query instead of one SELECT per item.
+      const products = await this.productRepo.findByIds(command.items.map((i) => i.productId));
+      const byId = new Map(products.map((p) => [p.id.value, p]));
       for (const item of command.items) {
-        const product = await this.productRepo.findById(EntityId.from(item.productId));
+        const product = byId.get(item.productId);
         Guard.assert(product, `Product ${item.productName} is no longer available`);
         Guard.assert(product!.status === 'ACTIVE', `Product ${item.productName} is not available`);
         Guard.assert(product!.vendorId.value === vendor!.id.value, `Product ${item.productName} does not belong to this vendor`);
@@ -104,6 +107,29 @@ export class CreateOrderUseCase {
           unitPrice: product!.price.amount,
         });
       }
+    }
+
+    if (!isServiceOrder && validatedItems.length > 0) {
+      // Claim stock atomically BEFORE any rows are written: each decrement is
+      // guarded in the UPDATE itself (no read-modify-write race), and the
+      // loop runs inside a transaction so a mid-way failure rolls back every
+      // claim instead of leaving partial decrements behind.
+      await this.ds.transaction(async (em) => {
+        for (const item of validatedItems) {
+          const claimed = await em.query(
+            `UPDATE products
+                SET stock_quantity = stock_quantity - $1,
+                    status = CASE WHEN stock_quantity - $1 <= 0 THEN 'OUT_OF_STOCK' ELSE status END,
+                    updated_at = NOW()
+              WHERE id = $2 AND status = 'ACTIVE' AND stock_quantity >= $1
+              RETURNING id`,
+            [item.quantity, item.productId],
+          );
+          if (!Array.isArray(claimed) || claimed.length === 0) {
+            throw new Error(`Insufficient stock for ${item.productName}`);
+          }
+        }
+      });
     }
 
     const currency = command.currency ?? getCurrencyForPhone(command.customerPhone ?? '');
@@ -157,22 +183,22 @@ export class CreateOrderUseCase {
 
     await this.orderRepo.save(order);
 
-    for (const item of validatedItems) {
+    if (validatedItems.length > 0) {
+      // Single multi-row INSERT instead of one round-trip per item.
+      const values: unknown[] = [];
+      const rows = validatedItems.map((item, idx) => {
+        const o = idx * 8;
+        values.push(
+          tenantId, order.id.value, item.productId, item.productName,
+          item.quantity, item.unitPrice, item.unitPrice * item.quantity, currency,
+        );
+        return `($${o + 1}, $${o + 2}, $${o + 3}, $${o + 4}, $${o + 5}, $${o + 6}, $${o + 7}, $${o + 8}, NOW(), NOW())`;
+      });
       await this.ds.query(
-        `INSERT INTO order_items (id, tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
-         VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())`,
-        [tenantId, order.id.value, item.productId, item.productName, item.quantity, item.unitPrice, item.unitPrice * item.quantity, currency],
+        `INSERT INTO order_items (tenant_id, order_id, product_id, product_name, quantity, unit_price, total_price, currency, created_at, updated_at)
+         VALUES ${rows.join(', ')}`,
+        values,
       );
-    }
-
-    if (!isServiceOrder) {
-      for (const item of validatedItems) {
-        const product = await this.productRepo.findById(EntityId.from(item.productId));
-        if (product) {
-          product.reduceStock(item.quantity);
-          await this.productRepo.save(product);
-        }
-      }
     }
 
     const paymentMethod = (command.paymentMethod as 'mpesa' | 'tigo_money' | 'tigo_pesa' | 'airtel_money' | 'halotel' | 'azampesa' | 'wallet' | 'card' | 'cash') || 'mpesa';

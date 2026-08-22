@@ -124,12 +124,8 @@ export class OrdersController {
     @Query('offset') _offset?: number,
   ) {
     const { limit, offset } = parsePagination({ limit: _limit, offset: _offset });
-    const orders = await this.findOrders.findByCustomer(user.sub);
-    let filtered = orders;
-    if (status) {
-      filtered = orders.filter((o) => o.status === status);
-    }
-    return paginatedResult(filtered.slice(offset, offset + limit).map(o => o.toDto()), filtered.length, limit, offset);
+    const { data, total } = await this.findOrders.findByCustomer(user.sub, { status, limit, offset });
+    return paginatedResult(data.map(o => o.toDto()), total, limit, offset);
   }
 
   @Get(':id/items')

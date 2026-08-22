@@ -26,7 +26,9 @@ export function useSocket() {
 
     socket.on('connect', () => {
       setConnected(true);
-      socket.emit('authenticate', { userId: user.id, tenantId: user.tenantId });
+      // Server contract: `authenticate` expects the JWT; identity comes from
+      // the verified token, not from client-supplied ids.
+      socket.emit('authenticate', { token });
     });
 
     socket.on('disconnect', () => {

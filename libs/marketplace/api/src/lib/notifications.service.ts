@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { NotificationOrmEntity } from '@afri-market/marketplace-infrastructure';
+import { MarketplaceGateway } from './gateway/marketplace.gateway';
 import { PushService } from './push.service';
 
 @Injectable()
@@ -12,6 +13,7 @@ export class NotificationsService {
     @InjectRepository(NotificationOrmEntity)
     private readonly notifRepo: Repository<NotificationOrmEntity>,
     private readonly pushService: PushService,
+    private readonly gateway: MarketplaceGateway,
   ) {}
 
   public async create(params: {
@@ -35,6 +37,19 @@ export class NotificationsService {
       isRead: false,
     });
     const saved = await this.notifRepo.save(entity);
+
+    // Real-time push to every connected device of the user. Replaces the
+    // client's 30s polling as the primary delivery path (polling remains a
+    // fallback for offline clients).
+    this.gateway.notifyUser(params.userId, 'notification', {
+      id: saved.id,
+      title: saved.title,
+      message: saved.message,
+      type: saved.type,
+      referenceId: saved.referenceId,
+      referenceType: saved.referenceType,
+      createdAt: saved.createdAt,
+    });
 
     if (params.push !== false) {
       this.pushService

@@ -24,7 +24,8 @@ export class NotificationsController {
     @Query('limit') limit?: string,
     @Query('offset') offset?: string,
   ) {
-    return this.notifService.findByUser(user.sub, Number(limit) || 50, Number(offset) || 0);
+    const parsedLimit = Number(limit) || 50;
+    return this.notifService.findByUser(user.sub, Math.min(Math.max(parsedLimit, 1), 100), Math.max(Number(offset) || 0, 0));
   }
 
   @Get('unread-count')

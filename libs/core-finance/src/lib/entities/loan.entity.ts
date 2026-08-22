@@ -1,3 +1,4 @@
+import { decimalNumber } from './decimal-number.transformer';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('loans')
@@ -11,22 +12,22 @@ export class LoanEntity {
   @Column({ name: 'borrower_type', type: 'varchar', length: 20 })
   borrowerType!: string;
 
-  @Column({ name: 'principal', type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'principal', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2 })
   principal!: number;
 
-  @Column({ name: 'interest_rate', type: 'decimal', precision: 5, scale: 4 })
+  @Column({ name: 'interest_rate', type: 'decimal', transformer: decimalNumber, precision: 5, scale: 4 })
   interestRate!: number;
 
   @Column({ name: 'term_months', type: 'integer' })
   termMonths!: number;
 
-  @Column({ name: 'monthly_payment', type: 'decimal', precision: 12, scale: 2 })
+  @Column({ name: 'monthly_payment', type: 'decimal', transformer: decimalNumber, precision: 12, scale: 2 })
   monthlyPayment!: number;
 
-  @Column({ name: 'total_repaid', type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'total_repaid', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, default: 0 })
   totalRepaid!: number;
 
-  @Column({ name: 'remaining_balance', type: 'decimal', precision: 14, scale: 2 })
+  @Column({ name: 'remaining_balance', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2 })
   remainingBalance!: number;
 
   @Column({ name: 'collateral', type: 'text', nullable: true })
@@ -56,25 +57,25 @@ export class LoanEntity {
   @Column({ name: 'mobile_number', type: 'varchar', length: 20, nullable: true })
   mobileNumber?: string;
 
-  @Column({ name: 'net_amount', type: 'decimal', precision: 14, scale: 2, nullable: true })
+  @Column({ name: 'net_amount', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, nullable: true })
   netAmount?: number;
 
-  @Column({ name: 'interest_amount', type: 'decimal', precision: 14, scale: 2, nullable: true })
+  @Column({ name: 'interest_amount', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, nullable: true })
   interestAmount?: number;
 
-  @Column({ name: 'insurance_amount', type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'insurance_amount', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, default: 0 })
   insuranceAmount!: number;
 
-  @Column({ name: 'processing_fee_amount', type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'processing_fee_amount', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, default: 0 })
   processingFeeAmount!: number;
 
-  @Column({ name: 'liquidation_amount', type: 'decimal', precision: 14, scale: 2, default: 0 })
+  @Column({ name: 'liquidation_amount', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, default: 0 })
   liquidationAmount!: number;
 
-  @Column({ name: 'total_amount_to_pay', type: 'decimal', precision: 14, scale: 2, nullable: true })
+  @Column({ name: 'total_amount_to_pay', type: 'decimal', transformer: decimalNumber, precision: 14, scale: 2, nullable: true })
   totalAmountToPay?: number;
 
-  @Column({ name: 'deductible_amount', type: 'decimal', precision: 12, scale: 2, nullable: true })
+  @Column({ name: 'deductible_amount', type: 'decimal', transformer: decimalNumber, precision: 12, scale: 2, nullable: true })
   deductibleAmount?: number;
 
   @Column({ name: 'fsp_name', type: 'varchar', length: 120, nullable: true })

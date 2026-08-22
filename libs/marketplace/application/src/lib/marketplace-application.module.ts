@@ -183,6 +183,7 @@ import { CreateAdvertUseCase } from './use-cases/marketing/create-advert.use-cas
 import { CreateMarketingCampaignUseCase } from './use-cases/marketing/create-marketing-campaign.use-case';
 import { ListMarketingCampaignsUseCase } from './use-cases/marketing/list-marketing-campaigns.use-case';
 import { LaunchMarketingCampaignUseCase } from './use-cases/marketing/launch-marketing-campaign.use-case';
+import { GetCampaignAnalyticsUseCase } from './use-cases/marketing/get-campaign-analytics.use-case';
 import { InviteVendorStaffUseCase } from './use-cases/vendor-staff/invite-vendor-staff.use-case';
 import { ListVendorStaffUseCase } from './use-cases/vendor-staff/list-vendor-staff.use-case';
 import { UpdateVendorStaffUseCase } from './use-cases/vendor-staff/update-vendor-staff.use-case';
@@ -198,6 +199,9 @@ import {
   ListSuppliersUseCase,
   DeleteSupplierUseCase,
 } from './use-cases/supplier/supplier.use-cases';
+import { BulkVerifyDriversUseCase } from './use-cases/fleet/bulk-verify-drivers.use-case';
+import { BulkSetDriverStatusUseCase } from './use-cases/fleet/bulk-set-driver-status.use-case';
+import { BulkAssignDeliveriesUseCase } from './use-cases/fleet/bulk-assign-deliveries.use-case';
 import {
   CreatePurchaseOrderUseCase,
   ListPurchaseOrdersUseCase,
@@ -386,6 +390,7 @@ SetDefaultAddressUseCase,
   CreateMarketingCampaignUseCase,
   ListMarketingCampaignsUseCase,
   LaunchMarketingCampaignUseCase,
+  GetCampaignAnalyticsUseCase,
   InviteVendorStaffUseCase,
   ListVendorStaffUseCase,
   UpdateVendorStaffUseCase,
@@ -405,6 +410,9 @@ SetDefaultAddressUseCase,
   CompletePurchaseOrderUseCase,
   CancelPurchaseOrderUseCase,
   SetPurchaseOrderPaymentUseCase,
+  BulkVerifyDriversUseCase,
+  BulkSetDriverStatusUseCase,
+  BulkAssignDeliveriesUseCase,
 ];
 
 @Module({

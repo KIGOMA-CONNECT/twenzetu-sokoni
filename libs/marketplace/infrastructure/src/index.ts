@@ -79,6 +79,7 @@ export * from './lib/repositories/typeorm-service-request.repository';
 export * from './lib/repositories/typeorm-service-quote.repository';
 export * from './lib/repositories/typeorm-advert.repository';
 export * from './lib/repositories/typeorm-marketing-campaign.repository';
+export * from './lib/entities/campaign-recipient-orm.entity';
 export * from './lib/entities/supplier-orm.entity';
 export * from './lib/entities/purchase-order-orm.entity';
 export * from './lib/entities/balance-sheet-account-orm.entity';

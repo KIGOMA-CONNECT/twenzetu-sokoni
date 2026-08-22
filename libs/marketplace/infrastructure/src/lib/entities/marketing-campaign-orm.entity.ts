@@ -29,6 +29,21 @@ export class MarketingCampaignOrmEntity extends TenantAwareEntity {
   @Column({ name: 'failed_count', type: 'integer', default: 0 })
   public failedCount!: number;
 
+  @Column({ name: 'delivered_count', type: 'integer', default: 0 })
+  public deliveredCount!: number;
+
+  @Column({ name: 'click_count', type: 'integer', default: 0 })
+  public clickCount!: number;
+
+  @Column({ name: 'conversion_count', type: 'integer', default: 0 })
+  public conversionCount!: number;
+
+  @Column({ name: 'test_enabled', type: 'boolean', default: false })
+  public testEnabled!: boolean;
+
+  @Column({ name: 'variants', type: 'jsonb', nullable: true })
+  public variants!: Array<Record<string, unknown>> | null;
+
   @Column({ name: 'total_audience', type: 'integer', default: 0 })
   public totalAudience!: number;
 

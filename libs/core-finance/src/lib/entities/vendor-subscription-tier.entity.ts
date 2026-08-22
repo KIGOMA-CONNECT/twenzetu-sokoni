@@ -1,3 +1,4 @@
+import { decimalNumber } from './decimal-number.transformer';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity('vendor_subscription_tiers')
@@ -8,7 +9,7 @@ export class VendorSubscriptionTierEntity {
   @Column({ type: 'varchar', length: 100 })
   name!: string;
 
-  @Column({ name: 'monthly_price', type: 'decimal', precision: 10, scale: 2 })
+  @Column({ name: 'monthly_price', type: 'decimal', transformer: decimalNumber, precision: 10, scale: 2 })
   monthlyPrice!: number;
 
   @Column({ name: 'currency', type: 'varchar', length: 3, default: 'TZS' })
@@ -20,7 +21,7 @@ export class VendorSubscriptionTierEntity {
   @Column({ name: 'max_images_per_product', type: 'integer', default: 5 })
   maxImagesPerProduct!: number;
 
-  @Column({ name: 'commission_rate_override', type: 'decimal', precision: 5, scale: 4, nullable: true })
+  @Column({ name: 'commission_rate_override', type: 'decimal', transformer: decimalNumber, precision: 5, scale: 4, nullable: true })
   commissionRateOverride?: number;
 
   @Column({ name: 'features', type: 'jsonb', default: '[]' })

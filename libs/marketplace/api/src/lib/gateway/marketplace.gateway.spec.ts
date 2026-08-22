@@ -121,14 +121,6 @@ describe('MarketplaceGateway', () => {
     });
   });
 
-  describe('notifyVendorOrder', () => {
-    it('should emit new-order to tenant room', () => {
-      gateway.notifyVendorOrder('t1', 'v1', { orderId: 'o1' });
-      expect(mockServer.to).toHaveBeenCalledWith('tenant:t1');
-      expect(mockServer.emit).toHaveBeenCalledWith('new-order', { vendorId: 'v1', orderId: 'o1' });
-    });
-  });
-
   describe('notifyDriverDelivery', () => {
     it('should emit delivery-update to driver user room', () => {
       gateway.notifyDriverDelivery('t1', 'd1', { deliveryId: 'dl-1' });
@@ -155,10 +147,12 @@ describe('MarketplaceGateway', () => {
   });
 
   describe('notifyDisputeCreated', () => {
-    it('should emit dispute-created to tenant room', () => {
-      gateway.notifyDisputeCreated('t1', { disputeId: 'd-1' });
-      expect(mockServer.to).toHaveBeenCalledWith('tenant:t1');
-      expect(mockServer.emit).toHaveBeenCalledWith('dispute-created', { disputeId: 'd-1' });
+    it('should emit dispute-created to the customer and vendor user rooms, not the tenant room', () => {
+      gateway.notifyDisputeCreated('t1', { disputeId: 'd-1' }, { customerId: 'c1', vendorId: 'v1' });
+      expect(mockServer.to).toHaveBeenCalledWith('user:c1');
+      expect(mockServer.to).toHaveBeenCalledWith('user:v1');
+      expect(mockServer.to).not.toHaveBeenCalledWith('tenant:t1');
+      expect(mockServer.emit).toHaveBeenCalledWith('dispute-created', { tenantId: 't1', disputeId: 'd-1' });
     });
   });
 
@@ -183,7 +177,7 @@ describe('MarketplaceGateway', () => {
       (gateway as unknown as { server: undefined }).server = undefined;
       expect(() => gateway.notifyOrderUpdate('o1', { status: 'x' })).not.toThrow();
       expect(() => gateway.notifyPaymentConfirmed('u1', { x: 1 })).not.toThrow();
-      expect(() => gateway.notifyDisputeCreated('t1', { x: 1 })).not.toThrow();
+      expect(() => gateway.notifyDisputeCreated('t1', { x: 1 }, { customerId: 'c1', vendorId: 'v1' })).not.toThrow();
       expect(() => gateway.notifyNewOrder('v1', { x: 1 })).not.toThrow();
     });
   });

@@ -6,6 +6,23 @@ Capital Advance, and Alibaba Pay Later, mapped onto afriMarket's existing financ
 
 Status: **proposal** · Owner: Platform finance + marketplace engineering
 
+## 0. Scope decision (ratified)
+
+Of the two product shapes in §3.1, afriMarket ships **one**:
+
+| Feature | Decision | Why |
+| --- | --- | --- |
+| `CAPITAL_ADVANCE` (flat fee, repaid as % of each settlement) | **Build — flagship** | Rides the existing `PayoutSettlementService` rail; repayment is automatic and cash-flow-matched; zero collections burden. This is the Shopify/PayPal/Payoneer model that fits a marketplace with controlled settlements. |
+| `WORKING_CAPITAL_LOAN` (classic term loan) | **Cut** | Duplicates the existing `micro_loans` product; manual calendar repayment reintroduces the default/collections problem we are trying to avoid. Vendors needing term loans keep using micro-loans. |
+| Offer engine (score ≥ 55 + 90-day GMV, tier caps) | **Keep** | Core of the "offer-driven, not application-driven" lesson. |
+| Flat-fee tiers by score band (18% / 14% / 10%) | **Keep as placeholders** | Tune with pilot data before public launch (§6). |
+| Concentration caps + 21-day zero-settlement REVIEW floor | **Keep** | Cheap risk controls, high value. |
+| Driver advances | **Defer** | No driver settlement rail yet; revisit after driver payout automation. |
+| External funding partner | **Defer to P4 / separate ADR** | Regulatory posture first (§3.6). |
+
+Net effect: one product, one rail, no new repayment UX — the smallest surface that
+delivers the reference model's economics.
+
 ---
 
 ## 1. Reference programs — what they actually do

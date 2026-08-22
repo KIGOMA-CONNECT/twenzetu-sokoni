@@ -1,4 +1,4 @@
-import { IsIn, IsInt, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsIn, IsInt, IsOptional, IsString, MaxLength, Min, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -14,6 +14,18 @@ export class CreateMarketingCampaignSegmentDto {
   @IsInt()
   @Min(1)
   lastOrderWithinDays?: number;
+}
+
+export class CreateMarketingCampaignVariantDto {
+  @ApiPropertyOptional({ description: 'Human-readable variant label (defaults to Variant A/B/C...)' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  label?: string;
+
+  @ApiProperty({ description: 'SMS message body for this variant' })
+  @IsString()
+  message!: string;
 }
 
 export class CreateMarketingCampaignDto {
@@ -40,4 +52,17 @@ export class CreateMarketingCampaignDto {
   @ValidateNested()
   @Type(() => CreateMarketingCampaignSegmentDto)
   segment?: CreateMarketingCampaignSegmentDto;
+
+  @ApiPropertyOptional({ description: 'Enable A/B testing across message variants', default: false })
+  @IsOptional()
+  @IsBoolean()
+  testEnabled?: boolean;
+
+  @ApiPropertyOptional({ description: 'Message variants for A/B testing (2-4 when testEnabled)', type: [CreateMarketingCampaignVariantDto] })
+  @IsOptional()
+  @IsArray()
+  @ArrayMaxSize(4)
+  @ValidateNested({ each: true })
+  @Type(() => CreateMarketingCampaignVariantDto)
+  variants?: CreateMarketingCampaignVariantDto[];
 }

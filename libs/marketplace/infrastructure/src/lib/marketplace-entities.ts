@@ -44,6 +44,7 @@ import { CartItemOrmEntity } from './entities/cart-item-orm.entity';
 import { PushSubscriptionOrmEntity } from './entities/push-subscription-orm.entity';
 import { AdvertOrmEntity } from './entities/advert-orm.entity';
 import { MarketingCampaignOrmEntity } from './entities/marketing-campaign-orm.entity';
+import { CampaignRecipientOrmEntity } from './entities/campaign-recipient-orm.entity';
 import { SupplierOrmEntity } from './entities/supplier-orm.entity';
 import { PurchaseOrderOrmEntity } from './entities/purchase-order-orm.entity';
 import { BalanceSheetAccountOrmEntity } from './entities/balance-sheet-account-orm.entity';
@@ -95,6 +96,7 @@ export const MARKETPLACE_ENTITIES = [
   PushSubscriptionOrmEntity,
   AdvertOrmEntity,
   MarketingCampaignOrmEntity,
+  CampaignRecipientOrmEntity,
   SupplierOrmEntity,
   PurchaseOrderOrmEntity,
   BalanceSheetAccountOrmEntity,

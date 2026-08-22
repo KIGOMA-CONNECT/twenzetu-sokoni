@@ -1,5 +1,5 @@
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { RedisCacheModule } from '@afri-market/tenancy';
+import { RedisCacheModule, ThrottlerRedisStorage } from '@afri-market/tenancy';
 import { AppConfigModule } from '@afri-market/core-config';
 import { AppLoggerModule } from '@afri-market/core-logger';
 import { AuditLoggerModule } from '@afri-market/core-security';
@@ -33,6 +33,9 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     // route groups tighten it via @Throttle({ default: { ... } }).
     ThrottlerModule.forRoot({
       throttlers: [{ name: 'default', ttl: 60000, limit: 300 }],
+      // Redis-backed counters: limits survive restarts and are shared across
+      // replicas (the default in-memory store resets on every deploy).
+      storage: new ThrottlerRedisStorage(),
     }),
     RedisCacheModule,
     AppConfigModule,

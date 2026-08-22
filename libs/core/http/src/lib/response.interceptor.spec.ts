@@ -8,9 +8,13 @@ describe('ResponseInterceptor', () => {
     const handler: CallHandler<{ id: number }> = {
       handle: () => of({ id: 42 }),
     };
+    const context = {
+      getHandler: () => () => undefined,
+      getClass: () => class Temp {},
+    } as unknown as ExecutionContext;
 
     const result = await firstValueFrom(
-      interceptor.intercept({} as ExecutionContext, handler),
+      interceptor.intercept(context, handler),
     );
 
     expect(result.success).toBe(true);

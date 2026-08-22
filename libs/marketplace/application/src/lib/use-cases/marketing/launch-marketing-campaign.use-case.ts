@@ -5,6 +5,13 @@ import { MARKETING_CAMPAIGN_REPOSITORY, SMS_SERVICE } from '../../tokens';
 
 const MAX_AUDIENCE = 500;
 
+export interface CampaignVariantResult {
+  variantIndex: number;
+  label: string;
+  sent: number;
+  failed: number;
+}
+
 @Injectable()
 export class LaunchMarketingCampaignUseCase {
   constructor(
@@ -15,7 +22,15 @@ export class LaunchMarketingCampaignUseCase {
   public async execute(
     tenantId: string,
     campaignId: string,
-  ): Promise<{ campaignId: string; status: string; totalAudience: number; sentCount: number; failedCount: number }> {
+  ): Promise<{
+    campaignId: string;
+    status: string;
+    totalAudience: number;
+    sentCount: number;
+    failedCount: number;
+    deliveredCount: number;
+    variants?: CampaignVariantResult[];
+  }> {
     const campaign = await this.campaignRepo.findByIdAndTenant(campaignId, tenantId);
     if (!campaign) throw new NotFoundException('Campaign not found');
 
@@ -46,28 +61,46 @@ export class LaunchMarketingCampaignUseCase {
       return this.result(campaign);
     }
 
+    const perVariant = new Map<number, CampaignVariantResult>();
+    const recipients: Array<{ phoneNumber: string; variantIndex: number; status: 'SENT' | 'FAILED' }> = [];
+
     for (const phone of phoneNumbers) {
+      const { message, variantIndex } = campaign.messageForRecipient(phone);
+      let success = false;
       try {
-        const result = await this.smsService.send({ to: phone, message: campaign.message, tenantId });
-        campaign.recordResult(result.success);
+        const result = await this.smsService.send({ to: phone, message, tenantId });
+        success = result.success;
       } catch {
-        campaign.recordResult(false);
+        success = false;
       }
+      campaign.recordResult(success);
+      if (success) campaign.recordDelivery();
+      recipients.push({ phoneNumber: phone, variantIndex, status: success ? 'SENT' : 'FAILED' });
+
+      const label = campaign.variants[variantIndex]?.label ?? 'Message';
+      const bucket = perVariant.get(variantIndex) ?? { variantIndex, label, sent: 0, failed: 0 };
+      if (success) bucket.sent += 1;
+      else bucket.failed += 1;
+      perVariant.set(variantIndex, bucket);
     }
+
+    await this.campaignRepo.saveRecipients(tenantId, campaignId, recipients);
 
     campaign.complete();
     await this.campaignRepo.save(campaign);
 
-    return this.result(campaign);
+    return this.result(campaign, [...perVariant.values()].sort((a, b) => a.variantIndex - b.variantIndex));
   }
 
-  private result(campaign: MarketingCampaign) {
+  private result(campaign: MarketingCampaign, variants?: CampaignVariantResult[]) {
     return {
       campaignId: campaign.id.value,
       status: campaign.status,
       totalAudience: campaign.totalAudience,
       sentCount: campaign.sentCount,
       failedCount: campaign.failedCount,
+      deliveredCount: campaign.deliveredCount,
+      ...(variants && variants.length > 1 ? { variants } : {}),
     };
   }
 }

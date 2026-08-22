@@ -198,6 +198,12 @@ export * from './lib/use-cases/marketing/create-advert.use-case';
 export * from './lib/use-cases/marketing/create-marketing-campaign.use-case';
 export * from './lib/use-cases/marketing/list-marketing-campaigns.use-case';
 export * from './lib/use-cases/marketing/launch-marketing-campaign.use-case';
+export * from './lib/use-cases/marketing/get-campaign-analytics.use-case';
+
+// Use Cases - Fleet bulk operations
+export * from './lib/use-cases/fleet/bulk-verify-drivers.use-case';
+export * from './lib/use-cases/fleet/bulk-set-driver-status.use-case';
+export * from './lib/use-cases/fleet/bulk-assign-deliveries.use-case';
 
 // Use Cases - Vendor Staff
 export * from './lib/use-cases/vendor-staff/invite-vendor-staff.use-case';

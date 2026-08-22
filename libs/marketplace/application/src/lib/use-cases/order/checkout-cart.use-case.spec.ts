@@ -70,6 +70,9 @@ describe('CheckoutCartUseCase', () => {
     };
     const productRepo = {
       findById: jest.fn((id: EntityId) => Promise.resolve(products.get(id.value) ?? null)),
+      findByIds: jest.fn((ids: string[]) =>
+        Promise.resolve(ids.map((id) => products.get(id)).filter((p) => p !== undefined)),
+      ),
       save: jest.fn().mockResolvedValue(undefined),
     };
     const vendorRepo = { findById: jest.fn().mockResolvedValue(vendor) };
@@ -84,6 +87,16 @@ describe('CheckoutCartUseCase', () => {
           return Promise.resolve([{ id: 'cart-1' }]);
         }
         return Promise.resolve([]);
+      }),
+      transaction: jest.fn(async (cb: (em: { query: (sql: string) => Promise<unknown> }) => Promise<void>) => {
+        await cb({
+          query: jest.fn((sql: string) => {
+            if (sql.includes('UPDATE products')) {
+              return Promise.resolve([{ id: 'prod-1' }]);
+            }
+            return Promise.resolve([]);
+          }),
+        });
       }),
     };
     const mobileMoneyService = {
@@ -129,9 +142,11 @@ describe('CheckoutCartUseCase', () => {
     const savedProduct = productRepo.save.mock.calls[0]?.[0] as Product | undefined;
     expect(savedProduct).toBeUndefined();
 
-    expect(ds.query).toHaveBeenCalledWith(
+    // Stock is claimed inside a transaction before any order rows are written.
+    expect(ds.transaction).toHaveBeenCalledTimes(1);
+    expect(ds.query).not.toHaveBeenCalledWith(
       expect.stringContaining('UPDATE products'),
-      expect.arrayContaining([2, 'prod-1']),
+      expect.anything(),
     );
 
     expect(cart.status).toBe('CHECKED_OUT');
