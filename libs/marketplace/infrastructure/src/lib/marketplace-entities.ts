@@ -48,6 +48,7 @@ import { CampaignRecipientOrmEntity } from './entities/campaign-recipient-orm.en
 import { SupplierOrmEntity } from './entities/supplier-orm.entity';
 import { PurchaseOrderOrmEntity } from './entities/purchase-order-orm.entity';
 import { BalanceSheetAccountOrmEntity } from './entities/balance-sheet-account-orm.entity';
+import { PosShiftOrmEntity } from './entities/pos-shift-orm.entity';
 
 export const MARKETPLACE_ENTITIES = [
   VendorOrmEntity,
@@ -100,4 +101,5 @@ export const MARKETPLACE_ENTITIES = [
   SupplierOrmEntity,
   PurchaseOrderOrmEntity,
   BalanceSheetAccountOrmEntity,
+  PosShiftOrmEntity,
 ];

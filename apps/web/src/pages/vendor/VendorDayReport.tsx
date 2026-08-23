@@ -1,5 +1,6 @@
-import { Fragment, useMemo, useState } from 'react';
+﻿import { Fragment, useMemo, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type { PosDayReport, PosSale } from '../../types';
@@ -9,7 +10,7 @@ const today = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash: 'Cash',
@@ -45,6 +46,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorDayReport() {
+  const { formatCurrency } = useCurrency();
   const [date, setDate] = useState(today());
   const { data: raw, loading, error, refetch } = useApi<PosDayReport>(`/pos/report?date=${date}`, [date]);
 
@@ -79,10 +81,10 @@ export default function VendorDayReport() {
             {sale.items.map((item, idx) => (
               <tr key={idx}>
                 <td style={styles.td}>{item.productName}</td>
-                <td style={styles.td}>{item.sku || item.barcode || '—'}</td>
+                <td style={styles.td}>{item.sku || item.barcode || 'â€”'}</td>
                 <td style={{ ...styles.td, textAlign: 'right' }}>{item.quantity}</td>
-                <td style={{ ...styles.td, textAlign: 'right' }}>{fmt(item.unitPrice)}</td>
-                <td style={{ ...styles.td, textAlign: 'right' }}>{fmt(item.totalPrice)}</td>
+                <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(item.unitPrice)}</td>
+                <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(item.totalPrice)}</td>
               </tr>
             ))}
           </tbody>
@@ -123,7 +125,7 @@ export default function VendorDayReport() {
         <>
           <div style={styles.stats}>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.totalRevenue)} {report.currency}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.totalRevenue)} {report.currency}</div>
               <div style={styles.cardLabel}>Total Sales</div>
             </div>
             <div style={styles.card}>
@@ -135,7 +137,7 @@ export default function VendorDayReport() {
               <div style={styles.cardLabel}>Items Sold</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.averageSale)}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.averageSale)}</div>
               <div style={styles.cardLabel}>Average Sale</div>
             </div>
           </div>
@@ -148,7 +150,7 @@ export default function VendorDayReport() {
                 <div key={row.method} style={styles.breakdownRow}>
                   <span>{PAYMENT_LABELS[row.method] ?? row.method}</span>
                   <span>
-                    {fmt(row.amount)} {report.currency} — {totalBreakdown > 0 ? Math.round((row.amount / totalBreakdown) * 100) : 0}%
+                    {formatCurrency(row.amount)} {report.currency} â€” {totalBreakdown > 0 ? Math.round((row.amount / totalBreakdown) * 100) : 0}%
                   </span>
                 </div>
               ))}
@@ -176,13 +178,13 @@ export default function VendorDayReport() {
                       <tr>
                         <td style={styles.td}>
                           <button style={styles.expando} onClick={() => toggle(sale.id)}>
-                            {expanded[sale.id] ? '−' : '+'}
+                            {expanded[sale.id] ? 'âˆ’' : '+'}
                           </button>
                         </td>
                         <td style={styles.td}>{sale.saleNumber}</td>
                         <td style={styles.td}>{new Date(sale.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
                         <td style={styles.td}>{PAYMENT_LABELS[sale.paymentMethod] ?? sale.paymentMethod}</td>
-                        <td style={{ ...styles.td, textAlign: 'right', fontWeight: 700 }}>{fmt(sale.total)}</td>
+                        <td style={{ ...styles.td, textAlign: 'right', fontWeight: 700 }}>{formatCurrency(sale.total)}</td>
                       </tr>
                       {expanded[sale.id] && renderSaleItems(sale)}
                     </Fragment>

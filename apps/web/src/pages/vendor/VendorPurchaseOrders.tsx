@@ -1,4 +1,5 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -13,7 +14,7 @@ interface DraftLine {
   unitCost: number;
 }
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
@@ -48,6 +49,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorPurchaseOrders() {
+  const { formatCurrency } = useCurrency();
   const { data: raw, loading, error, refetch } = useApi<PurchaseOrder[]>('/vendor/purchase-orders');
   const orders: PurchaseOrder[] = Array.isArray(raw) ? raw : [];
   const { data: rawSuppliers } = useApi<Supplier[]>('/vendor/suppliers');
@@ -150,7 +152,7 @@ export default function VendorPurchaseOrders() {
     const busy = busyId === order.id;
     const btn = (path: string, label: string, style: React.CSSProperties, confirmMsg?: string) => (
       <button style={style} disabled={busy} onClick={() => runAction(order, path, confirmMsg)}>
-        {busy ? '…' : label}
+        {busy ? 'â€¦' : label}
       </button>
     );
     if (order.status === 'ORDERED') {
@@ -172,7 +174,7 @@ export default function VendorPurchaseOrders() {
         <div>
           <h1 style={styles.title}>Purchase Orders</h1>
           <div style={styles.subtitle}>
-            {orders.length} orders · {itemCount} units ordered · {pendingCount} awaiting receipt
+            {orders.length} orders Â· {itemCount} units ordered Â· {pendingCount} awaiting receipt
           </div>
         </div>
         <button style={styles.addButton} onClick={openCreate}>+ New Purchase Order</button>
@@ -210,14 +212,14 @@ export default function VendorPurchaseOrders() {
                       <div style={{ fontWeight: 700 }}>{o.poNumber}</div>
                       <div style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>{new Date(o.createdAt).toLocaleDateString()}</div>
                     </td>
-                    <td style={styles.td}>{supplier?.name || '—'}</td>
+                    <td style={styles.td}>{supplier?.name || 'â€”'}</td>
                     <td style={styles.td}>
                       {o.items.length} line{o.items.length === 1 ? '' : 's'}
                       <div style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
-                        {o.items.slice(0, 2).map((i) => i.productName).join(', ')}{o.items.length > 2 ? '…' : ''}
+                        {o.items.slice(0, 2).map((i) => i.productName).join(', ')}{o.items.length > 2 ? 'â€¦' : ''}
                       </div>
                     </td>
-                    <td style={styles.td}><span style={{ fontWeight: 700 }}>{fmt(o.subtotal)}</span> {o.currency}</td>
+                    <td style={styles.td}><span style={{ fontWeight: 700 }}>{formatCurrency(o.subtotal)}</span> {o.currency}</td>
                     <td style={styles.td}><StatusBadge status={o.status} /></td>
                     <td style={styles.td}>
                       {o.status === 'CANCELLED' ? (
@@ -259,7 +261,7 @@ export default function VendorPurchaseOrders() {
                     value={l.productId}
                     onChange={(e) => setLine(i, { productId: e.target.value })}
                   >
-                    <option value="">Select product…</option>
+                    <option value="">Select productâ€¦</option>
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>{p.name} (stock {p.stockQuantity})</option>
                     ))}
@@ -278,7 +280,7 @@ export default function VendorPurchaseOrders() {
                     value={l.unitCost}
                     onChange={(e) => setLine(i, { unitCost: Math.max(0, Number(e.target.value)) })}
                   />
-                  <button style={styles.removeBtn} onClick={() => removeLine(i)} title="Remove line">✕</button>
+                  <button style={styles.removeBtn} onClick={() => removeLine(i)} title="Remove line">âœ•</button>
                 </div>
               ))}
               <button style={{ ...styles.actionBtn, marginTop: '0.25rem' }} onClick={addLine}>+ Add Line</button>
@@ -287,12 +289,12 @@ export default function VendorPurchaseOrders() {
               <label style={styles.label}>Notes</label>
               <input style={styles.input} value={notes} onChange={(e) => setNotes(e.target.value)} />
             </div>
-            <div style={styles.totals}>Total: {fmt(draftTotal)}</div>
+            <div style={styles.totals}>Total: {formatCurrency(draftTotal)}</div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submit} disabled={saving}>
-                {saving ? 'Creating…' : 'Create Purchase Order'}
+                {saving ? 'Creatingâ€¦' : 'Create Purchase Order'}
               </button>
             </div>
           </div>

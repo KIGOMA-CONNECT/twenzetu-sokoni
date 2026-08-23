@@ -77,9 +77,10 @@ export default function VendorServices() {
   const [formError, setFormError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const [activeReq, setActiveReq] = useState<ServiceRequest | null>(null);
-  const [messages, setMessages] = useState<ServiceMessage[]>([]);
-  const [messageText, setMessageText] = useState('');
+const [activeReq, setActiveReq] = useState<ServiceRequest | null>(null);
+const [messages, setMessages] = useState<ServiceMessage[]>([]);
+const [messageText, setMessageText] = useState('');
+const [chatError, setChatError] = useState<string | null>(null);
   const [quotePrice, setQuotePrice] = useState('');
   const [quoteMsg, setQuoteMsg] = useState('');
   const [quoteBusy, setQuoteBusy] = useState(false);
@@ -143,7 +144,11 @@ export default function VendorServices() {
       const res = await api.get(`/services/requests/${req.id}/messages`);
       const payload = res.data?.data ?? [];
       setMessages(Array.isArray(payload) ? payload : []);
-    } catch { setMessages([]); }
+      setChatError(null);
+    } catch (err: any) {
+      setMessages([]);
+      setChatError(err.response?.data?.message || 'Failed to load messages.');
+    }
   };
 
   const sendMessage = async () => {
@@ -156,7 +161,11 @@ export default function VendorServices() {
       const res = await api.get(`/services/requests/${activeReq.id}/messages`);
       const payload = res.data?.data ?? [];
       setMessages(Array.isArray(payload) ? payload : []);
-    } catch { setMessageText(text); }
+      setChatError(null);
+    } catch (err: any) {
+      setMessageText(text);
+      setChatError(err.response?.data?.message || 'Failed to send message.');
+    }
   };
 
   const submitQuote = async () => {
@@ -377,6 +386,7 @@ export default function VendorServices() {
                 </div>
               ))}
             </div>
+            {chatError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{chatError}</div>}
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <input style={styles.input} placeholder="Type a message…" value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
               <button style={{ ...styles.buttonSecondary, whiteSpace: 'nowrap' }} onClick={sendMessage}>Send</button>

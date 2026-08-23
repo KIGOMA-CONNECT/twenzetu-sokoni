@@ -1,10 +1,11 @@
-import { Fragment, useMemo, useState } from 'react';
+﻿import { Fragment, useMemo, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type { AccountingPeriod, AccountingEntry, VendorAccountingReport } from '../../types';
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const PERIODS: { value: AccountingPeriod; label: string }[] = [
   { value: '7d', label: '7 Days' },
@@ -49,6 +50,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorAccounting() {
+  const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -114,35 +116,35 @@ export default function VendorAccounting() {
         <>
           <div style={styles.stats}>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.summary.marketplaceRevenue)} {report.summary.currency}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.summary.marketplaceRevenue)} {report.summary.currency}</div>
               <div style={styles.cardLabel}>Order Payouts ({report.summary.orderCount})</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.summary.posSales)}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.summary.posSales)}</div>
               <div style={styles.cardLabel}>POS Sales ({report.summary.posTransactionCount})</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.summary.grossRevenue)}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.summary.grossRevenue)}</div>
               <div style={styles.cardLabel}>Gross Revenue</div>
             </div>
             <div style={styles.card}>
-              <div style={{ ...styles.cardValue, color: 'var(--danger)' }}>{fmt(report.summary.commissions)}</div>
+              <div style={{ ...styles.cardValue, color: 'var(--danger)' }}>{formatCurrency(report.summary.commissions)}</div>
               <div style={styles.cardLabel}>Commissions</div>
             </div>
             <div style={styles.card}>
-              <div style={{ ...styles.cardValue, color: 'var(--success)' }}>{fmt(report.summary.netEarnings)}</div>
+              <div style={{ ...styles.cardValue, color: 'var(--success)' }}>{formatCurrency(report.summary.netEarnings)}</div>
               <div style={styles.cardLabel}>Net Earnings</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.summary.netCashFlow)}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.summary.netCashFlow)}</div>
               <div style={styles.cardLabel}>Net Cash Flow</div>
             </div>
             <div style={styles.card}>
-              <div style={styles.cardValue}>{fmt(report.summary.walletCredits)}</div>
+              <div style={styles.cardValue}>{formatCurrency(report.summary.walletCredits)}</div>
               <div style={styles.cardLabel}>Wallet Credits</div>
             </div>
             <div style={styles.card}>
-              <div style={{ ...styles.cardValue, color: 'var(--danger)' }}>{fmt(report.summary.withdrawals)}</div>
+              <div style={{ ...styles.cardValue, color: 'var(--danger)' }}>{formatCurrency(report.summary.withdrawals)}</div>
               <div style={styles.cardLabel}>Withdrawals</div>
             </div>
           </div>
@@ -167,11 +169,11 @@ export default function VendorAccounting() {
                   {report.daily.map((row) => (
                     <tr key={row.date}>
                       <td style={styles.td}>{row.date}</td>
-                      <td style={{ ...styles.td, textAlign: 'right' }}>{fmt(row.marketplaceRevenue)}</td>
-                      <td style={{ ...styles.td, textAlign: 'right' }}>{fmt(row.posSales)}</td>
-                      <td style={{ ...styles.td, textAlign: 'right', color: 'var(--danger)' }}>{fmt(row.commissions)}</td>
-                      <td style={{ ...styles.td, textAlign: 'right', color: 'var(--danger)' }}>{fmt(row.withdrawals)}</td>
-                      <td style={{ ...styles.td, textAlign: 'right', fontWeight: 700 }}>{fmt(row.net)}</td>
+                      <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(row.marketplaceRevenue)}</td>
+                      <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(row.posSales)}</td>
+                      <td style={{ ...styles.td, textAlign: 'right', color: 'var(--danger)' }}>{formatCurrency(row.commissions)}</td>
+                      <td style={{ ...styles.td, textAlign: 'right', color: 'var(--danger)' }}>{formatCurrency(row.withdrawals)}</td>
+                      <td style={{ ...styles.td, textAlign: 'right', fontWeight: 700 }}>{formatCurrency(row.net)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -180,7 +182,7 @@ export default function VendorAccounting() {
           </div>
 
           <div style={styles.panel}>
-            <div style={styles.panelHeader}>Ledger ({sortedEntries.length} entries, balance {fmt(entriesTotal)})</div>
+            <div style={styles.panelHeader}>Ledger ({sortedEntries.length} entries, balance {formatCurrency(entriesTotal)})</div>
             {sortedEntries.length === 0 ? (
               <div style={styles.empty}>No ledger entries in this period</div>
             ) : (
@@ -201,7 +203,7 @@ export default function VendorAccounting() {
                         <td style={styles.td}>{ENTRY_LABELS[e.type] ?? e.type}</td>
                         <td style={styles.td}>{e.description}</td>
                         <td style={{ ...styles.td, textAlign: 'right', fontWeight: 700, ...(e.amount < 0 ? styles.neg : styles.pos) }}>
-                          {e.amount < 0 ? `(${fmt(Math.abs(e.amount))})` : fmt(e.amount)}
+                          {e.amount < 0 ? `(${formatCurrency(Math.abs(e.amount))})` : formatCurrency(e.amount)}
                         </td>
                       </tr>
                     </Fragment>

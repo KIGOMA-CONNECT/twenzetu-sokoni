@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
+﻿import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -6,9 +6,13 @@ import {
   CreatePosSaleUseCase,
   GetPosDayReportUseCase,
   FindProductsUseCase,
+  OpenPosShiftUseCase,
+  ClosePosShiftUseCase,
+  GetCurrentPosShiftUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { PosCheckoutDto } from './dto/pos-checkout.dto';
+import { OpenPosShiftDto, ClosePosShiftDto } from './dto/pos-shift.dto';
 
 @ApiTags('POS')
 @Controller('pos')
@@ -19,6 +23,9 @@ export class PosController {
     private readonly createPosSale: CreatePosSaleUseCase,
     private readonly getDayReport: GetPosDayReportUseCase,
     private readonly findProducts: FindProductsUseCase,
+    private readonly openShift: OpenPosShiftUseCase,
+    private readonly closeShift: ClosePosShiftUseCase,
+    private readonly getCurrentShift: GetCurrentPosShiftUseCase,
     private readonly vendorAccess: VendorAccessService,
   ) {}
 
@@ -71,6 +78,57 @@ export class PosController {
         date,
       });
       return { data: { ...report, shopName: ctx.shopName } };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  @Get('shifts/current')
+  @ApiOperation({ summary: 'Get the currently open POS shift (requires use_pos)' })
+  public async getCurrentShiftEndpoint(@CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'use_pos');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have POS permission');
+    }
+    const { shift } = await this.getCurrentShift.execute(ctx.vendorId);
+    return { data: shift?.toDto() ?? null };
+  }
+
+  @Post('shifts/open')
+  @ApiOperation({ summary: 'Open a new POS shift (requires use_pos)' })
+  public async openShiftEndpoint(@Body() dto: OpenPosShiftDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'use_pos');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have POS permission');
+    }
+    try {
+      const { shift } = await this.openShift.execute({
+        tenantId: user.tenantId,
+        vendorId: ctx.vendorId,
+        operatorId: user.sub,
+        openingFloat: dto.openingFloat ?? 0,
+      });
+      return { data: shift.toDto() };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  @Post('shifts/close')
+  @ApiOperation({ summary: 'Close the current POS shift (requires use_pos)' })
+  public async closeShiftEndpoint(@Body() dto: ClosePosShiftDto, @CurrentUser() user: JwtPayload) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'use_pos');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have POS permission');
+    }
+    try {
+      const { shift } = await this.closeShift.execute({
+        vendorId: ctx.vendorId,
+        closedBy: user.sub,
+        closingCash: dto.closingCash,
+        notes: dto.notes,
+      });
+      return { data: shift.toDto() };
     } catch (err: any) {
       throw new BadRequestException(err.message);
     }

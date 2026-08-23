@@ -1,5 +1,6 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useApi } from '../../hooks/useApi';
+import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type {
@@ -10,7 +11,7 @@ import type {
   MetricDefinition,
 } from '../../types';
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const PERIODS: { value: AccountingPeriod; label: string }[] = [
   { value: '7d', label: '7 Days' },
@@ -74,6 +75,7 @@ function downloadCsv(filename: string, rows: string[][]) {
 }
 
 export default function VendorAnalytics() {
+  const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
   const [tab, setTab] = useState<string>('overview');
   const [threshold, setThreshold] = useState<number>(5);
@@ -160,7 +162,7 @@ export default function VendorAnalytics() {
         <div>
           <h1 style={styles.title}>Business Analytics</h1>
           <div style={styles.subtitle}>
-            {overview?.shopName ? `${overview.shopName} — ` : ''}tenant-facing reports with a defined metric catalog
+            {overview?.shopName ? `${overview.shopName} â€” ` : ''}tenant-facing reports with a defined metric catalog
           </div>
         </div>
         <div style={styles.controls}>
@@ -175,7 +177,7 @@ export default function VendorAnalytics() {
           ))}
           {tab === 'inventory' && (
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8rem', color: 'var(--text)' }}>
-              Low stock ≤
+              Low stock â‰¤
               <input
                 style={styles.input}
                 type="number"
@@ -208,17 +210,17 @@ export default function VendorAnalytics() {
       ) : (
         <>
           <div style={styles.cards}>
-            {renderStatCard('Revenue', fmt(overview.summary.totalRevenue))}
-            {renderStatCard('Commission', fmt(overview.summary.commission), 'platform cut')}
-            {renderStatCard('Net Revenue', fmt(overview.summary.netRevenue), overview.summary.currency)}
-            {renderStatCard('Delivery Fees', fmt(overview.summary.deliveryFeeRevenue))}
+            {renderStatCard('Revenue', formatCurrency(overview.summary.totalRevenue))}
+            {renderStatCard('Commission', formatCurrency(overview.summary.commission), 'platform cut')}
+            {renderStatCard('Net Revenue', formatCurrency(overview.summary.netRevenue), overview.summary.currency)}
+            {renderStatCard('Delivery Fees', formatCurrency(overview.summary.deliveryFeeRevenue))}
             {renderStatCard('Orders', String(overview.summary.orderCount), `${overview.summary.completedOrders} completed`)}
-            {renderStatCard('Avg Order Value', fmt(overview.summary.averageOrderValue))}
+            {renderStatCard('Avg Order Value', formatCurrency(overview.summary.averageOrderValue))}
             {renderStatCard('Cancellation', `${(overview.summary.cancellationRate * 100).toFixed(1)}%`, `${overview.summary.cancelledOrders} orders`)}
-            {renderStatCard('Customers', String(overview.customers.uniqueCustomers), `${overview.customers.newCustomers} new · ${overview.customers.returningCustomers} returning`)}
-            {renderStatCard('Deliveries', String(overview.deliveries.completed), `${overview.deliveries.active} active · ${overview.deliveries.failed} failed`)}
-            {renderStatCard('Avg Delivery', `${fmt(overview.deliveries.averageDistanceKm)} km`, `${fmt(overview.deliveries.averageDurationMinutes)} min avg`)}
-            {renderStatCard('Driver Earnings', fmt(overview.deliveries.driverEarnings))}
+            {renderStatCard('Customers', String(overview.customers.uniqueCustomers), `${overview.customers.newCustomers} new Â· ${overview.customers.returningCustomers} returning`)}
+            {renderStatCard('Deliveries', String(overview.deliveries.completed), `${overview.deliveries.active} active Â· ${overview.deliveries.failed} failed`)}
+            {renderStatCard('Avg Delivery', `${formatCurrency(overview.deliveries.averageDistanceKm)} km`, `${formatCurrency(overview.deliveries.averageDurationMinutes)} min avg`)}
+            {renderStatCard('Driver Earnings', formatCurrency(overview.deliveries.driverEarnings))}
           </div>
 
           <div style={styles.panel}>
@@ -240,8 +242,8 @@ export default function VendorAnalytics() {
                   <tr key={f.status}>
                     <td style={{ ...styles.td, fontWeight: 600, ...statusColor(f.status) }}>{f.status.replace(/_/g, ' ')}</td>
                     <td style={styles.tdRight}>{f.count}</td>
-                    <td style={styles.tdRight}>{funnelTotal > 0 ? `${((f.count / funnelTotal) * 100).toFixed(1)}%` : '—'}</td>
-                    <td style={styles.tdRight}>{fmt(f.value)}</td>
+                    <td style={styles.tdRight}>{funnelTotal > 0 ? `${((f.count / funnelTotal) * 100).toFixed(1)}%` : 'â€”'}</td>
+                    <td style={styles.tdRight}>{formatCurrency(f.value)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -251,7 +253,7 @@ export default function VendorAnalytics() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Daily Revenue</span>
-              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>date · orders · revenue · commission</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>date Â· orders Â· revenue Â· commission</span>
             </div>
             {overview.daily.length === 0 ? (
               <div style={styles.empty}>No orders in this period</div>
@@ -270,8 +272,8 @@ export default function VendorAnalytics() {
                     <tr key={d.date}>
                       <td style={styles.td}>{d.date}</td>
                       <td style={styles.tdRight}>{d.orders}</td>
-                      <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(d.revenue)}</td>
-                      <td style={styles.tdRight}>{fmt(d.commission)}</td>
+                      <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(d.revenue)}</td>
+                      <td style={styles.tdRight}>{formatCurrency(d.commission)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -309,7 +311,7 @@ export default function VendorAnalytics() {
                   <td style={{ ...styles.td, fontWeight: 600 }}>{p.productName}</td>
                   <td style={styles.tdRight}>{p.quantity}</td>
                   <td style={styles.tdRight}>{p.orderCount}</td>
-                  <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(p.revenue)}</td>
+                  <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(p.revenue)}</td>
                   <td style={{ ...styles.tdRight, width: '18%' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'flex-end' }}>
                       <span style={{ fontSize: '0.8rem', minWidth: '3.5rem' }}>{p.share}%</span>
@@ -335,16 +337,16 @@ export default function VendorAnalytics() {
         <>
           <div style={styles.cards}>
             {renderStatCard('Products', String(inventory.activeProductCount), 'active')}
-            {renderStatCard('Total Stock Units', fmt(invTotalStock))}
-            {renderStatCard('Inventory Value', fmt(inventory.inventoryValue))}
-            {renderStatCard('Low Stock', String(inventory.lowStockCount), `≤ ${inventory.threshold} units`)}
+            {renderStatCard('Total Stock Units', formatCurrency(invTotalStock))}
+            {renderStatCard('Inventory Value', formatCurrency(inventory.inventoryValue))}
+            {renderStatCard('Low Stock', String(inventory.lowStockCount), `â‰¤ ${inventory.threshold} units`)}
             {renderStatCard('Out of Stock', String(inventory.outOfStockCount))}
           </div>
           <div style={styles.panel}>
             <div style={styles.panelHeader}>
               <span>Stock by Product</span>
               <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                low stock ≤ {inventory.threshold} units · {inventory.items.length} products
+                low stock â‰¤ {inventory.threshold} units Â· {inventory.items.length} products
               </span>
             </div>
             {inventory.items.length === 0 ? (
@@ -365,12 +367,12 @@ export default function VendorAnalytics() {
                   {inventory.items.map((i) => (
                     <tr key={i.id}>
                       <td style={{ ...styles.td, fontWeight: 600 }}>{i.name}</td>
-                      <td style={styles.td}>{i.sku || '—'}</td>
+                      <td style={styles.td}>{i.sku || 'â€”'}</td>
                       <td style={{ ...styles.tdRight, fontWeight: 700, ...stockColor(i.stockQuantity) }}>
                         {i.stockQuantity} {i.unit}
                       </td>
-                      <td style={styles.tdRight}>{fmt(i.price)} {i.currency}</td>
-                      <td style={styles.tdRight}>{fmt(i.stockValue)}</td>
+                      <td style={styles.tdRight}>{formatCurrency(i.price)} {i.currency}</td>
+                      <td style={styles.tdRight}>{formatCurrency(i.stockValue)}</td>
                       <td style={styles.td}>
                         <span style={i.status === 'ACTIVE' ? styles.pos : styles.neg}>{i.status}</span>
                       </td>

@@ -1,11 +1,12 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
+import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type { AccountingPeriod, BalanceSheetAccount, VendorStatements } from '../../types';
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const PERIODS: { value: AccountingPeriod; label: string }[] = [
   { value: '7d', label: '7 Days' },
@@ -69,6 +70,7 @@ function downloadCsv(filename: string, rows: string[][]) {
 }
 
 export default function VendorReports() {
+  const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
   const [tab, setTab] = useState<string>('income');
 
@@ -219,7 +221,7 @@ export default function VendorReports() {
         <div>
           <h1 style={styles.title}>Financial Reports</h1>
           <div style={styles.subtitle}>
-            {report?.shopName ? `${report.shopName} — standard statements for loan applications` : 'Standard financial statements'}
+            {report?.shopName ? `${report.shopName} â€” standard statements for loan applications` : 'Standard financial statements'}
           </div>
         </div>
         <div style={styles.controls}>
@@ -259,7 +261,7 @@ export default function VendorReports() {
               <div style={styles.panelHeader}>
                 <span>Income Statement</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                  {period === 'all_time' ? 'All time' : `Last ${period}`} · {report.incomeStatement.currency}
+                  {period === 'all_time' ? 'All time' : `Last ${period}`} Â· {report.incomeStatement.currency}
                 </span>
               </div>
               <table style={styles.table}>
@@ -268,14 +270,14 @@ export default function VendorReports() {
                     <tr key={i}>
                       <td style={r.bold ? styles.total : styles.td}>{r.label}</td>
                       <td style={{ ...(r.bold ? styles.totalRight : styles.tdRight), ...(r.neg ? styles.neg : styles.pos) }}>
-                        {r.amount < 0 ? `(${fmt(Math.abs(r.amount))})` : fmt(r.amount)}
+                        {r.amount < 0 ? `(${formatCurrency(Math.abs(r.amount))})` : formatCurrency(r.amount)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div style={styles.note}>
-                Net Profit = Gross Revenue − Platform Commission − Cost of Goods Sold. Cost of goods sold is based on received purchase orders; POS cash-in-hand is not included.
+                Net Profit = Gross Revenue âˆ’ Platform Commission âˆ’ Cost of Goods Sold. Cost of goods sold is based on received purchase orders; POS cash-in-hand is not included.
               </div>
             </div>
           )}
@@ -292,14 +294,14 @@ export default function VendorReports() {
                     <tr key={i}>
                       <td style={r.bold ? styles.total : styles.td}>{r.label}</td>
                       <td style={{ ...(r.bold ? styles.totalRight : styles.tdRight), ...(r.neg ? styles.neg : styles.pos) }}>
-                        {r.amount < 0 ? `(${fmt(Math.abs(r.amount))})` : fmt(r.amount)}
+                        {r.amount < 0 ? `(${formatCurrency(Math.abs(r.amount))})` : formatCurrency(r.amount)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div style={styles.note}>
-                Closing cash reflects the current wallet balance. Opening cash is derived (closing − net movement).
+                Closing cash reflects the current wallet balance. Opening cash is derived (closing âˆ’ net movement).
               </div>
             </div>
           )}
@@ -309,7 +311,7 @@ export default function VendorReports() {
               <div style={styles.panelHeader}>
                 <span>Trial Balance</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                  Totals: {fmt(totalTrialDebit)} / {fmt(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
+                  Totals: {formatCurrency(totalTrialDebit)} / {formatCurrency(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
                 </span>
               </div>
               {report.trialBalance.length === 0 ? (
@@ -327,14 +329,14 @@ export default function VendorReports() {
                     {report.trialBalance.map((r) => (
                       <tr key={r.account}>
                         <td style={styles.td}>{r.account}</td>
-                        <td style={{ ...styles.tdRight, color: r.debit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.debit !== 0 ? fmt(r.debit) : '—'}</td>
-                        <td style={{ ...styles.tdRight, color: r.credit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.credit !== 0 ? fmt(r.credit) : '—'}</td>
+                        <td style={{ ...styles.tdRight, color: r.debit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.debit !== 0 ? formatCurrency(r.debit) : 'â€”'}</td>
+                        <td style={{ ...styles.tdRight, color: r.credit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.credit !== 0 ? formatCurrency(r.credit) : 'â€”'}</td>
                       </tr>
                     ))}
                     <tr>
                       <td style={styles.total}>Total</td>
-                      <td style={styles.totalRight}>{fmt(totalTrialDebit)}</td>
-                      <td style={styles.totalRight}>{fmt(totalTrialCredit)}</td>
+                      <td style={styles.totalRight}>{formatCurrency(totalTrialDebit)}</td>
+                      <td style={styles.totalRight}>{formatCurrency(totalTrialCredit)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -348,7 +350,7 @@ export default function VendorReports() {
                 <div style={styles.panelHeader}>
                   <span>Balance Sheet</span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                    As of {new Date(report.asOf).toLocaleDateString()} · {report.financialPosition.currency}
+                    As of {new Date(report.asOf).toLocaleDateString()} Â· {report.financialPosition.currency}
                   </span>
                 </div>
                 <table style={styles.table}>
@@ -363,12 +365,12 @@ export default function VendorReports() {
                           {l.label}
                           {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
                         </td>
-                        <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(l.amount)}</td>
+                        <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(l.amount)}</td>
                       </tr>
                     ))}
                     <tr>
                       <td style={styles.total}>Total Assets</td>
-                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalAssets)}</td>
+                      <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalAssets)}</td>
                     </tr>
                     <tr>
                       <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Liabilities</td>
@@ -380,12 +382,12 @@ export default function VendorReports() {
                           {l.label}
                           {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
                         </td>
-                        <td style={{ ...styles.tdRight, ...styles.neg }}>{fmt(l.amount)}</td>
+                        <td style={{ ...styles.tdRight, ...styles.neg }}>{formatCurrency(l.amount)}</td>
                       </tr>
                     ))}
                     <tr>
                       <td style={styles.total}>Total Liabilities</td>
-                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalLiabilities)}</td>
+                      <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalLiabilities)}</td>
                     </tr>
                     <tr>
                       <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Owner's Equity</td>
@@ -393,21 +395,21 @@ export default function VendorReports() {
                     </tr>
                     <tr>
                       <td style={styles.td}>Owner capital (wallet top-ups)</td>
-                      <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.ownerCapital)}</td>
+                      <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.ownerCapital)}</td>
                     </tr>
                     <tr>
                       <td style={styles.td}>Retained earnings</td>
-                      <td style={{ ...styles.tdRight, ...styles.pos }}>{fmt(report.financialPosition.retainedEarnings)}</td>
+                      <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.retainedEarnings)}</td>
                     </tr>
                     <tr>
                       <td style={styles.total}>Total Equity</td>
-                      <td style={styles.totalRight}>{fmt(report.financialPosition.totalEquity)}</td>
+                      <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalEquity)}</td>
                     </tr>
                   </tbody>
                 </table>
                 <div style={styles.note}>
                   Assets = Liabilities + Equity. Cash and loans payable are tracked automatically; inventory is
-                  estimated at retail price from current stock (status ≠ DELETED). Use "Manage accounts" below to add
+                  estimated at retail price from current stock (status â‰  DELETED). Use "Manage accounts" below to add
                   other assets (equipment, receivables) and liabilities (supplier payables, taxes).
                 </div>
               </div>
@@ -443,7 +445,7 @@ export default function VendorReports() {
                               {a.category === 'asset' ? 'Asset' : 'Liability'}
                             </span>
                           </td>
-                          <td style={styles.tdRight}>{fmt(a.amount)} {a.currency}</td>
+                          <td style={styles.tdRight}>{formatCurrency(a.amount)} {a.currency}</td>
                           <td style={{ ...styles.tdRight, whiteSpace: 'nowrap' }}>
                             <button style={{ ...styles.refreshBtn, marginRight: '0.4rem' }} onClick={() => openEditAccount(a)}>Edit</button>
                             <button

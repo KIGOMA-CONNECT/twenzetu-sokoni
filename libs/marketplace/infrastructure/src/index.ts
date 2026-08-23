@@ -85,3 +85,5 @@ export * from './lib/entities/purchase-order-orm.entity';
 export * from './lib/entities/balance-sheet-account-orm.entity';
 export * from './lib/repositories/typeorm-supplier.repository';
 export * from './lib/repositories/typeorm-purchase-order.repository';
+export * from './lib/entities/pos-shift-orm.entity';
+export * from './lib/repositories/typeorm-pos-shift.repository';

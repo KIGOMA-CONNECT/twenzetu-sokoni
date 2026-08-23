@@ -42,6 +42,7 @@ import {
   TypeOrmMarketingCampaignRepository,
   TypeOrmSupplierRepository,
   TypeOrmPurchaseOrderRepository,
+  TypeOrmPosShiftRepository,
 } from '@afri-market/marketplace-infrastructure';
 import { SmsService, MobileMoneyService, EmailService, GoogleMapsService } from '@afri-market/integrations';
 import {
@@ -61,6 +62,7 @@ import {
   CART_REPOSITORY, ADVERT_REPOSITORY,
   MARKETING_CAMPAIGN_REPOSITORY,
   SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY,
+  POS_SHIFT_REPOSITORY,
 } from './tokens';
 import { CreateVendorUseCase } from './use-cases/vendor/create-vendor.use-case';
 import { UpdateVendorProfileUseCase } from './use-cases/vendor/update-vendor-profile.use-case';
@@ -197,8 +199,12 @@ import { DeliveryRouteEstimator } from './services/delivery-route-estimator';
 import {
   CreateSupplierUseCase,
   ListSuppliersUseCase,
+  UpdateSupplierUseCase,
   DeleteSupplierUseCase,
 } from './use-cases/supplier/supplier.use-cases';
+import { OpenPosShiftUseCase } from './use-cases/pos/open-pos-shift.use-case';
+import { ClosePosShiftUseCase } from './use-cases/pos/close-pos-shift.use-case';
+import { GetCurrentPosShiftUseCase } from './use-cases/pos/get-current-pos-shift.use-case';
 import { BulkVerifyDriversUseCase } from './use-cases/fleet/bulk-verify-drivers.use-case';
 import { BulkSetDriverStatusUseCase } from './use-cases/fleet/bulk-set-driver-status.use-case';
 import { BulkAssignDeliveriesUseCase } from './use-cases/fleet/bulk-assign-deliveries.use-case';
@@ -253,6 +259,7 @@ const REPOSITORIES = [
   { provide: MARKETING_CAMPAIGN_REPOSITORY, useClass: TypeOrmMarketingCampaignRepository },
   { provide: SUPPLIER_REPOSITORY, useClass: TypeOrmSupplierRepository },
   { provide: PURCHASE_ORDER_REPOSITORY, useClass: TypeOrmPurchaseOrderRepository },
+  { provide: POS_SHIFT_REPOSITORY, useClass: TypeOrmPosShiftRepository },
 ];
 
 const SERVICES = [
@@ -402,6 +409,7 @@ SetDefaultAddressUseCase,
   AnalyticsService,
   CreateSupplierUseCase,
   ListSuppliersUseCase,
+  UpdateSupplierUseCase,
   DeleteSupplierUseCase,
   CreatePurchaseOrderUseCase,
   ListPurchaseOrdersUseCase,
@@ -410,6 +418,9 @@ SetDefaultAddressUseCase,
   CompletePurchaseOrderUseCase,
   CancelPurchaseOrderUseCase,
   SetPurchaseOrderPaymentUseCase,
+  OpenPosShiftUseCase,
+  ClosePosShiftUseCase,
+  GetCurrentPosShiftUseCase,
   BulkVerifyDriversUseCase,
   BulkSetDriverStatusUseCase,
   BulkAssignDeliveriesUseCase,
@@ -418,6 +429,6 @@ SetDefaultAddressUseCase,
 @Module({
   imports: [TypeOrmModule.forFeature([...MARKETPLACE_ENTITIES, ...IDENTITY_ENTITIES])],
   providers: [...REPOSITORIES, ...SERVICES, ...USE_CASES],
-  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, MARKETING_CAMPAIGN_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY, GoogleMapsService, DeliveryRouteEstimator],
+  exports: [...USE_CASES, PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, VENDOR_REPOSITORY, VENDOR_MEMBER_REPOSITORY, USER_REPOSITORY, ORDER_REPOSITORY, REVIEW_REPOSITORY, DRIVER_REVIEW_REPOSITORY, PAYMENT_REPOSITORY, DELIVERY_REPOSITORY, SERVICE_LISTING_REPOSITORY, SERVICE_REQUEST_REPOSITORY, SERVICE_QUOTE_REPOSITORY, MOBILE_MONEY_SERVICE, SMS_SERVICE, EMAIL_SERVICE, ADVERT_REPOSITORY, MARKETING_CAMPAIGN_REPOSITORY, SUPPLIER_REPOSITORY, PURCHASE_ORDER_REPOSITORY, POS_SHIFT_REPOSITORY, GoogleMapsService, DeliveryRouteEstimator],
 })
 export class MarketplaceApplicationModule {}

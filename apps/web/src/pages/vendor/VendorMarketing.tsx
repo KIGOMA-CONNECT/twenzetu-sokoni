@@ -101,6 +101,7 @@ export default function VendorMarketing() {
   const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   const [advertForm, setAdvertForm] = useState<AdvertForm>({ title: '', body: '', emoji: '', ctaLabel: '', ctaUrl: '', sortOrder: '' });
   const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '', testEnabled: false, variants: [] });
@@ -180,10 +181,11 @@ export default function VendorMarketing() {
   const launchCampaign = async (c: MarketingCampaign) => {
     if (!window.confirm(`Send "${c.message.substring(0, 60)}…" to your customers by SMS now?`)) return;
     try {
+      setLaunchError(null);
       await api.post(`/marketing/campaigns/${c.id}/launch`);
       await refetchCampaigns();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to launch campaign.');
+      setLaunchError(err.response?.data?.message || err.message || 'Failed to launch campaign.');
     }
   };
 
@@ -194,7 +196,7 @@ export default function VendorMarketing() {
       const res = await api.get<CampaignAnalytics>(`/marketing/campaigns/${c.id}/analytics`);
       setAnalyticsFor(res.data);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to load analytics.');
+      setFormError(err.response?.data?.message || err.message || 'Failed to load analytics.');
     } finally {
       setAnalyticsLoading(false);
     }
@@ -253,6 +255,7 @@ export default function VendorMarketing() {
           <button style={styles.addButton} onClick={openCampaign}>+ New Campaign</button>
         </div>
         <div style={styles.card}>
+          {launchError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{launchError}</div>}
           {campaignsLoading ? <LoadingSpinner /> : campaignsError ? (
             <div style={{ padding: '1rem' }}><ErrorMessage message={campaignsError} /></div>
           ) : !campaigns || campaigns.length === 0 ? (

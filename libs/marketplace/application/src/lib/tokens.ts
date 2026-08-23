@@ -32,6 +32,9 @@ export const CART_REPOSITORY = 'ICartRepository';
 
 // Supplier & Purchase Orders
 export const SUPPLIER_REPOSITORY = 'ISupplierRepository';
+
+// POS Shifts
+export const POS_SHIFT_REPOSITORY = 'IPosShiftRepository';
 export const PURCHASE_ORDER_REPOSITORY = 'IPurchaseOrderRepository';
 
 // Marketing

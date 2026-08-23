@@ -508,6 +508,28 @@ export interface PosDayReport {
   sales: PosSale[];
 }
 
+export type PosShiftStatus = 'OPEN' | 'CLOSED';
+
+export interface PosShift {
+  id: string;
+  vendorId: string;
+  operatorId: string;
+  shiftNumber: string;
+  openedAt: string;
+  closedAt: string | null;
+  openingFloat: number;
+  closingCash: number | null;
+  expectedCash: number | null;
+  cashVariance: number | null;
+  totalSales: number;
+  totalRefunds: number;
+  salesCount: number;
+  paymentBreakdown: Record<string, number>;
+  status: PosShiftStatus;
+  closedBy: string | null;
+  notes: string | null;
+}
+
 export interface VendorStaffMember {
   id: string;
   vendorId: string;

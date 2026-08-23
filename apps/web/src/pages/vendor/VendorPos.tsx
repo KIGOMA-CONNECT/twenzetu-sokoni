@@ -1,11 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
-import type { Product, PosPaymentMethod, PosCheckoutResult } from '../../types';
+import type { Product, PosPaymentMethod, PosCheckoutResult, PosShift } from '../../types';
 
 interface CartLine {
   product: Product;
@@ -24,7 +25,7 @@ const PAYMENT_METHODS: { value: PosPaymentMethod; label: string }[] = [
   { value: 'wallet', label: 'Wallet' },
 ];
 
-const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', height: 'calc(100vh - 130px)', display: 'flex', flexDirection: 'column', maxWidth: '1500px', margin: '0 auto' },
@@ -86,7 +87,30 @@ export default function VendorPos() {
   const [saving, setSaving] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<PosCheckoutResult | null>(null);
+  const [shift, setShift] = useState<PosShift | null>(null);
+  const [shiftLoading, setShiftLoading] = useState(true);
+  const [shiftError, setShiftError] = useState<string | null>(null);
+  const [shiftModal, setShiftModal] = useState<'open' | 'close' | null>(null);
+  const [openingFloat, setOpeningFloat] = useState('');
+  const [closingCash, setClosingCash] = useState('');
+  const [shiftNotes, setShiftNotes] = useState('');
+  const [shiftSaving, setShiftSaving] = useState(false);
   const scanRef = useRef<HTMLInputElement>(null);
+
+  const fetchShift = useCallback(async () => {
+    try {
+      setShiftLoading(true);
+      const res = await api.get('/pos/shifts/current');
+      setShift(res.data?.data ?? null);
+      setShiftError(null);
+    } catch (err: any) {
+      setShiftError(err.response?.data?.message || 'Failed to load shift status.');
+    } finally {
+      setShiftLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { fetchShift(); }, [fetchShift]);
 
   useEffect(() => {
     scanRef.current?.focus();
@@ -184,6 +208,43 @@ export default function VendorPos() {
     scanRef.current?.focus();
   };
 
+  const openShift = async () => {
+    setShiftSaving(true);
+    try {
+      const res = await api.post('/pos/shifts/open', {
+        openingFloat: openingFloat.trim() ? Number(openingFloat) : 0,
+      });
+      setShift(res.data?.data ?? null);
+      setShiftModal(null);
+      setOpeningFloat('');
+    } catch (err: any) {
+      setShiftError(err.response?.data?.message || 'Failed to open shift.');
+    } finally {
+      setShiftSaving(false);
+    }
+  };
+
+  const closeShift = async () => {
+    if (!closingCash.trim()) return;
+    setShiftSaving(true);
+    try {
+      const res = await api.post('/pos/shifts/close', {
+        closingCash: Number(closingCash),
+        notes: shiftNotes.trim() || undefined,
+      });
+      setShift(null);
+      setShiftModal(null);
+      setClosingCash('');
+      setShiftNotes('');
+      // Show summary briefly then refresh
+      alert(`Shift closed!\nSales: ${(res.data?.data?.totalSales ?? 0).toLocaleString()}\nVariance: ${(res.data?.data?.cashVariance ?? 0).toLocaleString()}`);
+    } catch (err: any) {
+      setShiftError(err.response?.data?.message || 'Failed to close shift.');
+    } finally {
+      setShiftSaving(false);
+    }
+  };
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -197,6 +258,31 @@ export default function VendorPos() {
           </button>
         )}
       </div>
+
+      {/* Shift Status Banner */}
+      {shiftLoading ? (
+        <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading shift...</div>
+      ) : shiftError ? (
+        <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{shiftError}</div>
+      ) : !shift ? (
+        <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>Shift Closed</div>
+            <div style={{ color: '#a16207', fontSize: '0.82rem' }}>Open a shift to start selling.</div>
+          </div>
+          <button style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setShiftModal('open'); setOpeningFloat(''); }}>Open Shift</button>
+        </div>
+      ) : (
+        <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '10px', padding: '0.6rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
+          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+            <span><strong>Shift:</strong> {shift.shiftNumber}</span>
+            <span><strong>Opened:</strong> {new Date(shift.openedAt).toLocaleTimeString()}</span>
+            <span><strong>Sales:</strong> {shift.salesCount}</span>
+            <span><strong>Total:</strong> {shift.totalSales.toLocaleString()}</span>
+          </div>
+          <button style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => { setShiftModal('close'); setClosingCash(''); setShiftNotes(''); }}>Close Shift</button>
+        </div>
+      )}
 
       <div style={styles.searchRow}>
         <input
@@ -238,7 +324,7 @@ export default function VendorPos() {
                 >
                   <div style={styles.tileName}>{p.name}</div>
                   <div style={styles.tileSku}>{p.sku || p.barcode || p.id.slice(0, 8)}</div>
-                  <div style={styles.tilePrice}>{fmt(p.price)} {p.currency}</div>
+                  <div style={styles.tilePrice}>{formatCurrency(p.price)} {p.currency}</div>
                   <div style={styles.tileStock}>
                     {out ? (p.status !== 'ACTIVE' ? <StatusBadge status={p.status} /> : 'Out of stock') : `${p.stockQuantity} in stock`}
                   </div>
@@ -255,24 +341,24 @@ export default function VendorPos() {
                 <div key={l.product.id} style={styles.cartRow}>
                   <div style={styles.cartInfo}>
                     <div style={styles.cartName}>{l.product.name}</div>
-                    <div style={styles.cartSub}>{fmt(l.product.price)} each</div>
+                    <div style={styles.cartSub}>{formatCurrency(l.product.price)} each</div>
                   </div>
                   <div style={styles.qtyControls}>
-                    <button style={styles.qtyBtn} onClick={() => setQty(l.product.id, l.quantity - 1)}>−</button>
+                    <button style={styles.qtyBtn} onClick={() => setQty(l.product.id, l.quantity - 1)}>âˆ’</button>
                     <span style={styles.qtyValue}>{l.quantity}</span>
                     <button style={styles.qtyBtn} onClick={() => addToCart(l.product)}>+</button>
                   </div>
-                  <div style={styles.cartLineTotal}>{fmt(l.product.price * l.quantity)}</div>
+                  <div style={styles.cartLineTotal}>{formatCurrency(l.product.price * l.quantity)}</div>
                 </div>
               ))}
             </div>
             <div style={styles.cartFooter}>
               <div style={styles.totalRow}>
                 <span>TOTAL</span>
-                <span>{fmt(total)}</span>
+                <span>{formatCurrency(total)}</span>
               </div>
               <button style={{ ...styles.payBtn, ...(total <= 0 ? styles.payBtnDisabled : {}) }} disabled={total <= 0} onClick={openPay}>
-                Charge {total > 0 ? fmt(total) : ''}
+                Charge {total > 0 ? formatCurrency(total) : ''}
               </button>
             </div>
           </div>
@@ -285,7 +371,7 @@ export default function VendorPos() {
             <div style={styles.modalTitle}>Take Payment</div>
             <div style={styles.bigTotal}>
               <span>Total Due</span>
-              <span>{fmt(total)}</span>
+              <span>{formatCurrency(total)}</span>
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Payment Method</label>
@@ -312,7 +398,7 @@ export default function VendorPos() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submitCheckout} disabled={saving}>
-                {saving ? 'Processing…' : 'Complete Sale'}
+                {saving ? 'Processingâ€¦' : 'Complete Sale'}
               </button>
             </div>
           </div>
@@ -322,11 +408,56 @@ export default function VendorPos() {
       {receipt && (
         <div style={styles.overlay}>
           <div style={styles.receipt} id="receipt-print">
-            <div style={styles.receiptMsg}>Sale complete — receipt #{receipt.sale.saleNumber}</div>
+            <div style={styles.receiptMsg}>Sale complete â€” receipt #{receipt.sale.saleNumber}</div>
             <pre style={styles.receiptPre}>{receipt.receiptText}</pre>
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={doneReceipt}>Done</button>
               <button style={styles.saveBtn} onClick={() => window.print()}>Print</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Open Shift Modal */}
+      {shiftModal === 'open' && (
+        <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalTitle}>Open Shift</div>
+            <div style={styles.field}>
+              <label style={styles.label}>Opening Float (optional)</label>
+              <input style={styles.input} type="number" min={0} value={openingFloat} onChange={(e) => setOpeningFloat(e.target.value)} placeholder="Cash in drawer to start" />
+            </div>
+            <div style={styles.footer}>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
+              <button style={{ ...styles.saveBtn, ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={openShift} disabled={shiftSaving}>
+                {shiftSaving ? 'Openingâ€¦' : 'Open Shift'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Close Shift Modal */}
+      {shiftModal === 'close' && shift && (
+        <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalTitle}>Close Shift {shift.shiftNumber}</div>
+            <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '0.6rem', marginBottom: '1rem', fontSize: '0.82rem' }}>
+              <div>Sales: {shift.salesCount} â€” Total: {shift.totalSales.toLocaleString()}</div>
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Closing Cash (count physical cash) *</label>
+              <input style={styles.input} type="number" min={0} value={closingCash} onChange={(e) => setClosingCash(e.target.value)} placeholder="Count cash in drawer" />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Notes (optional)</label>
+              <textarea style={{ ...styles.input, minHeight: '60px', resize: 'vertical' }} value={shiftNotes} onChange={(e) => setShiftNotes(e.target.value)} placeholder="Any notes about this shiftâ€¦" />
+            </div>
+            <div style={styles.footer}>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
+              <button style={{ ...styles.saveBtn, background: '#dc2626', ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={closeShift} disabled={shiftSaving || !closingCash.trim()}>
+                {shiftSaving ? 'Closingâ€¦' : 'Close Shift'}
+              </button>
             </div>
           </div>
         </div>

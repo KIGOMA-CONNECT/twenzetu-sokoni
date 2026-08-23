@@ -111,6 +111,9 @@ export * from './lib/marketing/campaign.repository.interface';
 export * from './lib/pos/pos-payment-method';
 export * from './lib/pos/pos-sale.aggregate';
 export * from './lib/pos/pos-sale.repository.interface';
+export * from './lib/pos/pos-shift-status';
+export * from './lib/pos/pos-shift.aggregate';
+export * from './lib/pos/pos-shift.repository.interface';
 // Supplier & Purchase Orders
 export * from './lib/supplier/supplier.aggregate';
 export * from './lib/supplier/supplier.repository.interface';
