@@ -15,10 +15,11 @@ export default function AdminWorkflows() {
   const [f, setF] = useState({ name: '', description: '', entityType: '' });
   const [saving, setSaving] = useState(false);
   const [expandedDef, setExpandedDef] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!f.name.trim() || !f.entityType.trim()) return; setSaving(true); try { await api.post('/workflows/definitions', f); setShowForm(false); setF({ name: '', description: '', entityType: '' }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
-  const approve = async (id: string) => { try { await api.patch(`/workflows/instances/${id}/approve`, {}); } catch { /* no-op */} };
-  const reject = async (id: string) => { try { await api.patch(`/workflows/instances/${id}/reject`, {}); } catch { /* no-op */} };
+  const create = async () => { if (!f.name.trim() || !f.entityType.trim()) return; setSaving(true); try { await api.post('/workflows/definitions', f); setShowForm(false); setF({ name: '', description: '', entityType: '' }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const approve = async (id: string) => { try { await api.patch(`/workflows/instances/${id}/approve`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const reject = async (id: string) => { try { await api.patch(`/workflows/instances/${id}/reject`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || l2) return <LoadingSpinner />;
   if (e1) return <ErrorMessage message={e1} />;
@@ -30,6 +31,7 @@ export default function AdminWorkflows() {
         <button onClick={() => setTab('definitions')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'definitions' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'definitions' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'definitions' ? '#3b82f6' : 'var(--muted)' }}>Definitions</button>
         <button onClick={() => setTab('instances')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'instances' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'instances' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'instances' ? '#3b82f6' : 'var(--muted)' }}>Instances</button>
       </div>
+      {actionError && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
 
       {tab === 'definitions' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Definition'}</button>

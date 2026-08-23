@@ -16,12 +16,13 @@ export default function AdminHrLeave() {
   const [showTypeForm, setShowTypeForm] = useState(false);
   const [tf, setTf] = useState({ name: '', description: '', defaultDays: 20, isPaid: true });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const createType = async () => { if (!tf.name.trim()) return; setSaving(true); try { await api.post('/hr/leave-types', tf); setShowTypeForm(false); setTf({ name: '', description: '', defaultDays: 20, isPaid: true }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
+  const createType = async () => { if (!tf.name.trim()) return; setSaving(true); try { await api.post('/hr/leave-types', tf); setShowTypeForm(false); setTf({ name: '', description: '', defaultDays: 20, isPaid: true }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
 
-  const approveReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/approve`, {}); r2(); } catch { /* no-op */} };
-  const rejectReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/reject`, {}); r2(); } catch { /* no-op */} };
-  const cancelReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/cancel`, {}); r2(); } catch { /* no-op */} };
+  const approveReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/approve`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const rejectReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/reject`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const cancelReq = async (id: string) => { try { await api.patch(`/hr/leave-requests/${id}/cancel`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if ((tab === 'types' && l1) || (tab === 'requests' && l2)) return <LoadingSpinner />;
   const err = tab === 'types' ? e1 : e2;
@@ -34,6 +35,7 @@ export default function AdminHrLeave() {
         <button onClick={() => setTab('types')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'types' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'types' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'types' ? '#3b82f6' : 'var(--muted)' }}>Leave Types</button>
         <button onClick={() => setTab('requests')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'requests' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'requests' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'requests' ? '#3b82f6' : 'var(--muted)' }}>Leave Requests</button>
       </div>
+      {actionError && <div style={{background:'var(--danger-soft)',color:'var(--danger)',padding:'0.5rem 0.75rem',borderRadius:'6px',marginBottom:'1rem',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:'0.85rem'}}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{marginLeft:'0.5rem',background:'none',border:'none',cursor:'pointer'}}>&times;</button></div>}
 
       {tab === 'types' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowTypeForm(!showTypeForm)}>{showTypeForm ? 'Cancel' : '+ New Leave Type'}</button>

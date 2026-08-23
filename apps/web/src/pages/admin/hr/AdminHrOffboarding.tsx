@@ -15,11 +15,12 @@ export default function AdminHrOffboarding() {
   const [saving, setSaving] = useState(false);
   const [selCaseId, setSelCaseId] = useState<string | null>(null);
   const { data: tasks } = useApi<{ id: string; description: string; status: string }[]>(selCaseId ? `/hr/offboarding/cases/${selCaseId}/tasks` : null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!f.employeeId || !f.reason.trim()) return; setSaving(true); try { await api.post(`/hr/offboarding/employees/${f.employeeId}/cases`, { reason: f.reason, exitDate: f.exitDate, notes: f.notes }); setShowForm(false); setF({ employeeId: '', reason: '', exitDate: new Date().toISOString().split('T')[0], notes: '' }); refetch(); } catch { /* no-op */} finally { setSaving(false); } };
-  const completeCase = async (id: string) => { try { await api.patch(`/hr/offboarding/cases/${id}/complete`, {}); refetch(); } catch { /* no-op */} };
-  const cancelCase = async (id: string) => { try { await api.patch(`/hr/offboarding/cases/${id}/cancel`, {}); refetch(); } catch { /* no-op */} };
-  const completeTask = async (id: string) => { try { await api.patch(`/hr/offboarding/tasks/${id}/complete`, {}); } catch { /* no-op */} };
+  const create = async () => { if (!f.employeeId || !f.reason.trim()) return; setSaving(true); try { await api.post(`/hr/offboarding/employees/${f.employeeId}/cases`, { reason: f.reason, exitDate: f.exitDate, notes: f.notes }); setShowForm(false); setF({ employeeId: '', reason: '', exitDate: new Date().toISOString().split('T')[0], notes: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const completeCase = async (id: string) => { try { await api.patch(`/hr/offboarding/cases/${id}/complete`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const cancelCase = async (id: string) => { try { await api.patch(`/hr/offboarding/cases/${id}/cancel`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const completeTask = async (id: string) => { try { await api.patch(`/hr/offboarding/tasks/${id}/complete`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -27,6 +28,7 @@ export default function AdminHrOffboarding() {
   return (
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Offboarding</h2>
+      {actionError && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Case'}</button>
       {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Employee *</div><select style={s.input} value={f.employeeId} onChange={e => setF(p => ({ ...p, employeeId: e.target.value }))}><option value="">Select...</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select></div>

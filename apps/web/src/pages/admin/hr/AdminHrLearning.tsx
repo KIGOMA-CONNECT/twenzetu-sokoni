@@ -16,12 +16,13 @@ export default function AdminHrLearning() {
   const [enrollCourseId, setEnrollCourseId] = useState('');
   const { data: enrollments } = useApi<CourseEnrollment[]>(selEmpId ? `/hr/learning/employees/${selEmpId}/enrollments` : null);
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!f.title.trim()) return; setSaving(true); try { await api.post('/hr/learning/courses', f); setShowForm(false); setF({ title: '', description: '', durationHours: 8, provider: '' }); refetch(); } catch { /* no-op */} finally { setSaving(false); } };
-  const deactivate = async (id: string) => { try { await api.patch(`/hr/learning/courses/${id}/deactivate`, {}); refetch(); } catch { /* no-op */} };
-  const enroll = async () => { if (!selEmpId || !enrollCourseId) return; try { await api.post(`/hr/learning/courses/${enrollCourseId}/employees/${selEmpId}/enrollments`, {}); setEnrollCourseId(''); } catch { /* no-op */} };
-  const completeEnroll = async (id: string) => { try { await api.patch(`/hr/learning/enrollments/${id}/complete`, {}); } catch { /* no-op */} };
-  const cancelEnroll = async (id: string) => { try { await api.patch(`/hr/learning/enrollments/${id}/cancel`, {}); } catch { /* no-op */} };
+  const create = async () => { if (!f.title.trim()) return; setSaving(true); try { await api.post('/hr/learning/courses', f); setShowForm(false); setF({ title: '', description: '', durationHours: 8, provider: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const deactivate = async (id: string) => { try { await api.patch(`/hr/learning/courses/${id}/deactivate`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const enroll = async () => { if (!selEmpId || !enrollCourseId) return; try { await api.post(`/hr/learning/courses/${enrollCourseId}/employees/${selEmpId}/enrollments`, {}); setEnrollCourseId(''); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const completeEnroll = async (id: string) => { try { await api.patch(`/hr/learning/enrollments/${id}/complete`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const cancelEnroll = async (id: string) => { try { await api.patch(`/hr/learning/enrollments/${id}/cancel`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -30,6 +31,7 @@ export default function AdminHrLearning() {
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Learning & Development</h2>
       <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Course'}</button>
+      {actionError && <div style={{background:'var(--danger-soft)',color:'var(--danger)',padding:'0.5rem 0.75rem',borderRadius:'6px',marginBottom:'1rem',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:'0.85rem'}}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{marginLeft:'0.5rem',background:'none',border:'none',cursor:'pointer'}}>&times;</button></div>}
       {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div style={{ width: '200px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Title *</div><input style={s.input} value={f.title} onChange={e => setF(p => ({ ...p, title: e.target.value }))} /></div>
         <div style={{ width: '100px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Hours</div><input type="number" style={s.input} value={f.durationHours} onChange={e => setF(p => ({ ...p, durationHours: +e.target.value }))} /></div>

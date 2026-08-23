@@ -20,12 +20,13 @@ export default function AdminHrCompensation() {
   const [enrollForm, setEnrollForm] = useState({ benefitPlanId: '', coverageStart: '' });
   const [strucForm, setStrucForm] = useState({ basicSalary: 0, housingAllowance: 0, transportAllowance: 0, medicalAllowance: 0, otherAllowance: 0, deductions: 0, taxDeduction: 0, currency: 'RWF' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const createPlan = async () => { if (!pf.name.trim()) return; setSaving(true); try { await api.post('/hr/compensation/benefit-plans', pf); setShowPlanForm(false); setPf({ name: '', description: '', type: 'MEDICAL', employerContribution: 0, employeeContribution: 0 }); r2(); } catch { /* no-op */} finally { setSaving(false); } };
-  const deactivatePlan = async (id: string) => { try { await api.patch(`/hr/compensation/benefit-plans/${id}/deactivate`, {}); r2(); } catch { /* no-op */} };
-  const enrollEmployee = async () => { if (!selEmpId || !enrollForm.benefitPlanId) return; try { await api.post(`/hr/compensation/benefit-plans/${enrollForm.benefitPlanId}/employees/${selEmpId}/enrollments`, { coverageStart: enrollForm.coverageStart }); setEnrollForm({ benefitPlanId: '', coverageStart: '' }); } catch { /* no-op */} };
-  const cancelEnroll = async (id: string) => { try { await api.patch(`/hr/compensation/enrollments/${id}/cancel`, {}); } catch { /* no-op */} };
-  const saveSalaryStructure = async () => { if (!selEmpId) return; try { await api.post(`/hr/payroll/employees/${selEmpId}/salary-structure`, { ...strucForm, effectiveFrom: new Date().toISOString().split('T')[0] }); } catch { /* no-op */} };
+  const createPlan = async () => { if (!pf.name.trim()) return; setSaving(true); try { await api.post('/hr/compensation/benefit-plans', pf); setShowPlanForm(false); setPf({ name: '', description: '', type: 'MEDICAL', employerContribution: 0, employeeContribution: 0 }); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const deactivatePlan = async (id: string) => { try { await api.patch(`/hr/compensation/benefit-plans/${id}/deactivate`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const enrollEmployee = async () => { if (!selEmpId || !enrollForm.benefitPlanId) return; try { await api.post(`/hr/compensation/benefit-plans/${enrollForm.benefitPlanId}/employees/${selEmpId}/enrollments`, { coverageStart: enrollForm.coverageStart }); setEnrollForm({ benefitPlanId: '', coverageStart: '' }); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const cancelEnroll = async (id: string) => { try { await api.patch(`/hr/compensation/enrollments/${id}/cancel`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const saveSalaryStructure = async () => { if (!selEmpId) return; try { await api.post(`/hr/payroll/employees/${selEmpId}/salary-structure`, { ...strucForm, effectiveFrom: new Date().toISOString().split('T')[0] }); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || l2) return <LoadingSpinner />;
   if (e1) return <ErrorMessage message={e1} />;
@@ -33,6 +34,7 @@ export default function AdminHrCompensation() {
   return (
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Compensation</h2>
+      {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         {['revisions', 'benefits', 'structures'].map(t => <button key={t} onClick={() => setTab(t as any)} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === t ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === t ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{t}</button>)}
       </div>

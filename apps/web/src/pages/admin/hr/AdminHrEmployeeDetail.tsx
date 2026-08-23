@@ -24,6 +24,7 @@ export default function AdminHrEmployeeDetail() {
   const [editDetails, setEditDetails] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
   const [positionForm, setPositionForm] = useState({ positionId: '', reason: '' });
+  const [actionError, setActionError] = useState<string | null>(null);
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -39,16 +40,16 @@ export default function AdminHrEmployeeDetail() {
   };
 
   const saveDetails = async () => {
-    try { await api.patch(`/hr/employees/${id}/personal-details`, editForm); setEditDetails(false); refetch(); } catch { /* no-op */}
+    try { await api.patch(`/hr/employees/${id}/personal-details`, editForm); setEditDetails(false); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); }
   };
 
   const changePosition = async () => {
-    try { await api.patch(`/hr/employees/${id}/position`, positionForm); setPositionForm({ positionId: '', reason: '' }); refetch(); } catch { /* no-op */}
+    try { await api.patch(`/hr/employees/${id}/position`, positionForm); setPositionForm({ positionId: '', reason: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); }
   };
 
-  const suspend = async () => { try { await api.patch(`/hr/employees/${id}/suspend`, {}); refetch(); } catch { /* no-op */} };
-  const reactivate = async () => { try { await api.patch(`/hr/employees/${id}/reactivate`, {}); refetch(); } catch { /* no-op */} };
-  const terminate = async () => { try { await api.patch(`/hr/employees/${id}/terminate`, {}); refetch(); } catch { /* no-op */} };
+  const suspend = async () => { try { await api.patch(`/hr/employees/${id}/suspend`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const reactivate = async () => { try { await api.patch(`/hr/employees/${id}/reactivate`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const terminate = async () => { try { await api.patch(`/hr/employees/${id}/terminate`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   const tabs = ['overview', 'details', 'leave', 'attendance', 'documents'];
 
@@ -64,6 +65,8 @@ export default function AdminHrEmployeeDetail() {
           {emp.status === 'SUSPENDED' && <button style={{ ...s.btnSm, background: '#10b981' }} onClick={reactivate}>Reactivate</button>}
         </div>
       </div>
+
+      {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
 
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         {tabs.map(t => <button key={t} onClick={() => setTab(t as any)} style={{ padding: '0.35rem 0.8rem', borderRadius: '5px', border: tab === t ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === t ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{t}</button>)}

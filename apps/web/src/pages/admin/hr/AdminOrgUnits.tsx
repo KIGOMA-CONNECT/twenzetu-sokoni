@@ -16,15 +16,17 @@ function TreeNode({ unit, onRefresh }: { unit: OrgUnit; onRefresh: () => void })
   const [renaming, setRenaming] = useState(false); const [newName, setNewName] = useState(unit.name);
   const [showMove, setShowMove] = useState(false); const [targetParentId, setTargetParentId] = useState('');
   const { data: allUnits } = useApi<OrgUnit[]>('/organization/units/tree');
+  const [actionError, setActionError] = useState<string | null>(null);
   const hasChildren = unit.children && unit.children.length > 0;
 
-  const rename = async () => { if (!newName.trim()) return; try { await api.patch(`/organization/units/${unit.id}/rename`, { name: newName }); setRenaming(false); onRefresh(); } catch { /* no-op */} };
-  const move = async () => { try { await api.patch(`/organization/units/${unit.id}/move`, { newParentId: targetParentId || null }); setShowMove(false); onRefresh(); } catch { /* no-op */} };
-  const deactivate = async () => { try { await api.patch(`/organization/units/${unit.id}/deactivate`, {}); onRefresh(); } catch { /* no-op */} };
-  const reactivate = async () => { try { await api.patch(`/organization/units/${unit.id}/reactivate`, {}); onRefresh(); } catch { /* no-op */} };
+  const rename = async () => { if (!newName.trim()) return; try { await api.patch(`/organization/units/${unit.id}/rename`, { name: newName }); setRenaming(false); onRefresh(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const move = async () => { try { await api.patch(`/organization/units/${unit.id}/move`, { newParentId: targetParentId || null }); setShowMove(false); onRefresh(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const deactivate = async () => { try { await api.patch(`/organization/units/${unit.id}/deactivate`, {}); onRefresh(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const reactivate = async () => { try { await api.patch(`/organization/units/${unit.id}/reactivate`, {}); onRefresh(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   return (
     <div style={{ marginLeft: '1.5rem' }}>
+      {actionError && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', marginBottom: '0.5rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0', borderBottom: '1px solid #f1f5f9' }}>
         {hasChildren ? <span onClick={() => setExpanded(!expanded)} style={{ cursor: 'pointer', width: '16px', textAlign: 'center', userSelect: 'none' }}>{expanded ? '▼' : '▶'}</span> : <span style={{ width: '16px' }} />}
         {renaming ? (
@@ -57,8 +59,9 @@ export default function AdminOrgUnits() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: '', typeId: '', parentId: '' });
   const [creating, setCreating] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!form.name.trim() || !form.typeId) return; setCreating(true); try { await api.post('/organization/units', form); setShowCreate(false); setForm({ name: '', typeId: '', parentId: '' }); refetch(); } catch { /* no-op */} finally { setCreating(false); } };
+  const create = async () => { if (!form.name.trim() || !form.typeId) return; setCreating(true); try { await api.post('/organization/units', form); setShowCreate(false); setForm({ name: '', typeId: '', parentId: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setCreating(false); } };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -69,6 +72,7 @@ export default function AdminOrgUnits() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Org Units</h2>
         <button style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600 }} onClick={() => setShowCreate(!showCreate)}>{showCreate ? 'Cancel' : '+ New Unit'}</button>
       </div>
+      {actionError && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       {showCreate && (
         <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'flex-end' }}>
           <div><div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Name</div><input style={s.input} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>

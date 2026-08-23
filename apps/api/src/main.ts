@@ -2,7 +2,7 @@ import { config as loadEnv } from 'dotenv';
 loadEnv();
 import { AppConfigService } from '@afri-market/core-config';
 import { GlobalExceptionFilter } from '@afri-market/core-exceptions';
-import { ResponseInterceptor, RequestLoggingInterceptor } from '@afri-market/core-http';
+import { ResponseInterceptor, RequestLoggingInterceptor, RequestTimeoutInterceptor } from '@afri-market/core-http';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { applySecurityHardening, RequestIdInterceptor } from '@afri-market/core-security';
 import { ValidationPipe } from '@nestjs/common';
@@ -125,7 +125,7 @@ async function bootstrap(): Promise<void> {
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
-  app.useGlobalInterceptors(new RequestIdInterceptor(), new ResponseInterceptor(), new RequestLoggingInterceptor(logger));
+  app.useGlobalInterceptors(new RequestIdInterceptor(), new ResponseInterceptor(), new RequestTimeoutInterceptor(), new RequestLoggingInterceptor(logger));
   app.enableShutdownHooks();
   console.log('[Bootstrap] Pipes, filters, interceptors configured');
 

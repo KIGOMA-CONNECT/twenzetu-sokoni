@@ -19,7 +19,10 @@ interface ConnectedClient {
 }
 
 @WebSocketGateway({
-  cors: { origin: '*' },
+  cors: {
+    origin: (process.env.CORS_ORIGINS || 'http://localhost:3000').split(',').map((s) => s.trim()),
+    credentials: true,
+  },
   namespace: '/marketplace',
   path: '/api/socket.io',
 })

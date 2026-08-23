@@ -17,11 +17,12 @@ export default function AdminHrCompliance() {
   const [showForm, setShowForm] = useState(false);
   const [f, setF] = useState({ name: '', description: '', frequency: 'ANNUAL' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!f.name.trim()) return; setSaving(true); try { await api.post('/hr/compliance/requirements', f); setShowForm(false); setF({ name: '', description: '', frequency: 'ANNUAL' }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
-  const deactivate = async (id: string) => { try { await api.patch(`/hr/compliance/requirements/${id}/deactivate`, {}); r1(); } catch { /* no-op */} };
-  const addRecord = async () => { if (!selReqId || !selEmpId) return; try { await api.post(`/hr/compliance/requirements/${selReqId}/employees/${selEmpId}/records`, {}); } catch { /* no-op */} };
-  const updateRecord = async (id: string, action: string) => { try { await api.patch(`/hr/compliance/records/${id}/${action}`, {}); } catch { /* no-op */} };
+  const create = async () => { if (!f.name.trim()) return; setSaving(true); try { await api.post('/hr/compliance/requirements', f); setShowForm(false); setF({ name: '', description: '', frequency: 'ANNUAL' }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const deactivate = async (id: string) => { try { await api.patch(`/hr/compliance/requirements/${id}/deactivate`, {}); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const addRecord = async () => { if (!selReqId || !selEmpId) return; try { await api.post(`/hr/compliance/requirements/${selReqId}/employees/${selEmpId}/records`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const updateRecord = async (id: string, action: string) => { try { await api.patch(`/hr/compliance/records/${id}/${action}`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1) return <LoadingSpinner />;
   if (e1) return <ErrorMessage message={e1} />;
@@ -29,6 +30,7 @@ export default function AdminHrCompliance() {
   return (
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Compliance & Reporting</h2>
+      {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         <button onClick={() => setTab('requirements')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'requirements' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'requirements' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'requirements' ? '#3b82f6' : 'var(--muted)' }}>Requirements</button>
         <button onClick={() => setTab('records')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'records' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'records' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'records' ? '#3b82f6' : 'var(--muted)' }}>Employee Records</button>

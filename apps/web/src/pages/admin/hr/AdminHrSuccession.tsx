@@ -17,12 +17,13 @@ export default function AdminHrSuccession() {
   const { data: candidates } = useApi<SuccessionCandidate[]>(selPlanId ? `/hr/succession/plans/${selPlanId}/candidates` : null);
   const [candForm, setCandForm] = useState({ employeeId: '', readinessLevel: 'READY_NOW', notes: '' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const create = async () => { if (!f.positionId) return; setSaving(true); try { await api.post(`/hr/succession/positions/${f.positionId}/plans`, { notes: f.notes, riskLevel: f.riskLevel }); setShowForm(false); setF({ positionId: '', riskLevel: 'MEDIUM', notes: '' }); refetch(); } catch { /* no-op */} finally { setSaving(false); } };
-  const closePlan = async (id: string) => { try { await api.patch(`/hr/succession/plans/${id}/close`, {}); refetch(); } catch { /* no-op */} };
-  const addCandidate = async () => { if (!selPlanId || !candForm.employeeId) return; try { await api.post(`/hr/succession/plans/${selPlanId}/employees/${candForm.employeeId}/candidates`, { readinessLevel: candForm.readinessLevel }); setCandForm({ employeeId: '', readinessLevel: 'READY_NOW', notes: '' }); } catch { /* no-op */} };
-  const updateReadiness = async (id: string, readinessLevel: string) => { try { await api.patch(`/hr/succession/candidates/${id}/readiness`, { readinessLevel }); } catch { /* no-op */} };
-  const removeCandidate = async (id: string) => { try { await api.delete(`/hr/succession/candidates/${id}`); } catch { /* no-op */} };
+  const create = async () => { if (!f.positionId) return; setSaving(true); try { await api.post(`/hr/succession/positions/${f.positionId}/plans`, { notes: f.notes, riskLevel: f.riskLevel }); setShowForm(false); setF({ positionId: '', riskLevel: 'MEDIUM', notes: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const closePlan = async (id: string) => { try { await api.patch(`/hr/succession/plans/${id}/close`, {}); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const addCandidate = async () => { if (!selPlanId || !candForm.employeeId) return; try { await api.post(`/hr/succession/plans/${selPlanId}/employees/${candForm.employeeId}/candidates`, { readinessLevel: candForm.readinessLevel }); setCandForm({ employeeId: '', readinessLevel: 'READY_NOW', notes: '' }); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const updateReadiness = async (id: string, readinessLevel: string) => { try { await api.patch(`/hr/succession/candidates/${id}/readiness`, { readinessLevel }); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const removeCandidate = async (id: string) => { try { await api.delete(`/hr/succession/candidates/${id}`); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (loading) return <LoadingSpinner />;
   if (error) return <ErrorMessage message={error} />;
@@ -30,6 +31,7 @@ export default function AdminHrSuccession() {
   return (
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Succession Planning</h2>
+      {actionError && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Plan'}</button>
       {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
         <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Position *</div><select style={s.input} value={f.positionId} onChange={e => setF(p => ({ ...p, positionId: e.target.value }))}><option value="">Select...</option>{positions?.map(p => <option key={p.id} value={p.id}>{p.title}</option>)}</select></div>

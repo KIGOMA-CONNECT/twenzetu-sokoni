@@ -17,7 +17,8 @@ export default function AdminHrEmployees() {
   const [f, setF] = useState({ employeeCode: '', firstName: '', lastName: '', email: '', phoneNumber: '', positionId: '', orgUnitId: '', hireDate: new Date().toISOString().split('T')[0], employmentType: 'FULL_TIME' });
   const [saving, setSaving] = useState(false);
   const flatten = (units?: OrgUnit[]): OrgUnit[] => { if (!units) return []; const r: OrgUnit[] = []; const walk = (list: OrgUnit[]) => { list.forEach(u => { r.push(u); if (u.children) walk(u.children); }); }; walk(units); return r; };
-  const create = async () => { if (!f.firstName.trim() || !f.lastName.trim()) return; setSaving(true); try { await api.post('/hr/employees', f); setShowForm(false); setF({ employeeCode: '', firstName: '', lastName: '', email: '', phoneNumber: '', positionId: '', orgUnitId: '', hireDate: new Date().toISOString().split('T')[0], employmentType: 'FULL_TIME' }); refetch(); } catch { /* no-op */} finally { setSaving(false); } };
+  const [actionError, setActionError] = useState<string | null>(null);
+  const create = async () => { if (!f.firstName.trim() || !f.lastName.trim()) return; setSaving(true); try { await api.post('/hr/employees', f); setShowForm(false); setF({ employeeCode: '', firstName: '', lastName: '', email: '', phoneNumber: '', positionId: '', orgUnitId: '', hireDate: new Date().toISOString().split('T')[0], employmentType: 'FULL_TIME' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
   if (loading) return <LoadingSpinner />; if (error) return <ErrorMessage message={error} />;
   return (
     <div>
@@ -25,6 +26,7 @@ export default function AdminHrEmployees() {
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Employees</h2>
         <button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Employee'}</button>
       </div>
+      {actionError && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       {showForm && <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
         <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Employee Code</div><input style={s.input} value={f.employeeCode} onChange={e => setF(p => ({ ...p, employeeCode: e.target.value }))} /></div>
         <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>First Name *</div><input style={s.input} value={f.firstName} onChange={e => setF(p => ({ ...p, firstName: e.target.value }))} /></div>

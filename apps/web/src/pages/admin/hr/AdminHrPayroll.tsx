@@ -17,15 +17,16 @@ export default function AdminHrPayroll() {
   const [showPeriodForm, setShowPeriodForm] = useState(false);
   const [pf, setPf] = useState({ name: '', startDate: '', endDate: '' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const createPeriod = async () => { if (!pf.name.trim() || !pf.startDate || !pf.endDate) return; setSaving(true); try { await api.post('/hr/payroll/periods', pf); setShowPeriodForm(false); setPf({ name: '', startDate: '', endDate: '' }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
+  const createPeriod = async () => { if (!pf.name.trim() || !pf.startDate || !pf.endDate) return; setSaving(true); try { await api.post('/hr/payroll/periods', pf); setShowPeriodForm(false); setPf({ name: '', startDate: '', endDate: '' }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
 
-  const closePeriod = async (id: string) => { try { await api.patch(`/hr/payroll/periods/${id}/close`, {}); r1(); } catch { /* no-op */} };
+  const closePeriod = async (id: string) => { try { await api.patch(`/hr/payroll/periods/${id}/close`, {}); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
-  const generatePayslip = async (periodId: string, employeeId: string) => { try { await api.post(`/hr/payroll/periods/${periodId}/payslips/${employeeId}`, {}); r2(); } catch { /* error handled by UI */ } };
+  const generatePayslip = async (periodId: string, employeeId: string) => { try { await api.post(`/hr/payroll/periods/${periodId}/payslips/${employeeId}`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
-  const approvePayslip = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/approve`, {}); r2(); } catch { /* no-op */} };
-  const markPaid = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/mark-paid`, {}); r2(); } catch { /* no-op */} };
+  const approvePayslip = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/approve`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const markPaid = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/mark-paid`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || (selectedPeriod && l2)) return <LoadingSpinner />;
   if (e1) return <ErrorMessage message={e1} />;
@@ -37,6 +38,7 @@ export default function AdminHrPayroll() {
         <button onClick={() => setTab('periods')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'periods' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'periods' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'periods' ? '#3b82f6' : 'var(--muted)' }}>Pay Periods</button>
         <button onClick={() => setTab('payslips')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'payslips' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'payslips' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'payslips' ? '#3b82f6' : 'var(--muted)' }}>Payslips</button>
       </div>
+      {actionError && <div style={{background:'var(--danger-soft)',color:'var(--danger)',padding:'0.5rem 0.75rem',borderRadius:'6px',marginBottom:'1rem',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:'0.85rem'}}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{marginLeft:'0.5rem',background:'none',border:'none',cursor:'pointer'}}>&times;</button></div>}
 
       {tab === 'periods' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowPeriodForm(!showPeriodForm)}>{showPeriodForm ? 'Cancel' : '+ New Period'}</button>

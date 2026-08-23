@@ -31,6 +31,7 @@ export default function AdminOrgProfile() {
 
   const [form, setForm] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const p = profiles[tab];
 
   const initForm = () => {
@@ -48,7 +49,7 @@ export default function AdminOrgProfile() {
     try {
       await api.post(`/organization/units/${unitId}/profile/${tab}`, form);
       p.refetch();
-    } catch { /* no-op */}
+    } catch (err: any) { setActionError(err.response?.data?.message || err.message); }
     setSaving(false);
   };
 
@@ -59,6 +60,7 @@ export default function AdminOrgProfile() {
       <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
         {profileTypes.map(t => <button key={t.key} onClick={() => setTab(t.key)} style={{ padding: '0.4rem 1rem', borderRadius: '6px', border: tab === t.key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t.key ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === t.key ? '#3b82f6' : 'var(--muted)' }}>{t.label}</button>)}
       </div>
+      {actionError && <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
 
       {p.error && <ErrorMessage message={p.error} />}
 

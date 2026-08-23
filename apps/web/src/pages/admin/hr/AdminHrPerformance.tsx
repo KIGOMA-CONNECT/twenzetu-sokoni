@@ -20,18 +20,20 @@ export default function AdminHrPerformance() {
   const [showCycleForm, setShowCycleForm] = useState(false);
   const [cyf, setCyf] = useState({ name: '', startDate: '', endDate: '' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
-  const createGoal = async () => { if (!gf.title.trim() || !selEmpId) return; setSaving(true); try { await api.post(`/hr/performance/employees/${selEmpId}/goals`, gf); setShowGoalForm(false); setGf({ title: '', description: '', targetValue: 0, startDate: '', endDate: '' }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
-  const createCycle = async () => { if (!cyf.name.trim() || !cyf.startDate || !cyf.endDate) return; setSaving(true); try { await api.post('/hr/performance/review-cycles', cyf); setShowCycleForm(false); setCyf({ name: '', startDate: '', endDate: '' }); r2(); } catch { /* no-op */} finally { setSaving(false); } };
-  const closeCycle = async (id: string) => { try { await api.patch(`/hr/performance/review-cycles/${id}/close`, {}); r2(); } catch { /* no-op */} };
-  const completeGoal = async (id: string) => { try { await api.patch(`/hr/performance/goals/${id}/complete`, {}); r1(); } catch { /* no-op */} };
-  const updateGoalProgress = async (id: string, currentValue: number) => { try { await api.patch(`/hr/performance/goals/${id}/progress`, { currentValue }); r1(); } catch { /* no-op */} };
+  const createGoal = async () => { if (!gf.title.trim() || !selEmpId) return; setSaving(true); try { await api.post(`/hr/performance/employees/${selEmpId}/goals`, gf); setShowGoalForm(false); setGf({ title: '', description: '', targetValue: 0, startDate: '', endDate: '' }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const createCycle = async () => { if (!cyf.name.trim() || !cyf.startDate || !cyf.endDate) return; setSaving(true); try { await api.post('/hr/performance/review-cycles', cyf); setShowCycleForm(false); setCyf({ name: '', startDate: '', endDate: '' }); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const closeCycle = async (id: string) => { try { await api.patch(`/hr/performance/review-cycles/${id}/close`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const completeGoal = async (id: string) => { try { await api.patch(`/hr/performance/goals/${id}/complete`, {}); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const updateGoalProgress = async (id: string, currentValue: number) => { try { await api.patch(`/hr/performance/goals/${id}/progress`, { currentValue }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || l2) return <LoadingSpinner />;
 
   return (
     <div>
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Performance</h2>
+      {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         <button onClick={() => setTab('goals')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'goals' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'goals' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'goals' ? '#3b82f6' : 'var(--muted)' }}>Goals</button>
         <button onClick={() => setTab('cycles')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'cycles' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'cycles' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'cycles' ? '#3b82f6' : 'var(--muted)' }}>Review Cycles</button>

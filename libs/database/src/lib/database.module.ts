@@ -57,6 +57,12 @@ export class DatabaseModule {
           entities,
           synchronize: false,
           logging: process.env['APP_ENV'] === 'development',
+          extra: {
+            max: parseInt(process.env['DB_POOL_MAX'] || '20', 10),
+            min: parseInt(process.env['DB_POOL_MIN'] || '2', 10),
+            idleTimeoutMillis: 30000,
+            connectionTimeoutMillis: 5000,
+          },
         }),
       ],
       providers: [

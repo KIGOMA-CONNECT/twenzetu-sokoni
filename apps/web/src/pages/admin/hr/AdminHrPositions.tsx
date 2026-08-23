@@ -11,12 +11,14 @@ export default function AdminHrPositions() {
   const { data: positions, loading, error, refetch } = useApi<Position[]>('/hr/positions');
   const { data: orgUnits } = useApi<OrgUnit[]>('/organization/units/tree');
   const [showForm, setShowForm] = useState(false); const [form, setForm] = useState({ title: '', orgUnitId: '', grade: '', description: '' }); const [saving, setSaving] = useState(false);
-  const create = async () => { if (!form.title.trim() || !form.orgUnitId) return; setSaving(true); try { await api.post('/hr/positions', form); setShowForm(false); setForm({ title: '', orgUnitId: '', grade: '', description: '' }); refetch(); } catch { /* no-op */} finally { setSaving(false); } };
+  const [actionError, setActionError] = useState<string | null>(null);
+  const create = async () => { if (!form.title.trim() || !form.orgUnitId) return; setSaving(true); try { await api.post('/hr/positions', form); setShowForm(false); setForm({ title: '', orgUnitId: '', grade: '', description: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
   const flatten = (units?: OrgUnit[]): OrgUnit[] => { if (!units) return []; const r: OrgUnit[] = []; const walk = (list: OrgUnit[]) => { list.forEach(u => { r.push(u); if (u.children) walk(u.children); }); }; walk(units); return r; };
   if (loading) return <LoadingSpinner />; if (error) return <ErrorMessage message={error} />;
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}><h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Positions</h2><button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setShowForm(!showForm)}>{showForm ? 'Cancel' : '+ New Position'}</button></div>
+      {actionError && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'flex-end' }}>
         <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Title *</div><input style={s.input} value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} /></div>
         <div style={{ flex: 1 }}><div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Org Unit *</div><select style={s.sel} value={form.orgUnitId} onChange={e => setForm(f => ({ ...f, orgUnitId: e.target.value }))}><option value="">Select...</option>{flatten(orgUnits).map(u => <option key={u.id} value={u.id}>{u.name}</option>)}</select></div>

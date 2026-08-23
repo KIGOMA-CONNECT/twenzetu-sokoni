@@ -22,14 +22,15 @@ export default function AdminHrRecruitment() {
   const [showAppForm, setShowAppForm] = useState(false);
   const [af, setAf] = useState({ candidateId: '', requisitionId: '' });
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const [selectedReq, setSelectedReq] = useState<string | null>(null);
   const { data: reqApps } = useApi<JobApplication[]>(selectedReq ? `/hr/recruitment/job-requisitions/${selectedReq}/applications` : null);
 
-  const createReq = async () => { if (!rf.title.trim()) return; setSaving(true); try { await api.post('/hr/recruitment/job-requisitions', rf); setShowReqForm(false); setRf({ title: '', description: '', requirements: '', vacancies: 1 }); r1(); } catch { /* no-op */} finally { setSaving(false); } };
-  const createCand = async () => { if (!cf.firstName.trim() || !cf.lastName.trim()) return; setSaving(true); try { await api.post('/hr/recruitment/candidates', cf); setShowCandForm(false); setCf({ firstName: '', lastName: '', email: '', phoneNumber: '', source: '' }); r2(); } catch { /* no-op */} finally { setSaving(false); } };
-  const createApp = async () => { if (!af.candidateId || !af.requisitionId) return; try { await api.post('/hr/recruitment/applications', af); setShowAppForm(false); setAf({ candidateId: '', requisitionId: '' }); } catch { /* no-op */} };
-  const advanceApp = async (id: string, stage: string) => { try { await api.patch(`/hr/recruitment/applications/${id}/${stage}`, {}); } catch { /* no-op */} };
-  const closeReq = async (id: string) => { try { await api.patch(`/hr/recruitment/job-requisitions/${id}/close`, {}); r1(); } catch { /* no-op */} };
+  const createReq = async () => { if (!rf.title.trim()) return; setSaving(true); try { await api.post('/hr/recruitment/job-requisitions', rf); setShowReqForm(false); setRf({ title: '', description: '', requirements: '', vacancies: 1 }); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const createCand = async () => { if (!cf.firstName.trim() || !cf.lastName.trim()) return; setSaving(true); try { await api.post('/hr/recruitment/candidates', cf); setShowCandForm(false); setCf({ firstName: '', lastName: '', email: '', phoneNumber: '', source: '' }); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
+  const createApp = async () => { if (!af.candidateId || !af.requisitionId) return; try { await api.post('/hr/recruitment/applications', af); setShowAppForm(false); setAf({ candidateId: '', requisitionId: '' }); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const advanceApp = async (id: string, stage: string) => { try { await api.patch(`/hr/recruitment/applications/${id}/${stage}`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
+  const closeReq = async (id: string) => { try { await api.patch(`/hr/recruitment/job-requisitions/${id}/close`, {}); r1(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   const stageActions: Record<string, { label: string; action: string }[]> = {
     APPLIED: [{ label: '→ Screening', action: 'advance-to-screening' }],
@@ -49,6 +50,7 @@ export default function AdminHrRecruitment() {
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         {['requisitions', 'candidates', 'applications'].map(t => <button key={t} onClick={() => setTab(t as any)} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === t ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === t ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === t ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{t}</button>)}
       </div>
+      {actionError && <div style={{background:'var(--danger-soft)',color:'var(--danger)',padding:'0.5rem 0.75rem',borderRadius:'6px',marginBottom:'1rem',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:'0.85rem'}}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{marginLeft:'0.5rem',background:'none',border:'none',cursor:'pointer'}}>&times;</button></div>}
 
       {tab === 'requisitions' && <div>
         <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowReqForm(!showReqForm)}>{showReqForm ? 'Cancel' : '+ New Requisition'}</button>
