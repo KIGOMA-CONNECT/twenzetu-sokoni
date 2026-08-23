@@ -45,6 +45,7 @@ export default function VendorSuppliers() {
   const suppliers: Supplier[] = Array.isArray(raw) ? raw : [];
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<SupplierForm>(emptyForm);
+  const [editId, setEditId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -53,6 +54,19 @@ export default function VendorSuppliers() {
 
   const openCreate = () => {
     setForm(emptyForm);
+    setEditId(null);
+    setFormError(null);
+    setOpen(true);
+  };
+
+  const openEdit = (supplier: Supplier) => {
+    setForm({
+      name: supplier.name,
+      phone: supplier.phone || '',
+      contactPerson: supplier.contactPerson || '',
+      notes: supplier.notes || '',
+    });
+    setEditId(supplier.id);
     setFormError(null);
     setOpen(true);
   };
@@ -65,13 +79,19 @@ export default function VendorSuppliers() {
     setSaving(true);
     setFormError(null);
     try {
-      await api.post('/vendor/suppliers', {
+      const payload = {
         name: form.name.trim(),
         phone: form.phone.trim() || undefined,
         contactPerson: form.contactPerson.trim() || undefined,
         notes: form.notes.trim() || undefined,
-      });
+      };
+      if (editId) {
+        await api.patch(`/vendor/suppliers/${editId}`, payload);
+      } else {
+        await api.post('/vendor/suppliers', payload);
+      }
       setOpen(false);
+      setEditId(null);
       await refetch();
     } catch (err: any) {
       setFormError(err.response?.data?.message || err.message || 'Failed to save supplier.');
@@ -136,9 +156,14 @@ export default function VendorSuppliers() {
                   <td style={styles.td}><StatusBadge status={s.status} /></td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
                     {s.status === 'ACTIVE' && (
-                      <button style={styles.deleteBtn} disabled={busyId === s.id} onClick={() => remove(s)}>
-                        {busyId === s.id ? '…' : 'Deactivate'}
-                      </button>
+                      <>
+                        <button style={{ ...styles.deleteBtn, marginRight: '0.5rem', borderColor: '#93c5fd', color: '#2563eb' }} disabled={busyId === s.id} onClick={() => openEdit(s)}>
+                          Edit
+                        </button>
+                        <button style={styles.deleteBtn} disabled={busyId === s.id} onClick={() => remove(s)}>
+                          {busyId === s.id ? '…' : 'Deactivate'}
+                        </button>
+                      </>
                     )}
                   </td>
                 </tr>
@@ -151,7 +176,7 @@ export default function VendorSuppliers() {
       {open && (
         <div style={styles.overlay} onClick={() => !saving && setOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Add Supplier</div>
+            <div style={styles.modalTitle}>{editId ? 'Edit Supplier' : 'Add Supplier'}</div>
             <div style={styles.field}>
               <label style={styles.label}>Name *</label>
               <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="e.g. Central Millers" />

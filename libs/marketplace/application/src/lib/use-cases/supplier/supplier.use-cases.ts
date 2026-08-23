@@ -42,6 +42,38 @@ export class ListSuppliersUseCase {
   }
 }
 
+export interface UpdateSupplierInput {
+  readonly tenantId: string;
+  readonly vendorId: string;
+  readonly supplierId: string;
+  readonly name?: string;
+  readonly phone?: string;
+  readonly contactPerson?: string;
+  readonly notes?: string;
+  readonly linkedVendorId?: string;
+}
+
+@Injectable()
+export class UpdateSupplierUseCase {
+  constructor(@Inject(SUPPLIER_REPOSITORY) private readonly repo: ISupplierRepository) {}
+
+  public async execute(input: UpdateSupplierInput) {
+    const supplier = await this.repo.findById(EntityId.from(input.supplierId));
+    if (!supplier || supplier.vendorId.value !== input.vendorId) {
+      throw new NotFoundException('Supplier not found');
+    }
+    supplier.update({
+      name: input.name,
+      phone: input.phone,
+      contactPerson: input.contactPerson,
+      notes: input.notes,
+      linkedVendorId: input.linkedVendorId,
+    });
+    await this.repo.save(supplier);
+    return { supplier: supplier.toDto() };
+  }
+}
+
 @Injectable()
 export class DeleteSupplierUseCase {
   constructor(@Inject(SUPPLIER_REPOSITORY) private readonly repo: ISupplierRepository) {}

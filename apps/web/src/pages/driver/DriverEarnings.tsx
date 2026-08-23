@@ -109,7 +109,11 @@ export default function DriverEarnings() {
                       <td style={styles.td}>{d.deliveryAddress}</td>
                       <td style={styles.td}><StatusBadge status={d.status} /></td>
                       <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
-                      <td style={styles.td}>—</td>
+                      <td style={styles.td}>
+                        {d.createdAt
+                          ? new Date(d.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+                          : '—'}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

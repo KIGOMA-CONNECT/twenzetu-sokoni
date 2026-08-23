@@ -13,10 +13,15 @@ export class CreateVendorDto {
   @IsNotEmpty()
   category!: string;
 
+  /**
+   * Platform-controlled; vendor does not set this. If omitted, the server
+   * applies the category default from PLATFORM_COMMISSION_BY_CATEGORY.
+   */
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(100)
-  commissionRate!: number;
+  commissionRate?: number;
 
   @IsOptional()
   @IsNumber()

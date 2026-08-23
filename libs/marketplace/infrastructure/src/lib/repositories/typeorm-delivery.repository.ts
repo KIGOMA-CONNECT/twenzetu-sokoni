@@ -92,6 +92,7 @@ export class TypeOrmDeliveryRepository extends TypeOrmRepository<Delivery, Deliv
       currentLongitude: e.currentLongitude ?? undefined,
       lastLocationUpdate: e.lastLocationUpdate ?? undefined,
       version: e.version,
+      createdAt: e.createdAt,
     });
   }
 

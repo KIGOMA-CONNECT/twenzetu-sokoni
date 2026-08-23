@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/client';
 import { PageHeader } from '../../components/ui';
-import { VENDOR_CATEGORIES } from '../../constants/categories';
+import { VENDOR_CATEGORIES, PLATFORM_COMMISSION, DEFAULT_PLATFORM_COMMISSION } from '../../constants/categories';
 
 const STEPS = ['Shop Info', 'Contact & Location', 'KYC Documents', 'Review'];
 
@@ -16,7 +16,6 @@ export default function VendorOnboarding() {
     shopName: '',
     description: '',
     category: 'food',
-    commissionRate: 10,
     phone: '',
     email: '',
     address: '',
@@ -48,11 +47,17 @@ export default function VendorOnboarding() {
         shopName: form.shopName,
         description: form.description,
         category: form.category,
-        commissionRate: form.commissionRate,
-        address: form.address,
-        phone: form.phone,
         latitude: form.gpsLatitude ? Number(form.gpsLatitude) : undefined,
         longitude: form.gpsLongitude ? Number(form.gpsLongitude) : undefined,
+      });
+
+      // Save contact info in vendor profile settings (POST /vendors drops them).
+      await api.patch('/vendors/me/profile', {
+        settings: {
+          ...(form.phone && { phone: form.phone }),
+          ...(form.email && { email: form.email }),
+          ...(form.address && { address: form.address }),
+        },
       });
 
       if (kyc.nidaNumber) {
@@ -115,9 +120,8 @@ export default function VendorOnboarding() {
                 ))}
               </select>
             </div>
-            <div className="field">
-              <label className="field-label">Commission Rate (%)</label>
-              <input type="number" className="input" value={form.commissionRate} onChange={e => update('commissionRate', Number(e.target.value))} min={1} max={50} />
+            <div className="card-flat" style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+              <strong>Commission ya jukwaa:</strong> {(PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION)}% — huwez kuibadilisha.
             </div>
           </>
         )}
@@ -177,7 +181,7 @@ export default function VendorOnboarding() {
               <p><strong>Category:</strong> {form.category}</p>
               <p><strong>Phone:</strong> {form.phone}</p>
               <p><strong>Address:</strong> {form.address || '-'}</p>
-              <p><strong>Commission:</strong> {form.commissionRate}%</p>
+              <p><strong>Commission:</strong> {PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION}%</p>
               <p><strong>NIDA:</strong> {kyc.nidaNumber || '-'}</p>
             </div>
             <p className="text-muted" style={{ fontSize: '0.85rem' }}>Your application will be reviewed by admin. You'll receive a notification once approved.</p>

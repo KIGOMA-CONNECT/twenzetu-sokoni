@@ -1,14 +1,16 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import {
   CreateSupplierUseCase,
   ListSuppliersUseCase,
+  UpdateSupplierUseCase,
   DeleteSupplierUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { CreateSupplierDto } from './dto/create-supplier.dto';
+import { UpdateSupplierDto } from './dto/update-supplier.dto';
 
 @ApiTags('Vendor Suppliers')
 @Controller('vendor/suppliers')
@@ -18,6 +20,7 @@ export class VendorSuppliersController {
   constructor(
     private readonly createSupplier: CreateSupplierUseCase,
     private readonly listSuppliers: ListSuppliersUseCase,
+    private readonly updateSupplier: UpdateSupplierUseCase,
     private readonly deleteSupplier: DeleteSupplierUseCase,
     private readonly vendorAccess: VendorAccessService,
   ) {}
@@ -44,6 +47,26 @@ export class VendorSuppliersController {
     return this.createSupplier.execute({
       tenantId: user.tenantId,
       vendorId: ctx.vendorId,
+      name: dto.name,
+      phone: dto.phone,
+      contactPerson: dto.contactPerson,
+      notes: dto.notes,
+      linkedVendorId: dto.linkedVendorId,
+    });
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update a supplier record (requires manage_products)' })
+  public async update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() dto: UpdateSupplierDto,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const ctx = await this.resolveContext(user);
+    return this.updateSupplier.execute({
+      tenantId: user.tenantId,
+      vendorId: ctx.vendorId,
+      supplierId: id,
       name: dto.name,
       phone: dto.phone,
       contactPerson: dto.contactPerson,

@@ -95,7 +95,7 @@ describe('CreateVendorUseCase', () => {
     expect(savedVendor.shopName).toBe('Mama Ntilie');
     expect(savedVendor.description).toBe('Best food in town');
     expect(savedVendor.category).toBe('food');
-    expect(savedVendor.commissionRate).toBe(12);
+    expect(savedVendor.commissionRate).toBe(10); // Platform default for 'food' category
     expect(savedVendor.status).toBe('PENDING');
     expect(savedVendor.tenantId.value).toBe(TENANT_ID);
     expect(savedVendor.userId.value).toBe(USER_ID);

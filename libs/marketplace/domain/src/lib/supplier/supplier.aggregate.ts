@@ -86,6 +86,14 @@ export class Supplier extends AggregateRoot<EntityId> {
     this._status = 'INACTIVE';
   }
 
+  public update(fields: { name?: string; phone?: string; contactPerson?: string; notes?: string; linkedVendorId?: string }): void {
+    if (fields.name !== undefined) this._name = fields.name;
+    if (fields.phone !== undefined) this._phone = fields.phone || undefined;
+    if (fields.contactPerson !== undefined) this._contactPerson = fields.contactPerson || undefined;
+    if (fields.notes !== undefined) this._notes = fields.notes || undefined;
+    if (fields.linkedVendorId !== undefined) this._linkedVendorId = fields.linkedVendorId || undefined;
+  }
+
   public toDto(): SupplierDto {
     return {
       id: this.id.value,

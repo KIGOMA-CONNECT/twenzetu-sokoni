@@ -16,6 +16,22 @@ export const VENDOR_CATEGORIES: VendorCategoryDef[] = [
   { key: 'procurement', label: 'Procurement', emoji: '📋' },
 ];
 
+// Platform-controlled commission rates by category.
+// Vendor-facing pages display this; vendors do NOT set their own rate.
+export const PLATFORM_COMMISSION: Record<string, number> = {
+  food: 10,
+  grocery: 8,
+  electronics: 8,
+  general: 10,
+  laundry: 15,
+  secondhand: 8,
+  cleaning: 15,
+  tailoring: 12,
+  procurement: 10,
+};
+
+export const DEFAULT_PLATFORM_COMMISSION = 10;
+
 export const VENDOR_CATEGORY_KEYS = VENDOR_CATEGORIES.map((c) => c.key);
 
 export function categoryEmoji(key: string | undefined | null): string {

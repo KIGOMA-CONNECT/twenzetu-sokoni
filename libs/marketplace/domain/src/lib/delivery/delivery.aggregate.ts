@@ -34,6 +34,7 @@ export interface ReconstituteDeliveryProps {
   readonly currentLongitude: number | undefined;
   readonly lastLocationUpdate: Date | undefined;
   readonly version: number;
+  readonly createdAt?: Date;
 }
 
 export class Delivery extends AggregateRoot<EntityId> {
@@ -57,6 +58,7 @@ export class Delivery extends AggregateRoot<EntityId> {
     private _currentLongitude: number | undefined,
     private _lastLocationUpdate: Date | undefined,
     private readonly _version: number,
+    private readonly _createdAt?: Date,
   ) {
     super(id);
   }
@@ -79,7 +81,7 @@ export class Delivery extends AggregateRoot<EntityId> {
       props.deliveryLatitude, props.deliveryLongitude,
       props.distanceKm, props.estimatedTimeMinutes,
       props.driverEarnings, props.currentLatitude, props.currentLongitude,
-      props.lastLocationUpdate, props.version,
+      props.lastLocationUpdate, props.version, props.createdAt,
     );
   }
 
@@ -139,6 +141,7 @@ export class Delivery extends AggregateRoot<EntityId> {
       currentLongitude: this._currentLongitude,
       lastLocationUpdate: this._lastLocationUpdate,
       version: this._version,
+      createdAt: this._createdAt,
     };
   }
 }

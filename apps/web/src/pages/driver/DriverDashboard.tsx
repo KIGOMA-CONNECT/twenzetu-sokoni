@@ -82,6 +82,7 @@ export default function DriverDashboard() {
   const { data: vehicles, refetch: refetchVehicles } = useApi<any[]>('/fleet/vehicles/me');
   const { subscribe } = useSocket();
   const [toggling, setToggling] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState<string | null>(null);
   const [newDelivery, setNewDelivery] = useState<{ orderId: string } | null>(null);
 
   useEffect(() => {
@@ -101,7 +102,9 @@ export default function DriverDashboard() {
     try {
       await api.patch(`/driver-fleet/${myVehicle.id}/availability`, { isOnline: !myVehicle.isOnline });
       await refetchVehicles();
-    } catch { /* no-op */
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message || 'Imeshindikana kubadilisha hali. Jaribu tena.';
+      setAvailabilityError(msg);
     } finally {
       setToggling(false);
     }
@@ -123,6 +126,12 @@ export default function DriverDashboard() {
             <h1 style={styles.headerTitle}>Welcome back, {user?.fullName || 'Driver'} 👋</h1>
             <div style={styles.headerSubtitle}>Here's what's happening with your deliveries today.</div>
           </div>
+          {availabilityError && (
+            <div className="alert alert-error" style={{ marginTop: '0.75rem' }}>
+              <span>⚠️</span>
+              <span>{availabilityError}</span>
+            </div>
+          )}
           {myVehicle && (
             <button
               onClick={handleToggle}

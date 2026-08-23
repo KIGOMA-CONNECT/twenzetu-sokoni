@@ -6,7 +6,7 @@ export class CreateVendorCommand extends CommandBase {
     public readonly shopName: string,
     public readonly description: string | undefined,
     public readonly category: string,
-    public readonly commissionRate: number,
+    public readonly commissionRate?: number,
     public readonly latitude?: number,
     public readonly longitude?: number,
   ) {
