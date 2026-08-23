@@ -61,6 +61,8 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
       client.emit('authenticated', { success: true });
     } else {
       this.connectedClients.set(client.id, {});
+      this.logger.warn(`Unauthenticated WS connection rejected: ${client.id}`);
+      client.emit('auth_required', { message: 'Valid JWT token required' });
     }
     this.logger.log(`Client connected: ${client.id}`);
   }
@@ -94,6 +96,10 @@ export class MarketplaceGateway implements OnGatewayConnection, OnGatewayDisconn
     const info = this.connectedClients.get(client.id);
     if (!info?.userId) {
       client.emit('error', { message: 'Authentication required' });
+      return;
+    }
+    if (!data.orderId || typeof data.orderId !== 'string' || data.orderId.length > 50) {
+      client.emit('error', { message: 'Invalid order ID' });
       return;
     }
     client.join(`order:${data.orderId}`);

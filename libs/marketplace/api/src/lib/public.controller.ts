@@ -1,4 +1,5 @@
 import { BadRequestException, Controller, Get, Inject, Param, Query, Req, UseInterceptors } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation, ApiResponse, ApiHeader, ApiQuery } from '@nestjs/swagger';
 import { CacheInterceptor, CacheTTL } from '@nestjs/cache-manager';
 import { Request } from 'express';
@@ -69,6 +70,7 @@ export class PublicController {
   }
 
   @CacheTTL(60000)
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('vendors')
   @ApiOperation({ summary: 'Public list/search of vendors' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -99,6 +101,7 @@ export class PublicController {
   }
 
   @CacheTTL(60000)
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @Get('products')
   @ApiOperation({ summary: 'Public list/search of products' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -131,6 +134,7 @@ export class PublicController {
     return paginatedResult(result.data.map((p) => p.toDto()), result.total, parsedLimit, parsedOffset);
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Get('search/suggestions')
   @ApiOperation({ summary: 'Public autocomplete search suggestions' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -157,6 +161,7 @@ export class PublicController {
     return { data: result };
   }
 
+  @Throttle({ default: { limit: 20, ttl: 60000 } })
   @Get('products/:id/similar')
   @ApiOperation({ summary: 'Public similar products by category' })
   @ApiHeader({ name: 'x-tenant-id', required: false, description: 'Defaults to the primary tenant' })
@@ -194,6 +199,7 @@ export class PublicController {
     };
   }
 
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Get('cargo/fare')
   @ApiOperation({ summary: 'Public live cargo fare quote (server-computed, binding)' })
   @ApiResponse({ status: 200, description: 'Fare breakdown' })
