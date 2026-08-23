@@ -29,6 +29,7 @@ const styles: Record<string, React.CSSProperties> = {
   controls: { display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' },
   dateInput: { padding: '0.5rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' },
   select: { padding: '0.5rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit', minWidth: '220px' },
+  printBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'inherit' },
   stats: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.25rem' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
   cardValue: { fontSize: '1.5rem', fontWeight: 800, color: 'var(--ink)' },
@@ -102,7 +103,16 @@ export default function VendorDayReport() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
+      <style>{`
+        @media print {
+          body * { visibility: hidden; }
+          #day-report-print, #day-report-print * { visibility: visible; }
+          #day-report-print { position: absolute; left: 0; top: 0; width: 100%; }
+          .no-print { display: none !important; }
+        }
+      `}</style>
+      <div id="day-report-print">
+        <div style={styles.header} className="no-print">
         <div>
           <h1 style={styles.title}>End of Day Report</h1>
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
@@ -133,6 +143,11 @@ export default function VendorDayReport() {
           <button style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }} onClick={() => refetch()}>
             Refresh
           </button>
+          {report && (
+            <button style={styles.printBtn} onClick={() => window.print()}>
+              Export PDF
+            </button>
+          )}
         </div>
       </div>
 
@@ -225,6 +240,7 @@ export default function VendorDayReport() {
           </div>
         </>
       )}
+      </div>
     </div>
   );
 }

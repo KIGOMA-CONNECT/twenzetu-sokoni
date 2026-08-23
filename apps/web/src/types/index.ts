@@ -488,6 +488,7 @@ export interface PosSale {
 export interface PosCheckoutResult {
   sale: PosSale;
   change: number;
+  shiftNumber: string | null;
   receiptText: string;
 }
 

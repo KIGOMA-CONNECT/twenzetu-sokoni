@@ -116,7 +116,8 @@ export class CreatePosSaleUseCase {
     return {
       sale: sale.toDto(),
       change,
-      receiptText: this.buildReceiptText(sale, input.shopName ?? '', change),
+      shiftNumber: openShift?.shiftNumber ?? null,
+      receiptText: this.buildReceiptText(sale, input.shopName ?? '', change, openShift?.shiftNumber),
     };
   }
 
@@ -127,7 +128,7 @@ export class CreatePosSaleUseCase {
     return `POS-${yyyy}${mm}${dd}-${String(seq).padStart(4, '0')}`;
   }
 
-  private buildReceiptText(sale: PosSale, shopName: string, change: number): string {
+  private buildReceiptText(sale: PosSale, shopName: string, change: number, shiftNumber?: string): string {
     const d = sale.createdAt;
     const dateStr = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
@@ -141,6 +142,7 @@ export class CreatePosSaleUseCase {
     lines.push(`Date: ${dateStr}`);
     lines.push(`Time: ${timeStr}`);
     lines.push(`Receipt: ${sale.saleNumber}`);
+    if (shiftNumber) lines.push(`Shift: ${shiftNumber}`);
     lines.push(line);
     for (const item of sale.items) {
       lines.push(`${item.productName}`);

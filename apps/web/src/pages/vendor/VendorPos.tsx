@@ -408,7 +408,8 @@ export default function VendorPos() {
       {receipt && (
         <div style={styles.overlay}>
           <div style={styles.receipt} id="receipt-print">
-            <div style={styles.receiptMsg}>Sale complete â€” receipt #{receipt.sale.saleNumber}</div>
+            <div style={styles.receiptMsg}>Sale complete — receipt #{receipt.sale.saleNumber}</div>
+            {receipt.shiftNumber && <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Shift: {receipt.shiftNumber}</div>}
             <pre style={styles.receiptPre}>{receipt.receiptText}</pre>
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={doneReceipt}>Done</button>
