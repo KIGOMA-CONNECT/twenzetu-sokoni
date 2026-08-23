@@ -193,7 +193,7 @@ export default function AddressPage() {
       await api.delete(`/addresses/${address.id}`);
       await refetch();
     } catch {
-      alert('Failed to delete address.');
+      setFormError('Failed to delete address.');
     }
   };
 
@@ -202,7 +202,7 @@ export default function AddressPage() {
       await api.patch(`/addresses/${address.id}/default`);
       await refetch();
     } catch {
-      alert('Failed to set default address.');
+      setFormError('Failed to set default address.');
     }
   };
 

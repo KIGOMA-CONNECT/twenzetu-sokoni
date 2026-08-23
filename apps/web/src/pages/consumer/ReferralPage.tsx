@@ -16,6 +16,7 @@ export default function ReferralPage() {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [genError, setGenError] = useState('');
+  const [claimError, setClaimError] = useState<string | null>(null);
 
   const referralCode = codeData?.referralCode;
   const shareLink = referralCode ? `${window.location.origin}/register?ref=${referralCode}` : '';
@@ -48,7 +49,7 @@ export default function ReferralPage() {
       await refetchReferrals();
       await refetchStats();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
+      setClaimError(err.response?.data?.message || err.message || 'Failed to claim reward');
     }
   };
 

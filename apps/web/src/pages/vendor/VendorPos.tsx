@@ -76,6 +76,7 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function VendorPos() {
   const { refreshVendorAccess } = useAuth();
+  const { formatCurrency } = useCurrency();
   const { data: raw, loading, error, refetch } = useApi<Product[]>('/pos/products');
   const products: Product[] = Array.isArray(raw) ? raw : [];
   const [query, setQuery] = useState('');
@@ -95,6 +96,8 @@ export default function VendorPos() {
   const [closingCash, setClosingCash] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
   const [shiftSaving, setShiftSaving] = useState(false);
+  const [posError, setPosError] = useState<string | null>(null);
+  const [posSuccess, setPosSuccess] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const fetchShift = useCallback(async () => {
@@ -133,7 +136,7 @@ export default function VendorPos() {
     const existing = cart[product.id];
     const next = (existing?.quantity ?? 0) + qty;
     if (next > product.stockQuantity) {
-      alert(`Only ${product.stockQuantity} in stock for ${product.name}.`);
+      setPosError(`Only ${product.stockQuantity} in stock for ${product.name}.`);
       return;
     }
     setCart((prev) => ({ ...prev, [product.id]: { product, quantity: next } }));
@@ -161,7 +164,7 @@ export default function VendorPos() {
     );
     setScan('');
     if (!match) {
-      alert(`No product found for "${scan.trim()}".`);
+      setPosError(`No product found for "${code}".`);
       return;
     }
     addToCart(match);
@@ -237,7 +240,8 @@ export default function VendorPos() {
       setClosingCash('');
       setShiftNotes('');
       // Show summary briefly then refresh
-      alert(`Shift closed!\nSales: ${(res.data?.data?.totalSales ?? 0).toLocaleString()}\nVariance: ${(res.data?.data?.cashVariance ?? 0).toLocaleString()}`);
+      setPosSuccess(`Shift closed! Sales: ${(res.data?.data?.totalSales ?? 0).toLocaleString()} | Variance: ${(res.data?.data?.cashVariance ?? 0).toLocaleString()}`);
+      setTimeout(() => setPosSuccess(null), 5000);
     } catch (err: any) {
       setShiftError(err.response?.data?.message || 'Failed to close shift.');
     } finally {

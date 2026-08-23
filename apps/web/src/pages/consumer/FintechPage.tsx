@@ -352,6 +352,7 @@ export default function FintechPage() {
     const { data: mine, refetch } = useApi<{ id: string; status: string; tier?: SubscriptionTier | null; currentPeriodEnd?: string } | null>('/vendor-subscriptions/me');
     const { data: invoices } = useApi<SubscriptionInvoice[] | null>(isVendor ? '/vendor-subscriptions/me/invoices' : null);
     const [busy, setBusy] = useState<string | null>(null);
+    const [subError, setSubError] = useState<string | null>(null);
 
     const handleSubscribe = async (tierId: string) => {
       setBusy(tierId);
@@ -359,7 +360,8 @@ export default function FintechPage() {
         await api.post('/vendor-subscriptions/subscribe', { tierId });
         refetch();
       } catch (e: any) {
-        alert(e.response?.data?.error?.message || e.response?.data?.message || e.message || 'Subscription failed');
+        setBusy(null);
+        setSubError(e.response?.data?.error?.message || e.response?.data?.message || e.message || 'Subscription failed');
       } finally {
         setBusy(null);
       }

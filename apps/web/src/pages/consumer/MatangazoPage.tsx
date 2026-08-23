@@ -56,6 +56,7 @@ async function copyText(text: string): Promise<boolean> {
 
 export default function MatangazoPage() {
   const { t } = useTranslation();
+  const [copyError, setCopyError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: ads, loading: adsLoading, error: adsError } = useApi<Advert[]>('/public/ads', []);
   const { data: categories, loading: catsLoading } = useApi<Category[]>('/public/categories', []);
@@ -72,7 +73,7 @@ export default function MatangazoPage() {
       setCopiedKey(key);
       setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 2000);
     } else {
-      alert('Imeshindikana kunakili. Jaribu tena.');
+      setCopyError('Imeshindikana kunakili. Jaribu tena.');
     }
   };
 

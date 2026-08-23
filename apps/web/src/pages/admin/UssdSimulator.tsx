@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import api from '../../api/client';
 
-const USSD_SECRET = (import.meta.env.VITE_USSD_SIMULATE_SECRET as string | undefined) ?? '';
-
 const PHONE_NUMBERS = [
   { label: 'Hassan (Customer)', phone: '+255754100003' },
   { label: 'Amina (Vendor)', phone: '+255754100002' },
@@ -36,7 +34,6 @@ export default function UssdSimulator() {
           text,
           serviceCode: '*150*30#',
         },
-        USSD_SECRET ? { headers: { 'x-ussd-secret': USSD_SECRET } } : undefined,
       );
       const payload = res.data.data || res.data;
       setHistory((prev) => [

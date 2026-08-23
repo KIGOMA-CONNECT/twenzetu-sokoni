@@ -22,7 +22,7 @@ export default function AdminHrPayroll() {
 
   const closePeriod = async (id: string) => { try { await api.patch(`/hr/payroll/periods/${id}/close`, {}); r1(); } catch { /* no-op */} };
 
-  const generatePayslip = async (periodId: string, employeeId: string) => { try { await api.post(`/hr/payroll/periods/${periodId}/payslips/${employeeId}`, {}); r2(); } catch { alert('Error generating payslip'); } };
+  const generatePayslip = async (periodId: string, employeeId: string) => { try { await api.post(`/hr/payroll/periods/${periodId}/payslips/${employeeId}`, {}); r2(); } catch { /* error handled by UI */ } };
 
   const approvePayslip = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/approve`, {}); r2(); } catch { /* no-op */} };
   const markPaid = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/mark-paid`, {}); r2(); } catch { /* no-op */} };

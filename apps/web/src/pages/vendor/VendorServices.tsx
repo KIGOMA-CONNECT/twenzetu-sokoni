@@ -189,7 +189,7 @@ const [chatError, setChatError] = useState<string | null>(null);
       const list = Array.isArray(payload) ? payload : ((payload as any)?.data ?? []);
       const updated = list.find((r: ServiceRequest) => r.id === activeReq.id);
       if (updated) setActiveReq(updated);
-      alert('Quote submitted. The customer will be notified.');
+      setActionError(null);
     } catch (err: any) {
       setActionError(err.response?.data?.message || err.message || 'Failed to submit quote');
     } finally {

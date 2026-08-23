@@ -95,7 +95,6 @@ function OrderHistory() {
       });
       setReviewedOrders((m) => ({ ...m, [reviewTarget.orderId]: true }));
       setReviewTarget(null);
-      alert('Thank you for your review!');
     } catch (err: any) {
       setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
     } finally {
@@ -122,7 +121,6 @@ function OrderHistory() {
       });
       setDriverReviewedOrders((m) => ({ ...m, [driverReviewOrderId]: true }));
       setDriverReviewOrderId(null);
-      alert('Thank you for rating your driver!');
     } catch (err: any) {
       setDriverReviewError(err.response?.data?.message || err.message || 'Failed to rate driver');
     } finally {

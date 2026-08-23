@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -8,19 +9,25 @@ import api from '../../api/client';
 export default function SubscriptionPage() {
   const { formatCurrency } = useCurrency();
   const { data: subscriptions, loading, error, refetch } = useApi<any[]>('/subscriptions');
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const updateStatus = async (id: string, status: string) => {
     try {
       await api.patch(`/subscriptions/${id}`, { status });
       refetch();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message);
+      setActionError(err.response?.data?.message || err.message || 'Failed to update subscription');
     }
   };
 
-  const cancel = (id: string) => {
+  const cancel = async (id: string) => {
     if (window.confirm('Are you sure you want to cancel this subscription?')) {
-      api.delete(`/subscriptions/${id}`).then(() => refetch()).catch(alert);
+      try {
+        await api.delete(`/subscriptions/${id}`);
+        refetch();
+      } catch (err: any) {
+        setActionError(err.response?.data?.message || err.message || 'Failed to cancel subscription');
+      }
     }
   };
 

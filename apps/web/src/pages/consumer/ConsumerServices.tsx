@@ -78,6 +78,8 @@ export default function ConsumerServices() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [accepting, setAccepting] = useState(false);
+  const [acceptError, setAcceptError] = useState<string | null>(null);
+  const [acceptSuccess, setAcceptSuccess] = useState<string | null>(null);
 
   const [reviewTarget, setReviewTarget] = useState<ServiceRequest | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
@@ -184,14 +186,14 @@ export default function ConsumerServices() {
       if (activeReq) await openThread(activeReq);
       await refetchReqs();
       if (paymentMethod === 'cash') {
-        alert('Quote accepted. Order created — pay in cash on delivery.');
-      } else if (data?.otpCode) {
-        alert(`Quote accepted. Payment request sent to your phone (${paymentMethod.replace('_', ' ')}).\nComplete the STK push and keep this OTP: ${data.otpCode}`);
+        setAcceptModal(null);
+        setAcceptSuccess('Quote accepted. Order created — pay in cash on delivery.');
       } else {
-        alert('Quote accepted. Order created — check My Orders for payment confirmation.');
+        setAcceptModal(null);
+        setAcceptSuccess('Quote accepted. Payment request sent. Complete the STK push on your phone.');
       }
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to accept quote');
+      setAcceptError(err.response?.data?.message || err.message || 'Failed to accept quote');
     } finally {
       setAccepting(false);
     }
@@ -214,7 +216,6 @@ export default function ConsumerServices() {
         comment: reviewComment.trim() || undefined,
       });
       setReviewTarget(null);
-      alert('Thank you for your review!');
     } catch (err: any) {
       setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
     } finally {
