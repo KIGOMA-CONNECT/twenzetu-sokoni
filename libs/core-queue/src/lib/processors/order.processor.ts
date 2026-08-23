@@ -1,18 +1,34 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger } from '@nestjs/common';
+import { ModuleRef } from '@nestjs/core';
 import { Job } from 'bullmq';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { OrderCreatedEvent, OrderStatusChangedEvent, DeliveryCompletedEvent } from '@afri-market/marketplace-application';
+import { CountrySmsRouterService } from '@afri-market/integrations';
+import { EmailService } from '@afri-market/integrations';
 
 @Processor('orders')
 export class OrderProcessor extends WorkerHost {
   private readonly logger = new Logger(OrderProcessor.name);
+  private smsRouter?: CountrySmsRouterService;
+  private emailService?: EmailService;
 
   constructor(
     @InjectDataSource() private readonly ds: DataSource,
+    private readonly moduleRef: ModuleRef,
   ) {
     super();
+  }
+
+  private getSmsRouter(): CountrySmsRouterService {
+    if (!this.smsRouter) this.smsRouter = this.moduleRef.get(CountrySmsRouterService, { strict: false });
+    return this.smsRouter;
+  }
+
+  private getEmailService(): EmailService {
+    if (!this.emailService) this.emailService = this.moduleRef.get(EmailService, { strict: false });
+    return this.emailService;
   }
 
   async process(job: Job): Promise<void> {
@@ -104,8 +120,7 @@ export class OrderProcessor extends WorkerHost {
 
   private async sendSms(phone: string, message: string): Promise<void> {
     try {
-      // TODO: Integrate with actual SMS provider (Africa's Talking, Twilio, Termii)
-      this.logger.debug(`SMS to ${phone}: ${message}`);
+      await this.getSmsRouter().send({ to: phone, message });
     } catch (error) {
       this.logger.error(`Failed to send SMS to ${phone}: ${error}`);
     }
@@ -113,8 +128,7 @@ export class OrderProcessor extends WorkerHost {
 
   private async sendEmail(to: string, subject: string, body: string): Promise<void> {
     try {
-      // TODO: Integrate with actual email provider (SendGrid, Mailgun, AWS SES)
-      this.logger.debug(`Email to ${to}: ${subject} - ${body}`);
+      await this.getEmailService().send({ to, subject, html: body });
     } catch (error) {
       this.logger.error(`Failed to send email to ${to}: ${error}`);
     }
