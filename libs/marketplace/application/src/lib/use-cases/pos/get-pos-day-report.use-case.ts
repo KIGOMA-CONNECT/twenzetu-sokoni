@@ -1,27 +1,42 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { IProductSaleRepository } from '@afri-market/marketplace-domain';
-import { PRODUCT_SALE_REPOSITORY } from '../../tokens';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { IProductSaleRepository, IPosShiftRepository } from '@afri-market/marketplace-domain';
+import { PRODUCT_SALE_REPOSITORY, POS_SHIFT_REPOSITORY } from '../../tokens';
 import { startOfLocalDay, endOfLocalDay, parseDateInput, formatDate } from './pos-dates';
 
 export interface GetPosDayReportInput {
   readonly tenantId: string;
   readonly vendorId: string;
   readonly date?: string;
+  readonly shiftId?: string;
 }
 
 @Injectable()
 export class GetPosDayReportUseCase {
   constructor(
     @Inject(PRODUCT_SALE_REPOSITORY) private readonly saleRepo: IProductSaleRepository,
+    @Inject(POS_SHIFT_REPOSITORY) private readonly shiftRepo: IPosShiftRepository,
   ) {}
 
   public async execute(input: GetPosDayReportInput) {
     const selected = parseDateInput(input.date);
-    const sales = await this.saleRepo.findByVendorBetween(
-      input.vendorId,
-      startOfLocalDay(selected),
-      endOfLocalDay(selected),
-    );
+    let sales;
+
+    if (input.shiftId) {
+      const { EntityId } = await import('@afri-market/kernel');
+      const shift = await this.shiftRepo.findById(EntityId.from(input.shiftId));
+      if (!shift) throw new NotFoundException('Shift not found');
+      sales = await this.saleRepo.findByVendorBetween(
+        input.vendorId,
+        shift.openedAt,
+        shift.closedAt ?? new Date(),
+      );
+    } else {
+      sales = await this.saleRepo.findByVendorBetween(
+        input.vendorId,
+        startOfLocalDay(selected),
+        endOfLocalDay(selected),
+      );
+    }
 
     const completed = sales.filter((s) => s.status === 'COMPLETED');
     let totalRevenue = 0;

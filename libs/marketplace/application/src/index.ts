@@ -215,6 +215,7 @@ export * from './lib/use-cases/pos/get-pos-day-report.use-case';
 export * from './lib/use-cases/pos/open-pos-shift.use-case';
 export * from './lib/use-cases/pos/close-pos-shift.use-case';
 export * from './lib/use-cases/pos/get-current-pos-shift.use-case';
+export * from './lib/use-cases/pos/list-pos-shifts.use-case';
 
 // Use Cases - Vendor Accounting
 export * from './lib/use-cases/vendor-accounting/vendor-accounting.service';

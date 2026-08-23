@@ -7,8 +7,9 @@ import {
   isPosPaymentMethod,
   IProductRepository,
   IProductSaleRepository,
+  IPosShiftRepository,
 } from '@afri-market/marketplace-domain';
-import { PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY } from '../../tokens';
+import { PRODUCT_REPOSITORY, PRODUCT_SALE_REPOSITORY, POS_SHIFT_REPOSITORY } from '../../tokens';
 import { startOfLocalDay, endOfLocalDay } from './pos-dates';
 
 export interface CreatePosSaleItemInput {
@@ -31,6 +32,7 @@ export class CreatePosSaleUseCase {
   constructor(
     @Inject(PRODUCT_REPOSITORY) private readonly productRepo: IProductRepository,
     @Inject(PRODUCT_SALE_REPOSITORY) private readonly saleRepo: IProductSaleRepository,
+    @Inject(POS_SHIFT_REPOSITORY) private readonly shiftRepo: IPosShiftRepository,
   ) {}
 
   public async execute(input: CreatePosSaleInput) {
@@ -102,6 +104,12 @@ export class CreatePosSaleUseCase {
     });
 
     await this.saleRepo.save(sale);
+
+    const openShift = await this.shiftRepo.findOpenByVendor(input.vendorId);
+    if (openShift) {
+      openShift.recordSale(sale.total.amount, sale.paymentMethod);
+      await this.shiftRepo.save(openShift);
+    }
 
     const change = amountTendered ? Math.max(0, amountTendered.amount - sale.total.amount) : 0;
 

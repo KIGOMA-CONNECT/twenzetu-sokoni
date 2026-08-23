@@ -205,6 +205,7 @@ import {
 import { OpenPosShiftUseCase } from './use-cases/pos/open-pos-shift.use-case';
 import { ClosePosShiftUseCase } from './use-cases/pos/close-pos-shift.use-case';
 import { GetCurrentPosShiftUseCase } from './use-cases/pos/get-current-pos-shift.use-case';
+import { ListPosShiftsUseCase } from './use-cases/pos/list-pos-shifts.use-case';
 import { BulkVerifyDriversUseCase } from './use-cases/fleet/bulk-verify-drivers.use-case';
 import { BulkSetDriverStatusUseCase } from './use-cases/fleet/bulk-set-driver-status.use-case';
 import { BulkAssignDeliveriesUseCase } from './use-cases/fleet/bulk-assign-deliveries.use-case';
@@ -421,6 +422,7 @@ SetDefaultAddressUseCase,
   OpenPosShiftUseCase,
   ClosePosShiftUseCase,
   GetCurrentPosShiftUseCase,
+  ListPosShiftsUseCase,
   BulkVerifyDriversUseCase,
   BulkSetDriverStatusUseCase,
   BulkAssignDeliveriesUseCase,

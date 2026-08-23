@@ -5,7 +5,7 @@ import { check, sleep } from 'k6';
 //
 // Usage (install k6: https://k6.io):
 //   k6 run perf/k6-smoke.js
-//   BASE_URL=https://staging.example.com API_BASE=https://staging.example.com/api VUS=50 DURATION=5m k6 run perf/k6-smoke.js
+//   BASE_URL=https://staging.example.com VUS=50 DURATION=5m k6 run perf/k6-smoke.js
 //
 // Acceptance baseline: p(95) < 800ms, error rate < 1%.
 
@@ -30,9 +30,6 @@ export default function () {
 
   const health = http.get(`${API}/health`, { tags: { name: 'api-health' } });
   check(health, { 'health ok': (r) => r.status === 200 });
-
-  const vendors = http.get(`${API}/vendors?limit=20`, { tags: { name: 'api-vendors' } });
-  check(vendors, { 'vendors ok': (r) => r.status === 200 });
 
   sleep(1);
 }

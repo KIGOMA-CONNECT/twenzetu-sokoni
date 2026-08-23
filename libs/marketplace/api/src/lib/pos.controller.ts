@@ -1,4 +1,4 @@
-﻿import { BadRequestException, Body, Controller, ForbiddenException, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+﻿import { BadRequestException, Body, Controller, ForbiddenException, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -9,6 +9,7 @@ import {
   OpenPosShiftUseCase,
   ClosePosShiftUseCase,
   GetCurrentPosShiftUseCase,
+  ListPosShiftsUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
 import { PosCheckoutDto } from './dto/pos-checkout.dto';
@@ -26,6 +27,7 @@ export class PosController {
     private readonly openShift: OpenPosShiftUseCase,
     private readonly closeShift: ClosePosShiftUseCase,
     private readonly getCurrentShift: GetCurrentPosShiftUseCase,
+    private readonly listShifts: ListPosShiftsUseCase,
     private readonly vendorAccess: VendorAccessService,
   ) {}
 
@@ -66,7 +68,12 @@ export class PosController {
   @Get('report')
   @ApiOperation({ summary: 'End-of-day report for the vendor (requires view_reports)' })
   @ApiQuery({ name: 'date', required: false, description: 'YYYY-MM-DD (defaults to today)' })
-  public async report(@Query('date') date: string | undefined, @CurrentUser() user: JwtPayload) {
+  @ApiQuery({ name: 'shiftId', required: false, description: 'Filter by POS shift UUID' })
+  public async report(
+    @Query('date') date: string | undefined,
+    @Query('shiftId') shiftId: string | undefined,
+    @CurrentUser() user: JwtPayload,
+  ) {
     const ctx = await this.vendorAccess.assertPermission(user, 'view_reports');
     if (!ctx) {
       throw new ForbiddenException('You do not have permission to view reports');
@@ -76,8 +83,27 @@ export class PosController {
         tenantId: user.tenantId,
         vendorId: ctx.vendorId,
         date,
+        shiftId,
       });
       return { data: { ...report, shopName: ctx.shopName } };
+    } catch (err: any) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  @Get('shifts')
+  @ApiOperation({ summary: 'List POS shifts for a given date (requires use_pos)' })
+  @ApiQuery({ name: 'date', required: false, description: 'YYYY-MM-DD (defaults to today)' })
+  public async listShiftsEndpoint(
+    @Query('date') date: string | undefined,
+    @CurrentUser() user: JwtPayload,
+  ) {
+    const ctx = await this.vendorAccess.assertPermission(user, 'use_pos');
+    if (!ctx) {
+      throw new ForbiddenException('You do not have POS permission');
+    }
+    try {
+      return await this.listShifts.execute({ vendorId: ctx.vendorId, date });
     } catch (err: any) {
       throw new BadRequestException(err.message);
     }

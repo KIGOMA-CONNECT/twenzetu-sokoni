@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { EntityId, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
-import { EntityManager, MoreThanOrEqual, LessThanOrEqual } from 'typeorm';
+import { EntityManager } from 'typeorm';
 import { PosShift, IPosShiftRepository } from '@afri-market/marketplace-domain';
 import { PosShiftOrmEntity } from '../entities/pos-shift-orm.entity';
 
@@ -44,15 +44,23 @@ export class TypeOrmPosShiftRepository extends TypeOrmRepository<PosShift, PosSh
   }
 
   async findByVendorAndDate(vendorId: string, start: Date, end: Date): Promise<PosShift[]> {
-    const entities = await this.repository.find({
-      where: { vendorId, openedAt: MoreThanOrEqual(start), closedAt: LessThanOrEqual(end) },
-      order: { openedAt: 'DESC' },
-    });
+    const entities = await this.repository
+      .createQueryBuilder('s')
+      .where('s.vendor_id = :vendorId', { vendorId })
+      .andWhere('s.opened_at >= :start', { start })
+      .andWhere('(s.closed_at IS NULL OR s.closed_at <= :end)', { end })
+      .orderBy('s.opened_at', 'DESC')
+      .getMany();
     return entities.map((e) => this.toDomain(e));
   }
 
   async countByVendorAndDay(vendorId: string, start: Date, end: Date): Promise<number> {
-    return this.repository.count({ where: { vendorId, openedAt: MoreThanOrEqual(start), closedAt: LessThanOrEqual(end) } });
+    return this.repository
+      .createQueryBuilder('s')
+      .where('s.vendor_id = :vendorId', { vendorId })
+      .andWhere('s.opened_at >= :start', { start })
+      .andWhere('(s.closed_at IS NULL OR s.closed_at <= :end)', { end })
+      .getCount();
   }
 
   private toDomain(e: PosShiftOrmEntity): PosShift {

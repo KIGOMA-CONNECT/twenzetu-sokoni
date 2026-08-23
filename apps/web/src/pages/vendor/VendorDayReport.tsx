@@ -3,14 +3,12 @@ import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
-import type { PosDayReport, PosSale } from '../../types';
+import type { PosDayReport, PosSale, PosShift } from '../../types';
 
 const today = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
-
-
 
 const PAYMENT_LABELS: Record<string, string> = {
   cash: 'Cash',
@@ -28,8 +26,9 @@ const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' },
   title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
-  dateRow: { display: 'flex', alignItems: 'center', gap: '0.5rem' },
+  controls: { display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' },
   dateInput: { padding: '0.5rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit' },
+  select: { padding: '0.5rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '8px', fontSize: '0.9rem', fontFamily: 'inherit', minWidth: '220px' },
   stats: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem', marginBottom: '1.25rem' },
   card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
   cardValue: { fontSize: '1.5rem', fontWeight: 800, color: 'var(--ink)' },
@@ -48,7 +47,14 @@ const styles: Record<string, React.CSSProperties> = {
 export default function VendorDayReport() {
   const { formatCurrency } = useCurrency();
   const [date, setDate] = useState(today());
-  const { data: raw, loading, error, refetch } = useApi<PosDayReport>(`/pos/report?date=${date}`, [date]);
+  const [selectedShiftId, setSelectedShiftId] = useState('');
+
+  const shiftsQuery = `/pos/shifts?date=${date}`;
+  const { data: shiftsRaw, loading: shiftsLoading } = useApi<{ data: PosShift[] }>(shiftsQuery, [shiftsQuery]);
+  const shifts: PosShift[] = Array.isArray(shiftsRaw?.data) ? shiftsRaw!.data : [];
+
+  const reportQuery = `/pos/report?date=${date}${selectedShiftId ? `&shiftId=${selectedShiftId}` : ''}`;
+  const { data: raw, loading, error, refetch } = useApi<PosDayReport>(reportQuery, [reportQuery]);
 
   const report: PosDayReport | null = raw && typeof raw === 'object' && 'totalRevenue' in raw ? raw : null;
 
@@ -59,7 +65,6 @@ export default function VendorDayReport() {
 
   const totalBreakdown = sortedBreakdown.reduce((sum, row) => sum + row.amount, 0);
 
-  // simple expandable rows: track which sale numbers are expanded
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const toggle = (id: string) => setExpanded((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -81,7 +86,7 @@ export default function VendorDayReport() {
             {sale.items.map((item, idx) => (
               <tr key={idx}>
                 <td style={styles.td}>{item.productName}</td>
-                <td style={styles.td}>{item.sku || item.barcode || 'â€”'}</td>
+                <td style={styles.td}>{item.sku || item.barcode || '\u2014'}</td>
                 <td style={{ ...styles.td, textAlign: 'right' }}>{item.quantity}</td>
                 <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(item.unitPrice)}</td>
                 <td style={{ ...styles.td, textAlign: 'right' }}>{formatCurrency(item.totalPrice)}</td>
@@ -93,6 +98,8 @@ export default function VendorDayReport() {
     </tr>
   );
 
+  const selectedShift = shifts.find((s) => s.id === selectedShiftId);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -100,15 +107,29 @@ export default function VendorDayReport() {
           <h1 style={styles.title}>End of Day Report</h1>
           <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>
             {report?.shopName ? report.shopName : 'Shop sales summary'}
+            {selectedShift && <span> &mdash; Shift {selectedShift.shiftNumber}</span>}
           </div>
         </div>
-        <div style={styles.dateRow}>
+        <div style={styles.controls}>
           <input
             style={styles.dateInput}
             type="date"
             value={date}
-            onChange={(e) => setDate(e.target.value || today())}
+            onChange={(e) => { setDate(e.target.value || today()); setSelectedShiftId(''); }}
           />
+          <select
+            style={styles.select}
+            value={selectedShiftId}
+            onChange={(e) => setSelectedShiftId(e.target.value)}
+            disabled={shiftsLoading}
+          >
+            <option value="">All shifts (full day)</option>
+            {shifts.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.shiftNumber} &mdash; {s.status === 'OPEN' ? 'OPEN' : 'CLOSED'} ({s.salesCount} sales)
+              </option>
+            ))}
+          </select>
           <button style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem' }} onClick={() => refetch()}>
             Refresh
           </button>
@@ -142,6 +163,15 @@ export default function VendorDayReport() {
             </div>
           </div>
 
+          {selectedShift && (
+            <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', borderRadius: '10px', padding: '0.75rem 1rem', marginBottom: '1rem', fontSize: '0.85rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
+              <span><strong>Shift:</strong> {selectedShift.shiftNumber}</span>
+              <span><strong>Opened:</strong> {new Date(selectedShift.openedAt).toLocaleTimeString()}</span>
+              {selectedShift.closedAt && <span><strong>Closed:</strong> {new Date(selectedShift.closedAt).toLocaleTimeString()}</span>}
+              <span><strong>Status:</strong> {selectedShift.status}</span>
+            </div>
+          )}
+
           <div style={styles.panel}>
             <div style={styles.panelHeader}>Payment Methods</div>
             <div style={styles.panelBody}>
@@ -150,7 +180,7 @@ export default function VendorDayReport() {
                 <div key={row.method} style={styles.breakdownRow}>
                   <span>{PAYMENT_LABELS[row.method] ?? row.method}</span>
                   <span>
-                    {formatCurrency(row.amount)} {report.currency} â€” {totalBreakdown > 0 ? Math.round((row.amount / totalBreakdown) * 100) : 0}%
+                    {formatCurrency(row.amount)} {report.currency} &mdash; {totalBreakdown > 0 ? Math.round((row.amount / totalBreakdown) * 100) : 0}%
                   </span>
                 </div>
               ))}
@@ -160,7 +190,7 @@ export default function VendorDayReport() {
           <div style={styles.panel}>
             <div style={styles.panelHeader}>Sales ({report.sales.length})</div>
             {report.sales.length === 0 ? (
-              <div style={styles.empty}>No sales on {report.date}</div>
+              <div style={styles.empty}>No sales on {date}{selectedShift ? ` for shift ${selectedShift.shiftNumber}` : ''}</div>
             ) : (
               <table style={styles.table}>
                 <thead>
@@ -178,7 +208,7 @@ export default function VendorDayReport() {
                       <tr>
                         <td style={styles.td}>
                           <button style={styles.expando} onClick={() => toggle(sale.id)}>
-                            {expanded[sale.id] ? 'âˆ’' : '+'}
+                            {expanded[sale.id] ? '\u2212' : '+'}
                           </button>
                         </td>
                         <td style={styles.td}>{sale.saleNumber}</td>
