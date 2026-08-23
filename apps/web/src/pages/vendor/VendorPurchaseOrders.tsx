@@ -64,6 +64,7 @@ export default function VendorPurchaseOrders() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const draftTotal = lines.reduce((sum, l) => sum + l.unitCost * l.quantity, 0);
   const itemCount = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
@@ -125,24 +126,26 @@ export default function VendorPurchaseOrders() {
 
   const runAction = async (order: PurchaseOrder, path: string, confirmMsg?: string) => {
     if (confirmMsg && !window.confirm(confirmMsg)) return;
+    setActionError(null);
     setBusyId(order.id);
     try {
       await api.post(`/vendor/purchase-orders/${order.id}/${path}`);
       await refetch();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Action failed.');
+      setActionError(err.response?.data?.message || err.message || 'Action failed.');
     } finally {
       setBusyId(null);
     }
   };
 
   const togglePaid = async (order: PurchaseOrder) => {
+    setActionError(null);
     setBusyId(order.id);
     try {
       await api.post(`/vendor/purchase-orders/${order.id}/payment`, { paid: order.paymentStatus !== 'PAID' });
       await refetch();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to update payment.');
+      setActionError(err.response?.data?.message || err.message || 'Failed to update payment.');
     } finally {
       setBusyId(null);
     }
@@ -170,6 +173,7 @@ export default function VendorPurchaseOrders() {
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
           <h1 style={styles.title}>Purchase Orders</h1>

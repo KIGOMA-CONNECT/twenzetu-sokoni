@@ -284,6 +284,7 @@ export default function VendorProducts() {
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
   const [bulkError, setBulkError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const bulkFileRef = useRef<HTMLInputElement>(null);
 
@@ -379,21 +380,23 @@ export default function VendorProducts() {
 
   const toggleStatus = async (product: Product) => {
     const next = product.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    setActionError(null);
     try {
       await api.patch(`/products/${product.id}`, { status: next });
       await refetch();
     } catch {
-      alert('Failed to update product status.');
+      setActionError('Failed to update product status.');
     }
   };
 
   const handleDelete = async (product: Product) => {
     if (!window.confirm(`Delete "${product.name}"?`)) return;
+    setActionError(null);
     try {
       await api.delete(`/products/${product.id}`);
       await refetch();
     } catch {
-      alert('Failed to delete product.');
+      setActionError('Failed to delete product.');
     }
   };
 
@@ -451,6 +454,7 @@ export default function VendorProducts() {
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <h1 style={styles.title}>Products (Duka)</h1>
         <div style={styles.headerActions}>

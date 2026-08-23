@@ -88,6 +88,7 @@ export default function VendorReports() {
   const [accountSaving, setAccountSaving] = useState(false);
   const [accountError, setAccountError] = useState<string | null>(null);
   const [accountBusyId, setAccountBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const openCreateAccount = () => {
     setEditingAccount(null);
@@ -134,12 +135,13 @@ export default function VendorReports() {
 
   const removeAccount = async (a: BalanceSheetAccount) => {
     if (!window.confirm(`Delete "${a.name}" from the balance sheet?`)) return;
+    setActionError(null);
     setAccountBusyId(a.id);
     try {
       await api.delete(`/vendor/accounting/balance-sheet-accounts/${a.id}`);
       await Promise.all([refetchAccounts(), refetch()]);
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to delete account.');
+      setActionError(err.response?.data?.message || err.message || 'Failed to delete account.');
     } finally {
       setAccountBusyId(null);
     }
@@ -217,6 +219,7 @@ export default function VendorReports() {
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>Financial Reports</h1>

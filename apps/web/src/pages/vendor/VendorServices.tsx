@@ -84,6 +84,7 @@ const [chatError, setChatError] = useState<string | null>(null);
   const [quotePrice, setQuotePrice] = useState('');
   const [quoteMsg, setQuoteMsg] = useState('');
   const [quoteBusy, setQuoteBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as any)?.data ?? []);
   const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as any)?.data ?? []);
@@ -123,12 +124,13 @@ const [chatError, setChatError] = useState<string | null>(null);
 
   const deleteListing = async (id: string, name: string) => {
     if (!window.confirm(`Delete "${name}"? This is permanent and blocked while it has active requests.`)) return;
+    setActionError(null);
     setDeletingId(id);
     try {
       await api.delete(`/services/listings/${id}`);
       await refetchListings();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to delete listing');
+      setActionError(err.response?.data?.message || err.message || 'Failed to delete listing');
     } finally {
       setDeletingId(null);
     }
@@ -170,6 +172,7 @@ const [chatError, setChatError] = useState<string | null>(null);
 
   const submitQuote = async () => {
     if (!activeReq || !quotePrice) return;
+    setActionError(null);
     setQuoteBusy(true);
     try {
       await api.post('/services/quotes', {
@@ -188,7 +191,7 @@ const [chatError, setChatError] = useState<string | null>(null);
       if (updated) setActiveReq(updated);
       alert('Quote submitted. The customer will be notified.');
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to submit quote');
+      setActionError(err.response?.data?.message || err.message || 'Failed to submit quote');
     } finally {
       setQuoteBusy(false);
     }
@@ -196,6 +199,7 @@ const [chatError, setChatError] = useState<string | null>(null);
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <h1 style={styles.title}>My Services</h1>
         {tab === 'listings' && <button style={styles.addButton} onClick={openModal}>+ Add Service</button>}

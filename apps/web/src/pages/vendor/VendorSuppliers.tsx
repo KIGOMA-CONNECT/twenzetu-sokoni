@@ -49,6 +49,7 @@ export default function VendorSuppliers() {
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const update = (field: keyof SupplierForm, value: string) => setForm((f) => ({ ...f, [field]: value }));
 
@@ -102,12 +103,13 @@ export default function VendorSuppliers() {
 
   const remove = async (supplier: Supplier) => {
     if (!window.confirm(`Deactivate supplier "${supplier.name}"?`)) return;
+    setActionError(null);
     setBusyId(supplier.id);
     try {
       await api.delete(`/vendor/suppliers/${supplier.id}`);
       await refetch();
     } catch (err: any) {
-      alert(err.response?.data?.message || err.message || 'Failed to deactivate supplier.');
+      setActionError(err.response?.data?.message || err.message || 'Failed to deactivate supplier.');
     } finally {
       setBusyId(null);
     }
@@ -115,6 +117,7 @@ export default function VendorSuppliers() {
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
           <h1 style={styles.title}>Suppliers</h1>

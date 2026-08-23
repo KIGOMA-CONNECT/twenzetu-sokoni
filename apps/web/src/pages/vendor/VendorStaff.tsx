@@ -84,6 +84,7 @@ export default function VendorStaff() {
   const [form, setForm] = useState<InviteForm>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const staff: VendorStaffMember[] = Array.isArray(raw) ? raw : (raw?.staff ?? []);
 
@@ -122,21 +123,23 @@ export default function VendorStaff() {
   };
 
   const changeRole = async (member: VendorStaffMember, role: VendorStaffRole) => {
+    setActionError(null);
     try {
       await api.patch(`/vendor-staff/${member.id}`, { role });
       await refetch();
     } catch {
-      alert('Failed to update role.');
+      setActionError('Failed to update role.');
     }
   };
 
   const removeStaff = async (member: VendorStaffMember) => {
     if (!window.confirm(`Remove ${member.fullName || member.phoneNumber || 'this person'} from your staff?`)) return;
+    setActionError(null);
     try {
       await api.delete(`/vendor-staff/${member.id}`);
       await refetch();
     } catch {
-      alert('Failed to remove staff member.');
+      setActionError('Failed to remove staff member.');
     }
   };
 
@@ -150,6 +153,7 @@ export default function VendorStaff() {
 
   return (
     <div style={styles.container}>
+      {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
           <h1 style={styles.title}>Staff</h1>
