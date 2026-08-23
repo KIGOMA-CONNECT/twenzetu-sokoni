@@ -1,7 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 
 const api = axios.create({
-  baseURL: '/api/v1',
+  baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -34,7 +34,7 @@ export async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = localStorage.getItem('refreshToken');
   if (!refreshToken) return null;
   try {
-    const res = await axios.post('/api/v1/auth/refresh', { refreshToken });
+    const res = await axios.post('/api/auth/refresh', { refreshToken });
     const payload = res.data.data || res.data;
     localStorage.setItem('accessToken', payload.accessToken);
     localStorage.setItem('refreshToken', payload.refreshToken);

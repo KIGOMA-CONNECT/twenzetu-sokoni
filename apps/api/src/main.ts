@@ -5,7 +5,7 @@ import { GlobalExceptionFilter } from '@afri-market/core-exceptions';
 import { ResponseInterceptor, RequestLoggingInterceptor, RequestTimeoutInterceptor } from '@afri-market/core-http';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { applySecurityHardening, RequestIdInterceptor } from '@afri-market/core-security';
-import { ValidationPipe, VersioningType } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
@@ -121,7 +121,6 @@ async function bootstrap(): Promise<void> {
   });
 
   app.setGlobalPrefix('api');
-  app.enableVersioning({ type: VersioningType.URI, defaultVersion: '1' });
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
