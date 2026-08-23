@@ -51,7 +51,7 @@ interface Loan {
   fspCode?: string;
   branchName?: string;
   accountNumber?: string;
-  deductionCode?: string;
+  repaymentCode?: string;
   workflowState?: string;
   rejectionReason?: string;
 }
@@ -65,21 +65,21 @@ interface LoanDetail {
   schedule: Array<{ month: number; payment: number; principal: number; interest: number; balance: number; dueDate: string }>;
 }
 
-const WORKFLOW_STEPS = ['SUBMITTED_TO_FSP', 'FSP_ACCEPTED', 'SUBMITTED_TO_EMPLOYER', 'EMPLOYER_APPROVED', 'FSP_DISBURSED'];
+const WORKFLOW_STEPS = ['SUBMITTED_TO_FSP', 'FSP_ACCEPTED', 'SUBMITTED_TO_MARKETPLACE', 'MARKETPLACE_APPROVED', 'FSP_DISBURSED'];
 
 const STEP_LABELS: Record<string, string> = {
   SUBMITTED_TO_FSP: 'Imewasilishwa kwa FSP',
   FSP_ACCEPTED: 'FSP imekubali',
-  SUBMITTED_TO_EMPLOYER: 'Imewasilishwa kwa Mwajiri',
-  EMPLOYER_APPROVED: 'Mwajiri ameidhinisha',
+  SUBMITTED_TO_MARKETPLACE: 'Imewasilishwa kwa AfriMarket',
+  MARKETPLACE_APPROVED: 'AfriMarket imethibitisha',
   FSP_DISBURSED: 'FSP imetoa fedha',
 };
 
 const STATUS_LABEL: Record<string, string> = {
   SUBMITTED_TO_FSP: 'Submitted to FSP',
   FSP_ACCEPTED: 'Accepted by FSP',
-  SUBMITTED_TO_EMPLOYER: 'Submitted to Employer',
-  EMPLOYER_APPROVED: 'Employer Approved',
+  SUBMITTED_TO_MARKETPLACE: 'Submitted to AfriMarket',
+  MARKETPLACE_APPROVED: 'AfriMarket Approved',
   FSP_DISBURSED: 'FSP Disbursed',
   pending: 'Pending',
   approved: 'Approved',
@@ -236,7 +236,7 @@ export default function LoanManagement() {
                   {existing.map((loan) => (
                     <tr key={loan.id}>
                       <td><strong style={{ color: 'var(--brand)' }}>{loan.applicationNumber ?? loan.id.slice(0, 8)}</strong></td>
-                      <td>{loan.deductionCode ?? '-'}</td>
+                       <td>{loan.repaymentCode ?? '-'}</td>
                       <td>{loan.fspName ?? '-'}</td>
                       <td>{formatCurrency(loan.principal)}</td>
                       <td>{formatCurrency(loan.deductibleAmount ?? loan.monthlyPayment)}</td>
@@ -611,7 +611,7 @@ function LoanDetailView({ loanId, onBack, onRefresh }: { loanId: string; onBack:
           <Row label="FSP Code" value={loan.fspCode ?? '-'} />
           <Row label="Branch" value={loan.branchName ?? '-'} />
           <Row label="Account Number" value={loan.accountNumber ?? '-'} />
-          <Row label="Deduction Code" value={loan.deductionCode ?? '-'} />
+          <Row label="Repayment Code" value={loan.repaymentCode ?? '-'} />
           {loan.mobileNumber && <Row label="Mobile" value={loan.mobileNumber} />}
           {loan.purpose && <Row label="Purpose" value={loan.purpose} />}
         </div>
@@ -653,7 +653,7 @@ function LoanDetailView({ loanId, onBack, onRefresh }: { loanId: string; onBack:
               <div><label className="field-label">New FSP Name</label><input className="input" value={takeoverFsp} onChange={(e) => setTakeoverFsp(e.target.value)} style={{ width: 180 }} /></div>
               <div><label className="field-label">Account Number</label><input className="input" value={takeoverAcct} onChange={(e) => setTakeoverAcct(e.target.value)} style={{ width: 160 }} /></div>
               <div><label className="field-label">Deduction Code</label><input className="input" value={takeoverCode} onChange={(e) => setTakeoverCode(e.target.value)} style={{ width: 140 }} /></div>
-              <button className="btn btn-primary" disabled={busy || !takeoverFsp || !takeoverAcct || !takeoverCode} onClick={() => run(() => api.post(`/fintech/loans/${loan.id}/takeover`, { fspName: takeoverFsp, accountNumber: takeoverAcct, deductionCode: takeoverCode }), 'Loan taken over')}>Confirm Takeover</button>
+              <button className="btn btn-primary" disabled={busy || !takeoverFsp || !takeoverAcct || !takeoverCode} onClick={() => run(() => api.post(`/fintech/loans/${loan.id}/takeover`, { fspName: takeoverFsp, accountNumber: takeoverAcct, repaymentCode: takeoverCode }), 'Loan taken over')}>Confirm Takeover</button>
             </div>
           )}
         </div>

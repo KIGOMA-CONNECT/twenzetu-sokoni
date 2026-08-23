@@ -159,10 +159,10 @@ describe('LoanService', () => {
       expect(next.workflowState).toBe('FSP_ACCEPTED');
 
       const next2 = await service.advanceWorkflow('l1', { actorRole: 'fsp' });
-      expect(next2.workflowState).toBe('SUBMITTED_TO_EMPLOYER');
+      expect(next2.workflowState).toBe('SUBMITTED_TO_MARKETPLACE');
 
-      const next3 = await service.advanceWorkflow('l1', { actorRole: 'employer' });
-      expect(next3.workflowState).toBe('EMPLOYER_APPROVED');
+      const next3 = await service.advanceWorkflow('l1', { actorRole: 'marketplace' });
+      expect(next3.workflowState).toBe('MARKETPLACE_APPROVED');
       expect(next3.status).toBe('approved');
       expect(next3.approvedAt).toBeTruthy();
 
@@ -222,7 +222,7 @@ describe('LoanService', () => {
       loanRepo.findOne.mockResolvedValue(loan);
 
       const result = await service.takeoverLoan('l1', {
-        fspName: 'NMB Bank', accountNumber: '000111222', deductionCode: 'NMB-DED',
+        fspName: 'NMB Bank', accountNumber: '000111222', repaymentCode: 'NMB-DED',
       }, { actorRole: 'borrower' });
       expect(result.fspName).toBe('NMB Bank');
       expect(result.deductionCode).toBe('NMB-DED');

@@ -224,7 +224,7 @@ describe('LoanReminderService', () => {
     await service.handleLoanReminders();
 
     expect(mockRepo.createQueryBuilder).toHaveBeenCalledWith('loan');
-    expect(mockRepo.where).toHaveBeenCalledWith('loan.status = :status', { status: 'ACTIVE' });
+    expect(mockRepo.where).toHaveBeenCalledWith('loan.status = :status', { status: 'DISBURSED' });
     expect(mockRepo.getMany).toHaveBeenCalled();
   });
 });

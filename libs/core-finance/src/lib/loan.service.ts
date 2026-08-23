@@ -159,7 +159,7 @@ export class LoanService {
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
           { type: 'BUSINESS_REG', label: 'Hati ya Usajili wa Biashara (BRELA)', required: true },
           { type: 'BANK_STATEMENT', label: 'Taarifa za Benki (Miezi 3)', required: true },
-          { type: 'VENDOR_APPROVAL', label: 'Ridhaa ya AfriMarket kama Mwajiri', required: true },
+          { type: 'MARKETPLACE_VERIFICATION', label: 'Uthibitisho wa Biashara kwenye AfriMarket', required: true },
         ],
       },
       {
@@ -174,7 +174,7 @@ export class LoanService {
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
           { type: 'BUSINESS_REG', label: 'Hati ya Usajili wa Biashara (BRELA)', required: true },
           { type: 'FINANCIAL_STATEMENT', label: 'Taarifa za Kifedha (Mapato ya Miezi 6)', required: true },
-          { type: 'VENDOR_APPROVAL', label: 'Ridhaa ya AfriMarket kama Mwajiri', required: true },
+          { type: 'MARKETPLACE_VERIFICATION', label: 'Uthibitisho wa Biashara kwenye AfriMarket', required: true },
         ],
       },
       {
@@ -189,7 +189,7 @@ export class LoanService {
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
           { type: 'DRIVER_LICENSE', label: 'Leseni ya Uendeshaji', required: true },
           { type: 'VEHICLE_OWNERSHIP', label: 'Hati ya Umiliki wa Gari', required: false },
-          { type: 'EMPLOYER_APPROVAL', label: 'Ridhaa ya Mwajiri / AfriMarket', required: true },
+          { type: 'DELIVERY_HISTORY', label: 'Historia ya Usafirishaji (AfriMarket)', required: true },
         ],
       },
       {
@@ -208,15 +208,15 @@ export class LoanService {
       },
       {
         code: 'CUSTOMER_PERSONAL',
-        name: 'Mkopo wa Kibinafsi (Customer)',
-        description: 'Mkopo wa matumizi binafsi kwa wateja, unalipwa kwa miezi kwa makato ya mshahara au mafao.',
+        name: 'Mkopo wa Kibinafsi',
+        description: 'Mkopo wa matumizi binafsi kwa wateja, unalipwa kwa miezi kupitia malipo ya simu au benki.',
         borrowerType: 'customer',
         loanType: 'PERSONAL',
         minAmount: 50000, maxAmount: 2000000, minTermMonths: 3, maxTermMonths: 12,
         annualInterestRate: 0.18, processingFeeRate: 0.03, insuranceRate: 0.015, liquidationAmount: 5000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
-          { type: 'EMPLOYMENT_LETTER', label: 'Barua ya Mwajiri / Stub ya Mshahara', required: true },
+          { type: 'INCOME_PROOF', label: 'Uthibitisho wa Mapato (Taarifa za Benki / SIMu ya Fedha)', required: true },
           { type: 'BANK_STATEMENT', label: 'Taarifa za Benki (Miezi 3)', required: true },
         ],
       },
@@ -387,7 +387,7 @@ export class LoanService {
     const next = LOAN_WORKFLOW_STEPS[idx + 1];
 
     loan.workflowState = next;
-    if (next === 'EMPLOYER_APPROVED') {
+    if (next === 'MARKETPLACE_APPROVED') {
       loan.status = 'approved';
       loan.approvedAt = new Date();
     }
@@ -427,10 +427,10 @@ export class LoanService {
     loan.status = 'approved';
     loan.approvedAt = new Date();
     if (loan.workflowState === 'SUBMITTED_TO_FSP') {
-      loan.workflowState = 'EMPLOYER_APPROVED';
+      loan.workflowState = 'MARKETPLACE_APPROVED';
       await this.recordWorkflow(loanId, 'FSP_ACCEPTED', opts ?? { actorRole: 'fsp' });
-      await this.recordWorkflow(loanId, 'SUBMITTED_TO_EMPLOYER', opts ?? { actorRole: 'fsp' });
-      await this.recordWorkflow(loanId, 'EMPLOYER_APPROVED', opts ?? { actorRole: 'employer' });
+      await this.recordWorkflow(loanId, 'SUBMITTED_TO_MARKETPLACE', opts ?? { actorRole: 'fsp' });
+      await this.recordWorkflow(loanId, 'MARKETPLACE_APPROVED', opts ?? { actorRole: 'marketplace' });
     }
     return this.loanRepo.save(loan);
   }
@@ -500,7 +500,7 @@ export class LoanService {
 
   async takeoverLoan(
     loanId: string,
-    params: { fspName: string; accountNumber: string; deductionCode: string; borrowerId?: string; borrowerType?: string },
+    params: { fspName: string; accountNumber: string; repaymentCode?: string; deductionCode?: string; borrowerId?: string; borrowerType?: string },
     opts: LoanActionOptions,
   ): Promise<LoanEntity> {
     const loan = await this.getOwnedLoan(loanId, params.borrowerId);
@@ -508,14 +508,15 @@ export class LoanService {
       throw new BadRequestException('Loan must be approved or active to be taken over');
     }
 
+    const code = params.repaymentCode ?? params.deductionCode ?? '';
     loan.fspName = params.fspName;
     loan.accountNumber = params.accountNumber;
-    loan.deductionCode = params.deductionCode;
+    loan.deductionCode = code;
     await this.loanRepo.save(loan);
 
     await this.recordWorkflow(loanId, loan.workflowState as LoanWorkflowStep, {
       ...opts,
-      note: `Loan taken over by ${params.fspName} (account ${params.accountNumber}, deduction ${params.deductionCode}).`,
+      note: `Loan taken over by ${params.fspName} (account ${params.accountNumber}, repayment code ${code}).`,
     });
     return loan;
   }

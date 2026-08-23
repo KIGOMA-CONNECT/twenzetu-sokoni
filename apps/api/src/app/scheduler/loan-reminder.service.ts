@@ -17,7 +17,7 @@ export class LoanReminderService {
 
     const dueLoans = await repo
       .createQueryBuilder('loan')
-      .where('loan.status = :status', { status: 'ACTIVE' })
+      .where('loan.status = :status', { status: 'DISBURSED' })
       .andWhere('loan."due_at" IS NOT NULL')
       .andWhere('loan."due_at" <= :threeDays', { threeDays: threeDaysFromNow })
       .andWhere('loan."due_at" > :now', { now })

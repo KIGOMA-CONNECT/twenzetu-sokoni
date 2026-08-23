@@ -212,7 +212,7 @@ class TakeoverDto {
   accountNumber!: string;
 
   @IsString()
-  deductionCode!: string;
+  repaymentCode!: string;
 }
 
 class RestructureDto {
@@ -428,7 +428,7 @@ export class FintechLoansController {
   @Post(':id/approve')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(...FINANCE_ADMIN_ROLES)
-  @ApiOperation({ summary: 'Approve a pending loan (admin) — advances to EMPLOYER_APPROVED' })
+  @ApiOperation({ summary: 'Approve a pending loan (admin) — advances to MARKETPLACE_APPROVED' })
   @ApiParam({ name: 'id', description: 'Loan ID' })
   @ApiBody({ type: WorkflowActionDto })
   public async approve(@Param('id', ParseUUIDPipe) id: string, @Body() body: WorkflowActionDto) {

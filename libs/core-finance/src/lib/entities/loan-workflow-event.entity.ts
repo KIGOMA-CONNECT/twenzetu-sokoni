@@ -3,8 +3,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeor
 export const LOAN_WORKFLOW_STEPS = [
   'SUBMITTED_TO_FSP',
   'FSP_ACCEPTED',
-  'SUBMITTED_TO_EMPLOYER',
-  'EMPLOYER_APPROVED',
+  'SUBMITTED_TO_MARKETPLACE',
+  'MARKETPLACE_APPROVED',
   'FSP_DISBURSED',
 ] as const;
 
