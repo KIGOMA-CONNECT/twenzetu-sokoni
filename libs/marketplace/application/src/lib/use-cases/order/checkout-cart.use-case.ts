@@ -41,7 +41,6 @@ export interface CheckoutCartResult {
   deliveryFee: number;
   paymentId: string;
   paymentStatus: string;
-  otpCode: string;
 }
 
 @Injectable()
@@ -295,7 +294,6 @@ export class CheckoutCartUseCase {
       deliveryFee: commissionSplit.deliveryFee.amount,
       paymentId: payment.id.value,
       paymentStatus: payment.status,
-      otpCode,
     };
   }
 }

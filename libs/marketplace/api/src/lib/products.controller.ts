@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
+import { Body, Controller, Delete, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors, Inject } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { EntityId } from '@afri-market/kernel';
@@ -169,14 +169,14 @@ export class ProductsController {
   public async remove(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
     if (!ctx) {
-      return { success: false, error: 'Not authorized to delete this product' };
+      throw new ForbiddenException('Not authorized to delete this product');
     }
     const product = await this.productRepo.findById(EntityId.from(id));
     if (!product) {
-      return { success: false, error: 'Product not found' };
+      throw new NotFoundException('Product not found');
     }
     if (product.vendorId.value !== ctx.vendorId) {
-      return { success: false, error: 'Not authorized to delete this product' };
+      throw new ForbiddenException('Not authorized to delete this product');
     }
     await this.productRepo.delete(EntityId.from(id));
     return { success: true };

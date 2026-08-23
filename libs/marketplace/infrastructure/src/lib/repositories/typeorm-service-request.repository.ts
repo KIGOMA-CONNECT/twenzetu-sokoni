@@ -24,6 +24,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
     const entities = await this.repository.find({
       where: { tenantId, customerId },
       order: { createdAt: 'DESC' },
+      take: 100,
     });
     return entities.map((e) => this.toDomain(e));
   }
@@ -33,7 +34,7 @@ export class TypeOrmServiceRequestRepository extends TypeOrmRepository<ServiceRe
     if (opts.status) {
       where.status = opts.status;
     }
-    const entities = await this.repository.find({ where, order: { createdAt: 'DESC' } });
+    const entities = await this.repository.find({ where, order: { createdAt: 'DESC' }, take: 100 });
     return entities.map((e) => this.toDomain(e));
   }
 

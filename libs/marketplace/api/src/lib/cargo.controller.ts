@@ -6,6 +6,7 @@ import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { EntityId, Money } from '@afri-market/kernel';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
+import { getCurrencyForPhone } from '@afri-market/integrations';
 import {
   IVendorRepository,
   IServiceListingRepository,
@@ -56,7 +57,7 @@ export class CargoController {
   @ApiOperation({ summary: 'Live cargo fare quote (server-computed, binding)' })
   @ApiResponse({ status: 200, description: 'Fare breakdown' })
   @ApiResponse({ status: 400, description: 'Invalid input (e.g. weight exceeds vehicle capacity)' })
-  public async getFare(@Query() query: CargoFareQueryDto) {
+  public async getFare(@Query() query: CargoFareQueryDto, @CurrentUser() user: JwtPayload) {
     const distanceKm = haversineKm(query.pickupLat, query.pickupLng, query.dropLat, query.dropLng);
     const insured = query.insured === 'true';
     try {
@@ -67,7 +68,7 @@ export class CargoController {
         tripType: query.tripType ?? 'instant',
         insured,
         cargoValue: query.cargoValue,
-        currency: 'TZS',
+        currency: getCurrencyForPhone(user.phoneNumber),
       });
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : String(error));
@@ -86,6 +87,7 @@ export class CargoController {
     }
 
     const distanceKm = haversineKm(dto.pickup.lat, dto.pickup.lng, dto.delivery.lat, dto.delivery.lng);
+    const currency = getCurrencyForPhone(user.phoneNumber);
     let fare;
     try {
       fare = CargoFareCalculator.calculate({
@@ -95,7 +97,7 @@ export class CargoController {
         tripType: dto.tripType ?? 'instant',
         insured: dto.insured === true,
         cargoValue: dto.cargoValue,
-        currency: 'TZS',
+        currency,
       });
     } catch (error) {
       throw new BadRequestException(error instanceof Error ? error.message : String(error));
@@ -141,7 +143,7 @@ export class CargoController {
         'trip',
         details,
         [],
-        'TZS',
+        currency,
         scheduledAt,
       ),
     );
@@ -150,7 +152,7 @@ export class CargoController {
     if (!request) {
       throw new BadRequestException('Ombi halikuweza kuundwa');
     }
-    request.agree(Money.create(fare.totalFare, 'TZS'));
+    request.agree(Money.create(fare.totalFare, currency));
     await this.requestRepo.save(request);
 
     const orderResult = await this.createOrder.execute(
@@ -174,7 +176,7 @@ export class CargoController {
         `CargoBooking|${dto.subServiceName}|${fare.vehicleName}|${dto.weightKg}kg`,
         user.phoneNumber,
         undefined,
-        'TZS',
+        currency,
       ),
     );
 

@@ -21,7 +21,11 @@ export class TypeOrmServiceListingRepository extends TypeOrmRepository<ServiceLi
   }
 
   public async findByVendorId(tenantId: string, vendorId: string): Promise<ServiceListing[]> {
-    const entities = await this.repository.find({ where: { tenantId, vendorId } });
+    const entities = await this.repository.find({
+      where: { tenantId, vendorId },
+      order: { createdAt: 'DESC' },
+      take: 100,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 

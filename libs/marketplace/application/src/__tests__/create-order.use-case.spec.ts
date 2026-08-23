@@ -217,7 +217,6 @@ describe('CreateOrderUseCase', () => {
     expect(result.deliveryFee).toBe(0);
     expect(result.paymentId).toBeDefined();
     expect(result.paymentStatus).toBe('ESCROW_HELD');
-    expect(result.otpCode).toMatch(/^\d{4}$/);
     expect(mockOrderRepo.save).toHaveBeenCalledTimes(1);
     expect(mockPaymentRepo.save).toHaveBeenCalledTimes(2);
 
@@ -342,7 +341,7 @@ describe('CreateOrderUseCase', () => {
     expect(mockEventDispatcher.dispatchOrderCreated).toHaveBeenCalledTimes(1);
     const dispatchedEvent = (mockEventDispatcher.dispatchOrderCreated as jest.Mock).mock.calls[0][0];
     expect(dispatchedEvent.customerPhone).toBe('+255754100003');
-    expect(dispatchedEvent.otpCode).toBe(result.otpCode);
+    expect(dispatchedEvent.otpCode).toMatch(/^\d{4}$/);
     expect(dispatchedEvent.orderId).toBe(result.orderId);
   });
 

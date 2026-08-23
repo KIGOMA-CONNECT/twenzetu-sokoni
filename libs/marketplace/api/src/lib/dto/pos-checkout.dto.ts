@@ -7,6 +7,8 @@ import {
   IsOptional,
   IsNumber,
   IsString,
+  Max,
+  MaxLength,
   Min,
   ValidateNested,
 } from 'class-validator';
@@ -16,11 +18,13 @@ import { POS_PAYMENT_METHODS } from '@afri-market/marketplace-domain';
 export class PosCheckoutItemDto {
   @ApiProperty({ description: 'Product UUID' })
   @IsString()
+  @MaxLength(50)
   productId!: string;
 
   @ApiProperty({ description: 'Quantity to sell', minimum: 1 })
   @IsInt()
   @Min(1)
+  @Max(9999)
   quantity!: number;
 }
 
@@ -41,5 +45,6 @@ export class PosCheckoutDto {
   @IsOptional()
   @IsNumber()
   @Min(0)
+  @Max(100000000)
   amountTendered?: number;
 }

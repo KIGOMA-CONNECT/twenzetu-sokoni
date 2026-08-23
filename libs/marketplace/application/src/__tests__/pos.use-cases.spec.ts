@@ -29,6 +29,7 @@ function makeProduct(id: string, opts: { stock?: number; status?: string; price?
 
 const productRepo = { findByIds: jest.fn() } as any;
 const saleRepo = { countByVendorAndDay: jest.fn(), save: jest.fn(), findByIds: jest.fn() } as any;
+const shiftRepo = { findOpenByVendor: jest.fn(), save: jest.fn() } as any;
 
 describe('CreatePosSaleUseCase', () => {
   let useCase: CreatePosSaleUseCase;
@@ -37,7 +38,7 @@ describe('CreatePosSaleUseCase', () => {
     jest.clearAllMocks();
     saleRepo.countByVendorAndDay.mockResolvedValue(3);
     saleRepo.save.mockResolvedValue(undefined);
-    useCase = new CreatePosSaleUseCase(productRepo, saleRepo);
+    useCase = new CreatePosSaleUseCase(productRepo, saleRepo, shiftRepo);
   });
 
   it('should ring up a sale and compute totals', async () => {
@@ -163,7 +164,7 @@ describe('GetPosDayReportUseCase', () => {
     const saved: any[] = [];
     saleRepo.save.mockImplementation((sale: any) => { saved.push(sale); return Promise.resolve(); });
 
-    const pos = new CreatePosSaleUseCase(productRepo, saleRepo);
+    const pos = new CreatePosSaleUseCase(productRepo, saleRepo, shiftRepo);
     await pos.execute({
       tenantId: TENANT_ID,
       vendorId: VENDOR_ID,

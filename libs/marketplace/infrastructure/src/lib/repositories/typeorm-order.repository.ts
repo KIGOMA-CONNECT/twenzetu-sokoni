@@ -29,17 +29,29 @@ export class TypeOrmOrderRepository extends TypeOrmRepository<Order, OrderOrmEnt
   }
 
   public async findByVendorId(vendorId: string): Promise<Order[]> {
-    const entities = await this.repository.find({ where: { vendorId } });
+    const entities = await this.repository.find({
+      where: { vendorId },
+      order: { createdAt: 'DESC' },
+      take: 200,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 
   public async findByDriverId(driverId: string): Promise<Order[]> {
-    const entities = await this.repository.find({ where: { driverId } });
+    const entities = await this.repository.find({
+      where: { driverId },
+      order: { createdAt: 'DESC' },
+      take: 200,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 
   public async findPendingByVendor(vendorId: string): Promise<Order[]> {
-    const entities = await this.repository.find({ where: { vendorId, status: 'PLACED' } });
+    const entities = await this.repository.find({
+      where: { vendorId, status: 'PLACED' },
+      order: { createdAt: 'ASC' },
+      take: 50,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 

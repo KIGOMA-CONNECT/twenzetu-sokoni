@@ -8,7 +8,7 @@ export class PosShiftAutoCloseService {
 
   constructor(private readonly dataSource: DataSource) {}
 
-  @Cron('59 23 * * *', { waitForCompletion: true })
+  @Cron('59 20 * * *', { waitForCompletion: true })
   async handleAutoCloseShifts(): Promise<void> {
     const result = await this.dataSource.query(
       `UPDATE pos_shifts

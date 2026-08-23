@@ -122,7 +122,7 @@ export class ServicesController {
   public async deleteListingEndpoint(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
     const ctx = await this.vendorAccess.assertPermission(user, 'manage_products');
     if (!ctx) {
-      return { success: false, error: 'Vendor profile not found' };
+      throw new ForbiddenException('Vendor profile not found');
     }
     return this.deleteListing.execute(user.tenantId, id, ctx.vendorId);
   }
@@ -200,7 +200,7 @@ export class ServicesController {
   public async submitQuoteEndpoint(@Body() dto: SubmitServiceQuoteDto, @CurrentUser() user: JwtPayload) {
     const ctx = await this.vendorAccess.assertPermission(user, 'manage_orders');
     if (!ctx) {
-      return { success: false, error: 'Vendor profile not found' };
+      throw new ForbiddenException('Vendor profile not found');
     }
     return this.submitQuote.execute(user.tenantId, new SubmitServiceQuoteCommand(
       dto.requestId,

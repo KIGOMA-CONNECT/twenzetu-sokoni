@@ -27,7 +27,7 @@ export class TypeOrmVendorMemberRepository
 
   public async findByVendorId(vendorId: string, status?: string): Promise<VendorMember[]> {
     const where = status ? { vendorId, status } : { vendorId };
-    const entities = await this.repository.find({ where, order: { createdAt: 'ASC' } });
+    const entities = await this.repository.find({ where, order: { createdAt: 'ASC' }, take: 50 });
     return entities.map((e: VendorMemberOrmEntity) => this.toDomain(e));
   }
 

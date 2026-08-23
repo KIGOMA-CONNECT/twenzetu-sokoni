@@ -23,7 +23,11 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
   }
 
   public async findByType(type: string): Promise<Product[]> {
-    const entities = await this.repository.find({ where: { type } });
+    const entities = await this.repository.find({
+      where: { type },
+      order: { createdAt: 'DESC' },
+      take: 200,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 
@@ -32,6 +36,8 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
       .createQueryBuilder('p')
       .where('LOWER(p.name) LIKE LOWER(:query)', { query: `%${query}%` })
       .orWhere('LOWER(p.description) LIKE LOWER(:query)', { query: `%${query}%` })
+      .orderBy('p.name', 'ASC')
+      .take(50)
       .getMany();
     return entities.map((e) => this.toDomain(e));
   }
@@ -46,7 +52,11 @@ export class TypeOrmProductRepository extends TypeOrmRepository<Product, Product
   }
 
   public async findActiveByTenant(tenantId: string): Promise<Product[]> {
-    const entities = await this.repository.find({ where: { tenantId, status: 'ACTIVE' } });
+    const entities = await this.repository.find({
+      where: { tenantId, status: 'ACTIVE' },
+      order: { createdAt: 'DESC' },
+      take: 500,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 

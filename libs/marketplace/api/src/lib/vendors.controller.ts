@@ -1,4 +1,4 @@
-import { Body, Controller, ForbiddenException, Get, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, Get, NotFoundException, Param, ParseUUIDPipe, Patch, Post, Query, UseGuards, UseInterceptors } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
@@ -121,7 +121,7 @@ export class VendorsController {
   public async getMyStats(@CurrentUser() user: JwtPayload) {
     const ctx = await this.vendorAccess.resolve(user);
     if (!ctx) {
-      return { error: 'Vendor profile not found' };
+      throw new NotFoundException('Vendor profile not found');
     }
     return this.getVendorStats.execute(user.tenantId, ctx.vendorId);
   }
@@ -149,7 +149,7 @@ export class VendorsController {
   public async updateMyProfile(@Body() dto: UpdateVendorProfileDto, @CurrentUser() user: JwtPayload) {
     const ctx = await this.vendorAccess.resolve(user);
     if (!ctx) {
-      return { error: 'Vendor profile not found' };
+      throw new NotFoundException('Vendor profile not found');
     }
     if (!ctx.isOwner) {
       throw new ForbiddenException('Only the shop owner can update the profile');
@@ -192,7 +192,7 @@ export class VendorsController {
   ) {
     const ctx = await this.vendorAccess.assertPermission(user, 'manage_orders');
     if (!ctx) {
-      return { error: 'Vendor profile not found' };
+      throw new NotFoundException('Vendor profile not found');
     }
     const result = await this.updateOrderStatus.execute(user.tenantId, orderId, ctx.vendorId, body.status);
     this.gateway.notifyOrderUpdate(orderId, { status: body.status, vendorId: ctx.vendorId });

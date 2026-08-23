@@ -64,7 +64,6 @@ export class CreateOrderUseCase {
     deliveryFee: number;
     paymentId: string;
     paymentStatus: string;
-    otpCode: string;
     checkoutUrl?: string;
   }> {
     Guard.assert(command.items.length > 0, 'Order must have at least one item');
@@ -329,7 +328,6 @@ export class CreateOrderUseCase {
       deliveryFee: commissionSplit.deliveryFee.amount,
       paymentId: payment.id.value,
       paymentStatus: payment.status,
-      otpCode,
       checkoutUrl,
     };
   }

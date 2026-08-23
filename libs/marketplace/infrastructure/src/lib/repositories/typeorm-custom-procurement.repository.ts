@@ -17,7 +17,11 @@ export class TypeOrmCustomProcurementRepository extends TypeOrmRepository<Custom
   }
 
   public async findByCustomerId(customerId: string): Promise<CustomProcurement[]> {
-    const entities = await this.repository.find({ where: { customerId } });
+    const entities = await this.repository.find({
+      where: { customerId },
+      order: { createdAt: 'DESC' },
+      take: 50,
+    });
     return entities.map(e => this.toDomain(e));
   }
 

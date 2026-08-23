@@ -231,7 +231,8 @@ export class WebhooksController {
   private verifyWebhookSecret(headers: Record<string, string | string[] | undefined>): boolean {
     const secret = process.env.PAYMENT_CONFIRM_SECRET || process.env.WEBHOOK_INTERNAL_SECRET;
     if (!secret) {
-      return true;
+      this.logger.error('PAYMENT_CONFIRM_SECRET is not configured — webhook verification DISABLED');
+      throw new ServiceUnavailableException('Webhook secret not configured');
     }
     const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
     const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;

@@ -40,7 +40,6 @@ export class AcceptServiceQuoteUseCase {
     vendorNet: number;
     paymentId: string;
     paymentStatus: string;
-    otpCode: string;
   }> {
     const quote = await this.quoteRepo.findById(EntityId.from(command.quoteId));
     if (!quote) {
@@ -106,7 +105,6 @@ export class AcceptServiceQuoteUseCase {
       vendorNet: orderResult.vendorNet,
       paymentId: orderResult.paymentId,
       paymentStatus: orderResult.paymentStatus,
-      otpCode: orderResult.otpCode,
     };
   }
 }

@@ -22,7 +22,11 @@ export class TypeOrmDeliveryRepository extends TypeOrmRepository<Delivery, Deliv
   }
 
   public async findByDriverId(driverId: string): Promise<Delivery[]> {
-    const entities = await this.repository.find({ where: { driverId } });
+    const entities = await this.repository.find({
+      where: { driverId },
+      order: { createdAt: 'DESC' },
+      take: 200,
+    });
     return entities.map((e) => this.toDomain(e));
   }
 
