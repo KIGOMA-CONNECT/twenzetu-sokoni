@@ -215,9 +215,9 @@ export class LoanService {
         minAmount: 50000, maxAmount: 2000000, minTermMonths: 3, maxTermMonths: 12,
         annualInterestRate: 0.18, processingFeeRate: 0.03, insuranceRate: 0.015, liquidationAmount: 5000,
         requiredAttachments: [
-          { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
-          { type: 'INCOME_PROOF', label: 'Uthibitisho wa Mapato (Taarifa za Benki / SIMu ya Fedha)', required: true },
-          { type: 'BANK_STATEMENT', label: 'Taarifa za Benki (Miezi 3)', required: true },
+          { type: 'NATIONAL_ID', label: 'Kitambulisho cha Taifa (NIDA)', required: true },
+          { type: 'NEIGHBORHOOD_LETTER', label: 'Barua ya Mwenyekiti wa Mtaa / Serikali ya Mtaa', required: true },
+          { type: 'PHOTO_SELFIE', label: 'Picha ya uso (Selfie)', required: true },
         ],
       },
     ];
