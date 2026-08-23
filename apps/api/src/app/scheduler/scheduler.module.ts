@@ -15,6 +15,7 @@ import { FixedDepositMaturityService } from './fixed-deposit-maturity.service';
 import { SubscriptionBillingService } from './subscription-billing.service';
 import { CommissionSweepService } from './commission-sweep.service';
 import { CampaignDispatchService } from './campaign-dispatch.service';
+import { PosShiftAutoCloseService } from './pos-shift-auto-close.service';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { CampaignDispatchService } from './campaign-dispatch.service';
     CampaignDispatchService,
     NotificationsService,
     PushService,
+    PosShiftAutoCloseService,
   ],
 })
 export class SchedulerModule {}
