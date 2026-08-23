@@ -50,9 +50,9 @@ export class LoanService {
   private readonly logger = new Logger(LoanService.name);
 
   static readonly LOAN_RATES = {
-    vendor: { annual: 0.15, minAmount: 50000, maxAmount: 10000000, maxTerm: 24 },
-    driver: { annual: 0.15, minAmount: 20000, maxAmount: 5000000, maxTerm: 12 },
-    customer: { annual: 0.18, minAmount: 10000, maxAmount: 2000000, maxTerm: 6 },
+    vendor: { annual: 0.15, minAmount: 50000, maxAmount: 10000000, maxTerm: 3 },
+    driver: { annual: 0.15, minAmount: 20000, maxAmount: 5000000, maxTerm: 6 },
+    customer: { annual: 0.18, minAmount: 10000, maxAmount: 2000000, maxTerm: 1 },
   };
 
   constructor(
@@ -153,7 +153,7 @@ export class LoanService {
         description: 'Mkopo wa kuongeza bidhaa na stock kwenye duka lako. Malipo ya kila mwezi yanatolewa moja kwa moja.',
         borrowerType: 'vendor',
         loanType: 'STOCK_FLOAT',
-        minAmount: 200000, maxAmount: 10000000, minTermMonths: 3, maxTermMonths: 24,
+        minAmount: 200000, maxAmount: 10000000, minTermMonths: 1, maxTermMonths: 3,
         annualInterestRate: 0.15, processingFeeRate: 0.03, insuranceRate: 0.015, liquidationAmount: 10000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
@@ -168,7 +168,7 @@ export class LoanService {
         description: 'Mkopo wa mtaji wa kazi kwa ukuaji wa biashara, uliohakikishwa na mapato ya mauzo.',
         borrowerType: 'vendor',
         loanType: 'WORKING_CAPITAL',
-        minAmount: 300000, maxAmount: 15000000, minTermMonths: 6, maxTermMonths: 36,
+        minAmount: 300000, maxAmount: 15000000, minTermMonths: 1, maxTermMonths: 3,
         annualInterestRate: 0.15, processingFeeRate: 0.03, insuranceRate: 0.015, liquidationAmount: 15000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
@@ -183,7 +183,7 @@ export class LoanService {
         description: 'Mkopo wa kununua au kukarabati gari, boda au gari la usafirishaji wa bidhaa.',
         borrowerType: 'driver',
         loanType: 'VEHICLE_LOAN',
-        minAmount: 100000, maxAmount: 8000000, minTermMonths: 6, maxTermMonths: 24,
+        minAmount: 100000, maxAmount: 8000000, minTermMonths: 1, maxTermMonths: 6,
         annualInterestRate: 0.15, processingFeeRate: 0.025, insuranceRate: 0.02, liquidationAmount: 10000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
@@ -198,7 +198,7 @@ export class LoanService {
         description: 'Mkopo wa mafuta na matengenezo ya kila siku, unalipwa kupitia makato ya mapato ya usafirishaji.',
         borrowerType: 'driver',
         loanType: 'FUEL_LOAN',
-        minAmount: 50000, maxAmount: 2000000, minTermMonths: 1, maxTermMonths: 6,
+        minAmount: 50000, maxAmount: 2000000, minTermMonths: 1, maxTermMonths: 3,
         annualInterestRate: 0.15, processingFeeRate: 0.02, insuranceRate: 0.01, liquidationAmount: 5000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Namba ya NIDA / Kitambulisho', required: true },
@@ -212,7 +212,7 @@ export class LoanService {
         description: 'Mkopo wa matumizi binafsi kwa wateja, unalipwa kwa miezi kupitia malipo ya simu au benki.',
         borrowerType: 'customer',
         loanType: 'PERSONAL',
-        minAmount: 50000, maxAmount: 2000000, minTermMonths: 3, maxTermMonths: 12,
+        minAmount: 50000, maxAmount: 2000000, minTermMonths: 1, maxTermMonths: 1,
         annualInterestRate: 0.18, processingFeeRate: 0.03, insuranceRate: 0.015, liquidationAmount: 5000,
         requiredAttachments: [
           { type: 'NATIONAL_ID', label: 'Kitambulisho cha Taifa (NIDA)', required: true },
