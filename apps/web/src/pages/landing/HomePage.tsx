@@ -1,5 +1,6 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { PageTitle } from '../../components/PageTitle';
 
 const CATEGORIES = [
   { emoji: '🍲', name: 'Food', desc: 'Chakula kilicho tayari', bg: '#ccfbf1' },
@@ -37,6 +38,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col" style={{ minHeight: '100vh', fontFamily: 'var(--font)', color: 'var(--ink)' }}>
+      <PageTitle title="" />
       {/* Nav */}
       <nav style={{ padding: '1.1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1240, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         <div className="brand" style={{ color: 'var(--brand)' }}>

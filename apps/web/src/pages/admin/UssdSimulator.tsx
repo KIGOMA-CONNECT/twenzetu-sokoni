@@ -93,7 +93,7 @@ export default function UssdSimulator() {
             border: '1px solid #d1d5db',
             borderRadius: 8,
             fontSize: 13,
-            background: '#fff',
+            background: 'var(--surface)',
           }}
         >
           {PHONE_NUMBERS.map((p) => (
@@ -216,8 +216,8 @@ export default function UssdSimulator() {
       <div style={{ marginTop: 24, padding: 12, background: 'var(--bg)', borderRadius: 8, fontSize: 12, color: '#666' }}>
         <strong>Quick Guide:</strong><br />
         0 = Back/Exit &nbsp;|&nbsp; 1-5 = Menu options &nbsp;|&nbsp;
-        Customer: Shop → Categories → Products → Add to Cart → Checkout<br />
-        Vendor: View Orders → My Products → My Sales → My Wallet
+        Customer: Shop â†’ Categories â†’ Products â†’ Add to Cart â†’ Checkout<br />
+        Vendor: View Orders â†’ My Products â†’ My Sales â†’ My Wallet
       </div>
     </div>
   );

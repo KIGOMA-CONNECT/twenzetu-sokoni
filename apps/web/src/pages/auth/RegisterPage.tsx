@@ -1,6 +1,7 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import api from '../../api/client';
+import { PageTitle } from '../../components/PageTitle';
 
 function AuthSidePanel() {
   const navigate = useNavigate();
@@ -94,6 +95,7 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-page">
+      <PageTitle title="Create Account" />
       <AuthSidePanel />
       <div className="auth-main">
         <div className="auth-card">

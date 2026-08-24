@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { PageTitle } from '../../components/PageTitle';
 
 function getErrorMessage(err: unknown, fallback: string): string {
   if (err && typeof err === 'object' && 'response' in err) {
@@ -113,6 +114,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      <PageTitle title="Sign In" />
       <AuthSidePanel mode="login" />
       <div className="auth-main">
         <div className="auth-card">

@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -22,17 +22,17 @@ const styles: Record<string, React.CSSProperties> = {
   title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   subtitle: { color: 'var(--muted)', fontSize: '0.85rem', marginTop: '0.15rem' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.7rem 1rem', borderBottom: '1px solid #f1f5f9', color: 'var(--ink-soft)', verticalAlign: 'top' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--line)' },
+  td: { padding: '0.7rem 1rem', borderBottom: '1px solid var(--line)', color: 'var(--ink-soft)', verticalAlign: 'top' },
   empty: { padding: '2.5rem', textAlign: 'center', color: 'var(--faint)' },
   actionBtn: { background: 'none', border: '1px solid #cbd5e1', color: 'var(--text)', borderRadius: '6px', padding: '0.3rem 0.6rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, margin: '0.15rem' },
   actionPrimary: { background: '#1e40af', borderColor: '#1e40af', color: '#fff' },
   actionGreen: { background: 'var(--success)', borderColor: 'var(--success)', color: '#fff' },
   actionRed: { background: 'none', borderColor: '#fecaca', color: 'var(--danger)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '640px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '640px', maxWidth: '94vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
@@ -42,7 +42,7 @@ const styles: Record<string, React.CSSProperties> = {
   removeBtn: { background: 'none', border: 'none', color: 'var(--danger)', cursor: 'pointer', fontSize: '1.1rem', lineHeight: 1 },
   footer: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.5rem', marginTop: '1rem' },
   buttons: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700 },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
   totals: { fontWeight: 800, fontSize: '1.05rem', color: 'var(--ink)' },

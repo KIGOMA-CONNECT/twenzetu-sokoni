@@ -48,7 +48,7 @@ const STATUS_COLORS: Record<string, string> = {
   rejected: 'var(--danger)',
 };
 
-const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleDateString() : '—';
+const formatDate = (iso?: string) => iso ? new Date(iso).toLocaleDateString() : 'â€”';
 
 export default function AdminLoans() {
   const [filter, setFilter] = useState<StatusFilter>('all');
@@ -89,7 +89,7 @@ export default function AdminLoans() {
   };
 
   const card = (title: string, value: string, sub?: string) => (
-    <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+    <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
       <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-soft)' }}>{value}</div>
       {sub && <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>{sub}</div>}
@@ -123,7 +123,7 @@ export default function AdminLoans() {
       </div>
 
       {error && (
-        <div style={{ background: '#fee2e2', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '6px', marginBottom: '1rem' }}>
+        <div style={{ background: 'var(--danger-soft)', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '6px', marginBottom: '1rem' }}>
           {error}
         </div>
       )}
@@ -142,14 +142,14 @@ export default function AdminLoans() {
       {loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>Loading loans...</div>
       ) : loans.length === 0 ? (
-        <div style={{ background: '#fff', borderRadius: '8px', padding: '2rem', textAlign: 'center', color: 'var(--faint)' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '2rem', textAlign: 'center', color: 'var(--faint)' }}>
           No {filter === 'all' ? '' : STATUS_LABELS[filter].toLowerCase() + ' '}loans found.
         </div>
       ) : (
-        <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto' }}>
+        <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '800px' }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+              <tr style={{ borderBottom: '2px solid var(--line)', textAlign: 'left' }}>
                 <th style={{ padding: '0.5rem' }}>Borrower</th>
                 <th style={{ padding: '0.5rem', textAlign: 'right' }}>Principal</th>
                 <th style={{ padding: '0.5rem', textAlign: 'right' }}>Monthly</th>
@@ -163,7 +163,7 @@ export default function AdminLoans() {
             </thead>
             <tbody>
               {loans.map((l) => (
-                <tr key={l.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                <tr key={l.id} style={{ borderBottom: '1px solid var(--line)' }}>
                   <td style={{ padding: '0.5rem' }}>
                     <div style={{ fontWeight: 600, textTransform: 'capitalize' }}>{l.borrowerType}</div>
                     <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--faint)' }}>{(l.id || '').slice(0, 8)}</div>

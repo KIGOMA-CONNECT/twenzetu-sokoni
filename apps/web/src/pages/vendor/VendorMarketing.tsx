@@ -45,18 +45,18 @@ const styles: Record<string, React.CSSProperties> = {
   sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', margin: '0 0 0.25rem' },
   sectionSub: { color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.75rem' },
   card: {
-    background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px',
+    background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9', verticalAlign: 'top' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)', verticalAlign: 'top' },
   empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
   launchBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--success)', color: '#fff', cursor: 'pointer' },
-  editBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: 'var(--text)' },
+  editBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'var(--surface)', cursor: 'pointer', color: 'var(--text)' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
@@ -64,7 +64,7 @@ const styles: Record<string, React.CSSProperties> = {
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit', minHeight: '90px', resize: 'vertical' },
   hint: { fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
@@ -75,18 +75,18 @@ const styles: Record<string, React.CSSProperties> = {
   abToggleRow: { display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.85rem 0' },
   abCheckbox: { width: '16px', height: '16px', cursor: 'pointer' },
   abLabel: { fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)', cursor: 'pointer' },
-  variantBox: { border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.6rem', background: 'var(--bg)' },
+  variantBox: { border: '1px solid var(--line)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.6rem', background: 'var(--bg)' },
   variantHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' },
   variantTitle: { fontSize: '0.8rem', fontWeight: 700, color: 'var(--ink)' },
   removeVariantBtn: { border: 'none', background: 'transparent', color: 'var(--danger)', fontSize: '0.75rem', cursor: 'pointer', fontWeight: 600 },
   addVariantBtn: { border: '1px dashed #94a3b8', background: 'transparent', color: '#1e40af', padding: '0.45rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, width: '100%' },
   analyticsGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.6rem', marginBottom: '1rem' },
-  statCard: { background: 'var(--bg)', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.7rem 0.9rem' },
+  statCard: { background: 'var(--bg)', border: '1px solid var(--line)', borderRadius: '8px', padding: '0.7rem 0.9rem' },
   statValue: { fontSize: '1.25rem', fontWeight: 700, color: 'var(--ink)' },
   statLabel: { fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', color: 'var(--muted)', marginTop: '0.15rem' },
-  winnerBadge: { display: 'inline-block', background: '#dcfce7', color: '#166534', fontSize: '0.68rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '999px', marginLeft: '0.4rem' },
+  winnerBadge: { display: 'inline-block', background: 'var(--success-soft)', color: '#166534', fontSize: '0.68rem', fontWeight: 700, padding: '0.15rem 0.5rem', borderRadius: '999px', marginLeft: '0.4rem' },
   abBadge: { display: 'inline-block', background: '#ede9fe', color: '#5b21b6', fontSize: '0.68rem', fontWeight: 700, padding: '0.12rem 0.45rem', borderRadius: '999px', marginLeft: '0.35rem' },
-  analyticsBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', color: 'var(--text)', marginRight: '0.35rem' },
+  analyticsBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #cbd5e1', background: 'var(--surface)', cursor: 'pointer', color: 'var(--text)', marginRight: '0.35rem' },
 };
 
 export default function VendorMarketing() {
@@ -179,7 +179,7 @@ export default function VendorMarketing() {
   };
 
   const launchCampaign = async (c: MarketingCampaign) => {
-    if (!window.confirm(`Send "${c.message.substring(0, 60)}…" to your customers by SMS now?`)) return;
+    if (!window.confirm(`Send "${c.message.substring(0, 60)}â€¦" to your customers by SMS now?`)) return;
     try {
       setLaunchError(null);
       await api.post(`/marketing/campaigns/${c.id}/launch`);
@@ -241,11 +241,11 @@ export default function VendorMarketing() {
       </div>
 
       <div style={styles.banner}>
-        <p style={styles.bannerTitle}>📣 Grow with SMS campaigns</p>
+        <p style={styles.bannerTitle}>ðŸ“£ Grow with SMS campaigns</p>
         <p style={styles.bannerSub}>Draft a promotional message, target the right customers, and launch now or schedule it to auto-send.</p>
       </div>
 
-      {/* ── Campaigns ── */}
+      {/* â”€â”€ Campaigns â”€â”€ */}
       <div style={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -291,12 +291,12 @@ export default function VendorMarketing() {
                           <div style={styles.hint}>Auto-launches</div>
                         </span>
                       ) : (
-                        <span style={{ color: 'var(--faint)' }}>—</span>
+                        <span style={{ color: 'var(--faint)' }}>â€”</span>
                       )}
                     </td>
                     <td style={styles.td}>
                       {c.segment ? [
-                        c.segment.minOrders ? `≥${c.segment.minOrders} orders` : null,
+                        c.segment.minOrders ? `â‰¥${c.segment.minOrders} orders` : null,
                         c.segment.lastOrderWithinDays ? `last ${c.segment.lastOrderWithinDays}d` : null,
                       ].filter(Boolean).join(', ') : 'All customers'}
                     </td>
@@ -322,7 +322,7 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* ── Adverts ── */}
+      {/* â”€â”€ Adverts â”€â”€ */}
       <div style={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
@@ -353,7 +353,7 @@ export default function VendorMarketing() {
                       <div style={{ fontWeight: 600 }}>{a.emoji ? `${a.emoji} ` : ''}{a.title}</div>
                       {a.body && <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{a.body}</div>}
                     </td>
-                    <td style={styles.td}>{a.ctaLabel ? `${a.ctaLabel} → ${a.ctaUrl || ''}` : '—'}</td>
+                    <td style={styles.td}>{a.ctaLabel ? `${a.ctaLabel} â†’ ${a.ctaUrl || ''}` : 'â€”'}</td>
                     <td style={styles.td}>{a.sortOrder}</td>
                     <td style={styles.td}><StatusBadge status={a.isActive ? 'ACTIVE' : 'INACTIVE'} /></td>
                   </tr>
@@ -364,7 +364,7 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* ── Category marketing copy ── */}
+      {/* â”€â”€ Category marketing copy â”€â”€ */}
       <div style={styles.section}>
         <div>
           <div style={styles.sectionTitle}>Category Marketing Copy</div>
@@ -389,8 +389,8 @@ export default function VendorMarketing() {
                 {categories.map((cat) => (
                   <tr key={cat.id}>
                     <td style={{ ...styles.td, fontWeight: 600 }}>{cat.emoji ? `${cat.emoji} ` : ''}{cat.name}</td>
-                    <td style={styles.td}>{cat.tagline || '—'}</td>
-                    <td style={styles.td}>{(cat.benefits || []).slice(0, 3).join(', ') || '—'}</td>
+                    <td style={styles.td}>{cat.tagline || 'â€”'}</td>
+                    <td style={styles.td}>{(cat.benefits || []).slice(0, 3).join(', ') || 'â€”'}</td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
                       <button style={styles.editBtn} onClick={() => openCategory(cat)}>Edit Copy</button>
                     </td>
@@ -402,7 +402,7 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* ── Campaign modal ── */}
+      {/* â”€â”€ Campaign modal â”€â”€ */}
       {campaignModal && (
         <div style={styles.overlay} onClick={() => !saving && setCampaignModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -494,7 +494,7 @@ export default function VendorMarketing() {
               <div style={{ ...styles.field, flex: 1 }}>
                 <label style={styles.label}>Min orders</label>
                 <input type="number" min={1} style={styles.input} value={campaignForm.minOrders} placeholder="e.g. 3" onChange={(e) => setCampaignForm((f) => ({ ...f, minOrders: e.target.value }))} />
-                <div style={styles.hint}>Only customers with ≥ this many delivered orders.</div>
+                <div style={styles.hint}>Only customers with â‰¥ this many delivered orders.</div>
               </div>
               <div style={{ ...styles.field, flex: 1 }}>
                 <label style={styles.label}>Ordered within (days)</label>
@@ -507,14 +507,14 @@ export default function VendorMarketing() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setCampaignModal(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitCampaign} disabled={saving}>
-                {saving ? 'Saving…' : 'Save Draft'}
+                {saving ? 'Savingâ€¦' : 'Save Draft'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Advert modal ── */}
+      {/* â”€â”€ Advert modal â”€â”€ */}
       {advertModal && (
         <div style={styles.overlay} onClick={() => !saving && setAdvertModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
@@ -529,7 +529,7 @@ export default function VendorMarketing() {
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Emoji</label>
-              <input style={styles.input} value={advertForm.emoji} placeholder="🚚" onChange={(e) => setAdvertForm((f) => ({ ...f, emoji: e.target.value }))} />
+              <input style={styles.input} value={advertForm.emoji} placeholder="ðŸšš" onChange={(e) => setAdvertForm((f) => ({ ...f, emoji: e.target.value }))} />
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Call to Action Label</label>
@@ -547,18 +547,18 @@ export default function VendorMarketing() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setAdvertModal(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitAdvert} disabled={saving}>
-                {saving ? 'Saving…' : 'Create Advert'}
+                {saving ? 'Savingâ€¦' : 'Create Advert'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Category copy modal ── */}
+      {/* â”€â”€ Category copy modal â”€â”€ */}
       {categoryModal && (
         <div style={styles.overlay} onClick={() => !saving && setCategoryModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Edit Copy — {categoryModal.emoji ? `${categoryModal.emoji} ` : ''}{categoryModal.name}</div>
+            <div style={styles.modalTitle}>Edit Copy â€” {categoryModal.emoji ? `${categoryModal.emoji} ` : ''}{categoryModal.name}</div>
             <div style={styles.field}>
               <label style={styles.label}>Tagline</label>
               <input style={styles.input} value={categoryForm.tagline} placeholder="e.g. Fresh from the farm every day" onChange={(e) => setCategoryForm((f) => ({ ...f, tagline: e.target.value }))} />
@@ -569,19 +569,19 @@ export default function VendorMarketing() {
             </div>
             <div style={styles.field}>
               <label style={styles.label}>Emoji</label>
-              <input style={styles.input} value={categoryForm.emoji} placeholder="🍎" onChange={(e) => setCategoryForm((f) => ({ ...f, emoji: e.target.value }))} />
+              <input style={styles.input} value={categoryForm.emoji} placeholder="ðŸŽ" onChange={(e) => setCategoryForm((f) => ({ ...f, emoji: e.target.value }))} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setCategoryModal(null)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitCategory} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? 'Savingâ€¦' : 'Save'}
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* ── Campaign analytics modal ── */}
+      {/* â”€â”€ Campaign analytics modal â”€â”€ */}
       {(analyticsLoading || analyticsFor) && (
         <div style={styles.overlay} onClick={() => setAnalyticsFor(null)}>
           <div style={{ ...styles.modal, width: '560px' }} onClick={(e) => e.stopPropagation()}>
@@ -590,7 +590,7 @@ export default function VendorMarketing() {
             ) : (
               <>
                 <div style={styles.modalTitle}>
-                  Analytics — {analyticsFor.name}
+                  Analytics â€” {analyticsFor.name}
                   {analyticsFor.testEnabled && <span style={styles.abBadge}>A/B</span>}
                 </div>
                 <div style={styles.analyticsGrid}>

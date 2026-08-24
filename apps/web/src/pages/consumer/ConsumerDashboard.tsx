@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
 import { SectionTitle } from '../../components/ui';
+import { PageTitle } from '../../components/PageTitle';
 import type { Order, Category } from '../../types';
 
 // ── New parent category IDs ──
@@ -165,6 +166,7 @@ function ConsumerDashboard() {
 
   return (
     <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
+      <PageTitle title="Dashboard" />
       {/* Hero welcome */}
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: isPhone ? '1rem' : '1.5rem', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: heroMinHeight, padding: heroPadding, textAlign: 'center' }}>

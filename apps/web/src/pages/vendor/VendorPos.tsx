@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -7,6 +7,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Product, PosPaymentMethod, PosCheckoutResult, PosShift } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface CartLine {
   product: Product;
@@ -36,41 +37,41 @@ const styles: Record<string, React.CSSProperties> = {
   scan: { flex: 1.4, padding: '0.7rem 0.9rem', border: '2px solid #1e40af', borderRadius: '8px', fontSize: '1rem', fontFamily: 'inherit' },
   layout: { display: 'flex', gap: '1rem', flex: 1, minHeight: 0 },
   grid: { flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.65rem', alignContent: 'start', padding: '2px' },
-  tile: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.7rem', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
+  tile: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px', padding: '0.7rem', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
   tileDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   tileName: { fontWeight: 700, color: 'var(--ink)', fontSize: '0.85rem', lineHeight: 1.2, marginBottom: '0.25rem' },
   tileSku: { fontSize: '0.7rem', color: 'var(--faint)', marginBottom: '0.3rem' },
   tilePrice: { color: '#1e40af', fontWeight: 700, fontSize: '0.95rem' },
   tileStock: { fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.15rem' },
-  cart: { width: '370px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  cartHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid #e2e8f0', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)' },
+  cart: { width: '370px', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  cartHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid var(--line)', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)' },
   cartItems: { flex: 1, overflowY: 'auto', padding: '0.6rem 1rem' },
   cartRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0', borderBottom: '1px dashed #f1f5f9', gap: '0.5rem' },
   cartInfo: { flex: 1, minWidth: 0 },
   cartName: { fontSize: '0.82rem', fontWeight: 600, color: 'var(--ink-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   cartSub: { fontSize: '0.72rem', color: 'var(--muted)' },
   qtyControls: { display: 'flex', alignItems: 'center', gap: '0.35rem' },
-  qtyBtn: { width: 26, height: 26, borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, color: 'var(--text)' },
+  qtyBtn: { width: 26, height: 26, borderRadius: 6, border: '1px solid #cbd5e1', background: 'var(--surface)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, color: 'var(--text)' },
   qtyValue: { minWidth: 22, textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink)' },
   cartLineTotal: { width: 70, textAlign: 'right', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink)' },
-  cartFooter: { padding: '0.8rem 1rem', borderTop: '1px solid #e2e8f0', background: 'var(--bg)' },
+  cartFooter: { padding: '0.8rem 1rem', borderTop: '1px solid var(--line)', background: 'var(--bg)' },
   totalRow: { display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.7rem' },
   payBtn: { width: '100%', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.8rem', fontSize: '1rem', fontWeight: 800, cursor: 'pointer' },
   payBtnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   emptyCart: { color: 'var(--faint)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '400px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '400px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   bigTotal: { background: 'var(--success-soft)', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: '#15803d', marginBottom: '0.85rem' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700 },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
-  receipt: { background: '#fff', borderRadius: '12px', padding: '1.25rem', width: '380px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  receiptPre: { whiteSpace: 'pre-wrap', fontFamily: '"Courier New", monospace', fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--ink)', background: '#fff', border: '1px dashed #e2e8f0', padding: '0.8rem', maxHeight: '55vh', overflow: 'auto' },
+  receipt: { background: 'var(--surface)', borderRadius: '12px', padding: '1.25rem', width: '380px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  receiptPre: { whiteSpace: 'pre-wrap', fontFamily: '"Courier New", monospace', fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--ink)', background: 'var(--surface)', border: '1px dashed #e2e8f0', padding: '0.8rem', maxHeight: '55vh', overflow: 'auto' },
   receiptMsg: { background: 'var(--success-soft)', border: '1px solid #bbf7d0', color: '#15803d', borderRadius: '8px', padding: '0.6rem 0.8rem', fontSize: '0.85rem', marginBottom: '0.8rem', fontWeight: 600 },
 };
 
@@ -251,6 +252,7 @@ export default function VendorPos() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Point of Sale" />
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>Point of Sale</h1>

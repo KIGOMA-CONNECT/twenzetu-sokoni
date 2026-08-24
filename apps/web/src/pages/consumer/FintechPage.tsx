@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
 import LoanManagement from './LoanManagement';
 import api from '../../api/client';
+import { PageTitle } from '../../components/PageTitle';
 
 type Tab = 'savings' | 'deposits' | 'loans' | 'subscription' | 'commissions';
 
@@ -102,6 +103,7 @@ export default function FintechPage() {
 
   return (
     <div className="page">
+      <PageTitle title="Fintech" />
       <PageHeader
         title="afriMarket Finance"
         subtitle="Akiba, Fixed Deposits, Mikopo na Commission"

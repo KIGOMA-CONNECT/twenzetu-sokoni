@@ -5,6 +5,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Order, Wallet } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface VendorStats {
   totalOrders: number;
@@ -26,8 +27,8 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '1.5rem',
   },
   statCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.25rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
@@ -35,23 +36,23 @@ const styles: Record<string, React.CSSProperties> = {
   statLabel: { fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', fontWeight: 600 },
   statValue: { fontSize: '1.85rem', fontWeight: 700, color: 'var(--ink)', marginTop: '0.25rem' },
   sectionCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.5rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
   sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600 },
-  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600 },
+  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
   empty: { textAlign: 'center', color: 'var(--muted)', padding: '1.5rem' },
 };
 
 const formatDate = (date: string) =>
   new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
+const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function VendorDashboard() {
   const { user } = useAuth();
@@ -81,11 +82,12 @@ export default function VendorDashboard() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Vendor Dashboard" />
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px', padding: '2rem', textAlign: 'center' }}>
           <div>
             <h1 style={{ fontSize: 'clamp(1.9rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, marginBottom: '0.4rem' }}>
-              Welcome back, <span className="hero-gradient">{firstNameLabel}</span> 👋
+              Welcome back, <span className="hero-gradient">{firstNameLabel}</span> ðŸ‘‹
             </h1>
             <p style={{ color: 'var(--muted)', margin: 0, fontSize: '1.05rem' }}>Here's what's happening with your shop today.</p>
           </div>

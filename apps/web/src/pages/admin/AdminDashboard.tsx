@@ -5,6 +5,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import { PageTitle } from '../../components/PageTitle';
 import type { Order, Vendor } from '../../types';
 
 export default function AdminDashboard() {
@@ -30,6 +31,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="page">
+      <PageTitle title="Admin Dashboard" />
       <PageHeader
         title="Admin Dashboard"
         sub={`Welcome back, ${user?.fullName || 'Admin'}. Here's your platform overview.`}

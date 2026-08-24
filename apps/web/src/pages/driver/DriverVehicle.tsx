@@ -11,7 +11,7 @@ const VEHICLE_TYPES = ['boda', 'bajaji', 'carry', 'guta', 'fuso'];
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' },
-  title: { fontSize: '1.5rem', fontWeight: 700, color: '#0f172a', margin: 0 },
+  title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   addButton: {
     background: '#1e40af',
     color: '#fff',
@@ -23,28 +23,28 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '0',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
     overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: '#f8fafc' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '2rem' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '420px', maxWidth: '90vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '420px', maxWidth: '90vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
-  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: '#334155', marginBottom: '0.3rem' },
+  label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: '#334155' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
-  smallError: { color: '#dc2626', fontSize: '0.8rem', marginTop: '0.5rem' },
+  smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
 };
 
 interface NewVehicle {
@@ -143,7 +143,7 @@ export default function DriverVehicle() {
                 value={form.vehicleType}
                 onChange={(e) => updateField('vehicleType', e.target.value)}
               >
-                <option value="">Select type…</option>
+                <option value="">Select typeâ€¦</option>
                 {VEHICLE_TYPES.map((t) => (
                   <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                 ))}
@@ -172,7 +172,7 @@ export default function DriverVehicle() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitVehicle} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? 'Savingâ€¦' : 'Save'}
               </button>
             </div>
           </div>

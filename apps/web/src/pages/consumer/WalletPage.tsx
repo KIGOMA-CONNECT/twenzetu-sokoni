@@ -8,6 +8,7 @@ import { PageHeader, EmptyState } from '../../components/ui';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import type { Wallet, WalletTransaction } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 const formatDate = (iso: string) => {
   try {
@@ -147,6 +148,7 @@ export default function WalletPage() {
 
   return (
     <div className="page">
+      <PageTitle title="Wallet" />
       <PageHeader
         title={t('wallet.title')}
         action={

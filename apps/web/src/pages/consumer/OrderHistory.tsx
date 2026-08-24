@@ -8,6 +8,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, EmptyState } from '../../components/ui';
 import type { Order, Vendor, OrderItem } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface OrderReviewTarget {
   orderId: string;
@@ -150,6 +151,7 @@ function OrderHistory() {
 
   return (
     <div className="page">
+      <PageTitle title="My Orders" />
       <PageHeader title="Order History" subtitle="Track your past and current orders" />
 
       {loading && <LoadingSpinner />}

@@ -26,7 +26,7 @@ const styles: Record<string, React.CSSProperties> = {
   status: { fontSize: '0.85rem', fontWeight: 600 },
   statusOk: { color: 'var(--success)' },
   statusErr: { color: 'var(--danger)' },
-  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #e2e8f0', background: 'var(--line-soft)' },
+  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--line)', background: 'var(--line-soft)' },
 };
 
 const S = (obj: Record<string, unknown> | undefined, key: string) =>
@@ -155,10 +155,10 @@ export default function VendorSettings() {
                 {logoUrl ? (
                   <img src={logoUrl} alt="Shop logo" style={styles.logo} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>🏪</div>
+                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>ðŸª</div>
                 )}
                 <label style={{ ...styles.saveBtn, fontSize: '0.8rem', padding: '0.45rem 1rem', cursor: 'pointer', display: 'inline-block' }}>
-                  {uploadingLogo ? 'Uploading…' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+                  {uploadingLogo ? 'Uploadingâ€¦' : logoUrl ? 'Change Logo' : 'Upload Logo'}
                   <input
                     type="file"
                     accept="image/*"
@@ -167,7 +167,7 @@ export default function VendorSettings() {
                     onChange={(e) => { if (e.target.files?.[0]) void uploadLogo(e.target.files[0]); }}
                   />
                 </label>
-                <div style={styles.hint}>PNG/JPG, max 5MB — shown on your public shop page</div>
+                <div style={styles.hint}>PNG/JPG, max 5MB â€” shown on your public shop page</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={styles.field}>

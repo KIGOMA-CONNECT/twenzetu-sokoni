@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
 import type { Address, CheckoutResult } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 const PAYMENT_METHODS: { value: string; label: string }[] = [
   { value: 'mpesa', label: 'M-Pesa' },
@@ -108,6 +109,7 @@ function CheckoutPage() {
 
   return (
     <div className="page">
+      <PageTitle title="Checkout" />
       <PageHeader title={t('cart.checkout')} />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

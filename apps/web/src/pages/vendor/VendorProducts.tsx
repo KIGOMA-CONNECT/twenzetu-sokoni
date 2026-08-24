@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Product, PaginatedResponse } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface NewProduct {
   name: string;
@@ -128,7 +129,7 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
   bulkButton: {
-    background: '#fff',
+    background: 'var(--surface)',
     color: '#1e40af',
     border: '1px solid #1e40af',
     padding: '0.6rem 1.1rem',
@@ -138,47 +139,47 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '0',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
     overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9', verticalAlign: 'middle' },
-  thumb: { width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0', background: 'var(--bg)' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)', verticalAlign: 'middle' },
+  thumb: { width: '44px', height: '44px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)' },
   empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   actionBtn: {
     padding: '0.35rem 0.7rem',
     fontSize: '0.75rem',
     borderRadius: '6px',
-    border: '1px solid #e2e8f0',
-    background: '#fff',
+    border: '1px solid var(--line)',
+    background: 'var(--surface)',
     cursor: 'pointer',
     marginRight: '0.4rem',
     color: 'var(--text)',
   },
   deleteBtn: { color: 'var(--danger)', borderColor: '#fecaca' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '460px', maxWidth: '92vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '460px', maxWidth: '92vw', maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', minHeight: '70px', boxSizing: 'border-box', fontFamily: 'inherit', resize: 'vertical' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
   smallSuccess: { color: 'var(--success)', fontSize: '0.8rem', marginTop: '0.5rem' },
   preview: { marginTop: '0.4rem', display: 'flex', alignItems: 'center', gap: '0.6rem' },
-  previewImg: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #e2e8f0' },
+  previewImg: { width: '64px', height: '64px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--line)' },
   linkBtn: { background: 'none', border: 'none', color: '#1e40af', textDecoration: 'underline', cursor: 'pointer', fontSize: '0.8rem', padding: 0 },
   bulkBody: { display: 'flex', flexDirection: 'column', gap: '0.9rem' },
-  resultBox: { border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.8rem', maxHeight: '200px', overflowY: 'auto', fontSize: '0.8rem' },
+  resultBox: { border: '1px solid var(--line)', borderRadius: '8px', padding: '0.8rem', maxHeight: '200px', overflowY: 'auto', fontSize: '0.8rem' },
 };
 
 function splitCsvLine(line: string): string[] {
@@ -454,6 +455,7 @@ export default function VendorProducts() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Products" />
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <h1 style={styles.title}>Products (Duka)</h1>
@@ -491,7 +493,7 @@ export default function VendorProducts() {
                     {product.imageUrl ? (
                       <img src={product.imageUrl} alt={product.name} style={styles.thumb} />
                     ) : (
-                      <div style={{ ...styles.thumb, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--line)', fontSize: '1.1rem' }}>🖼️</div>
+                      <div style={{ ...styles.thumb, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--line)', fontSize: '1.1rem' }}>ðŸ–¼ï¸</div>
                     )}
                   </td>
                   <td style={styles.td}>
@@ -565,7 +567,7 @@ export default function VendorProducts() {
                   updateField('categoryId', '');
                 }}
               >
-                <option value="">Select type…</option>
+                <option value="">Select typeâ€¦</option>
                 {PRODUCT_TYPES.map((t) => (
                   <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                 ))}
@@ -578,7 +580,7 @@ export default function VendorProducts() {
                 value={form.categoryId}
                 onChange={(e) => updateField('categoryId', e.target.value)}
               >
-                <option value="">Select category…</option>
+                <option value="">Select categoryâ€¦</option>
                 {(CATEGORIES[form.type] || []).map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
@@ -593,7 +595,7 @@ export default function VendorProducts() {
                 style={{ fontSize: '0.8rem' }}
                 onChange={(e) => uploadImage(e.target.files?.[0])}
               />
-              {uploading && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Uploading…</div>}
+              {uploading && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Uploadingâ€¦</div>}
               {form.imageUrl && (
                 <div style={styles.preview}>
                   <img src={form.imageUrl} alt="Product preview" style={styles.previewImg} />
@@ -625,7 +627,7 @@ export default function VendorProducts() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setModalOpen(false)} disabled={saving || uploading}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving || uploading ? styles.saveBtnDisabled : {}) }} onClick={submitProduct} disabled={saving || uploading}>
-                {saving ? 'Saving…' : editingProduct ? 'Save Changes' : 'Save'}
+                {saving ? 'Savingâ€¦' : editingProduct ? 'Save Changes' : 'Save'}
               </button>
             </div>
           </div>
@@ -640,7 +642,7 @@ export default function VendorProducts() {
               <div>
                 <button style={styles.linkBtn} onClick={downloadTemplate}>Download CSV template</button>
                 <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  {' '}— columns: name, price, type, category, stock, unit, sku, barcode, description, imageUrl
+                  {' '}â€” columns: name, price, type, category, stock, unit, sku, barcode, description, imageUrl
                 </span>
               </div>
               <div>
@@ -670,19 +672,19 @@ export default function VendorProducts() {
               )}
               {bulkResult && (
                 <div style={styles.resultBox}>
-                  <div style={{ color: 'var(--success)', fontWeight: 600 }}>✅ {bulkResult.created.length} product(s) created</div>
+                  <div style={{ color: 'var(--success)', fontWeight: 600 }}>âœ… {bulkResult.created.length} product(s) created</div>
                   {bulkResult.failed.length > 0 && (
                     <div style={{ color: 'var(--danger)', fontWeight: 600, marginTop: '0.4rem' }}>{bulkResult.failed.length} failed:</div>
                   )}
                   {bulkResult.failed.map((f, i) => (
-                    <div key={i} style={{ color: 'var(--danger)' }}>• {f.name}: {f.error}</div>
+                    <div key={i} style={{ color: 'var(--danger)' }}>â€¢ {f.name}: {f.error}</div>
                   ))}
                 </div>
               )}
               <div style={styles.footer}>
                 <button style={styles.cancelBtn} onClick={() => setBulkOpen(false)} disabled={bulkBusy}>Close</button>
                 <button style={{ ...styles.saveBtn, ...(bulkBusy ? styles.saveBtnDisabled : {}) }} onClick={submitBulk} disabled={bulkBusy}>
-                  {bulkBusy ? 'Importing…' : 'Import Products'}
+                  {bulkBusy ? 'Importingâ€¦' : 'Import Products'}
                 </button>
               </div>
             </div>

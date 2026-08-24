@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { PageTitle } from '../../components/PageTitle';
 
 interface DriverRow {
   id: string;
@@ -24,10 +25,10 @@ const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
   header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
   subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid var(--line)', whiteSpace: 'nowrap' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid var(--line)', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer' },
   verifyBtn: { background: 'var(--success)', color: '#fff' },
   suspendBtn: { background: '#b91c1c', color: '#fff' },
@@ -105,6 +106,7 @@ export default function AdminDrivers() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Manage Drivers" />
       <div>
         <h1 style={styles.header}>Driver Management</h1>
         <div style={styles.subheader}>View and verify drivers, {user?.fullName || 'Admin'}.</div>

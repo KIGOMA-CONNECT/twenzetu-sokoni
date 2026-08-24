@@ -1,7 +1,10 @@
+import './sentry';
 import './i18n';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { HelmetProvider } from 'react-helmet-async';
+import * as Sentry from '@sentry/react';
 import App from './App';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { CurrencyProvider } from './context/CurrencyContext';
@@ -13,14 +16,18 @@ if ('serviceWorker' in navigator) {
   });
 }
 
+const SentryErrorBoundary = Sentry.ErrorBoundary;
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <BrowserRouter>
-        <CurrencyProvider>
-          <App />
-        </CurrencyProvider>
-      </BrowserRouter>
-    </ErrorBoundary>
+    <SentryErrorBoundary fallback={<ErrorBoundary />} showDialog>
+      <HelmetProvider>
+        <BrowserRouter>
+          <CurrencyProvider>
+            <App />
+          </CurrencyProvider>
+        </BrowserRouter>
+      </HelmetProvider>
+    </SentryErrorBoundary>
   </React.StrictMode>
 );

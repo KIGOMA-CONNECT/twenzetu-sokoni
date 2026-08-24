@@ -6,6 +6,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Order, OrderItem } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 type FilterStatus = 'ALL' | 'PLACED' | 'CONFIRMED' | 'CANCELLED' | 'DELIVERED';
 
@@ -20,36 +21,36 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #cbd5e1',
     borderRadius: '6px',
     fontSize: '0.875rem',
-    background: '#fff',
+    background: 'var(--surface)',
     cursor: 'pointer',
     color: 'var(--text)',
   },
   card: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
     overflow: 'hidden',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
   empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   actionWrap: { display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' },
   acceptBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--success)', color: '#fff', cursor: 'pointer', fontWeight: 600 },
   rejectBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: 'none', background: 'var(--danger)', color: '#fff', cursor: 'pointer', fontWeight: 600 },
-  viewBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff', color: '#1e40af', cursor: 'pointer', fontWeight: 600 },
+  viewBtn: { padding: '0.35rem 0.7rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid var(--line)', background: 'var(--surface)', color: '#1e40af', cursor: 'pointer', fontWeight: 600 },
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
   smallNote: { fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.3rem' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '520px', maxWidth: '90vw', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '520px', maxWidth: '90vw', maxHeight: '80vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   modalRow: { display: 'flex', justifyContent: 'space-between', padding: '0.4rem 0', fontSize: '0.875rem' },
   modalLabel: { color: 'var(--muted)' },
   modalValue: { fontWeight: 600, color: 'var(--ink-soft)' },
-  closeModalBtn: { marginTop: '1rem', padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem' },
+  closeModalBtn: { marginTop: '1rem', padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem' },
   pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.5rem', padding: '1rem' },
-  pageBtn: { padding: '0.35rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: 'pointer', fontSize: '0.8rem' },
+  pageBtn: { padding: '0.35rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: 'var(--surface)', cursor: 'pointer', fontSize: '0.8rem' },
   pageBtnActive: { background: '#1e40af', color: '#fff', border: '1px solid #1e40af' },
   pageBtnDisabled: { opacity: 0.4, cursor: 'not-allowed' },
 };
@@ -57,7 +58,7 @@ const styles: Record<string, React.CSSProperties> = {
 const formatDate = (date: string) =>
   new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
+const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function VendorOrders() {
   const { formatCurrency } = useCurrency();
@@ -104,6 +105,7 @@ export default function VendorOrders() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Orders" />
       <div style={styles.headerRow}>
         <h1 style={styles.title}>Orders</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -155,7 +157,7 @@ export default function VendorOrders() {
                         <td style={styles.td}>{order.customerId}</td>
                         <td style={styles.td}><StatusBadge status={order.status} /></td>
                         <td style={{ ...styles.td, fontWeight: 700, letterSpacing: '0.05em' }}>
-                          {order.pickupCode ? order.pickupCode : <span style={{ color: 'var(--faint)' }}>—</span>}
+                          {order.pickupCode ? order.pickupCode : <span style={{ color: 'var(--faint)' }}>â€”</span>}
                         </td>
                         <td style={styles.td}>{formatCurrency(order.totalAmount)}</td>
                         <td style={styles.td}>{formatDate(order.createdAt)}</td>
@@ -218,7 +220,7 @@ export default function VendorOrders() {
             <div style={styles.modalRow}><span style={styles.modalLabel}>Total</span><span style={styles.modalValue}>{formatCurrency(selectedOrder.totalAmount)}</span></div>
             <div style={styles.modalRow}><span style={styles.modalLabel}>Delivery Address</span><span style={styles.modalValue}>{selectedOrder.deliveryAddress || 'N/A'}</span></div>
             <div style={styles.modalRow}><span style={styles.modalLabel}>Date</span><span style={styles.modalValue}>{formatDate(selectedOrder.createdAt)}</span></div>
-            <div style={{ borderTop: '1px solid #e2e8f0', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
+            <div style={{ borderTop: '1px solid var(--line)', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
               <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Items</div>
               {itemsLoading ? <LoadingSpinner /> : orderItems.length === 0 ? (
                 <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>No items found.</div>
@@ -226,17 +228,17 @@ export default function VendorOrders() {
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Item</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0' }}>Price</th>
+                      <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Item</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Qty</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Price</th>
                     </tr>
                   </thead>
                   <tbody>
                     {orderItems.map((item, idx) => (
                       <tr key={item.id || idx}>
-                        <td style={{ padding: '0.4rem', borderBottom: '1px solid #f1f5f9' }}>{item.productName}</td>
-                        <td style={{ padding: '0.4rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{item.quantity}</td>
-                        <td style={{ padding: '0.4rem', textAlign: 'right', borderBottom: '1px solid #f1f5f9' }}>{formatCurrency(item.unitPrice * item.quantity)}</td>
+                        <td style={{ padding: '0.4rem', borderBottom: '1px solid var(--line)' }}>{item.productName}</td>
+                        <td style={{ padding: '0.4rem', textAlign: 'right', borderBottom: '1px solid var(--line)' }}>{item.quantity}</td>
+                        <td style={{ padding: '0.4rem', textAlign: 'right', borderBottom: '1px solid var(--line)' }}>{formatCurrency(item.unitPrice * item.quantity)}</td>
                       </tr>
                     ))}
                   </tbody>

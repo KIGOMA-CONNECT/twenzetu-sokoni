@@ -9,6 +9,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import DeliveryMap from '../../components/DeliveryMap';
 import type { Delivery } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
@@ -29,22 +30,22 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '1.5rem',
   },
   statCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.25rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
-  statLabel: { fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 600 },
-  statValue: { fontSize: '1.85rem', fontWeight: 700, color: '#0f172a', marginTop: '0.25rem' },
+  statLabel: { fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', fontWeight: 600 },
+  statValue: { fontSize: '1.85rem', fontWeight: 700, color: 'var(--ink)', marginTop: '0.25rem' },
   sectionCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.5rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
-  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   toast: {
     background: '#16a34a',
     color: '#fff',
@@ -58,8 +59,8 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: '0 2px 8px rgba(22,163,74,0.25)',
   },
   toastBtn: {
-    background: '#fff',
-    color: '#16a34a',
+    background: 'var(--surface)',
+    color: 'var(--success)',
     border: 'none',
     borderRadius: '6px',
     padding: '0.35rem 0.9rem',
@@ -68,12 +69,12 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: 'pointer',
   },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600 },
-  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '1.5rem' },
+  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600 },
+  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '1.5rem' },
 };
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
+const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function DriverDashboard() {
   const { user } = useAuth();
@@ -120,15 +121,16 @@ export default function DriverDashboard() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Driver Dashboard" />
       <div style={styles.header}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <div>
-            <h1 style={styles.headerTitle}>Welcome back, {user?.fullName || 'Driver'} 👋</h1>
+            <h1 style={styles.headerTitle}>Welcome back, {user?.fullName || 'Driver'} ðŸ‘‹</h1>
             <div style={styles.headerSubtitle}>Here's what's happening with your deliveries today.</div>
           </div>
           {availabilityError && (
             <div className="alert alert-error" style={{ marginTop: '0.75rem' }}>
-              <span>⚠️</span>
+              <span>âš ï¸</span>
               <span>{availabilityError}</span>
             </div>
           )}
@@ -162,7 +164,7 @@ export default function DriverDashboard() {
         <>
           {newDelivery && (
             <div style={styles.toast}>
-              <span>🔔 New delivery assigned for order {truncateId(newDelivery.orderId)}</span>
+              <span>ðŸ”” New delivery assigned for order {truncateId(newDelivery.orderId)}</span>
               <button style={styles.toastBtn} onClick={() => setNewDelivery(null)}>OK</button>
             </div>
           )}
@@ -208,8 +210,8 @@ export default function DriverDashboard() {
                       deliveryLabel={active[0]?.deliveryAddress || 'Customer'}
                       height={280}
                     />
-                    <div style={{ fontSize: '0.8rem', color: '#64748b', marginTop: '0.5rem' }}>
-                      📍 Drop off: {active[0]?.deliveryAddress}
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.5rem' }}>
+                      ðŸ“ Drop off: {active[0]?.deliveryAddress}
                     </div>
                   </div>
                 ) : null}

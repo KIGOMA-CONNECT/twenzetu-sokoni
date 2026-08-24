@@ -45,7 +45,7 @@ export default function AdminReconciliation() {
   }, [period]);
 
   const card = (title: string, value: string, sub?: string) => (
-    <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+    <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
       <div style={{ color: 'var(--muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>{title}</div>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink-soft)' }}>{value}</div>
       {sub && <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>{sub}</div>}
@@ -100,11 +100,11 @@ export default function AdminReconciliation() {
           </div>
 
           {report.pendingPayouts.length > 0 && (
-            <div style={{ background: '#fff', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
+            <div style={{ background: 'var(--surface)', borderRadius: '8px', padding: '1.25rem', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}>
               <h3 style={{ margin: '0 0 1rem' }}>Pending Payouts ({report.pendingPayouts.length})</h3>
               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                 <thead>
-                  <tr style={{ borderBottom: '2px solid #e2e8f0', textAlign: 'left' }}>
+                  <tr style={{ borderBottom: '2px solid var(--line)', textAlign: 'left' }}>
                     <th style={{ padding: '0.5rem' }}>Owner</th>
                     <th style={{ padding: '0.5rem' }}>Type</th>
                     <th style={{ padding: '0.5rem', textAlign: 'right' }}>Balance ({currency.code})</th>
@@ -112,7 +112,7 @@ export default function AdminReconciliation() {
                 </thead>
                 <tbody>
                   {report.pendingPayouts.map((p) => (
-                    <tr key={p.ownerId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={p.ownerId} style={{ borderBottom: '1px solid var(--line)' }}>
                       <td style={{ padding: '0.5rem', fontFamily: 'monospace', fontSize: '0.85rem' }}>{(p.ownerId || '').slice(0, 12)}...</td>
                       <td style={{ padding: '0.5rem' }}>{p.ownerType}</td>
                       <td style={{ padding: '0.5rem', textAlign: 'right', fontWeight: 600 }}>{(p.balance ?? 0).toLocaleString()}</td>

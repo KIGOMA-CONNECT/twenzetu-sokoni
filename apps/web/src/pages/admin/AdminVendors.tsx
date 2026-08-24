@@ -6,6 +6,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import type { Vendor } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 type VendorTab = 'PENDING' | 'ALL';
 
@@ -14,14 +15,14 @@ const styles: Record<string, React.CSSProperties> = {
   header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
   subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
   tabRow: { display: 'flex', gap: '0.5rem', marginBottom: '0.5rem' },
-  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: '#fff', color: 'var(--muted)', cursor: 'pointer' },
+  tab: { padding: '0.5rem 1rem', fontSize: '0.85rem', fontWeight: 600, borderRadius: '6px', border: '1px solid #cbd5e1', background: 'var(--surface)', color: 'var(--muted)', cursor: 'pointer' },
   tabActive: { background: '#1e40af', color: '#fff', border: '1px solid #1e40af' },
   searchRow: { display: 'flex', gap: '0.5rem', alignItems: 'center' },
   searchInput: { padding: '0.5rem 0.75rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', flex: 1, maxWidth: '300px' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '8px', padding: '1.5rem' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid var(--line)' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid var(--line)', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer', marginRight: '0.4rem' },
   approveBtn: { background: 'var(--success)', color: '#fff' },
   suspendBtn: { background: 'var(--danger)', color: '#fff' },
@@ -63,6 +64,7 @@ export default function AdminVendors() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Manage Vendors" />
       <div>
         <h1 style={styles.header}>Vendor Management</h1>
         <div style={styles.subheader}>Manage vendor registrations, {user?.fullName || 'Admin'}.</div>
@@ -123,14 +125,14 @@ export default function AdminVendors() {
                         onClick={() => handleAction(v.id, 'approve')}
                         disabled={actionLoading === `${v.id}-approve`}
                       >
-                        {actionLoading === `${v.id}-approve` ? 'Approving…' : 'Approve'}
+                        {actionLoading === `${v.id}-approve` ? 'Approvingâ€¦' : 'Approve'}
                       </button>
                       <button
                         style={{ ...styles.btn, ...styles.suspendBtn, ...(actionLoading === `${v.id}-suspend` ? styles.disabledBtn : {}) }}
                         onClick={() => handleAction(v.id, 'suspend')}
                         disabled={actionLoading === `${v.id}-suspend`}
                       >
-                        {actionLoading === `${v.id}-suspend` ? 'Suspending…' : 'Suspend'}
+                        {actionLoading === `${v.id}-suspend` ? 'Suspendingâ€¦' : 'Suspend'}
                       </button>
                     </td>
                   )}

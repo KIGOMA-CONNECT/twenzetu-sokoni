@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
 import { useApi } from '../../hooks/useApi';
 import type { Vendor } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 function CartPage() {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ function CartPage() {
 
   return (
     <div className="page">
+      <PageTitle title="Cart" />
       <PageHeader title={t('cart.title')} subtitle={t('cart.subtitle')} />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

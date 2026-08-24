@@ -4,6 +4,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Delivery } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 const styles: Record<string, React.CSSProperties> = {
   container: { padding: '1.5rem', maxWidth: '1200px', margin: '0 auto' },
@@ -24,30 +25,30 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '1.5rem',
   },
   statCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.25rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
-  statLabel: { fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', fontWeight: 600 },
-  statValue: { fontSize: '1.85rem', fontWeight: 700, color: '#0f172a', marginTop: '0.25rem' },
+  statLabel: { fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', fontWeight: 600 },
+  statValue: { fontSize: '1.85rem', fontWeight: 700, color: 'var(--ink)', marginTop: '0.25rem' },
   sectionCard: {
-    background: '#fff',
-    border: '1px solid #e2e8f0',
+    background: 'var(--surface)',
+    border: '1px solid var(--line)',
     borderRadius: '10px',
     padding: '1.5rem',
     boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
   },
-  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: '#0f172a', marginBottom: '1rem' },
+  sectionTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#64748b', borderBottom: '1px solid #e2e8f0', fontWeight: 600 },
-  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: '#1e293b', borderBottom: '1px solid #f1f5f9' },
-  empty: { textAlign: 'center', color: '#64748b', padding: '1.5rem' },
+  th: { textAlign: 'left', padding: '0.6rem 0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600 },
+  td: { padding: '0.7rem 0.75rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
+  empty: { textAlign: 'center', color: 'var(--muted)', padding: '1.5rem' },
 };
 
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}…` : id);
+const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function DriverEarnings() {
   const { formatCurrency } = useCurrency();
@@ -59,6 +60,7 @@ export default function DriverEarnings() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Earnings" />
       <div style={styles.header}>
         <h1 style={styles.headerTitle}>Earnings</h1>
         <div style={styles.headerSubtitle}>Track your delivery earnings and completed jobs.</div>
@@ -112,7 +114,7 @@ export default function DriverEarnings() {
                       <td style={styles.td}>
                         {d.createdAt
                           ? new Date(d.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
-                          : '—'}
+                          : 'â€”'}
                       </td>
                     </tr>
                   ))}
