@@ -65,6 +65,25 @@ export default function WalletPage() {
   const [withdrawSuccess, setWithdrawSuccess] = useState('');
   const [withdrawError, setWithdrawError] = useState('');
 
+  const [showTransfer, setShowTransfer] = useState(false);
+  const [transferAmount, setTransferAmount] = useState(10000);
+  const [recipientIdentifier, setRecipientIdentifier] = useState('');
+  const [recipientType, setRecipientType] = useState<'phone' | 'email' | 'userId'>('phone');
+  const [transferDescription, setTransferDescription] = useState('');
+  const [transferring, setTransferring] = useState(false);
+  const [transferSuccess, setTransferSuccess] = useState('');
+  const [transferError, setTransferError] = useState('');
+
+  const [showBankWithdraw, setShowBankWithdraw] = useState(false);
+  const [bankWithdrawAmount, setBankWithdrawAmount] = useState(10000);
+  const [bankName, setBankName] = useState('');
+  const [bankAccountNumber, setBankAccountNumber] = useState('');
+  const [bankAccountName, setBankAccountName] = useState('');
+  const [bankWithdrawDescription, setBankWithdrawDescription] = useState('');
+  const [bankWithdrawing, setBankWithdrawing] = useState(false);
+  const [bankWithdrawSuccess, setBankWithdrawSuccess] = useState('');
+  const [bankWithdrawError, setBankWithdrawError] = useState('');
+
   const groups = ['Mobile Money', 'Card', 'Bank'] as const;
 
   const canWithdraw = user?.role === 'vendor' || user?.role === 'driver';
@@ -158,6 +177,12 @@ export default function WalletPage() {
                 {t('wallet.withdraw')}
               </button>
             )}
+            <button className="btn btn-outline" onClick={() => { setBankWithdrawAmount(10000); setBankName(''); setBankAccountNumber(''); setBankAccountName(''); setBankWithdrawDescription(''); setBankWithdrawSuccess(''); setBankWithdrawError(''); setShowBankWithdraw(true); }}>
+              🏦 Bank Withdraw
+            </button>
+            <button className="btn btn-outline" onClick={() => { setTransferAmount(10000); setRecipientIdentifier(''); setRecipientType('phone'); setTransferDescription(''); setTransferSuccess(''); setTransferError(''); setShowTransfer(true); }}>
+              📤 Send Money
+            </button>
             <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setBankReference(''); setShowTopup(true); }}>
               + {t('wallet.topUp')}
             </button>
@@ -367,6 +392,210 @@ export default function WalletPage() {
               <button className="btn btn-ghost" onClick={() => setShowWithdraw(false)} disabled={withdrawing}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={handleWithdraw} disabled={withdrawing || !withdrawAmount || withdrawAmount < 100 || !withdrawPhone}>
                 {withdrawing ? 'Processing...' : `${t('wallet.withdraw')} ${formatCurrency(withdrawAmount)}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTransfer && (
+        <div className="modal-overlay" onClick={() => setShowTransfer(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-title">📤 Send Money</div>
+
+            {transferSuccess && <div className="alert alert-success mb-1">✅ {transferSuccess}</div>}
+            {transferError && <div className="alert alert-error mb-1">⚠️ {transferError}</div>}
+
+            <div className="field">
+              <label className="field-label">{t('wallet.amount')}</label>
+              <input className="input" type="number" min="100" step="100" value={transferAmount} onChange={(e) => setTransferAmount(Number(e.target.value))} placeholder="Enter amount" />
+              <div className="flex gap-1 wrap mt-1">
+                {quickAmounts.map((a) => (
+                  <button
+                    key={a}
+                    className={`btn btn-sm ${transferAmount === a ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setTransferAmount(a)}
+                  >
+                    {formatCurrency(a)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Recipient Type</label>
+              <div className="flex gap-1 wrap">
+                {[
+                  { id: 'phone' as const, label: '📱 Phone Number' },
+                  { id: 'email' as const, label: '✉️ Email' },
+                  { id: 'userId' as const, label: '👤 User ID' },
+                ].map((t) => (
+                  <button
+                    key={t.id}
+                    className={`btn btn-sm ${recipientType === t.id ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => { setRecipientType(t.id); setRecipientIdentifier(''); }}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">
+                {recipientType === 'phone' ? 'Phone Number' : recipientType === 'email' ? 'Email Address' : 'User ID'}
+              </label>
+              <input
+                className="input"
+                type={recipientType === 'email' ? 'email' : 'text'}
+                value={recipientIdentifier}
+                onChange={(e) => setRecipientIdentifier(e.target.value)}
+                placeholder={
+                  recipientType === 'phone' ? 'e.g. +255712345678' :
+                  recipientType === 'email' ? 'e.g. recipient@email.com' :
+                  'e.g. usr_abc123'
+                }
+              />
+            </div>
+
+            <div className="field">
+              <label className="field-label">Description (optional)</label>
+              <input className="input" type="text" value={transferDescription} onChange={(e) => setTransferDescription(e.target.value)} placeholder="e.g. Payment for goods" />
+            </div>
+
+            <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowTransfer(false)} disabled={transferring}>{t('common.cancel')}</button>
+              <button
+                className="btn btn-primary"
+                disabled={transferring || !transferAmount || transferAmount < 100 || !recipientIdentifier}
+                onClick={async () => {
+                  setTransferring(true);
+                  setTransferSuccess('');
+                  setTransferError('');
+                  try {
+                    const res = await api.post('/wallets/transfer', {
+                      amount: transferAmount,
+                      recipientIdentifier,
+                      recipientType,
+                      description: transferDescription || undefined,
+                    });
+                    if (res.data?.data?.success) {
+                      setTransferSuccess(res.data.data.message || 'Money sent successfully.');
+                      setTimeout(() => {
+                        setShowTransfer(false);
+                        refetchWallet();
+                        refetchTx();
+                      }, 3000);
+                    } else {
+                      setTransferError(res.data?.data?.message || res.data?.message || 'Transfer failed');
+                    }
+                  } catch (err: any) {
+                    setTransferError(err.response?.data?.error?.message || err.message || 'Failed to send money');
+                  } finally {
+                    setTransferring(false);
+                  }
+                }}
+              >
+                {transferring ? 'Sending...' : `Send ${formatCurrency(transferAmount)}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showBankWithdraw && (
+        <div className="modal-overlay" onClick={() => setShowBankWithdraw(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
+            <div className="modal-title">🏦 Withdraw to Bank</div>
+
+            {bankWithdrawSuccess && <div className="alert alert-success mb-1">✅ {bankWithdrawSuccess}</div>}
+            {bankWithdrawError && <div className="alert alert-error mb-1">⚠️ {bankWithdrawError}</div>}
+
+            <div className="field">
+              <label className="field-label">{t('wallet.amount')}</label>
+              <input className="input" type="number" min="1000" step="100" value={bankWithdrawAmount} onChange={(e) => setBankWithdrawAmount(Number(e.target.value))} placeholder="Minimum 1,000 TZS" />
+              <div className="flex gap-1 wrap mt-1">
+                {[10000, 50000, 100000, 500000].map((a) => (
+                  <button
+                    key={a}
+                    className={`btn btn-sm ${bankWithdrawAmount === a ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setBankWithdrawAmount(a)}
+                  >
+                    {formatCurrency(a)}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Bank</label>
+              <select className="select" value={bankName} onChange={(e) => setBankName(e.target.value)}>
+                <option value="">Select bank...</option>
+                <option value="CRDB Bank">CRDB Bank</option>
+                <option value="NMB Bank">NMB Bank</option>
+                <option value="NBC Bank">NBC Bank</option>
+                <option value="TIB Development Bank">TIB Development Bank</option>
+                <option value="Stanbic Bank">Stanbic Bank</option>
+                <option value="Absa Bank">Absa Bank</option>
+                <option value="Equity Bank">Equity Bank</option>
+                <option value="Azania Bank">Azania Bank</option>
+                <option value="DCB Commercial Bank">DCB Commercial Bank</option>
+                <option value="Exim Bank">Exim Bank</option>
+                <option value="KCB Bank">KCB Bank</option>
+                <option value="I&M Bank">I&M Bank</option>
+              </select>
+            </div>
+
+            <div className="field">
+              <label className="field-label">Bank Account Number</label>
+              <input className="input" type="text" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} placeholder="e.g. 0150123456789" />
+            </div>
+
+            <div className="field">
+              <label className="field-label">Account Holder Name</label>
+              <input className="input" type="text" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="e.g. John Doe" />
+            </div>
+
+            <div className="field">
+              <label className="field-label">Description (optional)</label>
+              <input className="input" type="text" value={bankWithdrawDescription} onChange={(e) => setBankWithdrawDescription(e.target.value)} placeholder="e.g. Monthly savings" />
+            </div>
+
+            <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setShowBankWithdraw(false)} disabled={bankWithdrawing}>{t('common.cancel')}</button>
+              <button
+                className="btn btn-primary"
+                disabled={bankWithdrawing || !bankWithdrawAmount || bankWithdrawAmount < 1000 || !bankName || !bankAccountNumber || !bankAccountName}
+                onClick={async () => {
+                  setBankWithdrawing(true);
+                  setBankWithdrawSuccess('');
+                  setBankWithdrawError('');
+                  try {
+                    const res = await api.post('/wallets/withdraw-bank', {
+                      amount: bankWithdrawAmount,
+                      bankName,
+                      bankAccountNumber,
+                      bankAccountName,
+                      description: bankWithdrawDescription || undefined,
+                    });
+                    if (res.data?.data?.success) {
+                      setBankWithdrawSuccess(res.data.data.message || 'Bank withdrawal initiated. Funds will arrive within 1-3 business days.');
+                      setTimeout(() => {
+                        setShowBankWithdraw(false);
+                        refetchWallet();
+                        refetchTx();
+                      }, 4000);
+                    } else {
+                      setBankWithdrawError(res.data?.data?.message || res.data?.message || 'Bank withdrawal failed');
+                    }
+                  } catch (err: any) {
+                    setBankWithdrawError(err.response?.data?.error?.message || err.message || 'Failed to initiate bank withdrawal');
+                  } finally {
+                    setBankWithdrawing(false);
+                  }
+                }}
+              >
+                {bankWithdrawing ? 'Processing...' : `Withdraw to Bank (${formatCurrency(bankWithdrawAmount)})`}
               </button>
             </div>
           </div>

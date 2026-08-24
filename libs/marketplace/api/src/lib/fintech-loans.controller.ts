@@ -244,6 +244,13 @@ export class FintechLoansController {
     return LoanService.LOAN_RATES;
   }
 
+  @Get('wallet-info')
+  @ApiOperation({ summary: 'Get wallet balance and max loan amount based on wallet balance' })
+  @ApiResponse({ status: 200, description: 'Wallet lending info' })
+  public async walletInfo(@CurrentUser() user: JwtPayload) {
+    return { data: await this.loans.getWalletLendingInfo(user.tenantId, user.sub) };
+  }
+
   // ---- Product catalog ------------------------------------------------------
 
   @Get('products')

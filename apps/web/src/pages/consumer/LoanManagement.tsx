@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
@@ -330,6 +330,13 @@ function ApplyForm({ product, borrowerType, onCancel, onSubmitted }: {
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
+  const [walletInfo, setWalletInfo] = useState<{ walletBalance: number; maxLoanAmount: number } | null>(null);
+
+  useEffect(() => {
+    api.get('/fintech/loans/wallet-info')
+      .then((res) => setWalletInfo(res.data?.data ?? res.data))
+      .catch(() => {});
+  }, []);
 
   const required = (product.requiredAttachments ?? []).filter((a) => a.required);
   const optional = (product.requiredAttachments ?? []).filter((a) => !a.required);
@@ -405,8 +412,26 @@ function ApplyForm({ product, borrowerType, onCancel, onSubmitted }: {
         <button className="btn btn-outline btn-sm" onClick={onCancel} disabled={busy}>← Back to catalog</button>
       </div>
 
+      {walletInfo && walletInfo.maxLoanAmount > 0 && (
+        <div className="card" style={{ padding: '1rem', background: 'var(--brand-soft)', border: '1px solid var(--brand)', borderRadius: 'var(--radius)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <div>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>💰 Wallet Balance</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--ink)' }}>{formatCurrency(walletInfo.walletBalance)}</div>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Max Loan (3x)</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--brand)' }}>{formatCurrency(walletInfo.maxLoanAmount)}</div>
+            </div>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
+            Unaweza kukopa hadi {formatCurrency(walletInfo.maxLoanAmount)} TZS kulingana na salio la wallet yako. Weka pesa kwenye wallet yako kuongeza kikomo.
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
           <label className="field-label">Amount ({formatCurrency(product.minAmount)} – {formatCurrency(product.maxAmount)})</label>
           <input type="number" className="input" value={principal} min={product.minAmount} max={product.maxAmount} onChange={(e) => setPrincipal(Number(e.target.value))} />
           <div style={{ display: 'flex', gap: '0.35rem', flexWrap: 'wrap' }}>
@@ -414,6 +439,11 @@ function ApplyForm({ product, borrowerType, onCancel, onSubmitted }: {
               <button key={a} className="btn btn-outline btn-sm" onClick={() => setPrincipal(a)}>{formatCurrency(a)}</button>
             ))}
           </div>
+          {walletInfo && principal > walletInfo.maxLoanAmount && walletInfo.maxLoanAmount > 0 && (
+            <div style={{ color: 'var(--danger)', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+              Kiwango kilichochaguliwa kimezidi kikomo chako cha mkopo ({formatCurrency(walletInfo.maxLoanAmount)}). Weka pesa kwenye wallet yako kuongeza kikomo.
+            </div>
+          )}
           <label className="field-label" style={{ marginTop: '0.5rem' }}>Tenure ({product.minTermMonths}–{product.maxTermMonths} months)</label>
           <select className="input" value={term} onChange={(e) => setTerm(Number(e.target.value))}>
             {Array.from({ length: product.maxTermMonths - product.minTermMonths + 1 }, (_, i) => product.minTermMonths + i).map((m) => (
