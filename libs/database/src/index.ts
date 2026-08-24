@@ -2,6 +2,7 @@ export * from './lib/config/build-data-source-options';
 export * from './lib/database.module';
 export * from './lib/entity/global.entity';
 export * from './lib/entity/tenant-aware.entity';
+export * from './lib/query-performance.interceptor';
 export * from './lib/migrations/support/rls-helper';
 export * from './lib/repository/typeorm.repository.base';
 export * from './lib/unit-of-work/global-unit-of-work';

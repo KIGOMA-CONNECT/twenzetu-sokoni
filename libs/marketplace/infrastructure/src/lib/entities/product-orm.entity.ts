@@ -3,6 +3,7 @@ import { Column, Entity, Index } from 'typeorm';
 
 @Entity({ name: 'products' })
 @Index(['vendorId'])
+@Index(['categoryId'])
 @Index(['type'])
 @Index(['tenantId', 'type'])
 @Index(['tenantId', 'status'])

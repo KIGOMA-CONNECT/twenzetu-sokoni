@@ -1,5 +1,6 @@
 import { config as loadEnv } from 'dotenv';
 loadEnv();
+import './sentry';
 import { AppConfigService } from '@afri-market/core-config';
 import { GlobalExceptionFilter } from '@afri-market/core-exceptions';
 import { ResponseInterceptor, RequestLoggingInterceptor, RequestTimeoutInterceptor } from '@afri-market/core-http';
@@ -11,8 +12,10 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
 import { join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
+import compression from 'compression';
 import { FileUploadService } from '@afri-market/integrations';
 import { AppModule } from './app/app.module';
+import { QueryPerformanceInterceptor } from '@afri-market/database';
 
 const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
 let webIndex: string | null = null;
@@ -26,6 +29,8 @@ async function bootstrap(): Promise<void> {
   console.log('[Bootstrap] Creating Nest application...');
   const app = await NestFactory.create(AppModule);
   console.log('[Bootstrap] Nest application created');
+
+  app.use(compression({ threshold: 1024 }));
 
   const config = app.get(AppConfigService);
   console.log('[Bootstrap] AppConfigService retrieved');
@@ -107,7 +112,7 @@ async function bootstrap(): Promise<void> {
       res.type(mime[ext] || 'application/octet-stream');
       if (ext === 'html') {
         // Never cache the SPA shell — deployments must be picked up instantly.
-        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       } else {
         // Vite emits content-hashed asset filenames — immutable caching is safe.
         res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
@@ -116,7 +121,7 @@ async function bootstrap(): Promise<void> {
       return;
     }
     res.type('html');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(webIndex);
   });
 
@@ -125,7 +130,7 @@ async function bootstrap(): Promise<void> {
     new ValidationPipe({ whitelist: true, transform: true, forbidNonWhitelisted: true }),
   );
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
-  app.useGlobalInterceptors(new RequestIdInterceptor(), new ResponseInterceptor(), new RequestTimeoutInterceptor(), new RequestLoggingInterceptor(logger));
+  app.useGlobalInterceptors(new QueryPerformanceInterceptor(), new RequestIdInterceptor(), new ResponseInterceptor(), new RequestTimeoutInterceptor(), new RequestLoggingInterceptor(logger));
   app.enableShutdownHooks();
   console.log('[Bootstrap] Pipes, filters, interceptors configured');
 
