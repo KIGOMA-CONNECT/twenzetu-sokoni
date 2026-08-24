@@ -66,6 +66,14 @@ export default function VendorPurchaseOrders() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
 
+  const [payOpen, setPayOpen] = useState(false);
+  const [payOrder, setPayOrder] = useState<PurchaseOrder | null>(null);
+  const [payPhone, setPayPhone] = useState('');
+  const [payMethod, setPayMethod] = useState('mpesa');
+  const [payDesc, setPayDesc] = useState('');
+  const [paySaving, setPaySaving] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+
   const draftTotal = lines.reduce((sum, l) => sum + l.unitCost * l.quantity, 0);
   const itemCount = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
   const pendingCount = orders.filter((o) => o.status === 'ORDERED').length;
@@ -151,6 +159,36 @@ export default function VendorPurchaseOrders() {
     }
   };
 
+  const openPay = (order: PurchaseOrder) => {
+    setPayOrder(order);
+    setPayPhone('');
+    setPayMethod('mpesa');
+    setPayDesc(`Payment for ${order.poNumber}`);
+    setPayError(null);
+    setPayOpen(true);
+  };
+
+  const submitPay = async () => {
+    if (!payOrder) return;
+    if (!payPhone.trim()) { setPayError('Enter supplier phone number.'); return; }
+    setPaySaving(true);
+    setPayError(null);
+    try {
+      await api.post(`/vendor/purchase-orders/${payOrder.id}/pay`, {
+        amount: payOrder.subtotal,
+        phoneNumber: payPhone.trim(),
+        method: payMethod,
+        description: payDesc.trim() || undefined,
+      });
+      setPayOpen(false);
+      await refetch();
+    } catch (err: any) {
+      setPayError(err.response?.data?.message || err.message || 'Payment failed.');
+    } finally {
+      setPaySaving(false);
+    }
+  };
+
   const renderActions = (order: PurchaseOrder) => {
     const busy = busyId === order.id;
     const btn = (path: string, label: string, style: React.CSSProperties, confirmMsg?: string) => (
@@ -226,11 +264,18 @@ export default function VendorPurchaseOrders() {
                     <td style={styles.td}><span style={{ fontWeight: 700 }}>{formatCurrency(o.subtotal)}</span> {o.currency}</td>
                     <td style={styles.td}><StatusBadge status={o.status} /></td>
                     <td style={styles.td}>
-                      {o.status === 'CANCELLED' ? (
-                        <StatusBadge status={o.paymentStatus} />
-                      ) : (
-                        <button style={{ ...styles.actionBtn, ...(o.paymentStatus === 'PAID' ? styles.actionGreen : {}) }} onClick={() => togglePaid(o)}>
-                          {o.paymentStatus === 'PAID' ? 'Mark Unpaid' : 'Mark Paid'}
+                      <span style={{
+                        display: 'inline-block', padding: '0.2rem 0.55rem', borderRadius: '999px',
+                        fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase',
+                        background: o.paymentStatus === 'PAID' ? '#dcfce7' : '#fef2f2',
+                        color: o.paymentStatus === 'PAID' ? '#166534' : '#991b1b',
+                      }}>{o.paymentStatus}</span>
+                      {o.paymentStatus === 'UNPAID' && (
+                        <button
+                          style={{ ...styles.actionBtn, ...styles.actionPrimary, marginLeft: '0.4rem' }}
+                          onClick={() => openPay(o)}
+                        >
+                          Pay Supplier
                         </button>
                       )}
                     </td>
@@ -265,7 +310,7 @@ export default function VendorPurchaseOrders() {
                     value={l.productId}
                     onChange={(e) => setLine(i, { productId: e.target.value })}
                   >
-                    <option value="">Select productâ€¦</option>
+                    <option value="">Select product…</option>
                     {products.map((p) => (
                       <option key={p.id} value={p.id}>{p.name} (stock {p.stockQuantity})</option>
                     ))}
@@ -284,7 +329,7 @@ export default function VendorPurchaseOrders() {
                     value={l.unitCost}
                     onChange={(e) => setLine(i, { unitCost: Math.max(0, Number(e.target.value)) })}
                   />
-                  <button style={styles.removeBtn} onClick={() => removeLine(i)} title="Remove line">âœ•</button>
+                  <button style={styles.removeBtn} onClick={() => removeLine(i)} title="Remove line">✖</button>
                 </div>
               ))}
               <button style={{ ...styles.actionBtn, marginTop: '0.25rem' }} onClick={addLine}>+ Add Line</button>
@@ -298,7 +343,51 @@ export default function VendorPurchaseOrders() {
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submit} disabled={saving}>
-                {saving ? 'Creatingâ€¦' : 'Create Purchase Order'}
+                {saving ? 'Creating…' : 'Create Purchase Order'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {payOpen && payOrder && (
+        <div style={styles.overlay} onClick={() => !paySaving && setPayOpen(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalTitle}>Pay Supplier</div>
+            <div style={{ background: 'var(--bg)', borderRadius: '8px', padding: '0.85rem 1rem', marginBottom: '1rem' }}>
+              <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Amount to Pay</div>
+              <div style={{ fontSize: '1.3rem', fontWeight: 800, color: 'var(--ink)' }}>{formatCurrency(payOrder.subtotal)}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--faint)', marginTop: '0.15rem' }}>{payOrder.poNumber}</div>
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Supplier Phone Number</label>
+              <input
+                style={styles.input}
+                type="tel"
+                placeholder="+255712345678"
+                value={payPhone}
+                onChange={(e) => setPayPhone(e.target.value)}
+              />
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Payment Method</label>
+              <select style={styles.input} value={payMethod} onChange={(e) => setPayMethod(e.target.value)}>
+                <option value="mpesa">M-Pesa</option>
+                <option value="tigo_pesa">Tigo Pesa</option>
+                <option value="airtel_money">Airtel Money</option>
+                <option value="halotel">Halotel</option>
+                <option value="bank">Bank Transfer</option>
+              </select>
+            </div>
+            <div style={styles.field}>
+              <label style={styles.label}>Description (optional)</label>
+              <input style={styles.input} value={payDesc} onChange={(e) => setPayDesc(e.target.value)} />
+            </div>
+            {payError && <div style={styles.smallError}>{payError}</div>}
+            <div style={styles.footer}>
+              <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={paySaving}>Cancel</button>
+              <button style={{ ...styles.saveBtn, background: '#059669', ...(paySaving ? { opacity: 0.6 } : {}) }} onClick={submitPay} disabled={paySaving}>
+                {paySaving ? 'Processing…' : 'Pay Now'}
               </button>
             </div>
           </div>

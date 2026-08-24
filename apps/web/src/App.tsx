@@ -54,6 +54,7 @@ const VendorSuppliers = lazy(() => import('./pages/vendor/VendorSuppliers'));
 const VendorPurchaseOrders = lazy(() => import('./pages/vendor/VendorPurchaseOrders'));
 const VendorMarketing = lazy(() => import('./pages/vendor/VendorMarketing'));
 const VendorOnboarding = lazy(() => import('./pages/vendor/VendorOnboarding'));
+const VendorSms = lazy(() => import('./pages/vendor/VendorSms'));
 
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
 const AdminVendors = lazy(() => import('./pages/admin/AdminVendors'));
@@ -150,6 +151,7 @@ function AppRoutes() {
           <Route path="/vendor/settings" element={<ProtectedRoute roles={['vendor']}><VendorSettings /></ProtectedRoute>} />
           <Route path="/vendor/suppliers" element={<ProtectedRoute roles={['vendor']}><VendorSuppliers /></ProtectedRoute>} />
           <Route path="/vendor/purchase-orders" element={<ProtectedRoute roles={['vendor']}><VendorPurchaseOrders /></ProtectedRoute>} />
+          <Route path="/vendor/sms" element={<ProtectedRoute roles={['vendor']}><VendorSms /></ProtectedRoute>} />
           <Route path="/vendor/marketing" element={<ProtectedRoute roles={['vendor']}><VendorMarketing /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/vendors" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminVendors /></ProtectedRoute>} />

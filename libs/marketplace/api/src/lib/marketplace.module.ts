@@ -58,9 +58,13 @@ import { VendorAccountingController } from './vendor-accounting.controller';
 import { VendorAnalyticsController } from './vendor-analytics.controller';
 import { VendorSuppliersController } from './vendor-suppliers.controller';
 import { VendorPurchaseOrdersController } from './vendor-purchase-orders.controller';
+import { SmsController } from './sms.controller';
+import { SmsCreditsService } from './sms-credits.service';
+import { CountrySmsRouterService } from '@afri-market/integrations';
+import { SmsCreditsOrmEntity, SmsLogOrmEntity } from '@afri-market/marketplace-infrastructure';
 
 @Module({
-  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity])],
+  imports: [MarketplaceApplicationModule, MarketplaceGatewayModule, AdminModule, TypeOrmModule.forFeature([NotificationOrmEntity, PushSubscriptionOrmEntity, SmsCreditsOrmEntity, SmsLogOrmEntity])],
   controllers: [
     VendorsController,
     ProductsController,
@@ -111,6 +115,7 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     VendorAnalyticsController,
     VendorSuppliersController,
     VendorPurchaseOrdersController,
+    SmsController,
   ],
   providers: [
     { provide: MARKETPLACE_GATEWAY, useExisting: MarketplaceGateway },
@@ -120,6 +125,8 @@ import { VendorPurchaseOrdersController } from './vendor-purchase-orders.control
     PushService,
     NotificationRouterService,
     OrderNotifierService,
+    SmsCreditsService,
+    CountrySmsRouterService,
   ],
   exports: [NotificationsService, PushService],
 })

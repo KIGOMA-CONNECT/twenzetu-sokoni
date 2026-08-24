@@ -86,3 +86,5 @@ export * from './lib/vendor-purchase-orders.controller';
 export * from './lib/dto/create-purchase-order.dto';
 export * from './lib/dto/create-balance-sheet-account.dto';
 export * from './lib/dto/update-balance-sheet-account.dto';
+export * from './lib/sms.controller';
+export * from './lib/sms-credits.service';

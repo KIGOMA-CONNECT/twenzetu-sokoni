@@ -87,3 +87,5 @@ export * from './lib/repositories/typeorm-supplier.repository';
 export * from './lib/repositories/typeorm-purchase-order.repository';
 export * from './lib/entities/pos-shift-orm.entity';
 export * from './lib/repositories/typeorm-pos-shift.repository';
+export * from './lib/entities/sms-credits-orm.entity';
+export * from './lib/entities/sms-log-orm.entity';
