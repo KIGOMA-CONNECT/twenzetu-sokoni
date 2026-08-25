@@ -17,6 +17,7 @@ import {
 import { MobileMoneyService } from '@afri-market/integrations';
 import { CreatePurchaseOrderDto } from './dto/create-purchase-order.dto';
 import { PaySupplierDto } from './dto/pay-supplier.dto';
+import { MarkPurchaseOrderPaymentDto } from './dto/mark-purchase-order-payment.dto';
 
 @ApiTags('Vendor Purchase Orders')
 @Controller('vendor/purchase-orders')
@@ -119,7 +120,7 @@ export class VendorPurchaseOrdersController {
   @ApiOperation({ summary: 'Mark a purchase order paid/unpaid' })
   public async payment(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body() dto: { paid?: boolean },
+    @Body() dto: MarkPurchaseOrderPaymentDto,
     @CurrentUser() user: JwtPayload,
   ) {
     const ctx = await this.resolveContext(user);

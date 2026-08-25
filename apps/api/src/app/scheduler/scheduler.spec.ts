@@ -180,13 +180,15 @@ describe('SurgeRecalcService', () => {
 
 describe('LoanReminderService', () => {
   let service: LoanReminderService;
-  let mockRepo: ReturnType<typeof createMockRepo>;
+  let dataSource: { query: jest.Mock };
   let logSpy: jest.SpyInstance;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockRepo = createMockRepo();
-    service = new LoanReminderService(createMockDataSource(mockRepo));
+    dataSource = {
+      query: jest.fn().mockResolvedValue([]),
+    } as unknown as { query: jest.Mock };
+    service = new LoanReminderService(dataSource as unknown as DataSource);
     logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
   });
 
@@ -194,10 +196,10 @@ describe('LoanReminderService', () => {
 
   it('should log reminders for loans due within 3 days', async () => {
     const dueLoans = [
-      { id: 'loan-1', borrowerId: 'borrower-1', dueAt: new Date(), outstandingBalance: 5000, currency: 'TZS' },
-      { id: 'loan-2', borrowerId: 'borrower-2', dueAt: new Date(), outstandingBalance: 10000, currency: 'TZS' },
+      { id: 'loan-1', borrower_id: 'borrower-1', due_date: new Date(), remaining_balance: 5000 },
+      { id: 'loan-2', borrower_id: 'borrower-2', due_date: new Date(), remaining_balance: 10000 },
     ];
-    mockRepo.getMany.mockResolvedValue(dueLoans);
+    dataSource.query.mockResolvedValueOnce(dueLoans);
 
     await service.handleLoanReminders();
 
@@ -213,19 +215,24 @@ describe('LoanReminderService', () => {
   });
 
   it('should not log when no loans approaching due date', async () => {
-    mockRepo.getMany.mockResolvedValue([]);
+    dataSource.query.mockResolvedValueOnce([]);
 
     await service.handleLoanReminders();
 
     expect(logSpy).not.toHaveBeenCalled();
   });
 
-  it('should use query builder with correct conditions', async () => {
+  it('should query loans table with correct conditions', async () => {
     await service.handleLoanReminders();
 
-    expect(mockRepo.createQueryBuilder).toHaveBeenCalledWith('loan');
-    expect(mockRepo.where).toHaveBeenCalledWith('loan.status = :status', { status: 'DISBURSED' });
-    expect(mockRepo.getMany).toHaveBeenCalled();
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('FROM loans'),
+      expect.anything(),
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining("status = 'active'"),
+      expect.anything(),
+    );
   });
 });
 

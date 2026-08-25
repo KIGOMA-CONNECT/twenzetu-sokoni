@@ -3,6 +3,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { SmsCreditsService } from './sms-credits.service';
+import { PurchaseSmsCreditsDto } from './dto/purchase-sms-credits.dto';
+import { SendSmsDto } from './dto/send-sms.dto';
 
 @ApiTags('SMS Credits')
 @Controller('sms')
@@ -32,14 +34,14 @@ export class SmsController {
   @Post('credits/purchase')
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Purchase SMS credits' })
-  async purchaseCredits(@CurrentUser() user: JwtPayload, @Body() body: { credits: number; amount: number }) {
+  async purchaseCredits(@CurrentUser() user: JwtPayload, @Body() body: PurchaseSmsCreditsDto) {
     return this.smsCreditsService.purchaseCredits(user.tenantId, user.sub, body.credits, body.amount);
   }
 
   @Post('send')
   @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Send SMS to supplier or customer' })
-  async sendSms(@CurrentUser() user: JwtPayload, @Body() body: { recipientPhone: string; message: string; recipientType?: string }) {
+  async sendSms(@CurrentUser() user: JwtPayload, @Body() body: SendSmsDto) {
     return this.smsCreditsService.sendSms(user.tenantId, user.sub, body.recipientPhone, body.message, body.recipientType);
   }
 

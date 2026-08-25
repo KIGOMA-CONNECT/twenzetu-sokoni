@@ -8,6 +8,9 @@ import { Repository } from 'typeorm';
 import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
 import { UserOrmEntity } from '@afri-market/identity-infrastructure';
 import { ADMIN_ROLES, UserRole } from '@afri-market/identity-domain';
+import { CreateAdminUserDto } from '../dto/create-admin-user.dto';
+import { UpdateAdminRoleDto } from '../dto/update-admin-role.dto';
+import { UpdatePermissionsDto } from '../dto/update-permissions.dto';
 
 @ApiTags('Admin Users')
 @ApiBearerAuth()
@@ -47,7 +50,7 @@ export class AdminUsersController {
   @ApiResponse({ status: 201, description: 'Admin user created' })
   public async createAdmin(
     @CurrentUser() caller: JwtPayload,
-    @Body() dto: { phoneNumber: string; fullName: string; password: string; role: string; permissions?: string[]; email?: string },
+    @Body() dto: CreateAdminUserDto,
   ) {
     if (!ADMIN_ROLES.includes(dto.role as UserRole)) {
       return { success: false, message: `Invalid role. Must be one of: ${ADMIN_ROLES.join(', ')}` };
@@ -80,7 +83,7 @@ export class AdminUsersController {
   public async updateAdminRole(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() caller: JwtPayload,
-    @Body() body: { role: string },
+    @Body() body: UpdateAdminRoleDto,
   ) {
     if (id === caller.sub) {
       return { success: false, message: 'Cannot change your own role' };
@@ -101,7 +104,7 @@ export class AdminUsersController {
   public async updatePermissions(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() caller: JwtPayload,
-    @Body() dto: { permissions: string[] },
+    @Body() dto: UpdatePermissionsDto,
   ) {
     const user = await this.userRepo.findOne({ where: { id, tenantId: caller.tenantId } });
     if (!user) {

@@ -5,6 +5,7 @@ import { timingSafeEqual } from 'crypto';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeController } from '@nestjs/swagger';
 import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
+import { InternalTopupConfirmDto } from './dto/internal-topup-confirm.dto';
 
 @ApiTags('Webhooks')
 @ApiExcludeController()
@@ -148,7 +149,7 @@ export class WebhooksController {
   @ApiResponse({ status: 404, description: 'No pending top-up found' })
   async handleInternalTopupConfirm(
     @Headers() headers: Record<string, string | string[] | undefined>,
-    @Body() body: { checkoutRequestId?: string; receiptNumber?: string },
+    @Body() body: InternalTopupConfirmDto,
   ) {
     const secret = process.env.PAYMENT_CONFIRM_SECRET || process.env.WEBHOOK_INTERNAL_SECRET;
     if (!secret) {
