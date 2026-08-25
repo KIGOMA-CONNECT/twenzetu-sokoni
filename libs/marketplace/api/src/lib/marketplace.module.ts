@@ -18,7 +18,6 @@ import { SurgeController } from './surge.controller';
 import { LoyaltyController } from './loyalty.controller';
 import { KycController } from './kyc.controller';
 import { PoiController } from './poi.controller';
-import { FinanceController } from './finance.controller';
 import { B2bController } from './b2b.controller';
 import { AgentController } from './agent.controller';
 import { UsedGoodsController } from './used-goods.controller';
@@ -79,7 +78,6 @@ import { SmsCreditsOrmEntity, SmsLogOrmEntity } from '@afri-market/marketplace-i
     LoyaltyController,
     KycController,
     PoiController,
-    FinanceController,
     B2bController,
     AgentController,
     UsedGoodsController,

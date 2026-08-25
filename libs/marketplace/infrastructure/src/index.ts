@@ -32,7 +32,7 @@ export * from './lib/entities/cashback-rule-orm.entity';
 export * from './lib/entities/points-transaction-orm.entity';
 export * from './lib/entities/partner-kyc-orm.entity';
 export * from './lib/entities/hyperlocal-poi-orm.entity';
-export * from './lib/entities/micro-loan-orm.entity';
+
 export * from './lib/entities/credit-score-orm.entity';
 export * from './lib/entities/bulk-order-orm.entity';
 export * from './lib/entities/field-agent-orm.entity';
@@ -56,7 +56,7 @@ export * from './lib/repositories/typeorm-driver-review.repository';
 export * from './lib/repositories/typeorm-custom-procurement.repository';
 export * from './lib/repositories/typeorm-vendor-quote.repository';
 export * from './lib/repositories/typeorm-partner-kyc.repository';
-export * from './lib/repositories/typeorm-micro-loan.repository';
+
 export * from './lib/repositories/typeorm-credit-score.repository';
 export * from './lib/repositories/typeorm-bulk-order.repository';
 export * from './lib/repositories/typeorm-field-agent.repository';

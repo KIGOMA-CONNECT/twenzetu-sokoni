@@ -8,6 +8,7 @@ import { StaleOrderService } from './stale-order.service';
 import { OtpCleanupService } from './otp-cleanup.service';
 import { SurgeRecalcService } from './surge-recalc.service';
 import { LoanReminderService } from './loan-reminder.service';
+import { LoanAutoRepayService } from './loan-auto-repay.service';
 import { PayoutSettlementService } from './payout-settlement.service';
 import { PaymentTimeoutService } from './payment-timeout.service';
 import { AutoDispatchService } from './auto-dispatch.service';
@@ -29,6 +30,7 @@ import { PosShiftAutoCloseService } from './pos-shift-auto-close.service';
     OtpCleanupService,
     SurgeRecalcService,
     LoanReminderService,
+    LoanAutoRepayService,
     PayoutSettlementService,
     PaymentTimeoutService,
     AutoDispatchService,

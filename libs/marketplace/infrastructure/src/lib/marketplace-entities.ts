@@ -23,7 +23,6 @@ import { CashbackRuleOrmEntity } from './entities/cashback-rule-orm.entity';
 import { PointsTransactionOrmEntity } from './entities/points-transaction-orm.entity';
 import { PartnerKycOrmEntity } from './entities/partner-kyc-orm.entity';
 import { HyperlocalPoiOrmEntity } from './entities/hyperlocal-poi-orm.entity';
-import { MicroLoanOrmEntity } from './entities/micro-loan-orm.entity';
 import { CreditScoreOrmEntity } from './entities/credit-score-orm.entity';
 import { BulkOrderOrmEntity } from './entities/bulk-order-orm.entity';
 import { FieldAgentOrmEntity } from './entities/field-agent-orm.entity';
@@ -76,7 +75,7 @@ export const MARKETPLACE_ENTITIES = [
   PointsTransactionOrmEntity,
   PartnerKycOrmEntity,
   HyperlocalPoiOrmEntity,
-  MicroLoanOrmEntity,
+
   CreditScoreOrmEntity,
   BulkOrderOrmEntity,
   FieldAgentOrmEntity,

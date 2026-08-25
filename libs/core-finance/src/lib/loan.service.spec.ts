@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { LoanService } from './loan.service';
 import { LoanEntity } from './entities/loan.entity';
@@ -80,6 +80,18 @@ describe('LoanService', () => {
         { provide: getRepositoryToken(LoanProductEntity), useValue: productRepo },
         { provide: getRepositoryToken(LoanDocumentEntity), useValue: documentRepo },
         { provide: getRepositoryToken(LoanWorkflowEventEntity), useValue: workflowRepo },
+        {
+          provide: DataSource,
+          useValue: {
+            query: jest.fn().mockResolvedValue([]),
+            getRepository: jest.fn().mockReturnValue({
+              find: jest.fn().mockResolvedValue([]),
+              findOne: jest.fn().mockResolvedValue(null),
+              create: jest.fn((e) => e),
+              save: jest.fn((e) => Promise.resolve(e)),
+            }),
+          },
+        },
       ],
     }).compile();
 
@@ -98,7 +110,7 @@ describe('LoanService', () => {
           borrowerId: BORROWER,
           borrowerType: 'vendor',
           principal: 500000,
-          termMonths: 12,
+          termMonths: 3,
           productId: 'p1',
           documents: [{ type: 'NATIONAL_ID', fileUrl: '/api/uploads/a.pdf' }],
         }),
@@ -112,7 +124,7 @@ describe('LoanService', () => {
         borrowerId: BORROWER,
         borrowerType: 'vendor',
         principal: 1000000,
-        termMonths: 12,
+        termMonths: 3,
         productId: 'p1',
         documents: [
           { type: 'NATIONAL_ID', fileUrl: '/api/uploads/a.pdf' },
@@ -226,6 +238,150 @@ describe('LoanService', () => {
       }, { actorRole: 'borrower' });
       expect(result.fspName).toBe('NMB Bank');
       expect(result.deductionCode).toBe('NMB-DED');
+    });
+  });
+
+  describe('wallet-based lending', () => {
+    let mockQuery: jest.Mock;
+
+    beforeEach(() => {
+      mockQuery = jest.fn().mockResolvedValue([]);
+      // Replace the DataSource mock with a query-capable version
+      (service as any).ds = { query: mockQuery };
+    });
+
+    it('rejects loan amount exceeding 3x wallet balance', async () => {
+      mockQuery.mockResolvedValueOnce([{ balance: '100000' }]);
+
+      await expect(
+        service.applyLoan({
+          tenantId: TENANT,
+          borrowerId: BORROWER,
+          borrowerType: 'vendor',
+          principal: 500000,
+          termMonths: 3,
+          productId: 'p1',
+          documents: [
+            { type: 'NATIONAL_ID', fileUrl: '/api/uploads/a.pdf' },
+            { type: 'BUSINESS_REG', fileUrl: '/api/uploads/b.pdf' },
+          ],
+        }),
+      ).rejects.toThrow('Loan amount cannot exceed 3x your wallet balance');
+    });
+
+    it('allows loan up to product max when wallet has zero balance', async () => {
+      mockQuery.mockResolvedValueOnce([]);
+
+      const result = await service.applyLoan({
+        tenantId: TENANT,
+        borrowerId: BORROWER,
+        borrowerType: 'vendor',
+        principal: 1000000,
+        termMonths: 3,
+        productId: 'p1',
+        documents: [
+          { type: 'NATIONAL_ID', fileUrl: '/api/uploads/a.pdf' },
+          { type: 'BUSINESS_REG', fileUrl: '/api/uploads/b.pdf' },
+        ],
+      });
+
+      expect(result.principal).toBe(1000000);
+      expect(result.workflowState).toBe('SUBMITTED_TO_FSP');
+    });
+
+    it('credits wallet when loan is disbursed', async () => {
+      const loan = {
+        id: 'l1', status: 'approved', borrowerId: BORROWER, borrowerType: 'vendor',
+        principal: 1000000, remainingBalance: 1000000, termMonths: 12,
+        interestRate: 0.15, monthlyPayment: 90000, workflowState: 'MARKETPLACE_APPROVED',
+        productId: 'p1', totalRepaid: 0,
+      } as unknown as LoanEntity;
+      loanRepo.findOne.mockResolvedValue(loan);
+      loanRepo.save.mockImplementation(async (e) => e as LoanEntity);
+
+      // First query: wallet lookup returns existing wallet
+      mockQuery.mockResolvedValueOnce([{ id: 'w1', balance: '200000' }]);
+      // Second query: wallet UPDATE
+      mockQuery.mockResolvedValueOnce({});
+
+      const next = await service.advanceWorkflow('l1', { actorRole: 'fsp' });
+      expect(next.workflowState).toBe('FSP_DISBURSED');
+      expect(next.status).toBe('active');
+
+      // Verify wallet update was called with the loan principal
+      expect(mockQuery).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE wallets SET balance = balance +'),
+        [1000000, 'w1'],
+      );
+      // Verify wallet_transactions INSERT was called
+      expect(mockQuery).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO wallet_transactions'),
+        expect.arrayContaining([TENANT, BORROWER, 'vendor', 1000000, 200000, 1200000, 'l1']),
+      );
+    });
+
+    it('debits wallet when repayment is made', async () => {
+      const loan = {
+        id: 'l1', status: 'active', borrowerId: BORROWER, borrowerType: 'vendor',
+        principal: 1000000, remainingBalance: 900000, termMonths: 12,
+        interestRate: 0.15, monthlyPayment: 90000, totalRepaid: 100000,
+        productId: 'p1',
+      } as unknown as LoanEntity;
+      loanRepo.findOne.mockResolvedValue(loan);
+      loanRepo.save.mockImplementation(async (e) => e as LoanEntity);
+      const repaymentRepoMock = {
+        create: jest.fn((e) => e),
+        save: jest.fn((e) => Promise.resolve(e)),
+        find: jest.fn().mockResolvedValue([]),
+      } as any;
+      (service as any).repaymentRepo = repaymentRepoMock;
+
+      // First query: wallet lookup with sufficient balance
+      mockQuery.mockResolvedValueOnce([{ id: 'w1', balance: '500000' }]);
+      // Second query: wallet UPDATE (debit)
+      mockQuery.mockResolvedValueOnce({});
+
+      const result = await service.makeRepayment('l1', 90000, BORROWER);
+      expect(result.amount).toBe(90000);
+
+      // Verify wallet debit was called
+      expect(mockQuery).toHaveBeenCalledWith(
+        expect.stringContaining('UPDATE wallets SET balance = balance -'),
+        [90000, 'w1'],
+      );
+      // Verify wallet_transactions INSERT was called with DEBIT
+      expect(mockQuery).toHaveBeenCalledWith(
+        expect.stringContaining('INSERT INTO wallet_transactions'),
+        expect.arrayContaining([TENANT, BORROWER, 'vendor', 90000, 500000, 410000, 'l1']),
+      );
+    });
+
+    it('saves repayment even when wallet debit fails', async () => {
+      const loan = {
+        id: 'l1', status: 'active', borrowerId: BORROWER, borrowerType: 'vendor',
+        principal: 1000000, remainingBalance: 900000, termMonths: 12,
+        interestRate: 0.15, monthlyPayment: 90000, totalRepaid: 100000,
+        productId: 'p1',
+      } as unknown as LoanEntity;
+      loanRepo.findOne.mockResolvedValue(loan);
+      loanRepo.save.mockImplementation(async (e) => e as LoanEntity);
+      const repaymentRepoMock = {
+        create: jest.fn((e) => e),
+        save: jest.fn((e) => Promise.resolve({ ...e, id: 'r1' })),
+        find: jest.fn().mockResolvedValue([]),
+      } as any;
+      (service as any).repaymentRepo = repaymentRepoMock;
+
+      // Wallet lookup returns empty (insufficient balance — WHERE balance >= $1 returns 0 rows)
+      mockQuery.mockResolvedValueOnce([]);
+
+      const result = await service.makeRepayment('l1', 90000, BORROWER);
+      expect(result.id).toBe('r1');
+      expect(result.amount).toBe(90000);
+      expect(repaymentRepoMock.save).toHaveBeenCalled();
+
+      // Verify wallet was NOT debited — only the wallet lookup query was called
+      expect(mockQuery).toHaveBeenCalledTimes(1);
     });
   });
 

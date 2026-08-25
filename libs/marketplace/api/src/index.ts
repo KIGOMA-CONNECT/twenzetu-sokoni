@@ -11,7 +11,7 @@ export * from './lib/surge.controller';
 export * from './lib/loyalty.controller';
 export * from './lib/kyc.controller';
 export * from './lib/poi.controller';
-export * from './lib/finance.controller';
+
 export * from './lib/b2b.controller';
 export * from './lib/agent.controller';
 export * from './lib/used-goods.controller';
@@ -54,7 +54,7 @@ export * from './lib/dto/resolve-dispute.dto';
 export * from './lib/dto/create-surge-rule.dto';
 export * from './lib/dto/submit-kyc.dto';
 export * from './lib/dto/create-poi.dto';
-export * from './lib/dto/request-loan.dto';
+
 export * from './lib/dto/create-bulk-order.dto';
 export * from './lib/dto/register-agent.dto';
 export * from './lib/dto/complete-delivery.dto';
@@ -66,7 +66,7 @@ export * from './lib/dto/vendor-update-order-status.dto';
 export * from './lib/dto/create-used-goods.dto';
 export * from './lib/dto/earn-points.dto';
 export * from './lib/dto/redeem-points.dto';
-export * from './lib/dto/repay-loan.dto';
+
 export * from './lib/dto/create-category.dto';
 export * from './lib/dto/create-address.dto';
 export * from './lib/dto/create-menu.dto';

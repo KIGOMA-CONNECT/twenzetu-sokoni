@@ -3,6 +3,7 @@ import { StaleOrderService } from './stale-order.service';
 import { OtpCleanupService } from './otp-cleanup.service';
 import { SurgeRecalcService } from './surge-recalc.service';
 import { LoanReminderService } from './loan-reminder.service';
+import { LoanAutoRepayService } from './loan-auto-repay.service';
 import { PayoutSettlementService } from './payout-settlement.service';
 import { CommissionSweepService } from './commission-sweep.service';
 import { DataSource } from 'typeorm';
@@ -399,5 +400,160 @@ describe('CommissionSweepService', () => {
     await service.handleCommissionSweep();
 
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('No released payments awaiting commission logging'));
+  });
+});
+
+describe('LoanAutoRepayService', () => {
+  let service: LoanAutoRepayService;
+  let dataSource: { query: jest.Mock };
+  let logSpy: jest.SpyInstance;
+  let warnSpy: jest.SpyInstance;
+  let errorSpy: jest.SpyInstance;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    dataSource = { query: jest.fn().mockResolvedValue([]) };
+    service = new LoanAutoRepayService(dataSource as any);
+    logSpy = jest.spyOn(Logger.prototype, 'log').mockImplementation();
+    warnSpy = jest.spyOn(Logger.prototype, 'warn').mockImplementation();
+    errorSpy = jest.spyOn(Logger.prototype, 'error').mockImplementation();
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
+    errorSpy.mockRestore();
+  });
+
+  it('should auto-repay overdue loans from wallet', async () => {
+    const overdueLoan = {
+      id: 'loan-1',
+      tenant_id: 't1',
+      borrower_id: 'b1',
+      remaining_balance: 10000,
+      monthly_payment: 2000,
+      due_date: new Date('2026-08-01'),
+    };
+
+    dataSource.query
+      .mockResolvedValueOnce([overdueLoan])
+      .mockResolvedValueOnce([{ id: 'wallet-1', balance: '8000' }])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined);
+
+    await service.handleAutoRepayment();
+
+    expect(dataSource.query).toHaveBeenCalledTimes(5);
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE wallets SET balance = balance - $1'),
+      [2000, 'b1', 't1'],
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO loan_repayments'),
+      ['t1', 'loan-1', 2000, 10000, 8000, expect.stringContaining('auto-repay-')],
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE loans SET remaining_balance'),
+      [8000, 'active', 'loan-1'],
+    );
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO wallet_transactions'),
+      ['t1', 'wallet-1', 2000, 10000, 8000, 'loan-1'],
+    );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Auto-repayment: found 1 overdue loan(s)'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('loan-1 repaid 2000 TZS'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Auto-repayment complete: processed 1 loan(s)'));
+  });
+
+  it('should skip loans with insufficient wallet balance', async () => {
+    const overdueLoan = {
+      id: 'loan-2',
+      tenant_id: 't1',
+      borrower_id: 'b2',
+      remaining_balance: 5000,
+      monthly_payment: 1000,
+      due_date: new Date('2026-08-01'),
+    };
+
+    dataSource.query
+      .mockResolvedValueOnce([overdueLoan])
+      .mockResolvedValueOnce([]);
+
+    await service.handleAutoRepayment();
+
+    expect(dataSource.query).toHaveBeenCalledTimes(2);
+    expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('insufficient wallet balance for loan loan-2'));
+    expect(dataSource.query).not.toHaveBeenCalledWith(
+      expect.stringContaining('INSERT INTO loan_repayments'),
+      expect.anything(),
+    );
+  });
+
+  it('should mark loan as paid when balance reaches zero', async () => {
+    const overdueLoan = {
+      id: 'loan-3',
+      tenant_id: 't1',
+      borrower_id: 'b3',
+      remaining_balance: 500,
+      monthly_payment: 2000,
+      due_date: new Date('2026-08-01'),
+    };
+
+    dataSource.query
+      .mockResolvedValueOnce([overdueLoan])
+      .mockResolvedValueOnce([{ id: 'wallet-3', balance: '4500' }])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined);
+
+    await service.handleAutoRepayment();
+
+    expect(dataSource.query).toHaveBeenCalledWith(
+      expect.stringContaining('UPDATE loans SET remaining_balance'),
+      [0, 'paid', 'loan-3'],
+    );
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('remaining: 0 TZS'));
+  });
+
+  it('should not log when no overdue loans found', async () => {
+    dataSource.query.mockResolvedValueOnce([]);
+
+    await service.handleAutoRepayment();
+
+    expect(dataSource.query).toHaveBeenCalledTimes(1);
+    expect(logSpy).not.toHaveBeenCalled();
+  });
+
+  it('should log error and continue with other loans on failure', async () => {
+    const loan1 = {
+      id: 'loan-4',
+      tenant_id: 't1',
+      borrower_id: 'b4',
+      remaining_balance: 1000,
+      monthly_payment: 500,
+      due_date: new Date('2026-08-01'),
+    };
+    const loan2 = {
+      id: 'loan-5',
+      tenant_id: 't1',
+      borrower_id: 'b5',
+      remaining_balance: 2000,
+      monthly_payment: 1000,
+      due_date: new Date('2026-08-01'),
+    };
+
+    dataSource.query
+      .mockResolvedValueOnce([loan1, loan2])
+      .mockRejectedValueOnce(new Error('DB error'))
+      .mockResolvedValueOnce([{ id: 'wallet-5', balance: '1000' }])
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined)
+      .mockResolvedValueOnce(undefined);
+
+    await service.handleAutoRepayment();
+
+    expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining('Auto-repay failed for loan loan-4'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('loan-5 repaid 1000 TZS'));
   });
 });

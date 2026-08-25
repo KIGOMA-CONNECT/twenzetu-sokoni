@@ -15,7 +15,6 @@ export const DRIVER_REVIEW_REPOSITORY = 'IDriverReviewRepository';
 export const PROCUREMENT_REPOSITORY = 'ICustomProcurementRepository';
 export const VENDOR_QUOTE_REPOSITORY = 'IVendorQuoteRepository';
 export const PARTNER_KYC_REPOSITORY = 'IPartnerKycRepository';
-export const MICRO_LOAN_REPOSITORY = 'IMicroLoanRepository';
 export const CREDIT_SCORE_REPOSITORY = 'ICreditScoreRepository';
 export const BULK_ORDER_REPOSITORY = 'IBulkOrderRepository';
 export const FIELD_AGENT_REPOSITORY = 'IFieldAgentRepository';

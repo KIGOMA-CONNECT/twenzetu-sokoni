@@ -311,10 +311,10 @@ export class WalletsController {
   @Post('transfer')
   @UseInterceptors(CacheInvalidationInterceptor)
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Transfer funds to another user wallet (P2P)' })
+  @ApiOperation({ summary: 'Transfer funds to another user wallet (P2P)', description: 'Transfers funds between wallets by recipient phone, email, or user ID' })
   @ApiBody({ type: WalletTransferDto })
   @ApiResponse({ status: 201, description: 'Transfer successful' })
-  @ApiResponse({ status: 400, description: 'Insufficient balance or invalid recipient' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance, recipient not found, or self-transfer attempt' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async transfer(
     @CurrentUser() user: JwtPayload,
@@ -455,10 +455,10 @@ export class WalletsController {
   @Post('withdraw-bank')
   @UseInterceptors(CacheInvalidationInterceptor)
   @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Withdraw wallet balance to bank account (vendors & drivers)' })
+  @ApiOperation({ summary: 'Withdraw wallet balance to bank account (vendors & drivers)', description: 'Initiates a bank transfer from wallet balance to a bank account' })
   @ApiBody({ type: WalletBankWithdrawDto })
   @ApiResponse({ status: 201, description: 'Bank withdrawal initiated' })
-  @ApiResponse({ status: 400, description: 'Insufficient balance or invalid request' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance or invalid bank details' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Only vendors and drivers can withdraw' })
   public async withdrawBank(

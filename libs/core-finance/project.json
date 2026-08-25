@@ -17,7 +17,7 @@
     "test": {
       "executor": "@nx/jest:jest",
       "options": {
-        "jestConfig": "libs/core-finance/jest.config.cts"
+        "jestConfig": "libs/core-finance/jest.config.js"
       }
     }
   }
