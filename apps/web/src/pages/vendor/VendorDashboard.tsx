@@ -6,6 +6,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Order, Wallet } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
+import { useTranslation } from 'react-i18next';
 
 interface VendorStats {
   totalOrders: number;
@@ -55,6 +56,7 @@ const formatDate = (date: string) =>
 const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function VendorDashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: stats, loading: statsLoading, error: statsError } = useApi<VendorStats>('/vendors/me/stats');
@@ -82,14 +84,14 @@ export default function VendorDashboard() {
 
   return (
     <div style={styles.container}>
-      <PageTitle title="Vendor Dashboard" />
+      <PageTitle title={t('vendor.dashboard')} description="Manage your store, orders, and products on afriMarket." />
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: '1.5rem', overflow: 'hidden' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '200px', padding: '2rem', textAlign: 'center' }}>
           <div>
             <h1 style={{ fontSize: 'clamp(1.9rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', margin: 0, marginBottom: '0.4rem' }}>
-              Welcome back, <span className="hero-gradient">{firstNameLabel}</span> ðŸ‘‹
+              {t('vendor.welcomeBack', { name: firstNameLabel })} ðŸ‘‹
             </h1>
-            <p style={{ color: 'var(--muted)', margin: 0, fontSize: '1.05rem' }}>Here's what's happening with your shop today.</p>
+            <p style={{ color: 'var(--muted)', margin: 0, fontSize: '1.05rem' }}>{t('vendor.todaySummary')}</p>
           </div>
         </div>
       </section>
@@ -102,35 +104,35 @@ export default function VendorDashboard() {
         <>
           <div style={styles.cardGrid}>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Total Orders</div>
+              <div style={styles.statLabel}>{t('vendor.totalOrders')}</div>
               <div style={styles.statValue}>{totalOrders}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Total Revenue</div>
+              <div style={styles.statLabel}>{t('vendor.totalRevenue')}</div>
               <div style={styles.statValue}>{formatCurrency(totalRevenue)}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Wallet Balance</div>
+              <div style={styles.statLabel}>{t('vendor.walletBalance')}</div>
               <div style={styles.statValue}>{formatCurrency(walletBalance)}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Pending Balance</div>
+              <div style={styles.statLabel}>{t('vendor.pendingBalance')}</div>
               <div style={styles.statValue}>{formatCurrency(pendingBalance)}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Today's Orders</div>
+              <div style={styles.statLabel}>{t('vendor.todayOrders')}</div>
               <div style={styles.statValue}>{computedTodayOrders}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Today's Revenue</div>
+              <div style={styles.statLabel}>{t('vendor.todayRevenue')}</div>
               <div style={styles.statValue}>{formatCurrency(computedTodayRevenue)}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Service Listings</div>
+              <div style={styles.statLabel}>{t('vendor.serviceListings')}</div>
               <div style={styles.statValue}>{stats?.serviceListings ?? 0}</div>
             </div>
             <div style={styles.statCard}>
-              <div style={styles.statLabel}>Open Service Requests</div>
+              <div style={styles.statLabel}>{t('vendor.openServiceRequests')}</div>
               <div style={styles.statValue}>{stats?.openServiceRequests ?? 0}</div>
             </div>
           </div>
@@ -138,20 +140,20 @@ export default function VendorDashboard() {
           {error && <ErrorMessage message={error} />}
 
           <div style={styles.sectionCard}>
-            <div style={styles.sectionTitle}>Recent Orders</div>
+            <div style={styles.sectionTitle}>{t('vendor.recentOrders')}</div>
             {ordersLoading ? (
               <LoadingSpinner />
             ) : recentOrders.length === 0 ? (
-              <div style={styles.empty}>No recent orders.</div>
+              <div style={styles.empty}>{t('vendor.noRecentOrders')}</div>
             ) : (
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Order ID</th>
-                    <th style={styles.th}>Customer</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Total</th>
-                    <th style={styles.th}>Date</th>
+                    <th style={styles.th}>{t('vendor.orderId')}</th>
+                    <th style={styles.th}>{t('vendor.customer')}</th>
+                    <th style={styles.th}>{t('vendor.status')}</th>
+                    <th style={styles.th}>{t('vendor.total')}</th>
+                    <th style={styles.th}>{t('vendor.date')}</th>
                   </tr>
                 </thead>
                 <tbody>

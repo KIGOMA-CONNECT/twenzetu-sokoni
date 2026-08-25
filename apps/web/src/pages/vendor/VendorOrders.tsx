@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Order, OrderItem } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
+import { useTranslation } from 'react-i18next';
 
 type FilterStatus = 'ALL' | 'PLACED' | 'CONFIRMED' | 'CANCELLED' | 'DELIVERED';
 
@@ -61,6 +62,7 @@ const formatDate = (date: string) =>
 const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
 
 export default function VendorOrders() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: orders, loading, error, refetch } = useApi<Order[]>('/vendors/me/orders');
   const [filter, setFilter] = useState<FilterStatus>('ALL');
@@ -71,9 +73,9 @@ export default function VendorOrders() {
   const [itemsLoading, setItemsLoading] = useState(false);
   const [page, setPage] = useState(1);
 
-  const filtered = (orders || []).filter((o) => filter === 'ALL' || o.status === filter);
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const filtered = useMemo(() => (orders || []).filter((o) => filter === 'ALL' || o.status === filter), [orders, filter]);
+  const totalPages = useMemo(() => Math.ceil(filtered.length / PAGE_SIZE), [filtered.length]);
+  const paged = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
 
   const viewOrder = async (order: Order) => {
     setSelectedOrder(order);
@@ -105,22 +107,22 @@ export default function VendorOrders() {
 
   return (
     <div style={styles.container}>
-      <PageTitle title="Orders" />
+      <PageTitle title={t('vendor.ordersTitle')} />
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Orders</h1>
+        <h1 style={styles.title}>{t('vendor.ordersTitle')}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Status:</label>
+          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{t('vendor.statusFilter')}</label>
           <select
             id="status-filter"
             style={styles.select}
             value={filter}
             onChange={(e) => { setFilter(e.target.value as FilterStatus); setPage(1); }}
           >
-            <option value="ALL">All</option>
-            <option value="PLACED">Placed</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="CANCELLED">Cancelled</option>
-            <option value="DELIVERED">Delivered</option>
+            <option value="ALL">{t('vendor.filterAll')}</option>
+            <option value="PLACED">{t('vendor.filterPlaced')}</option>
+            <option value="CONFIRMED">{t('vendor.filterConfirmed')}</option>
+            <option value="CANCELLED">{t('vendor.filterCancelled')}</option>
+            <option value="DELIVERED">{t('vendor.filterDelivered')}</option>
           </select>
         </div>
       </div>
@@ -133,19 +135,19 @@ export default function VendorOrders() {
         <div style={styles.card}>
           {actionError && <div style={{ padding: '0 1rem' }}><ErrorMessage message={actionError} /></div>}
           {filtered.length === 0 ? (
-            <div style={styles.empty}>No orders match this filter.</div>
+            <div style={styles.empty}>{t('vendor.noOrdersMatch')}</div>
           ) : (
             <>
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Order ID</th>
-                    <th style={styles.th}>Customer</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Pickup Code</th>
-                    <th style={styles.th}>Total</th>
-                    <th style={styles.th}>Date</th>
-                    <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                    <th style={styles.th}>{t('vendor.orderId')}</th>
+                    <th style={styles.th}>{t('vendor.customer')}</th>
+                    <th style={styles.th}>{t('vendor.status')}</th>
+                    <th style={styles.th}>{t('vendor.pickupCode')}</th>
+                    <th style={styles.th}>{t('vendor.total')}</th>
+                    <th style={styles.th}>{t('vendor.date')}</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -163,7 +165,7 @@ export default function VendorOrders() {
                         <td style={styles.td}>{formatDate(order.createdAt)}</td>
                         <td style={styles.td}>
                           <div style={styles.actionWrap}>
-                            <button style={styles.viewBtn} onClick={() => viewOrder(order)}>View</button>
+                            <button style={styles.viewBtn} onClick={() => viewOrder(order)}>{t('vendor.view')}</button>
                             {order.status === 'PLACED' && (
                               <>
                                 <button
@@ -171,14 +173,14 @@ export default function VendorOrders() {
                                   disabled={busy}
                                   onClick={() => updateStatus(order.id, 'CONFIRMED')}
                                 >
-                                  Accept
+                                  {t('vendor.accept')}
                                 </button>
                                 <button
                                   style={{ ...styles.rejectBtn, ...(busy ? styles.disabledBtn : {}) }}
                                   disabled={busy}
                                   onClick={() => updateStatus(order.id, 'CANCELLED')}
                                 >
-                                  Reject
+                                  {t('vendor.reject')}
                                 </button>
                               </>
                             )}
@@ -195,42 +197,42 @@ export default function VendorOrders() {
                     style={{ ...styles.pageBtn, ...(page <= 1 ? styles.pageBtnDisabled : {}) }}
                     disabled={page <= 1}
                     onClick={() => setPage((p) => p - 1)}
-                  >Prev</button>
-                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Page {page} of {totalPages}</span>
+                  >{t('vendor.prev')}</button>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('vendor.pageOf', { current: page, total: totalPages })}</span>
                   <button
                     style={{ ...styles.pageBtn, ...(page >= totalPages ? styles.pageBtnDisabled : {}) }}
                     disabled={page >= totalPages}
                     onClick={() => setPage((p) => p + 1)}
-                  >Next</button>
+                  >{t('vendor.next')}</button>
                 </div>
               )}
             </>
           )}
-          <div style={{ ...styles.smallNote, padding: '0.75rem 1rem' }}>Accept sets status to CONFIRMED; Reject sets status to CANCELLED.</div>
+          <div style={{ ...styles.smallNote, padding: '0.75rem 1rem' }}>{t('vendor.statusNote')}</div>
         </div>
       )}
 
       {selectedOrder && (
         <div style={styles.overlay} onClick={() => setSelectedOrder(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Order Details</div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Order ID</span><span style={styles.modalValue}>{selectedOrder.id}</span></div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Customer</span><span style={styles.modalValue}>{selectedOrder.customerId}</span></div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Status</span><StatusBadge status={selectedOrder.status} /></div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Total</span><span style={styles.modalValue}>{formatCurrency(selectedOrder.totalAmount)}</span></div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Delivery Address</span><span style={styles.modalValue}>{selectedOrder.deliveryAddress || 'N/A'}</span></div>
-            <div style={styles.modalRow}><span style={styles.modalLabel}>Date</span><span style={styles.modalValue}>{formatDate(selectedOrder.createdAt)}</span></div>
+            <div style={styles.modalTitle}>{t('vendor.orderDetails')}</div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.orderId')}</span><span style={styles.modalValue}>{selectedOrder.id}</span></div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.customer')}</span><span style={styles.modalValue}>{selectedOrder.customerId}</span></div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.status')}</span><StatusBadge status={selectedOrder.status} /></div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.total')}</span><span style={styles.modalValue}>{formatCurrency(selectedOrder.totalAmount)}</span></div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.deliveryAddress')}</span><span style={styles.modalValue}>{selectedOrder.deliveryAddress || t('vendor.na')}</span></div>
+            <div style={styles.modalRow}><span style={styles.modalLabel}>{t('vendor.date')}</span><span style={styles.modalValue}>{formatDate(selectedOrder.createdAt)}</span></div>
             <div style={{ borderTop: '1px solid var(--line)', marginTop: '0.75rem', paddingTop: '0.75rem' }}>
-              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Items</div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{t('vendor.items')}</div>
               {itemsLoading ? <LoadingSpinner /> : orderItems.length === 0 ? (
-                <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>No items found.</div>
+                <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.noItems')}</div>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
                   <thead>
                     <tr>
-                      <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Item</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Qty</th>
-                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>Price</th>
+                      <th style={{ textAlign: 'left', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>{t('vendor.item')}</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>{t('vendor.qty')}</th>
+                      <th style={{ textAlign: 'right', padding: '0.4rem', color: 'var(--muted)', borderBottom: '1px solid var(--line)' }}>{t('vendor.priceHeader')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -245,7 +247,7 @@ export default function VendorOrders() {
                 </table>
               )}
             </div>
-            <button style={styles.closeModalBtn} onClick={() => setSelectedOrder(null)}>Close</button>
+            <button style={styles.closeModalBtn} onClick={() => setSelectedOrder(null)}>{t('vendor.close')}</button>
           </div>
         </div>
       )}

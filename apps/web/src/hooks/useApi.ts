@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '../api/client';
 
 export function useApi<T>(url: string | null, deps?: unknown[]) {
@@ -6,7 +6,7 @@ export function useApi<T>(url: string | null, deps?: unknown[]) {
   const [loading, setLoading] = useState(!!url);
   const [error, setError] = useState<string | null>(null);
 
-  const refetch = async () => {
+  const refetch = useCallback(async () => {
     if (!url) { setLoading(false); return; }
     setLoading(true);
     try {
@@ -27,7 +27,7 @@ export function useApi<T>(url: string | null, deps?: unknown[]) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [url]);
 
   useEffect(() => {
     refetch();

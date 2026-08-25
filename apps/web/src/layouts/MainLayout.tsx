@@ -1,5 +1,6 @@
-import { useEffect, useState, FormEvent } from 'react';
+import { useEffect, useState, FormEvent, useCallback, useMemo } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { LanguageSwitcher } from '../components/LanguageSwitcher';
@@ -15,6 +16,7 @@ export function MainLayout() {
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation();
 
   const [isMobile, setIsMobile] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,8 +39,8 @@ export function MainLayout() {
     return () => { document.body.style.overflow = ''; };
   }, [isMobile, menuOpen]);
 
-  const handleLogout = () => { logout(); navigate('/login'); };
-  const go = (path: string) => { navigate(path); setMenuOpen(false); };
+  const handleLogout = useCallback(() => { logout(); navigate('/login'); }, [logout, navigate]);
+  const go = useCallback((path: string) => { navigate(path); setMenuOpen(false); }, [navigate]);
 
   const roleDefaults: Record<string, string[]> = {
     finance_admin: ['manage_finance', 'manage_orders', 'view_analytics'],
@@ -65,60 +67,71 @@ export function MainLayout() {
 
   const showWorkspaceSidebar = !isMobile && (isVendor || isDriver || isAdmin);
 
-  const menuItems: { label: string; path: string; show: boolean; group: string }[] = [
-    { label: 'Dashboard', path: '/dashboard', show: !!user && user.role !== 'vendor' && user.role !== 'driver', group: 'Marketplace' },
-    { label: 'Browse Vendors', path: '/vendors', show: showMarketplace, group: 'Marketplace' },
-    { label: 'Services', path: '/services', show: isCustomer || isAdmin, group: 'Marketplace' },
-    { label: 'My Orders', path: '/orders', show: isCustomer, group: 'Marketplace' },
-    { label: 'Wallet', path: '/wallet', show: isCustomer || isVendor, group: 'Marketplace' },
-    { label: 'Finance', path: '/fintech', show: isCustomer || isVendor || isDriver, group: 'Marketplace' },
-    { label: 'Addresses', path: '/addresses', show: isCustomer, group: 'Marketplace' },
-    { label: 'Loyalty', path: '/loyalty', show: isCustomer, group: 'Marketplace' },
-    { label: 'Matangazo', path: '/matangazo', show: showMarketplace, group: 'Marketplace' },
-    { label: 'Reviews', path: '/reviews', show: isCustomer, group: 'Marketplace' },
-    { label: 'Verify Identity', path: '/kyc', show: isCustomer, group: 'Marketplace' },
-    { label: 'Become a Vendor', path: '/vendor/onboarding', show: isCustomer && !isVendor, group: 'Marketplace' },
-    { label: 'Dashboard', path: '/vendor/dashboard', show: isVendor, group: 'Vendor Panel' },
-    { label: 'My Products', path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
-    { label: 'My Services', path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
-    { label: 'Orders', path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')), group: 'Vendor Panel' },
-    { label: 'POS', path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos'), group: 'Vendor Panel' },
-    { label: 'Day Report', path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
-    { label: 'Accounting', path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
-    { label: 'Reports', path: '/vendor/reports', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
-    { label: 'Analytics', path: '/vendor/analytics', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
-    { label: 'Suppliers', path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
-    { label: 'Purchase Orders', path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
-    { label: 'Staff', path: '/vendor/staff', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
-    { label: 'Marketing', path: '/vendor/marketing', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
-    { label: 'SMS', path: '/vendor/sms', show: isVendor, group: 'Vendor Panel' },
-    { label: 'Settings', path: '/vendor/settings', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
-    { label: 'Dashboard', path: '/admin/dashboard', show: isAdmin, group: 'Admin Panel' },
-    { label: 'Manage Vendors', path: '/admin/vendors', show: isAdmin && p('manage_vendors'), group: 'Admin Panel' },
-    { label: 'Disputes', path: '/admin/disputes', show: isAdmin && p('manage_disputes'), group: 'Admin Panel' },
-    { label: 'Analytics', path: '/admin/analytics', show: isAdmin && p('view_analytics'), group: 'Admin Panel' },
-    { label: 'Promotions', path: '/admin/promotions', show: isAdmin && p('manage_promotions'), group: 'Admin Panel' },
-    { label: 'Drivers', path: '/admin/drivers', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
-    { label: 'Deliveries', path: '/admin/deliveries', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
-    { label: 'Verifications', path: '/admin/verifications', show: isAdmin, group: 'Admin Panel' },
-    { label: 'USSD Simulator', path: '/admin/ussd', show: isAdmin, group: 'Admin Panel' },
-    { label: 'Reconciliation', path: '/admin/reconciliation', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
-    { label: 'Loans', path: '/admin/loans', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
-    { label: 'Audit Log', path: '/admin/audit-log', show: isAdmin && p('manage_admins'), group: 'Admin Panel' },
-    { label: 'Manage Admins', path: '/admin/manage-admins', show: isSuperAdmin, group: 'Admin Panel' },
-    { label: 'Dashboard', path: '/driver/dashboard', show: isDriver, group: 'Driver Panel' },
-    { label: 'Deliveries', path: '/driver/deliveries', show: isDriver, group: 'Driver Panel' },
-    { label: 'Earnings', path: '/driver/earnings', show: isDriver, group: 'Driver Panel' },
-    { label: 'My Vehicle', path: '/driver/vehicle', show: isDriver, group: 'Driver Panel' },
-    { label: 'Notifications', path: '/notifications', show: true, group: 'Account' },
-    { label: 'Account', path: '/account', show: !!user, group: 'Account' },
-  ];
+  const menuItems: { label: string; path: string; show: boolean; group: string }[] = useMemo(() => [
+    { label: t('nav.dashboard'), path: '/dashboard', show: !!user && user.role !== 'vendor' && user.role !== 'driver', group: 'Marketplace' },
+    { label: t('nav.vendors'), path: '/vendors', show: showMarketplace, group: 'Marketplace' },
+    { label: t('nav.services'), path: '/services', show: isCustomer || isAdmin, group: 'Marketplace' },
+    { label: t('nav.orders'), path: '/orders', show: isCustomer, group: 'Marketplace' },
+    { label: t('nav.wallet'), path: '/wallet', show: isCustomer || isVendor, group: 'Marketplace' },
+    { label: t('nav.finance'), path: '/fintech', show: isCustomer || isVendor || isDriver, group: 'Marketplace' },
+    { label: t('nav.addresses'), path: '/addresses', show: isCustomer, group: 'Marketplace' },
+    { label: t('nav.loyalty'), path: '/loyalty', show: isCustomer, group: 'Marketplace' },
+    { label: t('nav.matangazo'), path: '/matangazo', show: showMarketplace, group: 'Marketplace' },
+    { label: t('nav.reviews'), path: '/reviews', show: isCustomer, group: 'Marketplace' },
+    { label: t('nav.kyc'), path: '/kyc', show: isCustomer, group: 'Marketplace' },
+    { label: t('nav.becomeVendor'), path: '/vendor/onboarding', show: isCustomer && !isVendor, group: 'Marketplace' },
+    { label: t('nav.dashboard'), path: '/vendor/dashboard', show: isVendor, group: 'Vendor Panel' },
+    { label: t('nav.myProducts'), path: '/vendor/products', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: t('nav.myServices'), path: '/vendor/services', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: t('nav.orders'), path: '/vendor/orders', show: isVendor && (hasVendorPermission('manage_orders') || hasVendorPermission('use_pos')), group: 'Vendor Panel' },
+    { label: t('nav.pos'), path: '/vendor/pos', show: isVendor && hasVendorPermission('use_pos'), group: 'Vendor Panel' },
+    { label: t('nav.dayReport'), path: '/vendor/pos-report', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: t('nav.accounting'), path: '/vendor/accounting', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: t('nav.reports'), path: '/vendor/reports', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: t('nav.analytics'), path: '/vendor/analytics', show: isVendor && hasVendorPermission('view_reports'), group: 'Vendor Panel' },
+    { label: t('nav.suppliers'), path: '/vendor/suppliers', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: t('nav.purchaseOrders'), path: '/vendor/purchase-orders', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: t('nav.staff'), path: '/vendor/staff', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
+    { label: t('nav.marketing'), path: '/vendor/marketing', show: isVendor && hasVendorPermission('manage_products'), group: 'Vendor Panel' },
+    { label: t('nav.sms'), path: '/vendor/sms', show: isVendor, group: 'Vendor Panel' },
+    { label: t('nav.settings'), path: '/vendor/settings', show: isVendor && isVendorOwner, group: 'Vendor Panel' },
+    { label: t('nav.dashboard'), path: '/admin/dashboard', show: isAdmin, group: 'Admin Panel' },
+    { label: t('nav.manageVendors'), path: '/admin/vendors', show: isAdmin && p('manage_vendors'), group: 'Admin Panel' },
+    { label: t('nav.disputes'), path: '/admin/disputes', show: isAdmin && p('manage_disputes'), group: 'Admin Panel' },
+    { label: t('nav.analytics'), path: '/admin/analytics', show: isAdmin && p('view_analytics'), group: 'Admin Panel' },
+    { label: t('nav.promotions'), path: '/admin/promotions', show: isAdmin && p('manage_promotions'), group: 'Admin Panel' },
+    { label: t('nav.drivers'), path: '/admin/drivers', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
+    { label: t('nav.deliveries'), path: '/admin/deliveries', show: isAdmin && p('manage_drivers'), group: 'Admin Panel' },
+    { label: t('nav.verifications'), path: '/admin/verifications', show: isAdmin, group: 'Admin Panel' },
+    { label: t('nav.ussd'), path: '/admin/ussd', show: isAdmin, group: 'Admin Panel' },
+    { label: t('nav.reconciliation'), path: '/admin/reconciliation', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
+    { label: t('nav.loans'), path: '/admin/loans', show: isAdmin && p('manage_finance'), group: 'Admin Panel' },
+    { label: t('nav.auditLog'), path: '/admin/audit-log', show: isAdmin && p('manage_admins'), group: 'Admin Panel' },
+    { label: t('nav.manageAdmins'), path: '/admin/manage-admins', show: isSuperAdmin, group: 'Admin Panel' },
+    { label: t('nav.dashboard'), path: '/driver/dashboard', show: isDriver, group: 'Driver Panel' },
+    { label: t('nav.deliveries'), path: '/driver/deliveries', show: isDriver, group: 'Driver Panel' },
+    { label: t('nav.earnings'), path: '/driver/earnings', show: isDriver, group: 'Driver Panel' },
+    { label: t('nav.vehicle'), path: '/driver/vehicle', show: isDriver, group: 'Driver Panel' },
+    { label: t('nav.notifications'), path: '/notifications', show: true, group: 'Account' },
+    { label: t('account.title'), path: '/account', show: !!user, group: 'Account' },
+  ], [user, showMarketplace, isCustomer, isAdmin, isVendor, isVendorOwner, isDriver, isSuperAdmin, hasVendorPermission, t]);
 
-  const visibleItems = menuItems.filter(m => m.show);
+  const visibleItems = useMemo(() => menuItems.filter(m => m.show), [menuItems]);
 
-  const navGroups = ['Marketplace', 'Vendor Panel', 'Admin Panel', 'Driver Panel', 'Account']
+  const groupNameLabel = (name: string) => {
+    const map: Record<string, string> = {
+      'Marketplace': t('footer.marketplace'),
+      'Vendor Panel': t('nav.vendorPanel'),
+      'Admin Panel': t('nav.adminPanel'),
+      'Driver Panel': t('nav.driverPanel'),
+      'Account': t('account.title'),
+    };
+    return map[name] || name;
+  };
+
+  const navGroups = useMemo(() => ['Marketplace', 'Vendor Panel', 'Admin Panel', 'Driver Panel', 'Account']
     .map((name) => ({ name, items: visibleItems.filter(i => i.group === name) }))
-    .filter(g => g.items.length > 0);
+    .filter(g => g.items.length > 0), [visibleItems]);
 
   const renderNav = () => (
     <nav style={{ marginTop: '0.75rem', flex: 1, overflowY: 'auto' }}>
@@ -127,7 +140,7 @@ export function MainLayout() {
           <div style={{
             padding: '0.9rem 1.5rem 0.3rem', fontSize: '0.68rem', fontWeight: 800,
             textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748b',
-          }}>{group.name}</div>
+          }}>{groupNameLabel(group.name)}</div>
           {group.items.map(item => (
             <button
               key={item.path}
@@ -154,22 +167,22 @@ export function MainLayout() {
   const isActive = (path: string) =>
     location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
 
-  const categoryLinks: { label: string; path: string; cta?: boolean }[] = [
+  const categoryLinks: { label: string; path: string; cta?: boolean }[] = useMemo(() => [
     ...VENDOR_CATEGORIES.map((c) => ({ label: `${c.emoji} ${c.label}`, path: `/vendors?category=${c.key}` })),
     { label: '🧰 Services', path: '/services', cta: true },
     { label: '💳 Smart Cart', path: '/catalog', cta: true },
-  ];
+  ], []);
 
-  const bottomNav = [
-    { label: 'Home', ico: '🏠', path: user ? '/dashboard' : '/vendors', show: true },
-    { label: 'Vendors', ico: '🏪', path: '/vendors', show: showMarketplace },
-    { label: 'Services', ico: '🧰', path: '/services', show: isCustomer || isAdmin },
-    { label: 'Cart', ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
-    { label: 'Orders', ico: '📦', path: '/orders', show: isCustomer },
-    { label: 'Wallet', ico: '💳', path: '/wallet', show: isCustomer || isVendor },
-    { label: 'Finance', ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },
-    { label: 'Account', ico: '👤', path: '/account', show: true },
-  ].filter(n => n.show);
+  const bottomNav = useMemo(() => [
+    { label: t('bottomNav.home'), ico: '🏠', path: user ? '/dashboard' : '/vendors', show: true },
+    { label: t('bottomNav.vendors'), ico: '🏪', path: '/vendors', show: showMarketplace },
+    { label: t('bottomNav.services'), ico: '🧰', path: '/services', show: isCustomer || isAdmin },
+    { label: t('bottomNav.cart'), ico: '🛒', path: '/cart', show: isCustomer || isAdmin, badge: itemCount },
+    { label: t('bottomNav.orders'), ico: '📦', path: '/orders', show: isCustomer },
+    { label: t('bottomNav.wallet'), ico: '💳', path: '/wallet', show: isCustomer || isVendor },
+    { label: t('bottomNav.finance'), ico: '💰', path: '/fintech', show: isCustomer || isVendor || isDriver },
+    { label: t('bottomNav.account'), ico: '👤', path: '/account', show: true },
+  ].filter(n => n.show), [user, showMarketplace, isCustomer, isAdmin, isVendor, isDriver, itemCount, t]);
 
   const sidebarContent = (
     <>
@@ -183,16 +196,16 @@ export function MainLayout() {
       <div style={{ padding: '1rem 1.5rem', borderTop: '1px solid #334155' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
           <div style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : 'Mgeni'}
+            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : t('misc.guest')}
           </div>
           {user && <NotificationBell />}
         </div>
         <div style={{ marginBottom: '0.5rem' }}><LanguageSwitcher dark /></div>
         <div style={{ marginBottom: '0.5rem' }}><CurrencySwitcher /></div>
         {user ? (
-          <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Logout</button>
+          <button onClick={handleLogout} className="btn btn-danger btn-sm btn-block" style={{ marginTop: '0.5rem' }}>{t('nav.logout')}</button>
         ) : (
-          <button onClick={() => go('/login')} className="btn btn-primary btn-sm btn-block" style={{ marginTop: '0.5rem' }}>Login / Register</button>
+          <button onClick={() => go('/login')} className="btn btn-primary btn-sm btn-block" style={{ marginTop: '0.5rem' }}>{t('auth.loginRegister')}</button>
         )}
       </div>
     </>
@@ -216,15 +229,15 @@ export function MainLayout() {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search vendors, products..."
-                aria-label="Search"
+                placeholder={t('misc.searchPlaceholder')}
+                aria-label={t('misc.search')}
               />
               <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
             </form>
           )}
 
           <div className="topbar-actions">
-            <button className="icon-btn" onClick={toggleTheme} aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'} title={theme === 'dark' ? 'Light mode' : 'Dark mode'}>
+            <button className="icon-btn" onClick={toggleTheme} aria-label={theme === 'dark' ? t('misc.switchToLight') : t('misc.switchToDark')} title={theme === 'dark' ? t('misc.lightMode') : t('misc.darkMode')}>
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
             {isCustomer && (
@@ -241,9 +254,9 @@ export function MainLayout() {
                 <CurrencySwitcher />
               </div>
             </div>
-            <button className="user-chip" onClick={user ? handleLogout : () => navigate('/login')} title={user ? 'Logout' : 'Login'}>
+            <button className="user-chip" onClick={user ? handleLogout : () => navigate('/login')} title={user ? t('nav.logout') : t('auth.login')}>
               <span className="avatar">{(user?.fullName || 'U').charAt(0).toUpperCase()}</span>
-              <span className="chip-name hide-tablet">{user?.fullName?.split(' ')[0] || (user ? 'Account' : 'Login')}</span>
+              <span className="chip-name hide-tablet">{user?.fullName?.split(' ')[0] || (user ? t('account.title') : t('auth.login'))}</span>
             </button>
           </div>
         </div>
@@ -269,8 +282,8 @@ export function MainLayout() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search vendors, products..."
-              aria-label="Search"
+              placeholder={t('misc.searchPlaceholder')}
+                aria-label={t('misc.search')}
             />
             <button type="submit" className="btn btn-primary btn-sm" aria-label="Search">🔍</button>
           </form>
@@ -308,12 +321,12 @@ export function MainLayout() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '1rem 1.5rem', borderBottom: '1px solid #334155' }}>
             <span className="brand-dot" />
             <span style={{ fontSize: '0.85rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#14b8a6' }}>
-              {isVendor ? 'Vendor Panel' : isDriver ? 'Driver Panel' : 'Admin Panel'}
+              {isVendor ? t('nav.vendorPanel') : isDriver ? t('nav.driverPanel') : t('nav.adminPanel')}
             </span>
           </div>
           {renderNav()}
           <div style={{ padding: '0.85rem 1.5rem', borderTop: '1px solid #334155', fontSize: '0.78rem', color: '#94a3b8' }}>
-            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : 'Mgeni'}
+            {user ? `${user.fullName} (${vendorAccess?.staffRole ?? user.role ?? 'member'})` : t('misc.guest')}
           </div>
         </aside>
       )}
@@ -332,41 +345,41 @@ export function MainLayout() {
               afriMarket
             </div>
             <p style={{ fontSize: '0.85rem', marginTop: '0.85rem', maxWidth: 260 }}>
-              The African marketplace connecting buyers, vendors and drivers. Order anything, delivered fast.
+              {t('footer.tagline')}
             </p>
           </div>
           <div>
-            <h4>Marketplace</h4>
-            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/vendors'); }}>Browse Vendors</a>}
-            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/catalog'); }}>Smart Cart</a>}
-            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/orders'); }}>My Orders</a>}
-            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/referrals'); }}>Refer a Friend</a>}
+            <h4>{t('footer.marketplace')}</h4>
+            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/vendors'); }}>{t('footer.browseVendors')}</a>}
+            {showMarketplace && <a href="#" onClick={(e) => { e.preventDefault(); go('/catalog'); }}>{t('footer.smartCart')}</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/orders'); }}>{t('footer.myOrders')}</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/referrals'); }}>{t('footer.referFriend')}</a>}
           </div>
           <div>
-            <h4>Account</h4>
-            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/wallet'); }}>Wallet</a>}
-            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/addresses'); }}>Addresses</a>}
-            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/loyalty'); }}>Loyalty Points</a>}
-            <a href="#" onClick={(e) => { e.preventDefault(); go('/notifications'); }}>Notifications</a>
+            <h4>{t('footer.account')}</h4>
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/wallet'); }}>{t('footer.wallet')}</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/addresses'); }}>{t('footer.addresses')}</a>}
+            {isCustomer && <a href="#" onClick={(e) => { e.preventDefault(); go('/loyalty'); }}>{t('footer.loyaltyPoints')}</a>}
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/notifications'); }}>{t('footer.notifications')}</a>
             {user ? (
-              <button onClick={handleLogout} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Logout</button>
+              <button onClick={handleLogout} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>{t('nav.logout')}</button>
             ) : (
-              <button onClick={() => go('/login')} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>Login / Register</button>
+              <button onClick={() => go('/login')} style={{ background: 'none', border: 'none', padding: '0.22rem 0', color: '#94a3b8', fontSize: '0.85rem', cursor: 'pointer', textAlign: 'left' }}>{t('auth.loginRegister')}</button>
             )}
           </div>
           <div>
-            <h4>Company</h4>
-            <a href="#" onClick={(e) => { e.preventDefault(); go('/terms'); }}>Terms of Service</a>
-            <a href="#" onClick={(e) => { e.preventDefault(); go('/privacy'); }}>Privacy Policy</a>
-            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>Get the app on</div>
+            <h4>{t('footer.company')}</h4>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/terms'); }}>{t('footer.termsOfService')}</a>
+            <a href="#" onClick={(e) => { e.preventDefault(); go('/privacy'); }}>{t('footer.privacyPolicy')}</a>
+            <div style={{ marginTop: '0.75rem', fontSize: '0.8rem', color: '#64748b' }}>{t('footer.getAppOn')}</div>
             <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.4rem' }}>
-              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>Android</span>
-              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>iOS</span>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>{t('footer.android')}</span>
+              <span className="btn btn-sm" style={{ background: '#334155', color: '#e2e8f0', cursor: 'default' }}>{t('footer.ios')}</span>
             </div>
           </div>
         </div>
         <div className="footer-bottom">
-          © {new Date().getFullYear()} afriMarket. Order anything, delivered fast. All rights reserved.
+          {t('footer.copyright', { year: new Date().getFullYear() })}
         </div>
       </footer>
 

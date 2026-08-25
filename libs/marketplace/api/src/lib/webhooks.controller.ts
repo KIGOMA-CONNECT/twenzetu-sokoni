@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Headers, Logger, HttpCode, BadRequestException, UnauthorizedException, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
+import { timingSafeEqual } from 'crypto';
 import { ApiTags, ApiOperation, ApiResponse, ApiExcludeController } from '@nestjs/swagger';
 import { ConfirmPaymentUseCase, FailPaymentUseCase, CreditWalletUseCase, FindVendorsUseCase } from '@afri-market/marketplace-application';
 import { MobileMoneyService } from '@afri-market/integrations';
@@ -30,7 +31,14 @@ export class WebhooksController {
   @HttpCode(200)
   @ApiOperation({ summary: 'M-Pesa payment callback' })
   @ApiResponse({ status: 200, description: 'Callback processed' })
-  async handleMpesaCallback(@Body() body: Record<string, unknown>) {
+  async handleMpesaCallback(
+    @Headers() headers: Record<string, string | string[] | undefined>,
+    @Body() body: Record<string, unknown>,
+  ) {
+    if (!this.verifyWebhookSecret(headers)) {
+      this.logger.warn('M-Pesa callback rejected: invalid webhook secret');
+      throw new UnauthorizedException('Invalid webhook secret');
+    }
     this.logger.log(`M-Pesa callback received: ${JSON.stringify(body).substring(0, 200)}...`);
 
     const bodyRecord = body as Record<string, unknown>;
@@ -148,7 +156,17 @@ export class WebhooksController {
     }
     const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
     const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-    if (provided !== secret) {
+    if (!provided) {
+      throw new UnauthorizedException('Invalid webhook secret');
+    }
+    try {
+      const a = Buffer.from(provided);
+      const b = Buffer.from(secret);
+      if (a.length !== b.length || !timingSafeEqual(a, b)) {
+        throw new UnauthorizedException('Invalid webhook secret');
+      }
+    } catch (e) {
+      if (e instanceof UnauthorizedException) throw e;
       throw new UnauthorizedException('Invalid webhook secret');
     }
 
@@ -236,7 +254,15 @@ export class WebhooksController {
     }
     const headerValue = headers['x-webhook-secret'] ?? headers['X-Webhook-Secret'];
     const provided = Array.isArray(headerValue) ? headerValue[0] : headerValue;
-    return provided === secret;
+    if (!provided) return false;
+    try {
+      const a = Buffer.from(provided);
+      const b = Buffer.from(secret);
+      if (a.length !== b.length) return false;
+      return timingSafeEqual(a, b);
+    } catch {
+      return false;
+    }
   }
 
   private async failTopUpOrPayment(reference: string, reason: string): Promise<void> {

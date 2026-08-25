@@ -6,7 +6,7 @@ import { GlobalExceptionFilter } from '@afri-market/core-exceptions';
 import { ResponseInterceptor, RequestLoggingInterceptor, RequestTimeoutInterceptor } from '@afri-market/core-http';
 import { AppLoggerService } from '@afri-market/core-logger';
 import { applySecurityHardening, RequestIdInterceptor } from '@afri-market/core-security';
-import { ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { Request, Response, NextFunction } from 'express';
@@ -26,21 +26,18 @@ try {
 }
 
 async function bootstrap(): Promise<void> {
-  console.log('[Bootstrap] Creating Nest application...');
+  new Logger('Bootstrap').log('Creating Nest application...');
   const app = await NestFactory.create(AppModule);
-  console.log('[Bootstrap] Nest application created');
+  new Logger('Bootstrap').log('Nest application created');
 
   app.use(compression({ threshold: 1024 }));
 
   const config = app.get(AppConfigService);
-  console.log('[Bootstrap] AppConfigService retrieved');
   const logger = app.get(AppLoggerService);
-  console.log('[Bootstrap] AppLoggerService retrieved');
   app.useLogger(logger);
-  console.log('[Bootstrap] Logger set');
 
   applySecurityHardening(app, config);
-  console.log('[Bootstrap] Security hardening applied');
+  logger.log('Security hardening applied');
 
   const isProduction = (config.app.env ?? process.env.NODE_ENV ?? 'development') === 'production';
   if (isProduction) {
@@ -55,11 +52,11 @@ async function bootstrap(): Promise<void> {
       .map(([k]) => k);
     if (missing.length) {
       const msg = `[Bootstrap FATAL] Missing critical production secrets: ${missing.join(', ')}`;
-      console.error(msg);
+      logger.error(msg);
       await app.close();
       process.exit(1);
     }
-    console.log('[Bootstrap] Production secret validation passed');
+    logger.log('Production secret validation passed');
   }
 
   app.use((req: Request, res: Response, next: NextFunction) => {
@@ -132,7 +129,7 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   app.useGlobalInterceptors(new QueryPerformanceInterceptor(), new RequestIdInterceptor(), new ResponseInterceptor(), new RequestTimeoutInterceptor(), new RequestLoggingInterceptor(logger));
   app.enableShutdownHooks();
-  console.log('[Bootstrap] Pipes, filters, interceptors configured');
+  logger.log('Pipes, filters, interceptors configured');
 
   const nodeEnv = config.app.env ?? process.env.NODE_ENV ?? 'development';
   const swaggerEnabled =
@@ -169,17 +166,17 @@ async function bootstrap(): Promise<void> {
       .build();
     const document = SwaggerModule.createDocument(app, swaggerConfig);
     SwaggerModule.setup('docs', app, document);
-    console.log(`[Bootstrap] Swagger UI available at /docs (disabled in production)`);
+    logger.log('Swagger UI available at /docs (disabled in production)');
   } else {
-    console.log('[Bootstrap] Swagger disabled');
+    logger.log('Swagger disabled');
   }
 
-  console.log('[Bootstrap] Starting to listen on port', config.app.port);
+  logger.log('Starting to listen on port ' + config.app.port);
   await app.listen(config.app.port);
-  console.log(`[Bootstrap] Application listening on port ${config.app.port}`);
+  logger.log(`Application listening on port ${config.app.port}`);
 }
 
 bootstrap().catch((err) => {
-  console.error('[Bootstrap FATAL]', err);
+  new Logger('Bootstrap').error('[Bootstrap FATAL] ' + (err?.message ?? err), err?.stack);
   process.exit(1);
 });

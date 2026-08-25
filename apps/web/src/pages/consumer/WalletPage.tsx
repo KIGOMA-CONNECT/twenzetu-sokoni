@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -178,10 +178,10 @@ export default function WalletPage() {
               </button>
             )}
             <button className="btn btn-outline" onClick={() => { setBankWithdrawAmount(10000); setBankName(''); setBankAccountNumber(''); setBankAccountName(''); setBankWithdrawDescription(''); setBankWithdrawSuccess(''); setBankWithdrawError(''); setShowBankWithdraw(true); }}>
-              🏦 Bank Withdraw
+              🏦 {t('wallet.bankWithdraw')}
             </button>
             <button className="btn btn-outline" onClick={() => { setTransferAmount(10000); setRecipientIdentifier(''); setRecipientType('phone'); setTransferDescription(''); setTransferSuccess(''); setTransferError(''); setShowTransfer(true); }}>
-              📤 Send Money
+              📤 {t('wallet.sendMoney')}
             </button>
             <button className="btn btn-accent" onClick={() => { setTopupAmount(10000); setPhoneNumber(user?.phoneNumber || ''); setTopupSuccess(''); setTopupError(''); setSelectedMethod('mpesa'); setBankReference(''); setShowTopup(true); }}>
               + {t('wallet.topUp')}
@@ -200,7 +200,7 @@ export default function WalletPage() {
           <div className="stat-value">{formatCurrency(wallet.pendingBalance)}</div>
         </div>
         <div className="stat-card blue">
-          <div className="stat-label">Currency</div>
+          <div className="stat-label">{t('wallet.currencyLabel')}</div>
           <div className="stat-value">{wallet.currency || currency.code}</div>
         </div>
       </div>
@@ -220,11 +220,11 @@ export default function WalletPage() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>Type</th>
-                  <th>Amount</th>
-                  <th>Description</th>
-                  <th>Balance After</th>
-                  <th>Date</th>
+                  <th>{t('wallet.type')}</th>
+                  <th>{t('wallet.amountLabel')}</th>
+                  <th>{t('wallet.descriptionLabel')}</th>
+                  <th>{t('wallet.balanceAfter')}</th>
+                  <th>{t('wallet.dateLabel')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -248,7 +248,7 @@ export default function WalletPage() {
       </div>
 
       {showTopup && (
-        <div className="modal-overlay" onClick={() => setShowTopup(false)}>
+        <div className="modal-overlay" onClick={() => setShowTopup(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') setShowTopup(false); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 520 }}>
             <div className="modal-title">💳 {t('wallet.topUpTitle')}</div>
 
@@ -338,7 +338,7 @@ export default function WalletPage() {
             <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={() => setShowTopup(false)} disabled={submitting}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={handleTopup} disabled={submitting || !topupAmount || topupAmount < 100 || (isMobileMoney && !phoneNumber)}>
-                {submitting ? 'Processing...' : `Top Up ${formatCurrency(topupAmount)}`}
+                {submitting ? t('wallet.processing') : t('wallet.topUpAmount', { amount: formatCurrency(topupAmount) })}
               </button>
             </div>
           </div>
@@ -346,7 +346,7 @@ export default function WalletPage() {
       )}
 
       {showWithdraw && (
-        <div className="modal-overlay" onClick={() => setShowWithdraw(false)}>
+        <div className="modal-overlay" onClick={() => setShowWithdraw(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') setShowWithdraw(false); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
             <div className="modal-title">🏦 {t('wallet.withdrawTitle')}</div>
 
@@ -391,7 +391,7 @@ export default function WalletPage() {
             <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={() => setShowWithdraw(false)} disabled={withdrawing}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={handleWithdraw} disabled={withdrawing || !withdrawAmount || withdrawAmount < 100 || !withdrawPhone}>
-                {withdrawing ? 'Processing...' : `${t('wallet.withdraw')} ${formatCurrency(withdrawAmount)}`}
+                {withdrawing ? t('wallet.processing') : `${t('wallet.withdraw')} ${formatCurrency(withdrawAmount)}`}
               </button>
             </div>
           </div>
@@ -399,9 +399,9 @@ export default function WalletPage() {
       )}
 
       {showTransfer && (
-        <div className="modal-overlay" onClick={() => setShowTransfer(false)}>
+        <div className="modal-overlay" onClick={() => setShowTransfer(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') setShowTransfer(false); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
-            <div className="modal-title">📤 Send Money</div>
+            <div className="modal-title">📤 {t('wallet.sendMoneyTitle')}</div>
 
             {transferSuccess && <div className="alert alert-success mb-1">✅ {transferSuccess}</div>}
             {transferError && <div className="alert alert-error mb-1">⚠️ {transferError}</div>}
@@ -423,19 +423,19 @@ export default function WalletPage() {
             </div>
 
             <div className="field">
-              <label className="field-label">Recipient Type</label>
+              <label className="field-label">{t('wallet.recipientType')}</label>
               <div className="flex gap-1 wrap">
                 {[
-                  { id: 'phone' as const, label: '📱 Phone Number' },
-                  { id: 'email' as const, label: '✉️ Email' },
-                  { id: 'userId' as const, label: '👤 User ID' },
-                ].map((t) => (
+                  { id: 'phone' as const, icon: '📱', labelKey: 'wallet.phoneNumberLabel' },
+                  { id: 'email' as const, icon: '✉️', labelKey: 'wallet.emailAddress' },
+                  { id: 'userId' as const, icon: '👤', labelKey: 'wallet.userIdLabel' },
+                ].map((opt) => (
                   <button
-                    key={t.id}
-                    className={`btn btn-sm ${recipientType === t.id ? 'btn-primary' : 'btn-outline'}`}
-                    onClick={() => { setRecipientType(t.id); setRecipientIdentifier(''); }}
+                    key={opt.id}
+                    className={`btn btn-sm ${recipientType === opt.id ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => { setRecipientType(opt.id); setRecipientIdentifier(''); }}
                   >
-                    {t.label}
+                    {opt.icon} {t(opt.labelKey)}
                   </button>
                 ))}
               </div>
@@ -443,7 +443,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">
-                {recipientType === 'phone' ? 'Phone Number' : recipientType === 'email' ? 'Email Address' : 'User ID'}
+                {recipientType === 'phone' ? t('wallet.phoneNumberLabel') : recipientType === 'email' ? t('wallet.emailAddress') : t('wallet.userIdLabel')}
               </label>
               <input
                 className="input"
@@ -459,7 +459,7 @@ export default function WalletPage() {
             </div>
 
             <div className="field">
-              <label className="field-label">Description (optional)</label>
+              <label className="field-label">{t('wallet.descriptionOptional')}</label>
               <input className="input" type="text" value={transferDescription} onChange={(e) => setTransferDescription(e.target.value)} placeholder="e.g. Payment for goods" />
             </div>
 
@@ -496,7 +496,7 @@ export default function WalletPage() {
                   }
                 }}
               >
-                {transferring ? 'Sending...' : `Send ${formatCurrency(transferAmount)}`}
+                {transferring ? t('wallet.sending') : t('wallet.sendAmount', { amount: formatCurrency(transferAmount) })}
               </button>
             </div>
           </div>
@@ -504,9 +504,9 @@ export default function WalletPage() {
       )}
 
       {showBankWithdraw && (
-        <div className="modal-overlay" onClick={() => setShowBankWithdraw(false)}>
+        <div className="modal-overlay" onClick={() => setShowBankWithdraw(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') setShowBankWithdraw(false); }}>
           <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480 }}>
-            <div className="modal-title">🏦 Withdraw to Bank</div>
+            <div className="modal-title">🏦 {t('wallet.withdrawToBank')}</div>
 
             {bankWithdrawSuccess && <div className="alert alert-success mb-1">✅ {bankWithdrawSuccess}</div>}
             {bankWithdrawError && <div className="alert alert-error mb-1">⚠️ {bankWithdrawError}</div>}
@@ -528,9 +528,9 @@ export default function WalletPage() {
             </div>
 
             <div className="field">
-              <label className="field-label">Bank</label>
+              <label className="field-label">{t('wallet.bank')}</label>
               <select className="select" value={bankName} onChange={(e) => setBankName(e.target.value)}>
-                <option value="">Select bank...</option>
+                <option value="">{t('wallet.selectBankPlaceholder')}</option>
                 <option value="CRDB Bank">CRDB Bank</option>
                 <option value="NMB Bank">NMB Bank</option>
                 <option value="NBC Bank">NBC Bank</option>
@@ -547,17 +547,17 @@ export default function WalletPage() {
             </div>
 
             <div className="field">
-              <label className="field-label">Bank Account Number</label>
+              <label className="field-label">{t('wallet.bankAccountNumber')}</label>
               <input className="input" type="text" value={bankAccountNumber} onChange={(e) => setBankAccountNumber(e.target.value)} placeholder="e.g. 0150123456789" />
             </div>
 
             <div className="field">
-              <label className="field-label">Account Holder Name</label>
+              <label className="field-label">{t('wallet.accountHolderName')}</label>
               <input className="input" type="text" value={bankAccountName} onChange={(e) => setBankAccountName(e.target.value)} placeholder="e.g. John Doe" />
             </div>
 
             <div className="field">
-              <label className="field-label">Description (optional)</label>
+              <label className="field-label">{t('wallet.descriptionOptional')}</label>
               <input className="input" type="text" value={bankWithdrawDescription} onChange={(e) => setBankWithdrawDescription(e.target.value)} placeholder="e.g. Monthly savings" />
             </div>
 
@@ -595,7 +595,7 @@ export default function WalletPage() {
                   }
                 }}
               >
-                {bankWithdrawing ? 'Processing...' : `Withdraw to Bank (${formatCurrency(bankWithdrawAmount)})`}
+                {bankWithdrawing ? t('wallet.processing') : t('wallet.withdrawToBankAmount', { amount: formatCurrency(bankWithdrawAmount) })}
               </button>
             </div>
           </div>

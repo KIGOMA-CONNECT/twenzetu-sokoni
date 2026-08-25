@@ -117,7 +117,7 @@ export class FileUploadService implements IFileUploadService {
 
   private safeExtension(fileName: string): string {
     const ext = extname(fileName || '').toLowerCase();
-    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.svg'];
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf'];
     return allowed.includes(ext) ? ext : '.bin';
   }
 }

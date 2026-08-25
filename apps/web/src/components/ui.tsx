@@ -1,6 +1,7 @@
+import React from 'react';
 import { useCurrency } from '../context/CurrencyContext';
 
-export function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
+export const PageHeader = React.memo(function PageHeader({ title, subtitle, action }: { title: string; subtitle?: string; action?: React.ReactNode }) {
   return (
     <div className="page-head">
       <div>
@@ -10,18 +11,18 @@ export function PageHeader({ title, subtitle, action }: { title: string; subtitl
       {action && <div>{action}</div>}
     </div>
   );
-}
+});
 
-export function SectionTitle({ title, emoji }: { title: string; emoji?: string }) {
+export const SectionTitle = React.memo(function SectionTitle({ title, emoji }: { title: string; emoji?: string }) {
   return (
     <h2 className="section-title">
       {emoji && <span>{emoji}</span>}
       {title}
     </h2>
   );
-}
+});
 
-export function EmptyState({ icon = '📦', title, sub }: { icon?: string; title: string; sub?: string }) {
+export const EmptyState = React.memo(function EmptyState({ icon = '📦', title, sub }: { icon?: string; title: string; sub?: string }) {
   return (
     <div className="empty">
       <div className="empty-icon">{icon}</div>
@@ -29,7 +30,7 @@ export function EmptyState({ icon = '📦', title, sub }: { icon?: string; title
       {sub && <div className="empty-sub">{sub}</div>}
     </div>
   );
-}
+});
 
 interface ProductCardProps {
   name: string;
@@ -45,7 +46,7 @@ interface ProductCardProps {
   discount?: number;
 }
 
-export function ProductCard({
+export const ProductCard = React.memo(function ProductCard({
   name,
   price,
   oldPrice,
@@ -61,7 +62,7 @@ export function ProductCard({
   const { formatCurrency } = useCurrency();
   const showDiscount = discount != null && discount > 0;
   return (
-    <div className="pcard" onClick={onClick}>
+    <div className="pcard" onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>
       {showDiscount && <span className="discount-badge">-{discount}%</span>}
       <div className="pcard-img">
         {imageUrl ? (
@@ -99,9 +100,9 @@ export function ProductCard({
       </div>
     </div>
   );
-}
+});
 
-export function VendorCard({
+export const VendorCard = React.memo(function VendorCard({
   shopName,
   category,
   description,
@@ -119,7 +120,7 @@ export function VendorCard({
   onClick?: () => void;
 }) {
   return (
-    <div className="card card-hover" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '0.5rem' }} onClick={onClick}>
+    <div className="card card-hover" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', gap: '0.5rem' }} onClick={onClick} role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick?.(); } }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem' }}>
         <div style={{ width: 52, height: 52, borderRadius: 'var(--radius)', background: 'var(--brand-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', flexShrink: 0 }}>
           🏪
@@ -145,4 +146,4 @@ export function VendorCard({
       </div>
     </div>
   );
-}
+});

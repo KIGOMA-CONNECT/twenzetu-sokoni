@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
@@ -51,9 +51,9 @@ function VendorList() {
     }, 300);
   };
 
-  const filtered = (vendors || []).filter((v) =>
+  const filtered = useMemo(() => (vendors || []).filter((v) =>
     v.shopName.toLowerCase().includes(query.toLowerCase())
-  );
+  ), [vendors, query]);
 
   return (
     <div className="page">
@@ -88,17 +88,18 @@ function VendorList() {
             value={query}
             onChange={(e) => handleSearchInput(e.target.value)}
             onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+            aria-label={t('vendor.searchPlaceholder')}
           />
           {searching && <span style={{ fontSize: 12, color: 'var(--faint)' }}>searching...</span>}
         </div>
         {showSuggestions && suggestions.length > 0 && (
-          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: '#fff', border: '1px solid var(--line)', borderTop: 'none', borderRadius: '0 0 12px 12px', zIndex: 20, maxHeight: 240, overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
+          <div style={{ position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', borderRadius: '0 0 12px 12px', zIndex: 20, maxHeight: 240, overflowY: 'auto', boxShadow: 'var(--shadow-lg)' }}>
             {suggestions.map((s: any) => (
               <div
                 key={s.id}
                 style={{ padding: '0.7rem 0.9rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.85rem', borderBottom: '1px solid var(--line-soft)' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--line-soft)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = '#fff'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'var(--surface)'; }}
                 onClick={() => {
                   setShowSuggestions(false);
                   setQuery(s.name);

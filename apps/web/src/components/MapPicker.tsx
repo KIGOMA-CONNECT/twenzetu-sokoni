@@ -107,6 +107,7 @@ export function MapPicker({ onSelect, initialLat = -6.7924, initialLng = 39.2083
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
           placeholder={placeholder}
+          aria-label="Search for address"
           style={{ flex: 1, padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)', fontSize: '0.85rem' }}
         />
         <button className="btn btn-primary" onClick={searchLocation} style={{ padding: '0.65rem 1rem' }}>

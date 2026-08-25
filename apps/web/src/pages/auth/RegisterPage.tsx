@@ -1,14 +1,16 @@
 import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { PageTitle } from '../../components/PageTitle';
 
 function AuthSidePanel() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const points = [
-    ['🛒', 'Shop smarter with price comparison'],
-    ['💳', 'Pay securely with escrow & mobile money'],
-    ['🛵', 'Fast delivery with live tracking'],
+    ['🛒', t('auth.shopSmart')],
+    ['💳', t('auth.paySecure')],
+    ['🛵', t('auth.fastDelivery')],
   ];
   return (
     <div className="auth-side">
@@ -16,8 +18,8 @@ function AuthSidePanel() {
         <span className="brand-dot" />
         afriMarket
       </button>
-      <h1>Your market, in your pocket</h1>
-      <p>Join the fastest-growing marketplace across Africa. Order anything, delivered fast.</p>
+      <h1>{t('auth.yourMarketInPocket')}</h1>
+      <p>{t('auth.joinSubtitle')}</p>
       <div className="auth-points">
         {points.map(([emoji, text]) => (
           <div key={text} className="auth-point">
@@ -32,6 +34,7 @@ function AuthSidePanel() {
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
@@ -103,32 +106,32 @@ export default function RegisterPage() {
             <span className="brand-dot" />
             afriMarket
           </button>
-          <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>Create your account</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>Join the marketplace in under a minute</p>
+          <h1 className="page-title" style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>{t('auth.createYourAccount')}</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>{t('auth.joinMarketplace')}</p>
 
           {error && <div className="alert alert-error mb-2"><span>⚠️</span><span>{error}</span></div>}
           {msg && <div className="alert alert-success mb-2">✅ {msg}</div>}
 
           <form onSubmit={handleRegister}>
             <div className="field">
-              <label className="field-label">Full Name</label>
+              <label className="field-label">{t('auth.fullName')}</label>
               <input className="input" value={name} onChange={e => setName(e.target.value)} placeholder="John Doe" required />
             </div>
             <div className="field">
-              <label className="field-label">Phone Number</label>
+              <label className="field-label">{t('auth.phoneNumber')}</label>
               <input type="tel" className="input" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+255 754 000 000" required />
             </div>
             <div className="field">
-              <label className="field-label">Password</label>
+              <label className="field-label">{t('auth.password')}</label>
               <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters with upper, lower & number" minLength={8} required />
-              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>At least 8 characters with an uppercase letter, lowercase letter, and a number.</p>
+              <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{t('auth.passwordHint')}</p>
             </div>
             <div className="field">
-              <label className="field-label">I want to join as</label>
+              <label className="field-label">{t('auth.joinAs')}</label>
               <select className="select" value={role} onChange={e => setRole(e.target.value)}>
-                <option value="customer">Customer — order products</option>
-                <option value="vendor">Vendor — sell products</option>
-                <option value="driver">Driver — make deliveries</option>
+                <option value="customer">{t('auth.customer')}</option>
+                <option value="vendor">{t('auth.vendorRole')}</option>
+                <option value="driver">{t('auth.driverRole')}</option>
               </select>
             </div>
 
@@ -136,33 +139,33 @@ export default function RegisterPage() {
               <>
                 {role === 'vendor' && (
                   <div className="field">
-                    <label className="field-label">Business Name</label>
+                    <label className="field-label">{t('auth.businessName')}</label>
                     <input className="input" value={businessName} onChange={e => setBusinessName(e.target.value)} placeholder="e.g. Kigali Market Fresh Ltd" required />
                   </div>
                 )}
                 <div className="field">
-                  <label className="field-label">{role === 'vendor' ? 'Business Registration Number' : 'National ID (NIN)'}</label>
+                  <label className="field-label">{role === 'vendor' ? t('auth.businessRegNumber') : t('auth.nationalId')}</label>
                   <input className="input" value={ninOrRegNo} onChange={e => setNinOrRegNo(e.target.value)} placeholder={role === 'vendor' ? 'e.g. RDB-123456789' : 'e.g. 120199123456789'} required />
                 </div>
                 <div className="field">
-                  <label className="field-label">City / Trading Area</label>
+                  <label className="field-label">{t('auth.cityTradingArea')}</label>
                   <input className="input" value={city} onChange={e => setCity(e.target.value)} placeholder="e.g. Kigali" required />
                 </div>
                 <div className="alert alert-info mb-2">
                   <span>🛡️</span>
-                  <span>Your details are verified before your account is activated. This usually takes less than 24 hours.</span>
+                  <span>{t('auth.verificationNotice')}</span>
                 </div>
               </>
             )}
 
             <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
-              {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> Creating account...</> : 'Create account'}
+              {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> {t('auth.creatingAccount')}</> : t('auth.createAccountButton')}
             </button>
           </form>
 
           <p style={{ marginTop: '1.5rem', textAlign: 'center', fontSize: '0.85rem', color: 'var(--muted)' }}>
-            Already have an account?{' '}
-            <Link to="/login" style={{ color: 'var(--brand)', fontWeight: 700 }}>Sign in</Link>
+            {t('auth.alreadyHaveAccount')}{' '}
+            <Link to="/login" style={{ color: 'var(--brand)', fontWeight: 700 }}>{t('auth.signIn')}</Link>
           </p>
         </div>
       </div>

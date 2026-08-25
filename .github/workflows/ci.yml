@@ -34,3 +34,7 @@ jobs:
 
       - name: Build api + web
         run: npx nx run-many -t build -p api web
+
+  e2e:
+    needs: verify
+    uses: ./.github/workflows/e2e.yml

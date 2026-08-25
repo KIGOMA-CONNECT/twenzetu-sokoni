@@ -1,6 +1,7 @@
 import { FormEvent, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageTitle } from '../../components/PageTitle';
+import { StructuredData } from '../../components/StructuredData';
 
 const CATEGORIES = [
   { emoji: '🍲', name: 'Food', desc: 'Chakula kilicho tayari', bg: '#ccfbf1' },
@@ -38,7 +39,13 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col" style={{ minHeight: '100vh', fontFamily: 'var(--font)', color: 'var(--ink)' }}>
-      <PageTitle title="" />
+      <PageTitle
+        title=""
+        description="afriMarket - Tanzania's largest online marketplace. Shop fresh produce, electronics, services and more from local vendors."
+        ogType="website"
+      />
+      <StructuredData type="Organization" />
+      <StructuredData type="WebSite" />
       {/* Nav */}
       <nav style={{ padding: '1.1rem 1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', maxWidth: 1240, margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
         <div className="brand" style={{ color: 'var(--brand)' }}>

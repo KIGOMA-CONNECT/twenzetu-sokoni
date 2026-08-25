@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Product, PaginatedResponse } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
+import { useTranslation } from 'react-i18next';
 
 interface NewProduct {
   name: string;
@@ -271,6 +272,7 @@ function downloadTemplate() {
 }
 
 export default function VendorProducts() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: raw, loading, error, refetch } = useApi<PaginatedResponse<Product> | Product[]>('/vendors/me/products');
   const [modalOpen, setModalOpen] = useState(false);
@@ -455,15 +457,15 @@ export default function VendorProducts() {
 
   return (
     <div style={styles.container}>
-      <PageTitle title="Products" />
+      <PageTitle title={t('vendor.products')} />
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Products (Duka)</h1>
+        <h1 style={styles.title}>{t('vendor.productsDuka')}</h1>
         <div style={styles.headerActions}>
           <button style={styles.bulkButton} onClick={() => { setBulkOpen(true); setBulkResult(null); setBulkError(null); setBulkText(''); setBulkFileName(''); }}>
-            Upload Bulk
+            {t('vendor.uploadBulk')}
           </button>
-          <button style={styles.addButton} onClick={openModal}>+ Add Product</button>
+          <button style={styles.addButton} onClick={openModal}>{t('vendor.addProduct')}</button>
         </div>
       </div>
 
@@ -473,17 +475,17 @@ export default function VendorProducts() {
         ) : error ? (
           <div style={{ padding: '1rem' }}><ErrorMessage message={error} /></div>
         ) : products.length === 0 ? (
-          <div style={styles.empty}>No products yet. Click "Add Product" or "Upload Bulk" to get started.</div>
+          <div style={styles.empty}>{t('vendor.noProductsYet')}</div>
         ) : (
           <table style={styles.table}>
             <thead>
               <tr>
                 <th style={styles.th}></th>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Price</th>
-                <th style={styles.th}>Stock</th>
-                <th style={styles.th}>Status</th>
-                <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                <th style={styles.th}>{t('vendor.name')}</th>
+                <th style={styles.th}>{t('vendor.price')}</th>
+                <th style={styles.th}>{t('vendor.stock')}</th>
+                <th style={styles.th}>{t('vendor.status')}</th>
+                <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -504,11 +506,11 @@ export default function VendorProducts() {
                   <td style={styles.td}>{product.stockQuantity} {product.unit}</td>
                   <td style={styles.td}><StatusBadge status={product.status} /></td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
-                    <button style={styles.actionBtn} onClick={() => openEdit(product)}>Edit</button>
+                    <button style={styles.actionBtn} onClick={() => openEdit(product)}>{t('vendor.edit')}</button>
                     <button style={styles.actionBtn} onClick={() => toggleStatus(product)}>
-                      {product.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+                      {product.status === 'ACTIVE' ? t('vendor.deactivate') : t('vendor.activate')}
                     </button>
-                    <button style={{ ...styles.actionBtn, ...styles.deleteBtn }} onClick={() => handleDelete(product)}>Delete</button>
+                    <button style={{ ...styles.actionBtn, ...styles.deleteBtn }} onClick={() => handleDelete(product)}>{t('vendor.delete')}</button>
                   </td>
                 </tr>
               ))}
@@ -518,27 +520,27 @@ export default function VendorProducts() {
       </div>
 
       {modalOpen && (
-        <div style={styles.overlay} onClick={() => !saving && setModalOpen(false)}>
+        <div style={styles.overlay} onClick={() => !saving && setModalOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') !saving && setModalOpen(false); }}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{editingProduct ? 'Edit Product' : 'Add Product'}</div>
+            <div style={styles.modalTitle}>{editingProduct ? t('vendor.editProduct') : t('vendor.addProduct')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Name</label>
+              <label style={styles.label}>{t('vendor.name')}</label>
               <input style={styles.input} value={form.name} onChange={(e) => updateField('name', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Description</label>
+              <label style={styles.label}>{t('vendor.description')}</label>
               <textarea style={styles.textarea} value={form.description} onChange={(e) => updateField('description', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Price (TZS)</label>
+              <label style={styles.label}>{t('vendor.priceLabel')}</label>
               <input type="number" min={0} step="0.01" style={styles.input} value={form.price} onChange={(e) => updateField('price', parseFloat(e.target.value) || 0)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Stock</label>
+              <label style={styles.label}>{t('vendor.stock')}</label>
               <input type="number" min={0} style={styles.input} value={form.stock} onChange={(e) => updateField('stock', parseInt(e.target.value, 10) || 0)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Unit</label>
+              <label style={styles.label}>{t('vendor.unit')}</label>
               <select
                 style={styles.input}
                 value={form.unit}
@@ -550,15 +552,15 @@ export default function VendorProducts() {
               </select>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>SKU (for POS scanning)</label>
-              <input style={styles.input} value={form.sku} placeholder="e.g. RK-001" onChange={(e) => updateField('sku', e.target.value)} />
+              <label style={styles.label}>{t('vendor.sku')}</label>
+              <input style={styles.input} value={form.sku} placeholder={t('vendor.skuPlaceholder')} onChange={(e) => updateField('sku', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Barcode</label>
-              <input style={styles.input} value={form.barcode} placeholder="e.g. 8964000001234" onChange={(e) => updateField('barcode', e.target.value)} />
+              <label style={styles.label}>{t('vendor.barcode')}</label>
+              <input style={styles.input} value={form.barcode} placeholder={t('vendor.barcodePlaceholder')} onChange={(e) => updateField('barcode', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Type</label>
+              <label style={styles.label}>{t('vendor.type')}</label>
               <select
                 style={styles.input}
                 value={form.type}
@@ -567,27 +569,27 @@ export default function VendorProducts() {
                   updateField('categoryId', '');
                 }}
               >
-                <option value="">Select typeâ€¦</option>
+                <option value="">{t('vendor.selectType')}</option>
                 {PRODUCT_TYPES.map((t) => (
                   <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
                 ))}
               </select>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Category</label>
+              <label style={styles.label}>{t('vendor.category')}</label>
               <select
                 style={styles.input}
                 value={form.categoryId}
                 onChange={(e) => updateField('categoryId', e.target.value)}
               >
-                <option value="">Select categoryâ€¦</option>
+                <option value="">{t('vendor.selectCategory')}</option>
                 {(CATEGORIES[form.type] || []).map((c) => (
                   <option key={c.id} value={c.id}>{c.label}</option>
                 ))}
               </select>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Product Photo</label>
+              <label style={styles.label}>{t('vendor.productPhoto')}</label>
               <input
                 type="file"
                 accept="image/*"
@@ -595,39 +597,39 @@ export default function VendorProducts() {
                 style={{ fontSize: '0.8rem' }}
                 onChange={(e) => uploadImage(e.target.files?.[0])}
               />
-              {uploading && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Uploadingâ€¦</div>}
+              {uploading && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('vendor.uploading')}</div>}
               {form.imageUrl && (
                 <div style={styles.preview}>
-                  <img src={form.imageUrl} alt="Product preview" style={styles.previewImg} />
+                  <img src={form.imageUrl} alt={t('vendor.productPreview')} style={styles.previewImg} />
                   <span style={{ fontSize: '0.78rem', color: 'var(--muted)', wordBreak: 'break-all', flex: 1 }}>{form.imageUrl}</span>
                   <button
                     style={styles.linkBtn}
                     onClick={() => updateField('imageUrl', '')}
                   >
-                    Remove
+                    {t('vendor.remove')}
                   </button>
                 </div>
               )}
             </div>
             {editingProduct && (
               <div style={styles.field}>
-                <label style={styles.label}>Status</label>
+                <label style={styles.label}>{t('vendor.status')}</label>
                 <select
                   style={styles.input}
                   value={form.status}
                   onChange={(e) => updateField('status', e.target.value)}
                 >
-                  <option value="ACTIVE">Active</option>
-                  <option value="INACTIVE">Inactive</option>
-                  <option value="OUT_OF_STOCK">Out of stock</option>
+                  <option value="ACTIVE">{t('vendor.active')}</option>
+                  <option value="INACTIVE">{t('vendor.inactive')}</option>
+                  <option value="OUT_OF_STOCK">{t('vendor.outOfStock')}</option>
                 </select>
               </div>
             )}
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setModalOpen(false)} disabled={saving || uploading}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setModalOpen(false)} disabled={saving || uploading}>{t('vendor.cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving || uploading ? styles.saveBtnDisabled : {}) }} onClick={submitProduct} disabled={saving || uploading}>
-                {saving ? 'Savingâ€¦' : editingProduct ? 'Save Changes' : 'Save'}
+                {saving ? t('vendor.saving') : editingProduct ? t('vendor.saveChanges') : t('vendor.save')}
               </button>
             </div>
           </div>
@@ -635,14 +637,14 @@ export default function VendorProducts() {
       )}
 
       {bulkOpen && (
-        <div style={styles.overlay} onClick={() => !bulkBusy && setBulkOpen(false)}>
+        <div style={styles.overlay} onClick={() => !bulkBusy && setBulkOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') !bulkBusy && setBulkOpen(false); }}>
           <div style={{ ...styles.modal, width: '620px' }} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Bulk Upload Products</div>
+            <div style={styles.modalTitle}>{t('vendor.bulkUpload')}</div>
             <div style={styles.bulkBody}>
               <div>
-                <button style={styles.linkBtn} onClick={downloadTemplate}>Download CSV template</button>
+                <button style={styles.linkBtn} onClick={downloadTemplate}>{t('vendor.downloadTemplate')}</button>
                 <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                  {' '}â€” columns: name, price, type, category, stock, unit, sku, barcode, description, imageUrl
+                  {' '}{t('vendor.columnsInfo')}
                 </span>
               </div>
               <div>
@@ -653,10 +655,10 @@ export default function VendorProducts() {
                   style={{ fontSize: '0.8rem' }}
                   onChange={(e) => handleBulkFile(e.target.files?.[0])}
                 />
-                {bulkFileName && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>File: {bulkFileName}</div>}
+                {bulkFileName && <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('vendor.fileLabel')} {bulkFileName}</div>}
               </div>
               <div>
-                <label style={styles.label}>Or paste CSV / JSON below</label>
+                <label style={styles.label}>{t('vendor.orPasteCsv')}</label>
                 <textarea
                   style={{ ...styles.textarea, minHeight: '150px', fontFamily: 'monospace' }}
                   value={bulkText}
@@ -666,15 +668,15 @@ export default function VendorProducts() {
               </div>
               {bulkError && (
                 <div style={styles.resultBox}>
-                  <div style={{ color: 'var(--danger)', fontWeight: 600, marginBottom: '0.4rem' }}>Fix these rows:</div>
+                  <div style={{ color: 'var(--danger)', fontWeight: 600, marginBottom: '0.4rem' }}>{t('vendor.fixRows')}</div>
                   {bulkError.split('\n').map((l, i) => <div key={i}>{l}</div>)}
                 </div>
               )}
               {bulkResult && (
                 <div style={styles.resultBox}>
-                  <div style={{ color: 'var(--success)', fontWeight: 600 }}>âœ… {bulkResult.created.length} product(s) created</div>
+                  <div style={{ color: 'var(--success)', fontWeight: 600 }}>âœ… {t('vendor.productsCreated', { count: bulkResult.created.length })}</div>
                   {bulkResult.failed.length > 0 && (
-                    <div style={{ color: 'var(--danger)', fontWeight: 600, marginTop: '0.4rem' }}>{bulkResult.failed.length} failed:</div>
+                    <div style={{ color: 'var(--danger)', fontWeight: 600, marginTop: '0.4rem' }}>{t('vendor.failedLabel', { count: bulkResult.failed.length })}</div>
                   )}
                   {bulkResult.failed.map((f, i) => (
                     <div key={i} style={{ color: 'var(--danger)' }}>â€¢ {f.name}: {f.error}</div>
@@ -682,9 +684,9 @@ export default function VendorProducts() {
                 </div>
               )}
               <div style={styles.footer}>
-                <button style={styles.cancelBtn} onClick={() => setBulkOpen(false)} disabled={bulkBusy}>Close</button>
+                <button style={styles.cancelBtn} onClick={() => setBulkOpen(false)} disabled={bulkBusy}>{t('vendor.close')}</button>
                 <button style={{ ...styles.saveBtn, ...(bulkBusy ? styles.saveBtnDisabled : {}) }} onClick={submitBulk} disabled={bulkBusy}>
-                  {bulkBusy ? 'Importingâ€¦' : 'Import Products'}
+                  {bulkBusy ? t('vendor.importing') : t('vendor.importProducts')}
                 </button>
               </div>
             </div>

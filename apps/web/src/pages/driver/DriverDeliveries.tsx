@@ -8,6 +8,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Delivery } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
+import { useTranslation } from 'react-i18next';
 
 type FilterStatus = 'ALL' | 'PENDING' | 'ASSIGNED' | 'PICKED_UP' | 'IN_TRANSIT' | 'DELIVERED';
 
@@ -46,9 +47,10 @@ const styles: Record<string, React.CSSProperties> = {
   disabledBtn: { opacity: 0.5, cursor: 'not-allowed' },
 };
 
-const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}â€¦` : id);
+const truncateId = (id: string) => (id && id.length > 8 ? `${id.slice(0, 8)}...` : id);
 
 export default function DriverDeliveries() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: deliveries, loading, error, refetch } = useApi<Delivery[]>('/deliveries/me');
   const { subscribe } = useSocket();
@@ -210,23 +212,23 @@ export default function DriverDeliveries() {
 
   return (
     <div style={styles.container}>
-      <PageTitle title="My Deliveries" />
+      <PageTitle title={t('driver.deliveries')} />
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Deliveries</h1>
+        <h1 style={styles.title}>{t('driver.deliveries')}</h1>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Status:</label>
+          <label htmlFor="status-filter" style={{ fontSize: '0.85rem', color: 'var(--text)' }}>{t('driver.statusLabel')}</label>
           <select
             id="status-filter"
             style={styles.select}
             value={filter}
             onChange={(e) => setFilter(e.target.value as FilterStatus)}
           >
-            <option value="ALL">All</option>
-            <option value="PENDING">New</option>
-            <option value="ASSIGNED">Assigned</option>
-            <option value="PICKED_UP">Picked Up</option>
-            <option value="IN_TRANSIT">In Transit</option>
-            <option value="DELIVERED">Delivered</option>
+            <option value="ALL">{t('driver.allStatus')}</option>
+            <option value="PENDING">{t('driver.newStatus')}</option>
+            <option value="ASSIGNED">{t('driver.assignedStatus')}</option>
+            <option value="PICKED_UP">{t('driver.pickedUpStatus')}</option>
+            <option value="IN_TRANSIT">{t('driver.inTransitStatus')}</option>
+            <option value="DELIVERED">{t('driver.deliveredStatus')}</option>
           </select>
         </div>
       </div>
@@ -239,17 +241,17 @@ export default function DriverDeliveries() {
         <div style={styles.card}>
           {actionError && <div style={{ padding: '0 1rem' }}><ErrorMessage message={actionError} /></div>}
           {filtered.length === 0 ? (
-            <div style={styles.empty}>No deliveries match this filter.</div>
+            <div style={styles.empty}>{t('driver.noDeliveriesMatch')}</div>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Order ID</th>
-                  <th style={styles.th}>Pickup</th>
-                  <th style={styles.th}>Delivery</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Earnings</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                  <th style={styles.th}>{t('driver.orderTableId')}</th>
+                  <th style={styles.th}>{t('driver.pickup')}</th>
+                  <th style={styles.th}>{t('driver.delivery')}</th>
+                  <th style={styles.th}>{t('driver.statusLabel')}</th>
+                  <th style={styles.th}>{t('driver.earnings')}</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -270,14 +272,14 @@ export default function DriverDeliveries() {
                               disabled={busy}
                               onClick={() => handleAccept(d.id)}
                             >
-                              Accept
+                              {t('driver.acceptDelivery')}
                             </button>
                             <button
                               style={{ ...styles.declineBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}
                               onClick={() => handleDecline(d.id)}
                             >
-                              Decline
+                              {t('driver.decline')}
                             </button>
                           </div>
                         )}
@@ -287,7 +289,7 @@ export default function DriverDeliveries() {
                               type="text"
                               inputMode="numeric"
                               maxLength={6}
-                              placeholder="Pickup OTP"
+                              placeholder={t('driver.pickupOtp')}
                               value={pickupOtp[d.id] || ''}
                               onChange={(e) => setPickupOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
                               style={styles.otpInput}
@@ -297,7 +299,7 @@ export default function DriverDeliveries() {
                               disabled={busy}
                               onClick={() => handlePickUp(d.id)}
                             >
-                              Pick Up
+                              {t('driver.pickUp')}
                             </button>
                           </div>
                         )}
@@ -308,7 +310,7 @@ export default function DriverDeliveries() {
                               disabled={busy}
                               onClick={() => handleInTransit(d.id)}
                             >
-                              In Transit
+                              {t('driver.inTransit')}
                             </button>
                           </div>
                         )}
@@ -323,20 +325,20 @@ export default function DriverDeliveries() {
                               disabled={busy}
                               onClick={() => toggleLiveSharing(d.id)}
                             >
-                              {liveSharing[d.id] ? 'â— Live Sharing On' : 'â—Ž Live Sharing Off'}
+                              {liveSharing[d.id] ? t('driver.liveSharingOn') : t('driver.liveSharingOff')}
                             </button>
                             <button
                               style={{ ...styles.locationBtn, ...(busy ? styles.disabledBtn : {}) }}
                               disabled={busy}
                               onClick={() => handleShareLocation(d.id)}
                             >
-                              ðŸ“ Share Location
+                              {t('driver.shareLocation')}
                             </button>
                             <input
                               type="text"
                               inputMode="numeric"
                               maxLength={6}
-                              placeholder="Delivery OTP"
+                              placeholder={t('driver.deliveryOtp')}
                               value={deliveryOtp[d.id] || ''}
                               onChange={(e) => setDeliveryOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
                               style={styles.otpInput}
@@ -346,7 +348,7 @@ export default function DriverDeliveries() {
                               disabled={busy}
                               onClick={() => handleComplete(d.id)}
                             >
-                              Complete
+                              {t('driver.complete')}
                             </button>
                           </div>
                         )}
