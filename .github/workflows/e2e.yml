@@ -91,6 +91,9 @@ jobs:
       - name: Run database migrations
         run: npm run migration:run
 
+      - name: Seed test data
+        run: npm run seed
+
       - name: Start API server
         run: |
           npx nx run api:serve &
@@ -119,6 +122,8 @@ jobs:
           BASE_URL: http://localhost:3000
           TEST_PHONE: "+255754100003"
           TEST_PASSWORD: "password123"
+          TEST_ADMIN_PHONE: "+255754100001"
+          TEST_ADMIN_PASSWORD: "password123"
 
       - name: Upload test results
         if: always()
