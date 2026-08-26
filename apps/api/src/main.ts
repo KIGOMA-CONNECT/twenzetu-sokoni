@@ -17,7 +17,12 @@ import { FileUploadService } from '@afri-market/integrations';
 import { AppModule } from './app/app.module';
 import { QueryPerformanceInterceptor } from '@afri-market/database';
 
-const webDir = join(__dirname, '..', '..', '..', '..', 'apps', 'web');
+const webDirCandidates = [
+  process.env.WEB_DIR,
+  join(__dirname, '..', '..', '..', '..', 'apps', 'web'),
+  join(process.cwd(), 'dist', 'apps', 'web'),
+].filter(Boolean) as string[];
+const webDir = webDirCandidates.find((d) => existsSync(join(d, 'index.html'))) ?? webDirCandidates[0];
 let webIndex: string | null = null;
 try {
   webIndex = readFileSync(join(webDir, 'index.html'), 'utf-8');
