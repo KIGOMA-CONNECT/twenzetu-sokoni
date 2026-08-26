@@ -92,7 +92,11 @@ jobs:
         run: npm run migration:run
 
       - name: Seed test data
-        run: npm run seed
+        run: |
+          npm run seed 2>&1 | tee seed.log || {
+            tail -30 seed.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
 
       - name: Start API server
         run: |
