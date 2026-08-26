@@ -99,7 +99,12 @@ jobs:
             sleep 2
           done
 
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: npm ci
+
       - name: Install Playwright browsers
+        working-directory: e2e
         run: npx playwright install --with-deps chromium
 
       - name: Run E2E tests
