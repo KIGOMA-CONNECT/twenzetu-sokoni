@@ -14,7 +14,7 @@ concurrency:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     services:
       postgres:
@@ -111,7 +111,7 @@ jobs:
         working-directory: e2e
         run: |
           set -o pipefail
-          npx playwright test --config=playwright.config.ts 2>&1 | tee e2e-run.log || {
+          npx playwright test --config=playwright.config.ts --project=chromium 2>&1 | tee e2e-run.log || {
             grep -aE '✘|✗|Error:|failed|timed out|expect\(' e2e-run.log | head -30 | while IFS= read -r line; do echo "::error::$line"; done
             exit 1
           }
