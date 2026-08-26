@@ -28,6 +28,11 @@ async function loginAsAdmin(page: any) {
     throw new Error(`Login API returned ${status}: ${JSON.stringify(body).slice(0, 300)}`);
   }
 
+  await page.waitForFunction(
+    () => localStorage.getItem('accessToken') !== null,
+    { timeout: 10_000 },
+  );
+  await page.goto('/admin/dashboard');
   await page.waitForURL(/admin/, { timeout: 15_000 });
 }
 

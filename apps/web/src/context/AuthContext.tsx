@@ -44,6 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     try {
+      const storedUser = localStorage.getItem('user');
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        if (parsed?.role && parsed.role !== 'vendor') {
+          setVendorAccess(null);
+          return;
+        }
+      }
+    } catch {
+      /* ignore parse errors */
+    }
+    try {
       const res = await api.get('/vendor-staff/me');
       const ctx = (res.data?.data ?? res.data) as VendorAccessContext | null;
       setVendorAccess(ctx);

@@ -27,7 +27,10 @@ async function loginAsUser(page: any, phone: string, password: string) {
     throw new Error(`Login API returned ${status}: ${JSON.stringify(body).slice(0, 300)}`);
   }
 
-  await page.waitForURL(/dashboard|wallet|admin/, { timeout: 15_000 });
+  await page.waitForFunction(
+    () => localStorage.getItem('accessToken') !== null,
+    { timeout: 10_000 },
+  );
 }
 
 async function waitForWalletPage(page: any) {
