@@ -106,6 +106,30 @@ jobs:
             sleep 2
           done
 
+      - name: Verify login API works
+        run: |
+          echo "=== Health check ==="
+          curl -sf http://localhost:3000/api/health | head -c 200
+          echo ""
+          echo "=== Login admin ==="
+          curl -s -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber":"+255754100001","password":"password123"}' | head -c 500
+          echo ""
+          echo "=== Login customer ==="
+          curl -s -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber":"+255754100003","password":"password123"}' | head -c 500
+          echo ""
+          echo "=== SPA index ==="
+          curl -sf http://localhost:3000/ | head -c 200
+          echo ""
+          echo "=== SPA login ==="
+          curl -sf http://localhost:3000/login | head -c 200
+          echo ""
+          echo "=== SPA JS assets ==="
+          curl -sf http://localhost:3000/ | grep -oP 'src="[^"]*"' | head -5
+
       - name: Install e2e dependencies
         working-directory: e2e
         run: npm ci
@@ -118,8 +142,10 @@ jobs:
         working-directory: e2e
         run: |
           set -o pipefail
-          npx playwright test --config=playwright.config.ts --project=chromium 2>&1 | tee e2e-run.log || {
-            grep -aE '✘|✗|Error:|failed|timed out|expect\(' e2e-run.log | head -30 | while IFS= read -r line; do echo "::error::$line"; done
+          npx playwright test --config=playwright.config.ts --project=chromium --reporter=list 2>&1 | tee e2e-run.log || {
+            grep -aE '✘|✗|Error:|failed|timed out|expect\(' e2e-run.log | head -40 | while IFS= read -r line; do echo "::error::$line"; done
+            echo "=== Last 50 lines of e2e output ==="
+            tail -50 e2e-run.log
             exit 1
           }
         env:
