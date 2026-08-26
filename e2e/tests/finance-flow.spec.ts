@@ -1,13 +1,18 @@
 ﻿import { expect, test } from '@playwright/test';
 
-// Finance flows: wallet balance, fintech tabs, savings, loans, send money, bank withdraw.
-// READ-ONLY — safe against any environment, creates no data.
-//   npx playwright test tests/finance-flow.spec.ts
-
 const TEST_PHONE = process.env.TEST_PHONE || '07540000001';
 const TEST_PASSWORD = process.env.TEST_PASSWORD || 'TestPass1x!';
 
 async function loginAsUser(page: any, phone: string, password: string) {
+  page.on('console', (msg: any) => {
+    if (msg.type() === 'error') {
+      console.log(`[BROWSER ERROR] ${msg.text()}`);
+    }
+  });
+  page.on('pageerror', (err: any) => {
+    console.log(`[PAGE ERROR] ${err.message}`);
+  });
+
   await page.goto('/login');
   await page.waitForSelector('#phoneNumber', { timeout: 10_000 });
   await page.fill('#phoneNumber', phone);
@@ -31,12 +36,19 @@ async function loginAsUser(page: any, phone: string, password: string) {
     () => localStorage.getItem('accessToken') !== null,
     { timeout: 10_000 },
   );
+  await page.waitForURL(/(?!.*\/login)/, { timeout: 15_000 });
+  await page.waitForLoadState('networkidle');
 }
 
 async function waitForWalletPage(page: any) {
   await page.goto('/wallet');
-  // Wait for either wallet content, error, or empty state to appear
+  await page.waitForLoadState('networkidle');
   await page.waitForSelector('.stat-label, .alert-error, .empty-state, .page', { timeout: 15_000 });
+}
+
+async function gotoAndWait(page: any, path: string) {
+  await page.goto(path);
+  await page.waitForLoadState('networkidle');
 }
 
 test.describe('Finance Flow', () => {
@@ -118,7 +130,7 @@ test.describe('Finance Flow', () => {
   test('user can view fintech page with savings tab', async ({ page }) => {
     await loginAsUser(page, TEST_PHONE, TEST_PASSWORD);
 
-    await page.goto('/fintech');
+    await gotoAndWait(page, '/fintech');
     await expect(page.locator('text=afriMarket Finance')).toBeVisible();
     await expect(page.locator('button:has-text("Akiba (Savings)")')).toBeVisible();
     await expect(page.locator('button:has-text("Fixed Deposits")')).toBeVisible();
@@ -128,7 +140,7 @@ test.describe('Finance Flow', () => {
   test('fintech page can switch to fixed deposits tab', async ({ page }) => {
     await loginAsUser(page, TEST_PHONE, TEST_PASSWORD);
 
-    await page.goto('/fintech');
+    await gotoAndWait(page, '/fintech');
     await page.locator('button:has-text("Fixed Deposits")').click();
     await expect(page.locator('button:has-text("Fixed Deposits")')).toHaveCSS(/border/, /.*/);
   });
@@ -136,7 +148,7 @@ test.describe('Finance Flow', () => {
   test('fintech page can switch to loans tab', async ({ page }) => {
     await loginAsUser(page, TEST_PHONE, TEST_PASSWORD);
 
-    await page.goto('/fintech');
+    await gotoAndWait(page, '/fintech');
     await page.locator('button:has-text("Mikopo (Loans)")').click();
     await expect(page.locator('button:has-text("Mikopo (Loans)")')).toHaveCSS(/border/, /.*/);
   });
@@ -158,7 +170,7 @@ test.describe('Finance Flow', () => {
   test('fintech savings tab shows quick deposit amounts', async ({ page }) => {
     await loginAsUser(page, TEST_PHONE, TEST_PASSWORD);
 
-    await page.goto('/fintech');
+    await gotoAndWait(page, '/fintech');
     await page.locator('button:has-text("Akiba (Savings)")').click();
     await expect(page.locator('button:has-text("10000")').first()).toBeVisible({ timeout: 5_000 });
   });
