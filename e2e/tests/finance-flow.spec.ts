@@ -12,17 +12,22 @@ async function loginAsUser(page: any, phone: string, password: string) {
   await page.waitForSelector('#phoneNumber', { timeout: 10_000 });
   await page.fill('#phoneNumber', phone);
   await page.fill('#password', password);
-  await page.click('button[type="submit"]');
 
-  // Wait for either successful redirect or error message
-  await Promise.race([
-    expect(page).toHaveURL(/dashboard|wallet/, { timeout: 15_000 }),
-    page.waitForSelector('.alert-error, .alert', { timeout: 15_000 }).then(async () => {
-      const errorText = await page.locator('.alert-error, .alert').first().textContent().catch(() => 'unknown');
-      const currentUrl = page.url();
-      throw new Error(`Login failed on ${currentUrl}: ${errorText}`);
-    }),
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (resp: any) => resp.url().includes('/api/auth/login') && resp.request().method() === 'POST',
+      { timeout: 15_000 },
+    ),
+    page.click('button[type="submit"]'),
   ]);
+
+  const status = response.status();
+  if (status !== 200) {
+    const body = await response.json().catch(() => ({}));
+    throw new Error(`Login API returned ${status}: ${JSON.stringify(body).slice(0, 300)}`);
+  }
+
+  await page.waitForURL(/dashboard|wallet|admin/, { timeout: 15_000 });
 }
 
 async function waitForWalletPage(page: any) {
