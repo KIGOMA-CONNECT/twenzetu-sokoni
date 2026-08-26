@@ -107,9 +107,9 @@ export default function OrderTracking() {
       }
     });
 
-    const unsub2 = subscribe('delivery-status-changed', (data: any) => {
+    const unsub2 = subscribe('delivery-status-changed', (data: { status?: string; orderStatus?: string; [key: string]: unknown }) => {
       if (data.status === 'DELIVERED' || data.status === 'IN_TRANSIT') {
-        setOrderStatus((data as any).orderStatus || orderStatus);
+        setOrderStatus(data.orderStatus || orderStatus);
         refetchTracking();
       }
     });

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { PageHeader } from '../../components/ui';
@@ -10,6 +11,7 @@ interface KycStatus {
 }
 
 export default function CustomerKyc() {
+  const { t } = useTranslation();
   const [kyc, setKyc] = useState<KycStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [nidaNumber, setNidaNumber] = useState('');
@@ -28,7 +30,7 @@ export default function CustomerKyc() {
   }, []);
 
   const submit = async () => {
-    if (!nidaNumber || nidaNumber.length < 10) { setError('Enter a valid NIDA number'); return; }
+    if (!nidaNumber || nidaNumber.length < 10) { setError(t('kyc.invalidNida')); return; }
     setSubmitting(true);
     setError('');
     try {
@@ -38,7 +40,7 @@ export default function CustomerKyc() {
       });
       setKyc(result.data?.data ?? result.data);
     } catch (err) {
-      setError((err as Error).message || 'Submission failed');
+      setError((err as Error).message || t('kyc.submissionFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -48,27 +50,27 @@ export default function CustomerKyc() {
 
   return (
     <div className="page page-narrow">
-      <PageHeader title="Identity Verification" sub="Verify your identity to unlock higher order limits and faster dispute resolution." />
+      <PageHeader title={t('kyc.title')} sub={t('kyc.subtitle')} />
 
       {kyc?.status === 'APPROVED' ? (
         <div className="alert alert-success" style={{ textAlign: 'center' }}>
           <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>✓</div>
-          <strong>Identity Verified</strong>
-          {kyc.verifiedAt && <div className="text-muted" style={{ marginTop: '0.25rem' }}>Verified {new Date(kyc.verifiedAt).toLocaleDateString()}</div>}
+          <strong>{t('kyc.verified')}</strong>
+          {kyc.verifiedAt && <div className="text-muted" style={{ marginTop: '0.25rem' }}>{t('kyc.verifiedDate', { date: new Date(kyc.verifiedAt).toLocaleDateString() })}</div>}
         </div>
       ) : (
         <div className="card" style={{ padding: '2rem' }}>
           {kyc?.status && (
-            <div className="alert alert-warning mb-1">Status: <strong>{kyc.status}</strong></div>
+            <div className="alert alert-warning mb-1">{t('kyc.statusLabel')}: <strong>{kyc.status}</strong></div>
           )}
           {error && <div className="alert alert-error mb-1">{error}</div>}
           <div className="field">
-            <label className="field-label">NIDA Number</label>
+            <label className="field-label">{t('kyc.nidaNumber')}</label>
             <input
               className="input"
               value={nidaNumber}
               onChange={e => setNidaNumber(e.target.value)}
-              placeholder="National ID number"
+              placeholder={t('kyc.nidaPlaceholder')}
             />
           </div>
           <button
@@ -76,7 +78,7 @@ export default function CustomerKyc() {
             onClick={submit}
             disabled={submitting}
           >
-            {submitting ? 'Submitting...' : 'Submit for Verification'}
+            {submitting ? t('kyc.submitting') : t('kyc.submitForVerification')}
           </button>
         </div>
       )}

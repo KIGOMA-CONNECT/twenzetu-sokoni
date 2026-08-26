@@ -68,7 +68,7 @@ function CheckoutPage() {
             </div>
           )}
           <div style={{ color: 'var(--muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>
-            Order ID: {result.orderId}
+            {t('checkout.orderId', { id: result.orderId })}
           </div>
           <div className="flex gap-1" style={{ marginTop: '1.5rem', justifyContent: 'center' }}>
             <button className="btn btn-primary" onClick={() => navigate('/orders')}>
@@ -109,7 +109,7 @@ function CheckoutPage() {
 
   return (
     <div className="page">
-      <PageTitle title="Checkout" />
+      <PageTitle title={t('checkout.pageTitle')} />
       <PageHeader title={t('cart.checkout')} />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
@@ -135,7 +135,7 @@ function CheckoutPage() {
                 <a href="/addresses" style={{ color: 'var(--brand)', fontWeight: 700 }}>
                   {t('order.addOne')}
                 </a>{' '}
-                before checkout.
+                {t('checkout.beforeCheckout')}
               </div>
             )}
 

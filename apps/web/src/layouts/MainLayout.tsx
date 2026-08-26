@@ -189,7 +189,7 @@ export function MainLayout() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.25rem 1.5rem 1.25rem', borderBottom: '1px solid #334155' }}>
         <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>afriMarket</div>
         {isMobile && (
-          <button onClick={() => setMenuOpen(false)} aria-label="Close menu" style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
+          <button onClick={() => setMenuOpen(false)} aria-label={t('nav.closeMenu')} style={{ background: 'transparent', border: 'none', color: '#e2e8f0', fontSize: '1.3rem', lineHeight: 1, cursor: 'pointer', padding: '0.25rem' }}>✕</button>
         )}
       </div>
       {renderNav()}
@@ -217,7 +217,7 @@ export function MainLayout() {
       <header className="topbar">
         <div className="topbar-inner">
           {isMobile && (
-            <button onClick={() => setMenuOpen(true)} aria-label="Open menu" className="icon-btn" style={{ fontSize: '1.35rem' }}>☰</button>
+            <button onClick={() => setMenuOpen(true)} aria-label={t('nav.openMenu')} className="icon-btn" style={{ fontSize: '1.35rem' }}>☰</button>
           )}
           <button className="brand" onClick={() => go(!user ? '/vendors' : isCustomer || isAdmin ? '/dashboard' : user?.role === 'vendor' ? '/vendor/dashboard' : user?.role === 'driver' ? '/driver/dashboard' : '/dashboard')} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
             <span className="brand-dot" />
@@ -241,7 +241,7 @@ export function MainLayout() {
               {theme === 'dark' ? '☀️' : '🌙'}
             </button>
             {isCustomer && (
-              <button className="icon-btn" onClick={() => go('/wallet')} aria-label="Wallet">
+              <button className="icon-btn" onClick={() => go('/wallet')} aria-label={t('wallet.title')}>
                 💳
               </button>
             )}

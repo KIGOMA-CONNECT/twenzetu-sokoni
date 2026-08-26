@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -16,7 +17,7 @@ interface SmsBalance {
 interface SmsBundle {
   credits: number;
   price: number;
-  savings?: string;
+  savingsPercent?: number;
 }
 
 interface SmsLog {
@@ -30,9 +31,9 @@ interface SmsLog {
 
 const BUNDLES: SmsBundle[] = [
   { credits: 100, price: 1500 },
-  { credits: 500, price: 6500, savings: '13% savings' },
-  { credits: 1000, price: 12000, savings: '20% savings' },
-  { credits: 5000, price: 55000, savings: '27% savings' },
+  { credits: 500, price: 6500, savingsPercent: 13 },
+  { credits: 1000, price: 12000, savingsPercent: 20 },
+  { credits: 5000, price: 55000, savingsPercent: 27 },
 ];
 
 const styles: Record<string, React.CSSProperties> = {
@@ -72,8 +73,10 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorSms() {
+  const { t } = useTranslation();
+  const s = 'vendor.smsPage.';
   const { formatCurrency } = useCurrency();
-  const { data: balanceRaw, loading: balanceLoading, refetch: refetchBalance } = useApi<SmsBalance>('/sms/credits');
+  const { data: balanceRaw, refetch: refetchBalance } = useApi<SmsBalance>('/sms/credits');
   const { data: logsRaw, loading: logsLoading } = useApi<SmsLog[]>('/sms/logs');
 
   const balance: SmsBalance = balanceRaw ?? { totalCredits: 0, usedCredits: 0, availableCredits: 0, totalSpent: 0, currency: 'TZS' };
@@ -100,15 +103,15 @@ export default function VendorSms() {
       await api.post('/sms/credits/purchase', { credits: bundle.credits, amount: bundle.price });
       await refetchBalance();
     } catch (err: any) {
-      setBuyError(err.response?.data?.message || err.message || 'Purchase failed.');
+      setBuyError(err.response?.data?.message || err.message || t(s + 'failedPurchase'));
     } finally {
       setBuyLoading(null);
     }
   };
 
   const handleSend = async () => {
-    if (!recipientPhone.trim()) { setSendError('Enter recipient phone number.'); return; }
-    if (!message.trim()) { setSendError('Enter a message.'); return; }
+    if (!recipientPhone.trim()) { setSendError(t(s + 'enterPhoneError')); return; }
+    if (!message.trim()) { setSendError(t(s + 'enterMessageError')); return; }
     setSendLoading(true);
     setSendError(null);
     setSendSuccess(false);
@@ -119,7 +122,7 @@ export default function VendorSms() {
       setMessage('');
       await refetchBalance();
     } catch (err: any) {
-      setSendError(err.response?.data?.message || err.message || 'Failed to send SMS.');
+      setSendError(err.response?.data?.message || err.message || t(s + 'failedSend'));
     } finally {
       setSendLoading(false);
     }
@@ -135,52 +138,52 @@ export default function VendorSms() {
     <div style={styles.container}>
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>SMS Management</h1>
-          <div style={styles.subtitle}>Purchase SMS bundles and send messages to suppliers, customers & more</div>
+          <h1 style={styles.title}>{t(s + 'title')}</h1>
+          <div style={styles.subtitle}>{t(s + 'subtitle')}</div>
         </div>
       </div>
 
       <div style={styles.statGrid}>
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Available Credits</div>
+          <div style={styles.statLabel}>{t(s + 'availableCredits')}</div>
           <div style={{ ...styles.statValue, color: '#059669' }}>{balance.availableCredits.toLocaleString()}</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Used Credits</div>
+          <div style={styles.statLabel}>{t(s + 'usedCredits')}</div>
           <div style={styles.statValue}>{balance.usedCredits.toLocaleString()}</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Total Purchased</div>
+          <div style={styles.statLabel}>{t(s + 'totalPurchased')}</div>
           <div style={styles.statValue}>{balance.totalCredits.toLocaleString()}</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statLabel}>Total Spent</div>
+          <div style={styles.statLabel}>{t(s + 'totalSpent')}</div>
           <div style={styles.statValue}>{formatCurrency(balance.totalSpent)}</div>
         </div>
       </div>
 
       <div style={styles.tabs}>
-        <button style={{ ...styles.tab, ...(tab === 'send' ? styles.tabActive : {}) }} onClick={() => setTab('send')}>Send SMS</button>
-        <button style={{ ...styles.tab, ...(tab === 'buy' ? styles.tabActive : {}) }} onClick={() => setTab('buy')}>Buy Bundles</button>
-        <button style={{ ...styles.tab, ...(tab === 'history' ? styles.tabActive : {}) }} onClick={() => setTab('history')}>History</button>
+        <button style={{ ...styles.tab, ...(tab === 'send' ? styles.tabActive : {}) }} onClick={() => setTab('send')}>{t(s + 'sendSms')}</button>
+        <button style={{ ...styles.tab, ...(tab === 'buy' ? styles.tabActive : {}) }} onClick={() => setTab('buy')}>{t(s + 'buyBundles')}</button>
+        <button style={{ ...styles.tab, ...(tab === 'history' ? styles.tabActive : {}) }} onClick={() => setTab('history')}>{t(s + 'history')}</button>
       </div>
 
       {tab === 'buy' && (
         <>
-          <div style={styles.sectionTitle}>Purchase SMS Bundles</div>
+          <div style={styles.sectionTitle}>{t(s + 'purchaseBundles')}</div>
           {buyError && <div style={{ ...styles.smallError, marginBottom: '0.75rem' }}>{buyError}</div>}
           <div style={styles.bundleGrid}>
             {BUNDLES.map((b) => (
               <div key={b.credits} style={styles.bundleCard}>
                 <div style={styles.bundleCredits}>{b.credits.toLocaleString()} SMS</div>
                 <div style={styles.bundlePrice}>{formatCurrency(b.price)}</div>
-                {b.savings && <div style={styles.bundleSavings}>{b.savings}</div>}
+                {b.savingsPercent && <div style={styles.bundleSavings}>{b.savingsPercent}% {t(s + 'savings')}</div>}
                 <button
                   style={{ ...styles.buyBtn, ...(buyLoading === b.credits ? { opacity: 0.6 } : {}) }}
                   onClick={() => handleBuy(b)}
                   disabled={buyLoading !== null}
                 >
-                  {buyLoading === b.credits ? 'Buying…' : 'Buy Now'}
+                  {buyLoading === b.credits ? t(s + 'buying') : t(s + 'buyNow')}
                 </button>
               </div>
             ))}
@@ -190,61 +193,61 @@ export default function VendorSms() {
 
       {tab === 'send' && (
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>Send SMS</div>
+          <div style={styles.sectionTitle}>{t(s + 'sendSms')}</div>
           {sendSuccess && (
             <div style={{ color: '#059669', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#f0fdf4', borderRadius: '6px' }}>
-              SMS sent successfully!
+              {t(s + 'smsSentSuccess')}
             </div>
           )}
           <div style={styles.field}>
-            <label style={styles.label}>Recipient Phone Number</label>
+            <label style={styles.label}>{t(s + 'recipientPhone')}</label>
             <input
               style={styles.input}
               type="tel"
-              placeholder="+255712345678"
+              placeholder={t(s + 'phonePlaceholder')}
               value={recipientPhone}
               onChange={(e) => setRecipientPhone(e.target.value)}
             />
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Recipient Type</label>
+            <label style={styles.label}>{t(s + 'recipientType')}</label>
             <select style={styles.input} value={recipientType} onChange={(e) => setRecipientType(e.target.value)}>
-              <option value="supplier">Supplier</option>
-              <option value="customer">Customer</option>
-              <option value="other">Other</option>
+              <option value="supplier">{t(s + 'supplier')}</option>
+              <option value="customer">{t(s + 'customer')}</option>
+              <option value="other">{t(s + 'other')}</option>
             </select>
           </div>
           <div style={styles.field}>
-            <label style={styles.label}>Message</label>
+            <label style={styles.label}>{t(s + 'message')}</label>
             <textarea
               style={styles.textarea}
-              placeholder="Type your message here…"
+              placeholder={t(s + 'messagePlaceholder')}
               maxLength={800}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
             />
             <div style={styles.charCount}>
-              {message.length} / 160 chars{msgSegments > 0 ? ` · ${msgSegments} SMS segment${msgSegments > 1 ? 's' : ''}` : ''}
+              {message.length} / 160 {t(s + 'chars')}{msgSegments > 0 ? ` · ${msgSegments} ${msgSegments > 1 ? t(s + 'smsSegments') : t(s + 'smsSegment')}` : ''}
             </div>
             {msgSegments > 0 && (
               <div style={styles.creditInfo}>
                 {noCredits
-                  ? 'No credits available.'
-                  : `Will use ${msgSegments} credit${msgSegments > 1 ? 's' : ''} (${balance.availableCredits} available)`}
+                  ? t(s + 'noCreditsAvailable')
+                  : `${t(s + 'willUse')} ${msgSegments} ${msgSegments > 1 ? t(s + 'credits') : t(s + 'credit')} (${balance.availableCredits} ${t(s + 'available')})`}
               </div>
             )}
           </div>
           {sendError && <div style={styles.smallError}>{sendError}</div>}
           <div style={styles.buttons}>
             {noCredits && (
-              <button style={styles.phoneBtn} onClick={handleUsePhone}>Use Phone Instead</button>
+              <button style={styles.phoneBtn} onClick={handleUsePhone}>{t(s + 'usePhoneInstead')}</button>
             )}
             <button
               style={{ ...styles.sendBtn, ...(sendLoading ? { opacity: 0.6 } : {}) }}
               onClick={handleSend}
               disabled={sendLoading || noCredits}
             >
-              {sendLoading ? 'Sending…' : 'Send SMS'}
+              {sendLoading ? t(s + 'sending') : t(s + 'sendSmsButton')}
             </button>
           </div>
         </div>
@@ -252,21 +255,21 @@ export default function VendorSms() {
 
       {tab === 'history' && (
         <div style={styles.card}>
-          <div style={styles.sectionTitle}>SMS History</div>
+          <div style={styles.sectionTitle}>{t(s + 'smsHistory')}</div>
           {logsLoading ? (
             <LoadingSpinner />
           ) : logs.length === 0 ? (
-            <div style={styles.empty}>No SMS sent yet.</div>
+            <div style={styles.empty}>{t(s + 'noSmsSent')}</div>
           ) : (
             <div style={{ overflowX: 'auto' }}>
               <table style={styles.table}>
                 <thead>
                   <tr>
-                    <th style={styles.th}>Recipient</th>
-                    <th style={styles.th}>Message</th>
-                    <th style={styles.th}>Credits</th>
-                    <th style={styles.th}>Status</th>
-                    <th style={styles.th}>Date</th>
+                    <th style={styles.th}>{t(s + 'recipient')}</th>
+                    <th style={styles.th}>{t(s + 'messageCol')}</th>
+                    <th style={styles.th}>{t(s + 'creditsCol')}</th>
+                    <th style={styles.th}>{t(s + 'statusCol')}</th>
+                    <th style={styles.th}>{t(s + 'dateCol')}</th>
                   </tr>
                 </thead>
                 <tbody>

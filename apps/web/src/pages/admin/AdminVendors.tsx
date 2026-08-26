@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -32,6 +33,7 @@ const styles: Record<string, React.CSSProperties> = {
 
 export default function AdminVendors() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data: pendingVendors, loading: pendingLoading, error: pendingError, refetch: refetchPending } = useApi<Vendor[]>('/admin/vendors/pending');
   const { data: allVendors, loading: allLoading, error: allError, refetch: refetchAll } = useApi<Vendor[]>('/admin/vendors');
   const [tab, setTab] = useState<VendorTab>('PENDING');
@@ -48,7 +50,7 @@ export default function AdminVendors() {
   const error = tab === 'PENDING' ? pendingError : allError;
 
   const handleAction = async (id: string, action: 'approve' | 'suspend') => {
-    if (action === 'suspend' && !window.confirm('Suspend this vendor? They will be unable to receive new orders.')) return;
+    if (action === 'suspend' && !window.confirm(t('admin.suspendConfirm'))) return;
     setActionLoading(`${id}-${action}`);
     setActionError(null);
     try {
@@ -64,10 +66,10 @@ export default function AdminVendors() {
 
   return (
     <div style={styles.container}>
-      <PageTitle title="Manage Vendors" />
+      <PageTitle title={t('admin.vendorManagement')} />
       <div>
-        <h1 style={styles.header}>Vendor Management</h1>
-        <div style={styles.subheader}>Manage vendor registrations, {user?.fullName || 'Admin'}.</div>
+        <h1 style={styles.header}>{t('admin.vendorManagement')}</h1>
+        <div style={styles.subheader}>{t('admin.manageVendorRegistrations', { name: user?.fullName || 'Admin' })}</div>
       </div>
 
       <div style={styles.tabRow}>
@@ -75,13 +77,13 @@ export default function AdminVendors() {
           style={{ ...styles.tab, ...(tab === 'PENDING' ? styles.tabActive : {}) }}
           onClick={() => { setTab('PENDING'); setSearch(''); }}
         >
-          Pending Approval {pendingVendors && pendingVendors.length > 0 ? `(${pendingVendors.length})` : ''}
+          {t('admin.pendingApproval')} {pendingVendors && pendingVendors.length > 0 ? `(${pendingVendors.length})` : ''}
         </button>
         <button
           style={{ ...styles.tab, ...(tab === 'ALL' ? styles.tabActive : {}) }}
           onClick={() => { setTab('ALL'); setSearch(''); }}
         >
-          All Vendors {allVendors ? `(${allVendors.length})` : ''}
+          {t('admin.allVendors')} {allVendors ? `(${allVendors.length})` : ''}
         </button>
       </div>
 
@@ -89,7 +91,7 @@ export default function AdminVendors() {
         <div style={styles.searchRow}>
           <input
             style={styles.searchInput}
-            placeholder="Search by name or category..."
+            placeholder={t('admin.searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -106,10 +108,10 @@ export default function AdminVendors() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Shop Name</th>
-                <th style={styles.th}>Category</th>
-                <th style={styles.th}>Status</th>
-                {tab === 'PENDING' && <th style={styles.th}>Actions</th>}
+                <th style={styles.th}>{t('admin.shopName')}</th>
+                <th style={styles.th}>{t('admin.category')}</th>
+                <th style={styles.th}>{t('admin.status')}</th>
+                {tab === 'PENDING' && <th style={styles.th}>{t('admin.actions')}</th>}
               </tr>
             </thead>
             <tbody>
@@ -125,14 +127,14 @@ export default function AdminVendors() {
                         onClick={() => handleAction(v.id, 'approve')}
                         disabled={actionLoading === `${v.id}-approve`}
                       >
-                        {actionLoading === `${v.id}-approve` ? 'Approvingâ€¦' : 'Approve'}
+                        {actionLoading === `${v.id}-approve` ? t('admin.approving') : t('admin.approve')}
                       </button>
                       <button
                         style={{ ...styles.btn, ...styles.suspendBtn, ...(actionLoading === `${v.id}-suspend` ? styles.disabledBtn : {}) }}
                         onClick={() => handleAction(v.id, 'suspend')}
                         disabled={actionLoading === `${v.id}-suspend`}
                       >
-                        {actionLoading === `${v.id}-suspend` ? 'Suspendingâ€¦' : 'Suspend'}
+                        {actionLoading === `${v.id}-suspend` ? t('admin.suspending') : t('admin.suspend')}
                       </button>
                     </td>
                   )}
@@ -142,7 +144,7 @@ export default function AdminVendors() {
           </table>
         ) : (
           <div style={styles.empty}>
-            {tab === 'PENDING' ? 'No pending vendors awaiting approval.' : 'No vendors found.'}
+            {tab === 'PENDING' ? t('admin.noPendingVendorsAwaiting') : t('admin.noVendorsFound')}
           </div>
         )}
       </div>

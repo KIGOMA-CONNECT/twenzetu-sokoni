@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -6,6 +7,7 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function InstallPrompt() {
+  const { t } = useTranslation();
   const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
   const [showIos, setShowIos] = useState(false);
 
@@ -76,8 +78,8 @@ export function InstallPrompt() {
       {deferred ? (
         <>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Install afriMarket</div>
-            <div style={{ fontSize: 12, opacity: 0.9 }}>Shop faster with the app on your home screen.</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{t('install.title')}</div>
+            <div style={{ fontSize: 12, opacity: 0.9 }}>{t('install.subtitle')}</div>
           </div>
           <button
             onClick={install}
@@ -93,20 +95,20 @@ export function InstallPrompt() {
               flexShrink: 0,
             }}
           >
-            Install
+            {t('install.installButton')}
           </button>
         </>
       ) : (
         <>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontWeight: 700, fontSize: 14 }}>Add afriMarket to your home screen</div>
+            <div style={{ fontWeight: 700, fontSize: 14 }}>{t('install.iosTitle')}</div>
             <div style={{ fontSize: 12, opacity: 0.9 }}>
-              Tap the Share button, then “Add to Home Screen”.
+              {t('install.iosSubtitle')}
             </div>
           </div>
           <button
             onClick={dismissIos}
-            aria-label="Dismiss"
+            aria-label={t('common.dismiss')}
             style={{
               background: 'transparent',
               color: '#ffffff',

@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../context/NotificationContext';
 
 export function NotificationBell({ onSurface = false }: { onSurface?: boolean }) {
   const { notifications, unreadCount, markRead, markAllRead } = useNotifications();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ export function NotificationBell({ onSurface = false }: { onSurface?: boolean })
       <button
         onClick={() => setOpen(!open)}
         className="icon-btn"
-        aria-label="Notifications"
+        aria-label={t('notifications.title')}
         style={onSurface ? { color: 'var(--text)' } : {}}
       >
         🔔
@@ -31,16 +33,16 @@ export function NotificationBell({ onSurface = false }: { onSurface?: boolean })
       {open && (
         <div className="dropdown" style={onSurface ? { position: 'fixed' } : {}}>
           <div className="dropdown-head">
-            <span>Notifications</span>
+            <span>{t('notifications.title')}</span>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {unreadCount > 0 && <button onClick={markAllRead}>Mark all read</button>}
-              <button onClick={() => { navigate('/notifications'); setOpen(false); }}>View all</button>
+              {unreadCount > 0 && <button onClick={markAllRead}>{t('notifications.markAllRead')}</button>}
+              <button onClick={() => { navigate('/notifications'); setOpen(false); }}>{t('notifications.viewAll')}</button>
             </div>
           </div>
 
           <div className="dropdown-body">
             {notifications.length === 0 ? (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--faint)', fontSize: '0.8rem' }}>No notifications</div>
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--faint)', fontSize: '0.8rem' }}>{t('notifications.noNotifications')}</div>
             ) : (
               notifications.slice(0, 10).map(n => (
                 <div

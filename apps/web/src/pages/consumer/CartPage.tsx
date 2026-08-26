@@ -36,7 +36,7 @@ function CartPage() {
 
   return (
     <div className="page">
-      <PageTitle title="Cart" />
+      <PageTitle title={t('cart.pageTitle')} />
       <PageHeader title={t('cart.title')} subtitle={t('cart.subtitle')} />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}

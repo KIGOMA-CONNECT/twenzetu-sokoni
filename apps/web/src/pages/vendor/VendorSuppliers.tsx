@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -41,6 +42,8 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorSuppliers() {
+  const { t } = useTranslation();
+  const s = 'vendor.suppliersPage.';
   const { data: raw, loading, error, refetch } = useApi<Supplier[]>('/vendor/suppliers');
   const suppliers: Supplier[] = Array.isArray(raw) ? raw : [];
   const [open, setOpen] = useState(false);
@@ -74,7 +77,7 @@ export default function VendorSuppliers() {
 
   const submit = async () => {
     if (!form.name.trim()) {
-      setFormError('Supplier name is required.');
+      setFormError(t(s + 'nameRequired'));
       return;
     }
     setSaving(true);
@@ -95,21 +98,21 @@ export default function VendorSuppliers() {
       setEditId(null);
       await refetch();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to save supplier.');
+      setFormError(err.response?.data?.message || err.message || t(s + 'failedSave'));
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (supplier: Supplier) => {
-    if (!window.confirm(`Deactivate supplier "${supplier.name}"?`)) return;
+    if (!window.confirm(`${t(s + 'deactivateConfirmPrefix')}"${supplier.name}"?`)) return;
     setActionError(null);
     setBusyId(supplier.id);
     try {
       await api.delete(`/vendor/suppliers/${supplier.id}`);
       await refetch();
     } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || 'Failed to deactivate supplier.');
+      setActionError(err.response?.data?.message || err.message || t(s + 'failedDeactivate'));
     } finally {
       setBusyId(null);
     }
@@ -120,10 +123,10 @@ export default function VendorSuppliers() {
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>Suppliers</h1>
-          <div style={styles.subtitle}>Your vendor supplier registry</div>
+          <h1 style={styles.title}>{t(s + 'title')}</h1>
+          <div style={styles.subtitle}>{t(s + 'subtitle')}</div>
         </div>
-        <button style={styles.addButton} onClick={openCreate}>+ Add Supplier</button>
+        <button style={styles.addButton} onClick={openCreate}>{t(s + 'addSupplier')}</button>
       </div>
 
       {loading ? (
@@ -135,36 +138,36 @@ export default function VendorSuppliers() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Contact</th>
-                <th style={styles.th}>Phone</th>
-                <th style={styles.th}>Status</th>
+                <th style={styles.th}>{t(s + 'name')}</th>
+                <th style={styles.th}>{t(s + 'contact')}</th>
+                <th style={styles.th}>{t(s + 'phone')}</th>
+                <th style={styles.th}>{t(s + 'status')}</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
             <tbody>
               {suppliers.length === 0 && (
                 <tr>
-                  <td style={styles.empty} colSpan={5}>No suppliers yet. Add your first supplier.</td>
+                  <td style={styles.empty} colSpan={5}>{t(s + 'noSuppliers')}</td>
                 </tr>
               )}
-              {suppliers.map((s) => (
-                <tr key={s.id}>
+              {suppliers.map((sup) => (
+                <tr key={sup.id}>
                   <td style={styles.td}>
-                    <div style={{ fontWeight: 700 }}>{s.name}</div>
-                    {s.notes && <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{s.notes}</div>}
+                    <div style={{ fontWeight: 700 }}>{sup.name}</div>
+                    {sup.notes && <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{sup.notes}</div>}
                   </td>
-                  <td style={styles.td}>{s.contactPerson || 'â€”'}</td>
-                  <td style={styles.td}>{s.phone || 'â€”'}</td>
-                  <td style={styles.td}><StatusBadge status={s.status} /></td>
+                  <td style={styles.td}>{sup.contactPerson || '—'}</td>
+                  <td style={styles.td}>{sup.phone || '—'}</td>
+                  <td style={styles.td}><StatusBadge status={sup.status} /></td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
-                    {s.status === 'ACTIVE' && (
+                    {sup.status === 'ACTIVE' && (
                       <>
-                        <button style={{ ...styles.deleteBtn, marginRight: '0.5rem', borderColor: '#93c5fd', color: '#2563eb' }} disabled={busyId === s.id} onClick={() => openEdit(s)}>
-                          Edit
+                        <button style={{ ...styles.deleteBtn, marginRight: '0.5rem', borderColor: '#93c5fd', color: '#2563eb' }} disabled={busyId === sup.id} onClick={() => openEdit(sup)}>
+                          {t(s + 'edit')}
                         </button>
-                        <button style={styles.deleteBtn} disabled={busyId === s.id} onClick={() => remove(s)}>
-                          {busyId === s.id ? 'â€¦' : 'Deactivate'}
+                        <button style={styles.deleteBtn} disabled={busyId === sup.id} onClick={() => remove(sup)}>
+                          {busyId === sup.id ? '…' : t(s + 'deactivate')}
                         </button>
                       </>
                     )}
@@ -179,28 +182,28 @@ export default function VendorSuppliers() {
       {open && (
         <div style={styles.overlay} onClick={() => !saving && setOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{editId ? 'Edit Supplier' : 'Add Supplier'}</div>
+            <div style={styles.modalTitle}>{editId ? t(s + 'editSupplier') : t(s + 'addSupplierTitle')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Name *</label>
-              <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="e.g. Central Millers" />
+              <label style={styles.label}>{t(s + 'nameLabel')}</label>
+              <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={t(s + 'namePlaceholder')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Phone</label>
-              <input style={styles.input} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="e.g. +2557xxxxxxxx" />
+              <label style={styles.label}>{t(s + 'phoneLabel')}</label>
+              <input style={styles.input} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder={t(s + 'phonePlaceholder')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Contact Person</label>
+              <label style={styles.label}>{t(s + 'contactPerson')}</label>
               <input style={styles.input} value={form.contactPerson} onChange={(e) => update('contactPerson', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Notes</label>
+              <label style={styles.label}>{t(s + 'notes')}</label>
               <textarea style={styles.textarea} value={form.notes} onChange={(e) => update('notes', e.target.value)} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>{t(s + 'cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submit} disabled={saving}>
-                {saving ? 'Savingâ€¦' : 'Save Supplier'}
+                {saving ? t(s + 'saving') : t(s + 'saveSupplier')}
               </button>
             </div>
           </div>

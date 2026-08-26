@@ -38,7 +38,7 @@ export default function AdminHrCompensation() {
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.compensation.title')}</h2>
       {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
-        {[['revisions', t('hr.compensation.tabRevisions')], ['benefits', t('hr.compensation.tabBenefits')], ['structures', t('hr.compensation.tabStructures')]].map(([key, label]) => <button key={key} onClick={() => setTab(key as any)} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === key ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === key ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{label}</button>)}
+        {[['revisions', t('hr.compensation.tabRevisions')], ['benefits', t('hr.compensation.tabBenefits')], ['structures', t('hr.compensation.tabStructures')]].map(([key, label]) => <button key={key} onClick={() => setTab(key as 'revisions' | 'benefits' | 'structures')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === key ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === key ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{label}</button>)}
       </div>
 
       {tab === 'revisions' && <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
@@ -102,7 +102,7 @@ export default function AdminHrCompensation() {
             <div>{selStructures.map(ss => <div key={ss.id}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '0.75rem' }}>
                 {['basicSalary', 'housingAllowance', 'transportAllowance', 'medicalAllowance', 'otherAllowance', 'deductions', 'taxDeduction'].map(k => (
-                  <div key={k}><div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'capitalize' }}>{k.replace(/([A-Z])/g, ' $1').trim()}</div><div style={{ fontWeight: 500 }}>{(ss as any)[k]?.toLocaleString()} {ss.currency}</div></div>
+                  <div key={k}><div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'capitalize' }}>{k.replace(/([A-Z])/g, ' $1').trim()}</div><div style={{ fontWeight: 500 }}>{(ss as Record<string, string | number>)[k]?.toLocaleString()} {ss.currency}</div></div>
                 ))}
               </div>
               <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: 'var(--success-soft)', borderRadius: '6px', fontWeight: 600 }}>Gross: {ss.basicSalary + ss.housingAllowance + ss.transportAllowance + ss.medicalAllowance + ss.otherAllowance} {ss.currency} | Net: {ss.basicSalary + ss.housingAllowance + ss.transportAllowance + ss.medicalAllowance + ss.otherAllowance - ss.deductions - ss.taxDeduction} {ss.currency}</div>

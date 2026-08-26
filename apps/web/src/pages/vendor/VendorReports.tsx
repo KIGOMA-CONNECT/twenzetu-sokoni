@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -8,20 +9,20 @@ import type { AccountingPeriod, BalanceSheetAccount, VendorStatements } from '..
 
 
 
-const PERIODS: { value: AccountingPeriod; label: string }[] = [
-  { value: '7d', label: '7 Days' },
-  { value: '30d', label: '30 Days' },
-  { value: '90d', label: '90 Days' },
-  { value: 'this_month', label: 'This Month' },
-  { value: 'last_month', label: 'Last Month' },
-  { value: 'all_time', label: 'All Time' },
+const PERIODS: { value: AccountingPeriod; key: string }[] = [
+  { value: '7d', key: 'period7d' },
+  { value: '30d', key: 'period30d' },
+  { value: '90d', key: 'period90d' },
+  { value: 'this_month', key: 'thisMonth' },
+  { value: 'last_month', key: 'lastMonth' },
+  { value: 'all_time', key: 'allTime' },
 ];
 
 const TABS = [
-  { key: 'income', label: 'Income Statement' },
-  { key: 'cashflow', label: 'Cash Flow' },
-  { key: 'trial', label: 'Trial Balance' },
-  { key: 'position', label: 'Balance Sheet' },
+  { key: 'income', labelKey: 'incomeStatement' },
+  { key: 'cashflow', labelKey: 'cashFlow' },
+  { key: 'trial', labelKey: 'trialBalance' },
+  { key: 'position', labelKey: 'balanceSheet' },
 ] as const;
 
 const styles: Record<string, React.CSSProperties> = {
@@ -70,6 +71,8 @@ function downloadCsv(filename: string, rows: string[][]) {
 }
 
 export default function VendorReports() {
+  const { t } = useTranslation();
+  const r = 'vendor.reportsPage.';
   const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
   const [tab, setTab] = useState<string>('income');
@@ -108,11 +111,11 @@ export default function VendorReports() {
     const name = accountForm.name.trim();
     const amount = Number(accountForm.amount);
     if (!name) {
-      setAccountError('Account name is required.');
+      setAccountError(t(r + 'accountNameRequired'));
       return;
     }
     if (isNaN(amount) || amount < 0) {
-      setAccountError('Amount must be a positive number.');
+      setAccountError(t(r + 'amountMustBePositive'));
       return;
     }
     setAccountSaving(true);
@@ -127,21 +130,21 @@ export default function VendorReports() {
       setAccountModalOpen(false);
       await Promise.all([refetchAccounts(), refetch()]);
     } catch (err: any) {
-      setAccountError(err.response?.data?.message || err.message || 'Failed to save account.');
+      setAccountError(err.response?.data?.message || err.message || t(r + 'failedSaveAccount'));
     } finally {
       setAccountSaving(false);
     }
   };
 
   const removeAccount = async (a: BalanceSheetAccount) => {
-    if (!window.confirm(`Delete "${a.name}" from the balance sheet?`)) return;
+    if (!window.confirm(`${t(r + 'deleteConfirmPrefix')}"${a.name}"${t(r + 'deleteConfirmSuffix')}`)) return;
     setActionError(null);
     setAccountBusyId(a.id);
     try {
       await api.delete(`/vendor/accounting/balance-sheet-accounts/${a.id}`);
       await Promise.all([refetchAccounts(), refetch()]);
     } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || 'Failed to delete account.');
+      setActionError(err.response?.data?.message || err.message || t(r + 'failedDeleteAccount'));
     } finally {
       setAccountBusyId(null);
     }
@@ -175,7 +178,7 @@ export default function VendorReports() {
     } else if (tab === 'trial') {
       downloadCsv(`trial-balance-${period}-${stamp}.csv`, [
         ['Account', 'Debit', 'Credit'],
-        ...report.trialBalance.map((r) => [r.account, r.debit, r.credit]),
+        ...report.trialBalance.map((row) => [row.account, row.debit, row.credit]),
       ]);
     } else {
       const p = report.financialPosition;
@@ -194,37 +197,37 @@ export default function VendorReports() {
 
   const incomeRows: { label: string; amount: number; bold?: boolean; neg?: boolean }[] = report
     ? [
-        { label: 'Gross Revenue (orders + POS)', amount: report.incomeStatement.grossRevenue },
-        { label: 'Platform Commission', amount: -report.incomeStatement.commissions, neg: true },
-        { label: 'Net Revenue', amount: report.incomeStatement.netRevenue, bold: true },
-        { label: 'Cost of Goods Sold (purchases)', amount: -report.incomeStatement.cogs, neg: true },
-        { label: 'Net Profit', amount: report.incomeStatement.netProfit, bold: true },
+        { label: t(r + 'grossRevenue'), amount: report.incomeStatement.grossRevenue },
+        { label: t(r + 'platformCommission'), amount: -report.incomeStatement.commissions, neg: true },
+        { label: t(r + 'netRevenue'), amount: report.incomeStatement.netRevenue, bold: true },
+        { label: t(r + 'cogs'), amount: -report.incomeStatement.cogs, neg: true },
+        { label: t(r + 'netProfit'), amount: report.incomeStatement.netProfit, bold: true },
       ]
     : [];
 
   const cashRows: { label: string; amount: number; bold?: boolean; neg?: boolean }[] = report
     ? [
-        { label: 'Opening cash balance', amount: report.cashFlow.openingCash },
-        { label: 'Net earnings', amount: report.cashFlow.netEarnings },
-        { label: 'Wallet credits (top-ups)', amount: report.cashFlow.walletCredits },
-        { label: 'Withdrawals', amount: -report.cashFlow.withdrawals, neg: true },
-        { label: 'Other payments', amount: -report.cashFlow.otherDebits, neg: true },
-        { label: 'Net cash movement', amount: report.cashFlow.netChange, bold: true },
-        { label: 'Closing cash balance', amount: report.cashFlow.closingCash, bold: true },
+        { label: t(r + 'openingCash'), amount: report.cashFlow.openingCash },
+        { label: t(r + 'netEarnings'), amount: report.cashFlow.netEarnings },
+        { label: t(r + 'walletCredits'), amount: report.cashFlow.walletCredits },
+        { label: t(r + 'withdrawals'), amount: -report.cashFlow.withdrawals, neg: true },
+        { label: t(r + 'otherPayments'), amount: -report.cashFlow.otherDebits, neg: true },
+        { label: t(r + 'netCashMovement'), amount: report.cashFlow.netChange, bold: true },
+        { label: t(r + 'closingCash'), amount: report.cashFlow.closingCash, bold: true },
       ]
     : [];
 
-  const totalTrialDebit = report?.trialBalance.reduce((s, r) => s + r.debit, 0) ?? 0;
-  const totalTrialCredit = report?.trialBalance.reduce((s, r) => s + r.credit, 0) ?? 0;
+  const totalTrialDebit = report?.trialBalance.reduce((s, row) => s + row.debit, 0) ?? 0;
+  const totalTrialCredit = report?.trialBalance.reduce((s, row) => s + row.credit, 0) ?? 0;
 
   return (
     <div style={styles.container}>
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Financial Reports</h1>
+          <h1 style={styles.title}>{t(r + 'title')}</h1>
           <div style={styles.subtitle}>
-            {report?.shopName ? `${report.shopName} â€” standard statements for loan applications` : 'Standard financial statements'}
+            {report?.shopName ? t(r + 'shopSubtitle', { shop: report.shopName }) : t(r + 'standardStatements')}
           </div>
         </div>
         <div style={styles.controls}>
@@ -234,19 +237,19 @@ export default function VendorReports() {
               style={period === p.value ? styles.periodBtnActive : styles.periodBtn}
               onClick={() => setPeriod(p.value)}
             >
-              {p.label}
+              {t(r + p.key)}
             </button>
           ))}
-          <button style={styles.refreshBtn} onClick={() => refetch()}>Refresh</button>
-          <button style={styles.printBtn} onClick={() => window.print()}>Print</button>
-          <button style={styles.exportBtn} onClick={exportCsv} disabled={!report}>CSV</button>
+          <button style={styles.refreshBtn} onClick={() => refetch()}>{t(r + 'refresh')}</button>
+          <button style={styles.printBtn} onClick={() => window.print()}>{t(r + 'print')}</button>
+          <button style={styles.exportBtn} onClick={exportCsv} disabled={!report}>{t(r + 'csv')}</button>
         </div>
       </div>
 
       <div style={styles.tabs}>
-        {TABS.map((t) => (
-          <button key={t.key} style={tab === t.key ? styles.tabActive : styles.tab} onClick={() => setTab(t.key)}>
-            {t.label}
+        {TABS.map((tb) => (
+          <button key={tb.key} style={tab === tb.key ? styles.tabActive : styles.tab} onClick={() => setTab(tb.key)}>
+            {t(r + tb.labelKey)}
           </button>
         ))}
       </div>
@@ -256,31 +259,31 @@ export default function VendorReports() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : !report ? (
-        <div style={styles.empty}>No data for the selected period</div>
+        <div style={styles.empty}>{t(r + 'noData')}</div>
       ) : (
         <>
           {tab === 'income' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Income Statement</span>
+                <span>{t(r + 'incomeStatement')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                  {period === 'all_time' ? 'All time' : `Last ${period}`} Â· {report.incomeStatement.currency}
+                  {period === 'all_time' ? t(r + 'allTimeLabel') : `${t(r + 'last')} ${period}`} · {report.incomeStatement.currency}
                 </span>
               </div>
               <table style={styles.table}>
                 <tbody>
-                  {incomeRows.map((r, i) => (
+                  {incomeRows.map((row, i) => (
                     <tr key={i}>
-                      <td style={r.bold ? styles.total : styles.td}>{r.label}</td>
-                      <td style={{ ...(r.bold ? styles.totalRight : styles.tdRight), ...(r.neg ? styles.neg : styles.pos) }}>
-                        {r.amount < 0 ? `(${formatCurrency(Math.abs(r.amount))})` : formatCurrency(r.amount)}
+                      <td style={row.bold ? styles.total : styles.td}>{row.label}</td>
+                      <td style={{ ...(row.bold ? styles.totalRight : styles.tdRight), ...(row.neg ? styles.neg : styles.pos) }}>
+                        {row.amount < 0 ? `(${formatCurrency(Math.abs(row.amount))})` : formatCurrency(row.amount)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div style={styles.note}>
-                Net Profit = Gross Revenue âˆ’ Platform Commission âˆ’ Cost of Goods Sold. Cost of goods sold is based on received purchase orders; POS cash-in-hand is not included.
+                {t(r + 'incomeNote')}
               </div>
             </div>
           )}
@@ -288,23 +291,23 @@ export default function VendorReports() {
           {tab === 'cashflow' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Cash Flow Statement</span>
+                <span>{t(r + 'cashFlow')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{report.cashFlow.currency}</span>
               </div>
               <table style={styles.table}>
                 <tbody>
-                  {cashRows.map((r, i) => (
+                  {cashRows.map((row, i) => (
                     <tr key={i}>
-                      <td style={r.bold ? styles.total : styles.td}>{r.label}</td>
-                      <td style={{ ...(r.bold ? styles.totalRight : styles.tdRight), ...(r.neg ? styles.neg : styles.pos) }}>
-                        {r.amount < 0 ? `(${formatCurrency(Math.abs(r.amount))})` : formatCurrency(r.amount)}
+                      <td style={row.bold ? styles.total : styles.td}>{row.label}</td>
+                      <td style={{ ...(row.bold ? styles.totalRight : styles.tdRight), ...(row.neg ? styles.neg : styles.pos) }}>
+                        {row.amount < 0 ? `(${formatCurrency(Math.abs(row.amount))})` : formatCurrency(row.amount)}
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
               <div style={styles.note}>
-                Closing cash reflects the current wallet balance. Opening cash is derived (closing âˆ’ net movement).
+                {t(r + 'cashNote')}
               </div>
             </div>
           )}
@@ -312,32 +315,32 @@ export default function VendorReports() {
           {tab === 'trial' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Trial Balance</span>
+                <span>{t(r + 'trialBalance')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                  Totals: {formatCurrency(totalTrialDebit)} / {formatCurrency(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
+                  {t(r + 'totals')}: {formatCurrency(totalTrialDebit)} / {formatCurrency(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
                 </span>
               </div>
               {report.trialBalance.length === 0 ? (
-                <div style={styles.empty}>No ledger activity in this period</div>
+                <div style={styles.empty}>{t(r + 'noLedgerActivity')}</div>
               ) : (
                 <table style={styles.table}>
                   <thead>
                     <tr>
-                      <th style={styles.th}>Account</th>
-                      <th style={{ ...styles.th, textAlign: 'right' }}>Debit</th>
-                      <th style={{ ...styles.th, textAlign: 'right' }}>Credit</th>
+                      <th style={styles.th}>{t(r + 'account')}</th>
+                      <th style={{ ...styles.th, textAlign: 'right' }}>{t(r + 'debit')}</th>
+                      <th style={{ ...styles.th, textAlign: 'right' }}>{t(r + 'credit')}</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {report.trialBalance.map((r) => (
-                      <tr key={r.account}>
-                        <td style={styles.td}>{r.account}</td>
-                        <td style={{ ...styles.tdRight, color: r.debit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.debit !== 0 ? formatCurrency(r.debit) : 'â€”'}</td>
-                        <td style={{ ...styles.tdRight, color: r.credit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{r.credit !== 0 ? formatCurrency(r.credit) : 'â€”'}</td>
+                    {report.trialBalance.map((row) => (
+                      <tr key={row.account}>
+                        <td style={styles.td}>{row.account}</td>
+                        <td style={{ ...styles.tdRight, color: row.debit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{row.debit !== 0 ? formatCurrency(row.debit) : '—'}</td>
+                        <td style={{ ...styles.tdRight, color: row.credit !== 0 ? 'var(--ink)' : 'var(--line)' }}>{row.credit !== 0 ? formatCurrency(row.credit) : '—'}</td>
                       </tr>
                     ))}
                     <tr>
-                      <td style={styles.total}>Total</td>
+                      <td style={styles.total}>{t(r + 'total')}</td>
                       <td style={styles.totalRight}>{formatCurrency(totalTrialDebit)}</td>
                       <td style={styles.totalRight}>{formatCurrency(totalTrialCredit)}</td>
                     </tr>
@@ -351,92 +354,90 @@ export default function VendorReports() {
             <>
               <div style={styles.panel}>
                 <div style={styles.panelHeader}>
-                  <span>Balance Sheet</span>
+                  <span>{t(r + 'balanceSheet')}</span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
-                    As of {new Date(report.asOf).toLocaleDateString()} Â· {report.financialPosition.currency}
+                    {t(r + 'asOf')} {new Date(report.asOf).toLocaleDateString()} · {report.financialPosition.currency}
                   </span>
                 </div>
                 <table style={styles.table}>
                   <tbody>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Assets</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t(r + 'assets')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.assets.map((l, i) => (
                       <tr key={`asset-${i}`}>
                         <td style={styles.td}>
                           {l.label}
-                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>({t(r + 'auto')})</span>}
                         </td>
                         <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(l.amount)}</td>
                       </tr>
                     ))}
                     <tr>
-                      <td style={styles.total}>Total Assets</td>
+                      <td style={styles.total}>{t(r + 'totalAssets')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalAssets)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Liabilities</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t(r + 'liabilities')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.liabilities.map((l, i) => (
                       <tr key={`liability-${i}`}>
                         <td style={styles.td}>
                           {l.label}
-                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>(auto)</span>}
+                          {l.auto && <span style={{ color: 'var(--faint)', fontSize: '0.72rem', marginLeft: '0.35rem' }}>({t(r + 'auto')})</span>}
                         </td>
                         <td style={{ ...styles.tdRight, ...styles.neg }}>{formatCurrency(l.amount)}</td>
                       </tr>
                     ))}
                     <tr>
-                      <td style={styles.total}>Total Liabilities</td>
+                      <td style={styles.total}>{t(r + 'totalLiabilities')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalLiabilities)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Owner's Equity</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t(r + 'ownersEquity')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     <tr>
-                      <td style={styles.td}>Owner capital (wallet top-ups)</td>
+                      <td style={styles.td}>{t(r + 'ownerCapital')}</td>
                       <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.ownerCapital)}</td>
                     </tr>
                     <tr>
-                      <td style={styles.td}>Retained earnings</td>
+                      <td style={styles.td}>{t(r + 'retainedEarnings')}</td>
                       <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.retainedEarnings)}</td>
                     </tr>
                     <tr>
-                      <td style={styles.total}>Total Equity</td>
+                      <td style={styles.total}>{t(r + 'totalEquity')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalEquity)}</td>
                     </tr>
                   </tbody>
                 </table>
                 <div style={styles.note}>
-                  Assets = Liabilities + Equity. Cash and loans payable are tracked automatically; inventory is
-                  estimated at retail price from current stock (status â‰  DELETED). Use "Manage accounts" below to add
-                  other assets (equipment, receivables) and liabilities (supplier payables, taxes).
+                  {t(r + 'balanceSheetNote')}
                 </div>
               </div>
 
               <div style={styles.panel}>
                 <div style={styles.panelHeader}>
-                  <span>Manage Accounts</span>
+                  <span>{t(r + 'manageAccounts')}</span>
                   <button
                     style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
                     onClick={openCreateAccount}
                   >
-                    + Add Account
+                    {t(r + 'addAccount')}
                   </button>
                 </div>
                 {accounts.length === 0 ? (
-                  <div style={styles.empty}>No manual accounts yet. Add equipment, receivables, supplier payables or other line items.</div>
+                  <div style={styles.empty}>{t(r + 'noManualAccounts')}</div>
                 ) : (
                   <table style={styles.table}>
                     <thead>
                       <tr>
-                        <th style={styles.th}>Name</th>
-                        <th style={styles.th}>Type</th>
-                        <th style={{ ...styles.th, textAlign: 'right' }}>Amount</th>
-                        <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                        <th style={styles.th}>{t(r + 'name')}</th>
+                        <th style={styles.th}>{t(r + 'type')}</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.reportsPage.amountTZS')}</th>
+                        <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -445,18 +446,18 @@ export default function VendorReports() {
                           <td style={styles.td}>{a.name}</td>
                           <td style={styles.td}>
                             <span style={{ ...(a.category === 'asset' ? styles.pos : styles.neg), fontWeight: 600 }}>
-                              {a.category === 'asset' ? 'Asset' : 'Liability'}
+                              {a.category === 'asset' ? t(r + 'asset') : t(r + 'liability')}
                             </span>
                           </td>
                           <td style={styles.tdRight}>{formatCurrency(a.amount)} {a.currency}</td>
                           <td style={{ ...styles.tdRight, whiteSpace: 'nowrap' }}>
-                            <button style={{ ...styles.refreshBtn, marginRight: '0.4rem' }} onClick={() => openEditAccount(a)}>Edit</button>
+                            <button style={{ ...styles.refreshBtn, marginRight: '0.4rem' }} onClick={() => openEditAccount(a)}>{t('vendor.edit')}</button>
                             <button
                               style={{ ...styles.refreshBtn, borderColor: '#fecaca', color: 'var(--danger)' }}
                               onClick={() => removeAccount(a)}
                               disabled={accountBusyId === a.id}
                             >
-                              {accountBusyId === a.id ? '...' : 'Delete'}
+                              {accountBusyId === a.id ? '...' : t('vendor.delete')}
                             </button>
                           </td>
                         </tr>
@@ -469,29 +470,29 @@ export default function VendorReports() {
               {accountModalOpen && (
                 <div style={styles.overlay}>
                   <div style={styles.modal}>
-                    <div style={styles.modalTitle}>{editingAccount ? 'Edit Account' : 'Add Account'}</div>
+                    <div style={styles.modalTitle}>{editingAccount ? t(r + 'editAccount') : t(r + 'addAccountTitle')}</div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Name</label>
+                      <label style={styles.label}>{t(r + 'name')}</label>
                       <input
                         style={styles.input}
                         value={accountForm.name}
                         onChange={(e) => setAccountForm((f) => ({ ...f, name: e.target.value }))}
-                        placeholder="e.g. Shop equipment, Supplier payables"
+                        placeholder={t(r + 'namePlaceholder')}
                       />
                     </div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Type</label>
+                      <label style={styles.label}>{t(r + 'type')}</label>
                       <select
                         style={styles.input}
                         value={accountForm.category}
                         onChange={(e) => setAccountForm((f) => ({ ...f, category: e.target.value as 'asset' | 'liability' }))}
                       >
-                        <option value="asset">Asset</option>
-                        <option value="liability">Liability</option>
+                        <option value="asset">{t(r + 'asset')}</option>
+                        <option value="liability">{t(r + 'liability')}</option>
                       </select>
                     </div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Amount (TZS)</label>
+                      <label style={styles.label}>{t(r + 'amountTZS')}</label>
                       <input
                         style={styles.input}
                         type="number"
@@ -503,13 +504,13 @@ export default function VendorReports() {
                     </div>
                     {accountError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{accountError}</div>}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-                      <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>Cancel</button>
+                      <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>{t(r + 'cancel')}</button>
                       <button
                         style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
                         onClick={saveAccount}
                         disabled={accountSaving}
                       >
-                        {accountSaving ? 'Saving...' : 'Save'}
+                        {accountSaving ? t(r + 'saving') : t('common.save')}
                       </button>
                     </div>
                   </div>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -90,6 +91,8 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorMarketing() {
+  const { t } = useTranslation();
+  const m = 'vendor.marketingPage.';
   const { data: ads, loading: adsLoading, error: adsError, refetch: refetchAds } = useApi<Advert[]>('/ads');
   const { data: campaigns, loading: campaignsLoading, error: campaignsError, refetch: refetchCampaigns } = useApi<MarketingCampaign[]>('/marketing/campaigns');
   const { data: categories, loading: catsLoading, error: catsError, refetch: refetchCats } = useApi<Category[]>('/categories');
@@ -115,7 +118,7 @@ export default function VendorMarketing() {
 
   const submitAdvert = async () => {
     const title = advertForm.title.trim();
-    if (!title) { setFormError('Title is required.'); return; }
+    if (!title) { setFormError(t(m + 'titleRequired')); return; }
     setSaving(true);
     setFormError(null);
     try {
@@ -130,7 +133,7 @@ export default function VendorMarketing() {
       setAdvertModal(false);
       await refetchAds();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to create advert.');
+      setFormError(err.response?.data?.message || err.message || t(m + 'failedCreateAdvert'));
     } finally {
       setSaving(false);
     }
@@ -145,12 +148,12 @@ export default function VendorMarketing() {
   const submitCampaign = async () => {
     const name = campaignForm.name.trim();
     const message = campaignForm.message.trim();
-    if (!name || !message) { setFormError('Campaign name and message are required.'); return; }
+    if (!name || !message) { setFormError(t(m + 'campaignRequired')); return; }
     const variants = campaignForm.variants
       .map((v) => ({ label: v.label.trim() || undefined, message: v.message.trim() }))
       .filter((v) => v.message);
     if (campaignForm.testEnabled && variants.length < 2) {
-      setFormError('A/B testing needs at least two variant messages.');
+      setFormError(t(m + 'abNeedsTwo'));
       return;
     }
     const minOrders = campaignForm.minOrders ? Math.floor(Number(campaignForm.minOrders)) : 0;
@@ -172,20 +175,20 @@ export default function VendorMarketing() {
       setCampaignModal(false);
       await refetchCampaigns();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to create campaign.');
+      setFormError(err.response?.data?.message || err.message || t(m + 'failedCreateCampaign'));
     } finally {
       setSaving(false);
     }
   };
 
   const launchCampaign = async (c: MarketingCampaign) => {
-    if (!window.confirm(`Send "${c.message.substring(0, 60)}â€¦" to your customers by SMS now?`)) return;
+    if (!window.confirm(`${t(m + 'launchConfirmPrefix')}${c.message.substring(0, 60)}…${t(m + 'launchConfirmSuffix')}`)) return;
     try {
       setLaunchError(null);
       await api.post(`/marketing/campaigns/${c.id}/launch`);
       await refetchCampaigns();
     } catch (err: any) {
-      setLaunchError(err.response?.data?.message || err.message || 'Failed to launch campaign.');
+      setLaunchError(err.response?.data?.message || err.message || t(m + 'failedLaunchCampaign'));
     }
   };
 
@@ -196,7 +199,7 @@ export default function VendorMarketing() {
       const res = await api.get<CampaignAnalytics>(`/marketing/campaigns/${c.id}/analytics`);
       setAnalyticsFor(res.data);
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to load analytics.');
+      setFormError(err.response?.data?.message || err.message || t(m + 'failedLoadAnalytics'));
     } finally {
       setAnalyticsLoading(false);
     }
@@ -225,7 +228,7 @@ export default function VendorMarketing() {
       setCategoryModal(null);
       await refetchCats();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to update category.');
+      setFormError(err.response?.data?.message || err.message || t(m + 'failedUpdateCategory'));
     } finally {
       setSaving(false);
     }
@@ -235,44 +238,44 @@ export default function VendorMarketing() {
     <div style={styles.container}>
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>Marketing</h1>
-          <div style={styles.subtitle}>Reach your customers with adverts, SMS campaigns and category copy.</div>
+          <h1 style={styles.title}>{t(m + 'title')}</h1>
+          <div style={styles.subtitle}>{t(m + 'subtitle')}</div>
         </div>
       </div>
 
       <div style={styles.banner}>
-        <p style={styles.bannerTitle}>ðŸ“£ Grow with SMS campaigns</p>
-        <p style={styles.bannerSub}>Draft a promotional message, target the right customers, and launch now or schedule it to auto-send.</p>
+        <p style={styles.bannerTitle}>📣 {t(m + 'bannerTitle')}</p>
+        <p style={styles.bannerSub}>{t(m + 'bannerSub')}</p>
       </div>
 
-      {/* â”€â”€ Campaigns â”€â”€ */}
+      {/* Campaigns */}
       <div style={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={styles.sectionTitle}>SMS Campaigns</div>
-            <div style={styles.sectionSub}>One-to-many broadcasts to your customer base.</div>
+            <div style={styles.sectionTitle}>{t(m + 'smsCampaignsTitle')}</div>
+            <div style={styles.sectionSub}>{t(m + 'smsCampaignsSub')}</div>
           </div>
-          <button style={styles.addButton} onClick={openCampaign}>+ New Campaign</button>
+          <button style={styles.addButton} onClick={openCampaign}>{t(m + 'newCampaign')}</button>
         </div>
         <div style={styles.card}>
           {launchError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{launchError}</div>}
           {campaignsLoading ? <LoadingSpinner /> : campaignsError ? (
             <div style={{ padding: '1rem' }}><ErrorMessage message={campaignsError} /></div>
           ) : !campaigns || campaigns.length === 0 ? (
-            <div style={styles.empty}>No campaigns yet. Click "New Campaign" to create your first SMS broadcast.</div>
+            <div style={styles.empty}>{t(m + 'noCampaigns')}</div>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Name</th>
-                  <th style={styles.th}>Message</th>
-                  <th style={styles.th}>Status</th>
-                  <th style={styles.th}>Schedule</th>
-                  <th style={styles.th}>Audience</th>
-                  <th style={styles.th}>Sent</th>
-                  <th style={styles.th}>Delivered</th>
-                  <th style={styles.th}>Failed</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                  <th style={styles.th}>{t(m + 'name')}</th>
+                  <th style={styles.th}>{t(m + 'message')}</th>
+                  <th style={styles.th}>{t(m + 'status')}</th>
+                  <th style={styles.th}>{t(m + 'scheduleLabel')}</th>
+                  <th style={styles.th}>{t(m + 'audience')}</th>
+                  <th style={styles.th}>{t(m + 'sent')}</th>
+                  <th style={styles.th}>{t(m + 'delivered')}</th>
+                  <th style={styles.th}>{t(m + 'failed')}</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>{t(m + 'actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -288,30 +291,30 @@ export default function VendorMarketing() {
                       {c.scheduledAt ? (
                         <span>
                           {new Date(c.scheduledAt).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                          <div style={styles.hint}>Auto-launches</div>
+                          <div style={styles.hint}>{t(m + 'autoLaunches')}</div>
                         </span>
                       ) : (
-                        <span style={{ color: 'var(--faint)' }}>â€”</span>
+                        <span style={{ color: 'var(--faint)' }}>—</span>
                       )}
                     </td>
                     <td style={styles.td}>
                       {c.segment ? [
-                        c.segment.minOrders ? `â‰¥${c.segment.minOrders} orders` : null,
-                        c.segment.lastOrderWithinDays ? `last ${c.segment.lastOrderWithinDays}d` : null,
-                      ].filter(Boolean).join(', ') : 'All customers'}
+                        c.segment.minOrders ? t(m + 'minOrdersSegment', { count: c.segment.minOrders }) : null,
+                        c.segment.lastOrderWithinDays ? t(m + 'lastDaysSegment', { count: c.segment.lastOrderWithinDays }) : null,
+                      ].filter(Boolean).join(', ') : t(m + 'allCustomers')}
                     </td>
                     <td style={styles.td}>{c.sentCount}</td>
                     <td style={styles.td}>{c.deliveredCount ?? 0}</td>
                     <td style={styles.td}>{c.failedCount}</td>
                     <td style={{ ...styles.td, textAlign: 'right', whiteSpace: 'nowrap' }}>
                       {(c.status === 'COMPLETED' || c.status === 'ACTIVE') && (
-                        <button style={styles.analyticsBtn} onClick={() => openAnalytics(c)}>Analytics</button>
+                        <button style={styles.analyticsBtn} onClick={() => openAnalytics(c)}>{t(m + 'analytics')}</button>
                       )}
                       {c.status === 'DRAFT' && !c.scheduledAt && (
-                        <button style={styles.launchBtn} onClick={() => launchCampaign(c)}>Launch</button>
+                        <button style={styles.launchBtn} onClick={() => launchCampaign(c)}>{t(m + 'launch')}</button>
                       )}
                       {c.status === 'DRAFT' && c.scheduledAt && (
-                        <span style={styles.hint}>Queued</span>
+                        <span style={styles.hint}>{t(m + 'queued')}</span>
                       )}
                     </td>
                   </tr>
@@ -322,28 +325,28 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* â”€â”€ Adverts â”€â”€ */}
+      {/* Adverts */}
       <div style={styles.section}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={styles.sectionTitle}>Adverts</div>
-            <div style={styles.sectionSub}>Promo cards shown to customers on the app.</div>
+            <div style={styles.sectionTitle}>{t(m + 'advertsTitle')}</div>
+            <div style={styles.sectionSub}>{t(m + 'advertsSub')}</div>
           </div>
-          <button style={styles.addButton} onClick={openAdvert}>+ New Advert</button>
+          <button style={styles.addButton} onClick={openAdvert}>{t(m + 'newAdvert')}</button>
         </div>
         <div style={styles.card}>
           {adsLoading ? <LoadingSpinner /> : adsError ? (
             <div style={{ padding: '1rem' }}><ErrorMessage message={adsError} /></div>
           ) : !ads || ads.length === 0 ? (
-            <div style={styles.empty}>No adverts yet. Click "New Advert" to add a promo card.</div>
+            <div style={styles.empty}>{t(m + 'noAdverts')}</div>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Advert</th>
-                  <th style={styles.th}>Call to Action</th>
-                  <th style={styles.th}>Order</th>
-                  <th style={styles.th}>Status</th>
+                  <th style={styles.th}>{t(m + 'advert')}</th>
+                  <th style={styles.th}>{t(m + 'callToAction')}</th>
+                  <th style={styles.th}>{t(m + 'sortOrderLabel')}</th>
+                  <th style={styles.th}>{t(m + 'status')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -353,7 +356,7 @@ export default function VendorMarketing() {
                       <div style={{ fontWeight: 600 }}>{a.emoji ? `${a.emoji} ` : ''}{a.title}</div>
                       {a.body && <div style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{a.body}</div>}
                     </td>
-                    <td style={styles.td}>{a.ctaLabel ? `${a.ctaLabel} â†’ ${a.ctaUrl || ''}` : 'â€”'}</td>
+                    <td style={styles.td}>{a.ctaLabel ? `${a.ctaLabel} → ${a.ctaUrl || ''}` : '—'}</td>
                     <td style={styles.td}>{a.sortOrder}</td>
                     <td style={styles.td}><StatusBadge status={a.isActive ? 'ACTIVE' : 'INACTIVE'} /></td>
                   </tr>
@@ -364,35 +367,35 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* â”€â”€ Category marketing copy â”€â”€ */}
+      {/* Category marketing copy */}
       <div style={styles.section}>
         <div>
-          <div style={styles.sectionTitle}>Category Marketing Copy</div>
-          <div style={styles.sectionSub}>Taglines, benefits and emoji shown on the public category cards.</div>
+          <div style={styles.sectionTitle}>{t(m + 'categoryMarketing')}</div>
+          <div style={styles.sectionSub}>{t(m + 'categoryMarketingSub')}</div>
         </div>
         <div style={styles.card}>
           {catsLoading ? <LoadingSpinner /> : catsError ? (
             <div style={{ padding: '1rem' }}><ErrorMessage message={catsError} /></div>
           ) : !categories || categories.length === 0 ? (
-            <div style={styles.empty}>No categories available.</div>
+            <div style={styles.empty}>{t(m + 'noCategories')}</div>
           ) : (
             <table style={styles.table}>
               <thead>
                 <tr>
-                  <th style={styles.th}>Category</th>
-                  <th style={styles.th}>Tagline</th>
-                  <th style={styles.th}>Benefits</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>Actions</th>
+                  <th style={styles.th}>{t(m + 'categoryLabel')}</th>
+                  <th style={styles.th}>{t(m + 'tagline')}</th>
+                  <th style={styles.th}>{t(m + 'benefits')}</th>
+                  <th style={{ ...styles.th, textAlign: 'right' }}>{t(m + 'actions')}</th>
                 </tr>
               </thead>
               <tbody>
                 {categories.map((cat) => (
                   <tr key={cat.id}>
                     <td style={{ ...styles.td, fontWeight: 600 }}>{cat.emoji ? `${cat.emoji} ` : ''}{cat.name}</td>
-                    <td style={styles.td}>{cat.tagline || 'â€”'}</td>
-                    <td style={styles.td}>{(cat.benefits || []).slice(0, 3).join(', ') || 'â€”'}</td>
+                    <td style={styles.td}>{cat.tagline || '—'}</td>
+                    <td style={styles.td}>{(cat.benefits || []).slice(0, 3).join(', ') || '—'}</td>
                     <td style={{ ...styles.td, textAlign: 'right' }}>
-                      <button style={styles.editBtn} onClick={() => openCategory(cat)}>Edit Copy</button>
+                      <button style={styles.editBtn} onClick={() => openCategory(cat)}>{t(m + 'editCopy')}</button>
                     </td>
                   </tr>
                 ))}
@@ -402,19 +405,19 @@ export default function VendorMarketing() {
         </div>
       </div>
 
-      {/* â”€â”€ Campaign modal â”€â”€ */}
+      {/* Campaign modal */}
       {campaignModal && (
         <div style={styles.overlay} onClick={() => !saving && setCampaignModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>New SMS Campaign</div>
+            <div style={styles.modalTitle}>{t(m + 'newSmsCampaign')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Campaign Name</label>
-              <input style={styles.input} value={campaignForm.name} placeholder="e.g. Weekend Mango Sale" onChange={(e) => setCampaignForm((f) => ({ ...f, name: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'campaignName')}</label>
+              <input style={styles.input} value={campaignForm.name} placeholder={t(m + 'campaignNamePlaceholder')} onChange={(e) => setCampaignForm((f) => ({ ...f, name: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Message</label>
-              <textarea style={styles.textarea} value={campaignForm.message} placeholder="e.g. Mangoes 30% off this weekend at your favourite shop! Order now." onChange={(e) => setCampaignForm((f) => ({ ...f, message: e.target.value }))} />
-              <div style={styles.hint}>Sent to your customers by SMS when launched.</div>
+              <label style={styles.label}>{t(m + 'message')}</label>
+              <textarea style={styles.textarea} value={campaignForm.message} placeholder={t(m + 'messagePlaceholder')} onChange={(e) => setCampaignForm((f) => ({ ...f, message: e.target.value }))} />
+              <div style={styles.hint}>{t(m + 'smsHint')}</div>
             </div>
             <div style={styles.abToggleRow}>
               <input
@@ -432,13 +435,13 @@ export default function VendorMarketing() {
                   }))
                 }
               />
-              <label htmlFor="ab-test-toggle" style={styles.abLabel}>A/B test this campaign</label>
+              <label htmlFor="ab-test-toggle" style={styles.abLabel}>{t(m + 'abTestToggle')}</label>
             </div>
             {campaignForm.testEnabled && (
               <div style={{ marginBottom: '0.85rem' }}>
-                <label style={styles.label}>Message Variants</label>
+                <label style={styles.label}>{t(m + 'messageVariants')}</label>
                 <div style={{ ...styles.hint, marginTop: 0, marginBottom: '0.5rem' }}>
-                  Customers are split evenly (deterministically) and each group receives one variant. After launch, the analytics view shows which variant converted best.
+                  {t(m + 'variantsHint')}
                 </div>
                 {campaignForm.variants.map((v, i) => (
                   <div key={i} style={styles.variantBox}>
@@ -450,14 +453,14 @@ export default function VendorMarketing() {
                           style={styles.removeVariantBtn}
                           onClick={() => setCampaignForm((f) => ({ ...f, variants: f.variants.filter((_, idx) => idx !== i) }))}
                         >
-                          Remove
+                          {t(m + 'remove')}
                         </button>
                       )}
                     </div>
                     <input
                       style={{ ...styles.input, marginBottom: '0.4rem' }}
                       value={v.label}
-                      placeholder={`Label (e.g. Discount ${i + 1})`}
+                      placeholder={`${t(m + 'variantLabelPlaceholder')} ${i + 1}`}
                       onChange={(e) =>
                         setCampaignForm((f) => ({
                           ...f,
@@ -468,7 +471,7 @@ export default function VendorMarketing() {
                     <textarea
                       style={{ ...styles.textarea, minHeight: '60px' }}
                       value={v.message}
-                      placeholder={`SMS body for ${v.label || `variant ${String.fromCharCode(65 + i)}`}`}
+                      placeholder={`${t(m + 'smsBodyFor')} ${v.label || String.fromCharCode(65 + i)}`}
                       onChange={(e) =>
                         setCampaignForm((f) => ({
                           ...f,
@@ -480,108 +483,108 @@ export default function VendorMarketing() {
                 ))}
                 {campaignForm.variants.length < 4 && (
                   <button type="button" style={styles.addVariantBtn} onClick={() => setCampaignForm((f) => ({ ...f, variants: [...f.variants, { label: `Variant ${String.fromCharCode(65 + f.variants.length)}`, message: '' }] }))}>
-                    + Add Variant
+                    {t(m + 'addVariant')}
                   </button>
                 )}
               </div>
             )}
             <div style={styles.field}>
-              <label style={styles.label}>Schedule (optional)</label>
+              <label style={styles.label}>{t(m + 'schedule')}</label>
               <input type="datetime-local" style={styles.input} value={campaignForm.scheduledAt} onChange={(e) => setCampaignForm((f) => ({ ...f, scheduledAt: e.target.value }))} />
-              <div style={styles.hint}>Leave empty to launch manually. If set, the campaign auto-launches at that time.</div>
+              <div style={styles.hint}>{t(m + 'scheduleHint')}</div>
             </div>
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <div style={{ ...styles.field, flex: 1 }}>
-                <label style={styles.label}>Min orders</label>
+                <label style={styles.label}>{t(m + 'minOrders')}</label>
                 <input type="number" min={1} style={styles.input} value={campaignForm.minOrders} placeholder="e.g. 3" onChange={(e) => setCampaignForm((f) => ({ ...f, minOrders: e.target.value }))} />
-                <div style={styles.hint}>Only customers with â‰¥ this many delivered orders.</div>
+                <div style={styles.hint}>{t(m + 'minOrdersHint')}</div>
               </div>
               <div style={{ ...styles.field, flex: 1 }}>
-                <label style={styles.label}>Ordered within (days)</label>
+                <label style={styles.label}>{t(m + 'orderedWithin')}</label>
                 <input type="number" min={1} style={styles.input} value={campaignForm.lastOrderWithinDays} placeholder="e.g. 30" onChange={(e) => setCampaignForm((f) => ({ ...f, lastOrderWithinDays: e.target.value }))} />
-                <div style={styles.hint}>Only customers active within this window.</div>
+                <div style={styles.hint}>{t(m + 'orderedWithinHint')}</div>
               </div>
             </div>
-            <div style={styles.hint}>(Leave both segmentation fields empty to reach all active customers.)</div>
+            <div style={styles.hint}>{t(m + 'segmentHint')}</div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setCampaignModal(false)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setCampaignModal(false)} disabled={saving}>{t(m + 'cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitCampaign} disabled={saving}>
-                {saving ? 'Savingâ€¦' : 'Save Draft'}
+                {saving ? t(m + 'saving') : t(m + 'saveDraft')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ Advert modal â”€â”€ */}
+      {/* Advert modal */}
       {advertModal && (
         <div style={styles.overlay} onClick={() => !saving && setAdvertModal(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>New Advert</div>
+            <div style={styles.modalTitle}>{t(m + 'newAdvertTitle')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Title *</label>
-              <input style={styles.input} value={advertForm.title} placeholder="e.g. Tuma Mizigo kwa Bei Nafuu" onChange={(e) => setAdvertForm((f) => ({ ...f, title: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'titleLabel')}</label>
+              <input style={styles.input} value={advertForm.title} placeholder={t(m + 'titlePlaceholder')} onChange={(e) => setAdvertForm((f) => ({ ...f, title: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Body</label>
-              <textarea style={styles.textarea} value={advertForm.body} placeholder="Supporting text" onChange={(e) => setAdvertForm((f) => ({ ...f, body: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'body')}</label>
+              <textarea style={styles.textarea} value={advertForm.body} placeholder={t(m + 'bodyPlaceholder')} onChange={(e) => setAdvertForm((f) => ({ ...f, body: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Emoji</label>
-              <input style={styles.input} value={advertForm.emoji} placeholder="ðŸšš" onChange={(e) => setAdvertForm((f) => ({ ...f, emoji: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'emoji')}</label>
+              <input style={styles.input} value={advertForm.emoji} placeholder="🚚" onChange={(e) => setAdvertForm((f) => ({ ...f, emoji: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Call to Action Label</label>
-              <input style={styles.input} value={advertForm.ctaLabel} placeholder="e.g. Anza Sasa" onChange={(e) => setAdvertForm((f) => ({ ...f, ctaLabel: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'ctaLabel')}</label>
+              <input style={styles.input} value={advertForm.ctaLabel} placeholder={t(m + 'ctaLabelPlaceholder')} onChange={(e) => setAdvertForm((f) => ({ ...f, ctaLabel: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Call to Action URL</label>
-              <input style={styles.input} value={advertForm.ctaUrl} placeholder="e.g. /cargo" onChange={(e) => setAdvertForm((f) => ({ ...f, ctaUrl: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'ctaUrl')}</label>
+              <input style={styles.input} value={advertForm.ctaUrl} placeholder={t(m + 'ctaUrlPlaceholder')} onChange={(e) => setAdvertForm((f) => ({ ...f, ctaUrl: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Sort Order</label>
-              <input style={styles.input} value={advertForm.sortOrder} placeholder="e.g. 10" onChange={(e) => setAdvertForm((f) => ({ ...f, sortOrder: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'sortOrder')}</label>
+              <input style={styles.input} value={advertForm.sortOrder} placeholder={t(m + 'sortOrderPlaceholder')} onChange={(e) => setAdvertForm((f) => ({ ...f, sortOrder: e.target.value }))} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setAdvertModal(false)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setAdvertModal(false)} disabled={saving}>{t(m + 'cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitAdvert} disabled={saving}>
-                {saving ? 'Savingâ€¦' : 'Create Advert'}
+                {saving ? t(m + 'saving') : t(m + 'createAdvert')}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* â”€â”€ Category copy modal â”€â”€ */}
+      {/* Category copy modal */}
       {categoryModal && (
         <div style={styles.overlay} onClick={() => !saving && setCategoryModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Edit Copy â€” {categoryModal.emoji ? `${categoryModal.emoji} ` : ''}{categoryModal.name}</div>
+            <div style={styles.modalTitle}>{t(m + 'editCopyTitle')} — {categoryModal.emoji ? `${categoryModal.emoji} ` : ''}{categoryModal.name}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Tagline</label>
-              <input style={styles.input} value={categoryForm.tagline} placeholder="e.g. Fresh from the farm every day" onChange={(e) => setCategoryForm((f) => ({ ...f, tagline: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'tagline')}</label>
+              <input style={styles.input} value={categoryForm.tagline} placeholder={t(m + 'taglinePlaceholder')} onChange={(e) => setCategoryForm((f) => ({ ...f, tagline: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Benefits (comma separated)</label>
-              <input style={styles.input} value={categoryForm.benefits} placeholder="e.g. Organic, Same-day delivery, Bulk discounts" onChange={(e) => setCategoryForm((f) => ({ ...f, benefits: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'benefits')}</label>
+              <input style={styles.input} value={categoryForm.benefits} placeholder={t(m + 'benefitsPlaceholder')} onChange={(e) => setCategoryForm((f) => ({ ...f, benefits: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Emoji</label>
-              <input style={styles.input} value={categoryForm.emoji} placeholder="ðŸŽ" onChange={(e) => setCategoryForm((f) => ({ ...f, emoji: e.target.value }))} />
+              <label style={styles.label}>{t(m + 'emoji')}</label>
+              <input style={styles.input} value={categoryForm.emoji} placeholder="🍎" onChange={(e) => setCategoryForm((f) => ({ ...f, emoji: e.target.value }))} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setCategoryModal(null)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setCategoryModal(null)} disabled={saving}>{t(m + 'cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitCategory} disabled={saving}>
-                {saving ? 'Savingâ€¦' : 'Save'}
+                {saving ? t(m + 'saving') : t('common.save')}
               </button>
             </div>
           </div>
         </div>
       )}
-      {/* â”€â”€ Campaign analytics modal â”€â”€ */}
+      {/* Campaign analytics modal */}
       {(analyticsLoading || analyticsFor) && (
         <div style={styles.overlay} onClick={() => setAnalyticsFor(null)}>
           <div style={{ ...styles.modal, width: '560px' }} onClick={(e) => e.stopPropagation()}>
@@ -590,34 +593,34 @@ export default function VendorMarketing() {
             ) : (
               <>
                 <div style={styles.modalTitle}>
-                  Analytics â€” {analyticsFor.name}
+                  {t(m + 'analytics')} — {analyticsFor.name}
                   {analyticsFor.testEnabled && <span style={styles.abBadge}>A/B</span>}
                 </div>
                 <div style={styles.analyticsGrid}>
                   <div style={styles.statCard}>
                     <div style={styles.statValue}>{analyticsFor.deliveredCount}</div>
-                    <div style={styles.statLabel}>Delivered</div>
+                    <div style={styles.statLabel}>{t(m + 'delivered')}</div>
                   </div>
                   <div style={styles.statCard}>
                     <div style={styles.statValue}>{Math.round(analyticsFor.deliveryRate * 100)}%</div>
-                    <div style={styles.statLabel}>Delivery rate</div>
+                    <div style={styles.statLabel}>{t(m + 'deliveryRate')}</div>
                   </div>
                   <div style={styles.statCard}>
                     <div style={styles.statValue}>{analyticsFor.conversionCount}</div>
-                    <div style={styles.statLabel}>Conversions (7d)</div>
+                    <div style={styles.statLabel}>{t(m + 'conversions')}</div>
                   </div>
                 </div>
                 {analyticsFor.variants.length === 0 ? (
-                  <div style={styles.empty}>No recipient data recorded for this campaign.</div>
+                  <div style={styles.empty}>{t(m + 'noAnalyticsData')}</div>
                 ) : (
                   <table style={styles.table}>
                     <thead>
                       <tr>
-                        <th style={styles.th}>Variant</th>
-                        <th style={styles.th}>Sent</th>
-                        <th style={styles.th}>Failed</th>
-                        <th style={styles.th}>Conversions</th>
-                        <th style={styles.th}>Conv. rate</th>
+                        <th style={styles.th}>{t(m + 'variant')}</th>
+                        <th style={styles.th}>{t(m + 'sent')}</th>
+                        <th style={styles.th}>{t(m + 'failed')}</th>
+                        <th style={styles.th}>{t(m + 'conversions')}</th>
+                        <th style={styles.th}>{t(m + 'convRate')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -625,7 +628,7 @@ export default function VendorMarketing() {
                         <tr key={v.variantIndex}>
                           <td style={{ ...styles.td, fontWeight: 600 }}>
                             {v.label}
-                            {v.winner && <span style={styles.winnerBadge}>Winner</span>}
+                            {v.winner && <span style={styles.winnerBadge}>{t(m + 'winner')}</span>}
                           </td>
                           <td style={styles.td}>{v.sent}</td>
                           <td style={styles.td}>{v.failed}</td>
@@ -637,10 +640,10 @@ export default function VendorMarketing() {
                   </table>
                 )}
                 <div style={styles.hint}>
-                  A conversion is a customer who placed a delivered order within 7 days of receiving the message.
+                  {t(m + 'conversionHint')}
                 </div>
                 <div style={styles.footer}>
-                  <button style={styles.cancelBtn} onClick={() => setAnalyticsFor(null)}>Close</button>
+                  <button style={styles.cancelBtn} onClick={() => setAnalyticsFor(null)}>{t(m + 'close')}</button>
                 </div>
               </>
             )}

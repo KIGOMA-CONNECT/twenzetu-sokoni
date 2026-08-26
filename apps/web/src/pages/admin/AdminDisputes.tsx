@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -35,6 +36,7 @@ type Filter = 'ALL' | 'OPEN' | 'RESOLVED';
 
 export default function AdminDisputes() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { formatCurrency, currency } = useCurrency();
   const { data: disputes, loading, error, refetch } = useApi<any[]>('/admin/disputes');
   const [filter, setFilter] = useState<Filter>('ALL');
@@ -79,8 +81,8 @@ export default function AdminDisputes() {
   return (
     <div style={styles.container}>
       <div>
-        <h1 style={styles.header}>Dispute Management</h1>
-        <div style={styles.subheader}>Review and resolve customer disputes, {user?.fullName || 'Admin'}.</div>
+        <h1 style={styles.header}>{t('admin.disputeManagement')}</h1>
+        <div style={styles.subheader}>{t('admin.reviewResolveDisputes', { name: user?.fullName || 'Admin' })}</div>
       </div>
 
       {error && <ErrorMessage message={error} />}
@@ -102,13 +104,13 @@ export default function AdminDisputes() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Order ID</th>
-                <th style={styles.th}>Reason</th>
-                <th style={styles.th}>Description</th>
-                <th style={styles.th}>Claim Amount</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Severity</th>
-                <th style={styles.th}>Actions</th>
+                <th style={styles.th}>{t('admin.orderId')}</th>
+                <th style={styles.th}>{t('admin.reason')}</th>
+                <th style={styles.th}>{t('admin.description')}</th>
+                <th style={styles.th}>{t('admin.claimAmount')}</th>
+                <th style={styles.th}>{t('admin.status')}</th>
+                <th style={styles.th}>{t('admin.severity')}</th>
+                <th style={styles.th}>{t('admin.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -125,7 +127,7 @@ export default function AdminDisputes() {
                   <td style={styles.td}>
                     {d.status === 'OPEN' ? (
                       <button style={styles.resolveBtn} onClick={() => openResolve(d)}>
-                        Resolve
+                        {t('admin.resolve')}
                       </button>
                     ) : (
                       <span style={{ color: 'var(--faint)', fontSize: '0.8rem' }}>â€”</span>
@@ -136,17 +138,17 @@ export default function AdminDisputes() {
             </tbody>
           </table>
         ) : (
-          <div style={styles.subheader}>No disputes found for this filter.</div>
+          <div style={styles.subheader}>{t('admin.noDisputesFound')}</div>
         )}
       </div>
 
       {resolveTarget && (
         <div style={styles.modalOverlay} onClick={() => setResolveTarget(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h2 style={styles.modalTitle}>Resolve Dispute for Order {resolveTarget.orderId.slice(0, 8)}â€¦</h2>
+            <h2 style={styles.modalTitle}>{t('admin.resolveDisputeFor', { id: resolveTarget.orderId.slice(0, 8) })}</h2>
             {submitError && <ErrorMessage message={submitError} />}
             <div>
-              <div style={styles.label}>Resolution Type</div>
+              <div style={styles.label}>{t('admin.resolutionType')}</div>
               <select style={styles.input} value={resolutionType} onChange={(e) => setResolutionType(e.target.value)}>
                 <option value="FULL_REFUND">FULL_REFUND</option>
                 <option value="PARTIAL_REFUND">PARTIAL_REFUND</option>
@@ -155,7 +157,7 @@ export default function AdminDisputes() {
               </select>
             </div>
             <div>
-              <div style={styles.label}>Resolved Amount ({currency.code})</div>
+              <div style={styles.label}>{t('admin.resolvedAmount', { currency: currency.code })}</div>
               <input
                 type="number"
                 style={styles.input}
@@ -165,15 +167,15 @@ export default function AdminDisputes() {
               />
             </div>
             <div>
-              <div style={styles.label}>Notes</div>
-              <textarea style={styles.textarea} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Resolution notes..." />
+              <div style={styles.label}>{t('admin.notes')}</div>
+              <textarea style={styles.textarea} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t('admin.resolutionNotes')} />
             </div>
             <div style={styles.modalActions}>
               <button style={styles.cancelBtn} onClick={() => setResolveTarget(null)} disabled={submitting}>
-                Cancel
+                {t('common.cancel')}
               </button>
               <button style={{ ...styles.btn, ...(submitting ? { opacity: 0.6, cursor: 'not-allowed' } : {}) }} onClick={submitResolve} disabled={submitting}>
-                {submitting ? 'Submittingâ€¦' : 'Submit Resolution'}
+                {submitting ? t('admin.submitting') : t('admin.submitResolution')}
               </button>
             </div>
           </div>

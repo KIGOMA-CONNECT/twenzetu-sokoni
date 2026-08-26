@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { PageHeader } from '../../components/ui';
 import { VENDOR_CATEGORIES, PLATFORM_COMMISSION, DEFAULT_PLATFORM_COMMISSION } from '../../constants/categories';
 
-const STEPS = ['Shop Info', 'Contact & Location', 'KYC Documents', 'Review'];
-
 export default function VendorOnboarding() {
+  const { t } = useTranslation();
+  const STEPS = [t('vendor.onboarding.shopInfo'), t('vendor.onboarding.contactLocation'), t('vendor.onboarding.kycDocuments'), t('vendor.onboarding.reviewSubmit')];
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -33,8 +34,8 @@ export default function VendorOnboarding() {
     setForm(f => ({ ...f, [field]: value }));
 
   const next = () => {
-    if (step === 0 && !form.shopName) { setError('Shop name is required'); return; }
-    if (step === 1 && !form.phone) { setError('Phone number is required'); return; }
+    if (step === 0 && !form.shopName) { setError(t('vendor.onboarding.shopNameRequired')); return; }
+    if (step === 1 && !form.phone) { setError(t('vendor.onboarding.phoneRequired')); return; }
     setError('');
     setStep(s => Math.min(s + 1, STEPS.length - 1));
   };
@@ -71,7 +72,7 @@ export default function VendorOnboarding() {
 
       navigate('/vendor/dashboard');
     } catch (err) {
-      setError((err as Error).message || 'Failed to register vendor');
+      setError((err as Error).message || t('vendor.onboarding.failedToRegister'));
     } finally {
       setSubmitting(false);
     }
@@ -79,7 +80,7 @@ export default function VendorOnboarding() {
 
   return (
     <div className="page" style={{ maxWidth: 640, margin: '0 auto' }}>
-      <PageHeader title="Become a Vendor" sub="Set up your shop on afriMarket and start selling to thousands of customers." />
+      <PageHeader title={t('vendor.onboarding.title')} sub={t('vendor.onboarding.subtitle')} />
 
       <div className="flex gap-1" style={{ marginBottom: '2rem', flexWrap: 'wrap' }}>
         {STEPS.map((s, i) => (
@@ -103,17 +104,17 @@ export default function VendorOnboarding() {
       <div className="card" style={{ padding: '2rem' }}>
         {step === 0 && (
           <>
-            <h3 className="card-title">Shop Information</h3>
+            <h3 className="card-title">{t('vendor.onboarding.shopInfo')}</h3>
             <div className="field">
-              <label className="field-label">Shop Name *</label>
-              <input className="input" value={form.shopName} onChange={e => update('shopName', e.target.value)} placeholder="e.g. Mama Nasi Kitchen" />
+              <label className="field-label">{t('vendor.onboarding.shopName')} *</label>
+              <input className="input" value={form.shopName} onChange={e => update('shopName', e.target.value)} placeholder={t('vendor.onboarding.shopNamePlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">Description</label>
-              <textarea className="textarea" style={{ minHeight: 80, resize: 'vertical' }} value={form.description} onChange={e => update('description', e.target.value)} placeholder="Tell customers about your shop..." />
+              <label className="field-label">{t('vendor.onboarding.description')}</label>
+              <textarea className="textarea" style={{ minHeight: 80, resize: 'vertical' }} value={form.description} onChange={e => update('description', e.target.value)} placeholder={t('vendor.onboarding.descriptionPlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">Category</label>
+              <label className="field-label">{t('vendor.onboarding.category')}</label>
               <select className="select" value={form.category} onChange={e => update('category', e.target.value)}>
                 {VENDOR_CATEGORIES.map(c => (
                   <option key={c.key} value={c.key}>{c.label}</option>
@@ -121,34 +122,34 @@ export default function VendorOnboarding() {
               </select>
             </div>
             <div className="card-flat" style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
-              <strong>Commission ya jukwaa:</strong> {(PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION)}% — huwez kuibadilisha.
+              <strong>{t('vendor.onboarding.commission')}:</strong> {(PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION)}% — {t('vendor.onboarding.commissionNote')}
             </div>
           </>
         )}
 
         {step === 1 && (
           <>
-            <h3 className="card-title">Contact & Location</h3>
+            <h3 className="card-title">{t('vendor.onboarding.contactLocation')}</h3>
             <div className="field">
-              <label className="field-label">Phone Number *</label>
-              <input className="input" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+255 7XX XXX XXX" />
+              <label className="field-label">{t('vendor.onboarding.phoneNumber')} *</label>
+              <input className="input" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder={t('vendor.onboarding.phonePlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">Email (optional)</label>
-              <input className="input" value={form.email} onChange={e => update('email', e.target.value)} placeholder="shop@example.com" />
+              <label className="field-label">{t('vendor.onboarding.emailOptional')}</label>
+              <input className="input" value={form.email} onChange={e => update('email', e.target.value)} placeholder={t('vendor.onboarding.emailPlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">Business Address</label>
-              <textarea className="textarea" style={{ minHeight: 60, resize: 'vertical' }} value={form.address} onChange={e => update('address', e.target.value)} placeholder="Street, area, city..." />
+              <label className="field-label">{t('vendor.onboarding.businessAddress')}</label>
+              <textarea className="textarea" style={{ minHeight: 60, resize: 'vertical' }} value={form.address} onChange={e => update('address', e.target.value)} placeholder={t('vendor.onboarding.addressPlaceholder')} />
             </div>
             <div className="grid grid-2">
               <div className="field">
-                <label className="field-label">GPS Latitude</label>
-                <input className="input" value={form.gpsLatitude} onChange={e => update('gpsLatitude', e.target.value)} placeholder="-6.7924" />
+                <label className="field-label">{t('vendor.onboarding.gpsLatitude')}</label>
+                <input className="input" value={form.gpsLatitude} onChange={e => update('gpsLatitude', e.target.value)} placeholder={t('vendor.onboarding.latitudePlaceholder')} />
               </div>
               <div className="field">
-                <label className="field-label">GPS Longitude</label>
-                <input className="input" value={form.gpsLongitude} onChange={e => update('gpsLongitude', e.target.value)} placeholder="39.2083" />
+                <label className="field-label">{t('vendor.onboarding.gpsLongitude')}</label>
+                <input className="input" value={form.gpsLongitude} onChange={e => update('gpsLongitude', e.target.value)} placeholder={t('vendor.onboarding.longitudePlaceholder')} />
               </div>
             </div>
           </>
@@ -156,47 +157,47 @@ export default function VendorOnboarding() {
 
         {step === 2 && (
           <>
-            <h3 className="card-title">KYC Documents</h3>
-            <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>Optional — can be completed later from your dashboard.</p>
+            <h3 className="card-title">{t('vendor.onboarding.kycDocuments')}</h3>
+            <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '1rem' }}>{t('vendor.onboarding.kycOptional')}</p>
             <div className="field">
-              <label className="field-label">NIDA Number</label>
-              <input className="input" value={kyc.nidaNumber} onChange={e => setKyc(k => ({ ...k, nidaNumber: e.target.value }))} placeholder="National ID number" />
+              <label className="field-label">{t('vendor.onboarding.nidaNumber')}</label>
+              <input className="input" value={kyc.nidaNumber} onChange={e => setKyc(k => ({ ...k, nidaNumber: e.target.value }))} placeholder={t('vendor.onboarding.nidaPlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">TIN Number</label>
-              <input className="input" value={kyc.tinNumber} onChange={e => setKyc(k => ({ ...k, tinNumber: e.target.value }))} placeholder="Tax ID number" />
+              <label className="field-label">{t('vendor.onboarding.tinNumber')}</label>
+              <input className="input" value={kyc.tinNumber} onChange={e => setKyc(k => ({ ...k, tinNumber: e.target.value }))} placeholder={t('vendor.onboarding.tinPlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">Business License Number</label>
-              <input className="input" value={kyc.licenseNumber} onChange={e => setKyc(k => ({ ...k, licenseNumber: e.target.value }))} placeholder="License number" />
+              <label className="field-label">{t('vendor.onboarding.businessLicense')}</label>
+              <input className="input" value={kyc.licenseNumber} onChange={e => setKyc(k => ({ ...k, licenseNumber: e.target.value }))} placeholder={t('vendor.onboarding.licensePlaceholder')} />
             </div>
           </>
         )}
 
         {step === 3 && (
           <>
-            <h3 className="card-title">Review & Submit</h3>
+            <h3 className="card-title">{t('vendor.onboarding.reviewSubmit')}</h3>
             <div className="card-flat" style={{ marginBottom: '1rem' }}>
-              <p><strong>Shop:</strong> {form.shopName}</p>
-              <p><strong>Category:</strong> {form.category}</p>
-              <p><strong>Phone:</strong> {form.phone}</p>
-              <p><strong>Address:</strong> {form.address || '-'}</p>
-              <p><strong>Commission:</strong> {PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION}%</p>
-              <p><strong>NIDA:</strong> {kyc.nidaNumber || '-'}</p>
+              <p><strong>{t('vendor.onboarding.shop')}:</strong> {form.shopName}</p>
+              <p><strong>{t('vendor.onboarding.category')}:</strong> {form.category}</p>
+              <p><strong>{t('vendor.onboarding.phone')}:</strong> {form.phone}</p>
+              <p><strong>{t('vendor.onboarding.address')}:</strong> {form.address || '-'}</p>
+              <p><strong>{t('vendor.onboarding.commission')}:</strong> {PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION}%</p>
+              <p><strong>{t('vendor.onboarding.nida')}:</strong> {kyc.nidaNumber || '-'}</p>
             </div>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>Your application will be reviewed by admin. You'll receive a notification once approved.</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>{t('vendor.onboarding.applicationNote')}</p>
           </>
         )}
 
         <div className="flex justify-between" style={{ marginTop: '2rem', gap: '0.75rem' }}>
           <button className="btn btn-ghost" onClick={() => step > 0 ? setStep(s => s - 1) : navigate(-1)}>
-            {step === 0 ? 'Cancel' : 'Back'}
+            {step === 0 ? t('vendor.onboarding.cancel') : t('vendor.onboarding.back')}
           </button>
           {step < STEPS.length - 1 ? (
-            <button className="btn btn-primary" onClick={next}>Continue</button>
+            <button className="btn btn-primary" onClick={next}>{t('vendor.onboarding.continueBtn')}</button>
           ) : (
             <button className="btn btn-success" onClick={submit} disabled={submitting}>
-              {submitting ? 'Submitting...' : 'Submit Application'}
+              {submitting ? t('vendor.onboarding.submitting') : t('vendor.onboarding.submitApplication')}
             </button>
           )}
         </div>

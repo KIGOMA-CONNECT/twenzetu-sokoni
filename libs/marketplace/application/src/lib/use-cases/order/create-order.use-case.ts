@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { randomInt } from 'crypto';
@@ -24,6 +24,7 @@ import { FindVendorsUseCase } from '../vendor/find-vendors.use-case';
 
 @Injectable()
 export class CreateOrderUseCase {
+  private readonly logger = new Logger(CreateOrderUseCase.name);
   private readonly eventDispatcher: IEventDispatcher;
 
   constructor(
@@ -256,7 +257,8 @@ export class CreateOrderUseCase {
           );
           payment.confirmEscrow();
           await this.paymentRepo.save(payment);
-        } catch {
+        } catch (error) {
+          this.logger.error(`Payment processing failed: ${error instanceof Error ? error.message : String(error)}`, 'CreateOrderUseCase');
           payment.fail();
           await this.paymentRepo.save(payment);
         }
@@ -280,7 +282,8 @@ export class CreateOrderUseCase {
             payment.fail();
             await this.paymentRepo.save(payment);
           }
-        } catch {
+        } catch (error) {
+          this.logger.error(`Payment processing failed: ${error instanceof Error ? error.message : String(error)}`, 'CreateOrderUseCase');
           payment.fail();
           await this.paymentRepo.save(payment);
         }
@@ -301,7 +304,8 @@ export class CreateOrderUseCase {
               payment.setTransactionRef(stkResult.checkoutRequestId);
               await this.paymentRepo.save(payment);
             }
-          } catch {
+          } catch (error) {
+            this.logger.error(`Payment processing failed: ${error instanceof Error ? error.message : String(error)}`, 'CreateOrderUseCase');
             payment.fail();
             await this.paymentRepo.save(payment);
           }

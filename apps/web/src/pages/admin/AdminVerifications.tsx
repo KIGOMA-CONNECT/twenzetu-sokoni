@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -34,6 +35,7 @@ function RiskScore({ score }: { score: number | null | undefined }) {
 
 export default function AdminVerifications() {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const { data: verifications, loading, error, refetch } = useApi<User[]>('/auth/admin/verifications');
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export default function AdminVerifications() {
 
   const handleReject = async (id: string) => {
     if (!rejectReason.trim()) {
-      setActionError('Please provide a rejection reason');
+      setActionError(t('admin.pleaseProvideRejectionReason'));
       return;
     }
     setActionLoading(id);
@@ -75,8 +77,8 @@ export default function AdminVerifications() {
   return (
     <div style={styles.container}>
       <div>
-        <h1 style={styles.header}>Verification Queue</h1>
-        <div style={styles.subheader}>Review and approve vendor/driver registrations, {user?.fullName || 'Admin'}.</div>
+        <h1 style={styles.header}>{t('admin.verificationQueue')}</h1>
+        <div style={styles.subheader}>{t('admin.reviewApproveRegistrations', { name: user?.fullName || 'Admin' })}</div>
       </div>
 
       {actionError && <ErrorMessage message={actionError} />}
@@ -89,16 +91,16 @@ export default function AdminVerifications() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Role</th>
-                <th style={styles.th}>Phone</th>
-                <th style={styles.th}>Business</th>
-                <th style={styles.th}>ID / Reg No</th>
-                <th style={styles.th}>City</th>
-                <th style={styles.th}>Risk</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Reason</th>
-                <th style={styles.th}>Actions</th>
+                <th style={styles.th}>{t('admin.name')}</th>
+                <th style={styles.th}>{t('admin.role')}</th>
+                <th style={styles.th}>{t('admin.phone')}</th>
+                <th style={styles.th}>{t('admin.business')}</th>
+                <th style={styles.th}>{t('admin.idRegNo')}</th>
+                <th style={styles.th}>{t('admin.city')}</th>
+                <th style={styles.th}>{t('admin.risk')}</th>
+                <th style={styles.th}>{t('admin.status')}</th>
+                <th style={styles.th}>{t('admin.reasonLabel')}</th>
+                <th style={styles.th}>{t('admin.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -120,7 +122,7 @@ export default function AdminVerifications() {
                           style={{ padding: '0.35rem 0.5rem', fontSize: '0.8rem', borderRadius: '6px', border: '1px solid #cbd5e1' }}
                           value={rejectReason}
                           onChange={(e) => setRejectReason(e.target.value)}
-                          placeholder="Rejection reason"
+                          placeholder={t('admin.rejectionReason')}
                         />
                         <div style={{ display: 'flex', gap: '0.4rem' }}>
                           <button
@@ -128,13 +130,13 @@ export default function AdminVerifications() {
                             onClick={() => handleReject(v.id)}
                             disabled={actionLoading === v.id}
                           >
-                            {actionLoading === v.id ? 'Rejecting...' : 'Confirm'}
+                            {actionLoading === v.id ? t('admin.rejecting') : t('admin.confirm')}
                           </button>
                           <button
                             style={{ ...styles.btn, ...styles.rejectBtn }}
                             onClick={() => { setRejectingId(null); setRejectReason(''); }}
                           >
-                            Cancel
+                            {t('common.cancel')}
                           </button>
                         </div>
                       </div>
@@ -145,13 +147,13 @@ export default function AdminVerifications() {
                           onClick={() => handleApprove(v.id)}
                           disabled={actionLoading === v.id}
                         >
-                          Approve
+                          {t('admin.approve')}
                         </button>
                         <button
                           style={{ ...styles.btn, ...styles.rejectBtn }}
                           onClick={() => { setRejectingId(v.id); setRejectReason(''); }}
                         >
-                          Reject
+                          {t('admin.reject')}
                         </button>
                       </div>
                     )}
@@ -161,7 +163,7 @@ export default function AdminVerifications() {
             </tbody>
           </table>
         ) : (
-          <div style={styles.empty}>No pending verifications.</div>
+          <div style={styles.empty}>{t('admin.noPendingVerifications')}</div>
         )}
       </div>
     </div>

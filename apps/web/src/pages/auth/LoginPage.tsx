@@ -161,7 +161,7 @@ export default function LoginPage() {
             <form onSubmit={handleVerifyCode}>
               <div className="field">
                 <label className="field-label" htmlFor="otpCode">{t('auth.verificationCode')}</label>
-                <input id="otpCode" type="text" inputMode="numeric" className="input" value={code} onChange={(e) => setCode(e.target.value)} placeholder="4-digit code" maxLength={4} required style={{ textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }} />
+                <input id="otpCode" type="text" inputMode="numeric" className="input" value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('auth.fourDigitCode')} maxLength={4} required style={{ textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }} />
               </div>
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
                 {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> {t('auth.verifying')}</> : t('auth.verifyCode')}

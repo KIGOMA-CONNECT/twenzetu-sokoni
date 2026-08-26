@@ -208,7 +208,7 @@ export default function AccountPage() {
           <div className="field">
             <label className="field-label" htmlFor="newPassword">{t('account.newPassword')}</label>
             <div style={{ position: 'relative' }}>
-              <input id="newPassword" type={showPassword ? 'text' : 'password'} className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="At least 8 characters, A–Z, a–z, 0–9" required autoComplete="new-password" />
+              <input id="newPassword" type={showPassword ? 'text' : 'password'} className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('auth.passwordHintShort')} required autoComplete="new-password" />
               <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--faint)', fontSize: '1rem', cursor: 'pointer' }}>
                 {showPassword ? '👁' : '🔒'}
               </button>

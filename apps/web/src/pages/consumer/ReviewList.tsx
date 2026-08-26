@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -33,6 +34,7 @@ function renderStars(rating: number) {
 }
 
 export default function ReviewList() {
+  const { t } = useTranslation();
   const { data: vendors, loading: vendorsLoading, error: vendorsError } = useApi<Vendor[]>('/vendors');
   const [selectedVendorId, setSelectedVendorId] = useState<string>('');
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -57,7 +59,7 @@ export default function ReviewList() {
         }
       })
       .catch((err: any) => {
-        if (!cancelled) setReviewsError(err.response?.data?.message || err.message || 'Failed to load reviews.');
+        if (!cancelled)           setReviewsError(err.response?.data?.message || err.message || t('reviews.loadError'));
       })
       .finally(() => {
         if (!cancelled) setReviewsLoading(false);
@@ -67,10 +69,10 @@ export default function ReviewList() {
 
   return (
     <div className="page">
-      <PageHeader title="Vendor Reviews" sub="See what other customers say about a vendor" />
+      <PageHeader title={t('reviews.title')} sub={t('reviews.subtitle')} />
 
       <div className="field" style={{ maxWidth: 440 }}>
-        <label className="field-label">Select a vendor</label>
+        <label className="field-label">{t('reviews.selectVendor')}</label>
         {vendorsLoading ? (
           <LoadingSpinner />
         ) : vendorsError ? (
@@ -81,7 +83,7 @@ export default function ReviewList() {
             value={selectedVendorId}
             onChange={(e) => setSelectedVendorId(e.target.value)}
           >
-            <option value="">— Choose a vendor —</option>
+            <option value="">{t('reviews.chooseVendor')}</option>
             {vendorList.map((v) => (
               <option key={v.id} value={v.id}>{v.shopName}</option>
             ))}
@@ -97,7 +99,7 @@ export default function ReviewList() {
           {!reviewsLoading && !reviewsError && (
             <div className="stack">
               {reviews.length === 0 ? (
-                <EmptyState icon="💬" title="No reviews yet" sub="This vendor has no reviews." />
+                <EmptyState icon="💬" title={t('reviews.noReviews')} sub={t('reviews.noReviewsSub')} />
               ) : (
                 reviews.map((review) => (
                   <div key={review.id} className="card">

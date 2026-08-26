@@ -9,6 +9,11 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { VENDOR_CATEGORIES } from '../../constants/categories';
 import type { ServiceListing, ServiceRequest, ServiceMessage } from '../../types';
 
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: unknown;
+}
+
 interface ListingForm {
   name: string;
   description: string;
@@ -86,8 +91,8 @@ const [chatError, setChatError] = useState<string | null>(null);
   const [quoteBusy, setQuoteBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as any)?.data ?? []);
-  const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as any)?.data ?? []);
+  const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as ApiResponse<ServiceListing[]>)?.data ?? []);
+  const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as ApiResponse<ServiceRequest[]>)?.data ?? []);
 
   const openModal = () => {
     setForm(emptyForm);
@@ -186,7 +191,7 @@ const [chatError, setChatError] = useState<string | null>(null);
       await refetchReqs();
       const refreshed = await api.get('/services/requests?status=');
       const payload = refreshed.data?.data ?? refreshed.data?.data ?? [];
-      const list = Array.isArray(payload) ? payload : ((payload as any)?.data ?? []);
+      const list = Array.isArray(payload) ? payload : ((payload as ApiResponse<ServiceRequest[]>)?.data ?? []);
       const updated = list.find((r: ServiceRequest) => r.id === activeReq.id);
       if (updated) setActiveReq(updated);
       setActionError(null);

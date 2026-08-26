@@ -63,7 +63,7 @@ function ProductList() {
 
   return (
     <div className="page">
-      <PageTitle title="Browse Products" description="Discover fresh produce, electronics, and services from local vendors on afriMarket." />
+      <PageTitle title={t('product.browseTitle')} description={t('product.browseDescription')} />
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '0.5rem' }}>
         {logoUrl && (
           <img

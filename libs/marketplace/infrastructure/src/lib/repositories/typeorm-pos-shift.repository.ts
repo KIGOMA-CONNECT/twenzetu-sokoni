@@ -2,7 +2,7 @@
 import { EntityId, TenantId } from '@afri-market/kernel';
 import { TypeOrmRepository } from '@afri-market/database';
 import { EntityManager } from 'typeorm';
-import { PosShift, IPosShiftRepository } from '@afri-market/marketplace-domain';
+import { PosShift, IPosShiftRepository, PosShiftStatus } from '@afri-market/marketplace-domain';
 import { PosShiftOrmEntity } from '../entities/pos-shift-orm.entity';
 
 @Injectable()
@@ -80,7 +80,7 @@ export class TypeOrmPosShiftRepository extends TypeOrmRepository<PosShift, PosSh
       totalRefunds: Number(e.totalRefunds),
       salesCount: e.salesCount,
       paymentBreakdown: e.paymentBreakdown ?? {},
-      status: e.status as any,
+      status: e.status as PosShiftStatus,
       closedBy: e.closedBy ? EntityId.from(e.closedBy) : undefined,
       notes: e.notes ?? undefined,
       version: e.version,

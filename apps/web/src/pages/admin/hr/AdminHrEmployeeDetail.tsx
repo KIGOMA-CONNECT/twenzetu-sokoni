@@ -105,7 +105,7 @@ export default function AdminHrEmployeeDetail() {
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '0.75rem', marginBottom: '1rem' }}>
                 {['firstName', 'lastName', 'email', 'phoneNumber', 'gender', 'dateOfBirth', 'nationalId', 'address'].map(k => (
-                  <div key={k}><div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'capitalize' }}>{k.replace(/([A-Z])/g, ' $1').trim()}</div><div style={{ fontWeight: 500 }}>{(emp as any)[k] || <span style={{ color: 'var(--faint)' }}>-</span>}</div></div>
+                  <div key={k}><div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'capitalize' }}>{k.replace(/([A-Z])/g, ' $1').trim()}</div><div style={{ fontWeight: 500 }}>{(emp as Record<string, string | number>)[k] || <span style={{ color: 'var(--faint)' }}>-</span>}</div></div>
                 ))}
               </div>
               <button style={{ ...s.btnSm, background: '#3b82f6' }} onClick={startEdit}>{t('hr.employeeDetail.edit')}</button>

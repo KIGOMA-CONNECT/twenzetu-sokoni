@@ -104,17 +104,17 @@ export default function WalletPage() {
         return;
       }
       if (res.data?.data?.success) {
-        setTopupSuccess(res.data.data.message || 'Payment prompt sent to your phone. Confirm to complete top-up.');
+        setTopupSuccess(res.data.data.message || t('wallet.topUpSuccessDefault'));
         setTimeout(() => {
           setShowTopup(false);
           refetchWallet();
           refetchTx();
         }, 4000);
       } else {
-        setTopupError(res.data?.data?.message || res.data?.message || 'Top-up failed');
+        setTopupError(res.data?.data?.message || res.data?.message || t('wallet.topUpFailed'));
       }
     } catch (err: any) {
-      setTopupError(err.response?.data?.error?.message || err.message || 'Failed to initiate top-up');
+      setTopupError(err.response?.data?.error?.message || err.message || t('wallet.topUpInitFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -135,17 +135,17 @@ export default function WalletPage() {
         provider: withdrawProvider,
       });
       if (res.data?.data?.success) {
-        setWithdrawSuccess(res.data.data.message || 'Withdrawal initiated.');
+        setWithdrawSuccess(res.data.data.message || t('wallet.withdrawSuccessDefault'));
         setTimeout(() => {
           setShowWithdraw(false);
           refetchWallet();
           refetchTx();
         }, 4000);
       } else {
-        setWithdrawError(res.data?.data?.message || res.data?.message || 'Withdrawal failed');
+        setWithdrawError(res.data?.data?.message || res.data?.message || t('wallet.withdrawFailed'));
       }
     } catch (err: any) {
-      setWithdrawError(err.response?.data?.error?.message || err.message || 'Failed to initiate withdrawal');
+      setWithdrawError(err.response?.data?.error?.message || err.message || t('wallet.withdrawInitFailed'));
     } finally {
       setWithdrawing(false);
     }
@@ -167,7 +167,7 @@ export default function WalletPage() {
 
   return (
     <div className="page">
-      <PageTitle title="Wallet" />
+      <PageTitle title={t('wallet.pageTitle')} />
       <PageHeader
         title={t('wallet.title')}
         action={
@@ -257,7 +257,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">{t('wallet.amount')}</label>
-              <input className="input" type="number" min="100" step="100" value={topupAmount} onChange={(e) => setTopupAmount(Number(e.target.value))} placeholder="Enter amount" />
+              <input className="input" type="number" min="100" step="100" value={topupAmount} onChange={(e) => setTopupAmount(Number(e.target.value))} placeholder={t('wallet.enterAmount')} />
               <div className="flex gap-1 wrap mt-1">
                 {quickAmounts.map((a) => (
                   <button
@@ -302,9 +302,9 @@ export default function WalletPage() {
             {isMobileMoney && (
               <div className="field">
                 <label className="field-label">{t('wallet.phoneNumber')}</label>
-                <input className="input" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. 0712345678 or +255712345678" />
+                <input className="input" type="tel" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder={t('wallet.phonePlaceholder')} />
                 <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
-                  📲 A secure payment prompt will be pushed to this number — enter your PIN to confirm.
+                  📲 {t('wallet.mobileMoneyInfo')}
                 </div>
               </div>
             )}
@@ -312,16 +312,16 @@ export default function WalletPage() {
             {selectedMethod === 'card' && (
               <div className="field">
                 <div className="text-muted" style={{ fontSize: '0.85rem', padding: '0.5rem 0.75rem', background: 'var(--brand-soft)', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}>
-                  🔒 You will be redirected to our secure payment page to complete the card payment with Visa, Mastercard or a virtual card.
+                  🔒 {t('wallet.cardPaymentInfo')}
                 </div>
               </div>
             )}
 
             {selectedMethod === 'bank' && (
               <div className="field">
-                <label className="field-label">Bank</label>
+                <label className="field-label">{t('wallet.bank')}</label>
                 <select className="select" value={bankReference} onChange={(e) => setBankReference(e.target.value)}>
-                  <option value="">Select your bank...</option>
+                  <option value="">{t('wallet.selectYourBank')}</option>
                   <option value="CRDB">CRDB Bank</option>
                   <option value="NMB">NMB Bank</option>
                   <option value="NBC">NBC Bank</option>
@@ -330,7 +330,7 @@ export default function WalletPage() {
                   <option value="Equity">Equity Bank</option>
                 </select>
                 <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
-                  🏦 You will receive transfer instructions to complete your top-up.
+                  🏦 {t('wallet.bankTopUpInfo')}
                 </div>
               </div>
             )}
@@ -355,7 +355,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">{t('wallet.amount')}</label>
-              <input className="input" type="number" min="100" step="100" value={withdrawAmount} onChange={(e) => setWithdrawAmount(Number(e.target.value))} placeholder="Enter amount" />
+              <input className="input" type="number" min="100" step="100" value={withdrawAmount} onChange={(e) => setWithdrawAmount(Number(e.target.value))} placeholder={t('wallet.enterAmount')} />
               <div className="flex gap-1 wrap mt-1">
                 {quickAmounts.map((a) => (
                   <button
@@ -382,7 +382,7 @@ export default function WalletPage() {
                   </button>
                 ))}
               </div>
-              <input className="input" type="tel" value={withdrawPhone} onChange={(e) => setWithdrawPhone(e.target.value)} placeholder="e.g. 0712345678 or +255712345678" />
+              <input className="input" type="tel" value={withdrawPhone} onChange={(e) => setWithdrawPhone(e.target.value)} placeholder={t('wallet.phonePlaceholder')} />
               <div className="text-muted" style={{ fontSize: '0.78rem', marginTop: '0.35rem' }}>
                 📲 {t('wallet.withdrawInfo')}
               </div>
@@ -408,7 +408,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">{t('wallet.amount')}</label>
-              <input className="input" type="number" min="100" step="100" value={transferAmount} onChange={(e) => setTransferAmount(Number(e.target.value))} placeholder="Enter amount" />
+              <input className="input" type="number" min="100" step="100" value={transferAmount} onChange={(e) => setTransferAmount(Number(e.target.value))} placeholder={t('wallet.enterAmount')} />
               <div className="flex gap-1 wrap mt-1">
                 {quickAmounts.map((a) => (
                   <button
@@ -460,7 +460,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">{t('wallet.descriptionOptional')}</label>
-              <input className="input" type="text" value={transferDescription} onChange={(e) => setTransferDescription(e.target.value)} placeholder="e.g. Payment for goods" />
+              <input className="input" type="text" value={transferDescription} onChange={(e) => setTransferDescription(e.target.value)} placeholder={t('wallet.descPlaceholder')} />
             </div>
 
             <div className="flex justify-between gap-2 mt-2" style={{ justifyContent: 'flex-end' }}>
@@ -480,17 +480,17 @@ export default function WalletPage() {
                       description: transferDescription || undefined,
                     });
                     if (res.data?.data?.success) {
-                      setTransferSuccess(res.data.data.message || 'Money sent successfully.');
+                      setTransferSuccess(res.data.data.message || t('wallet.transferSuccessDefault'));
                       setTimeout(() => {
                         setShowTransfer(false);
                         refetchWallet();
                         refetchTx();
                       }, 3000);
                     } else {
-                      setTransferError(res.data?.data?.message || res.data?.message || 'Transfer failed');
+                      setTransferError(res.data?.data?.message || res.data?.message || t('wallet.transferFailed'));
                     }
                   } catch (err: any) {
-                    setTransferError(err.response?.data?.error?.message || err.message || 'Failed to send money');
+                    setTransferError(err.response?.data?.error?.message || err.message || t('wallet.transferInitFailed'));
                   } finally {
                     setTransferring(false);
                   }
@@ -513,7 +513,7 @@ export default function WalletPage() {
 
             <div className="field">
               <label className="field-label">{t('wallet.amount')}</label>
-              <input className="input" type="number" min="1000" step="100" value={bankWithdrawAmount} onChange={(e) => setBankWithdrawAmount(Number(e.target.value))} placeholder="Minimum 1,000 TZS" />
+              <input className="input" type="number" min="1000" step="100" value={bankWithdrawAmount} onChange={(e) => setBankWithdrawAmount(Number(e.target.value))} placeholder={t('wallet.minimumAmount')} />
               <div className="flex gap-1 wrap mt-1">
                 {[10000, 50000, 100000, 500000].map((a) => (
                   <button
@@ -579,17 +579,17 @@ export default function WalletPage() {
                       description: bankWithdrawDescription || undefined,
                     });
                     if (res.data?.data?.success) {
-                      setBankWithdrawSuccess(res.data.data.message || 'Bank withdrawal initiated. Funds will arrive within 1-3 business days.');
+                      setBankWithdrawSuccess(res.data.data.message || t('wallet.bankWithdrawSuccessDefault'));
                       setTimeout(() => {
                         setShowBankWithdraw(false);
                         refetchWallet();
                         refetchTx();
                       }, 4000);
                     } else {
-                      setBankWithdrawError(res.data?.data?.message || res.data?.message || 'Bank withdrawal failed');
+                      setBankWithdrawError(res.data?.data?.message || res.data?.message || t('wallet.bankWithdrawFailed'));
                     }
                   } catch (err: any) {
-                    setBankWithdrawError(err.response?.data?.error?.message || err.message || 'Failed to initiate bank withdrawal');
+                    setBankWithdrawError(err.response?.data?.error?.message || err.message || t('wallet.bankWithdrawInitFailed'));
                   } finally {
                     setBankWithdrawing(false);
                   }

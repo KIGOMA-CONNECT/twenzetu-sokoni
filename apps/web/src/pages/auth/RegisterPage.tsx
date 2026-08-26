@@ -123,7 +123,7 @@ export default function RegisterPage() {
             </div>
             <div className="field">
               <label className="field-label">{t('auth.password')}</label>
-              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters with upper, lower & number" minLength={8} required />
+              <input type="password" className="input" value={password} onChange={e => setPassword(e.target.value)} placeholder={t('auth.passwordPlaceholder')} minLength={8} required />
               <p style={{ color: 'var(--muted)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{t('auth.passwordHint')}</p>
             </div>
             <div className="field">

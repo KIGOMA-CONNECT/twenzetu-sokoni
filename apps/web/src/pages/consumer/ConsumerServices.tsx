@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -9,6 +10,11 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import { VENDOR_CATEGORIES } from '../../constants/categories';
 import type { ServiceListing, ServiceRequest, ServiceQuote, ServiceMessage } from '../../types';
+
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: unknown;
+}
 
 const SERVICE_CATEGORIES = ['cleaning', 'tailoring', 'laundry', 'food', 'general'];
 
@@ -51,6 +57,7 @@ const styles: Record<string, React.CSSProperties> = {
 const unitLabelFor = (m: string) => (m === 'per_sqm' ? 'm²' : m === 'per_hour' ? 'hour' : m === 'per_room' ? 'room' : 'unit');
 
 export default function ConsumerServices() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -87,7 +94,7 @@ export default function ConsumerServices() {
   const [reviewBusy, setReviewBusy] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
-  const myRequests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as any)?.data ?? []);
+  const myRequests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as ApiResponse<ServiceRequest[]>)?.data ?? []);
 
   const openRequest = (listing: ServiceListing) => {
     setSelected(listing);
@@ -107,7 +114,7 @@ export default function ConsumerServices() {
       const url = res.data?.data?.url || res.data?.url;
       if (url) setPhotoUrls((p) => [...p, url]);
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Upload failed');
+      setFormError(err.response?.data?.message || err.message || t('services.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -134,7 +141,7 @@ export default function ConsumerServices() {
       setTab('requests');
       await refetchReqs();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to create request');
+      setFormError(err.response?.data?.message || err.message || t('services.createRequestFailed'));
     } finally {
       setSubmitting(false);
     }
@@ -193,7 +200,7 @@ export default function ConsumerServices() {
         setAcceptSuccess('Quote accepted. Payment request sent. Complete the STK push on your phone.');
       }
     } catch (err: any) {
-      setAcceptError(err.response?.data?.message || err.message || 'Failed to accept quote');
+      setAcceptError(err.response?.data?.message || err.message || t('services.acceptQuoteFailed'));
     } finally {
       setAccepting(false);
     }
@@ -217,7 +224,7 @@ export default function ConsumerServices() {
       });
       setReviewTarget(null);
     } catch (err: any) {
-      setReviewError(err.response?.data?.message || err.message || 'Failed to submit review');
+      setReviewError(err.response?.data?.message || err.message || t('services.submitReviewFailed'));
     } finally {
       setReviewBusy(false);
     }
@@ -228,18 +235,18 @@ export default function ConsumerServices() {
   return (
     <div style={styles.container}>
       <div style={styles.headerRow}>
-        <h1 style={styles.title}>Services</h1>
+        <h1 style={styles.title}>{t('services.title')}</h1>
       </div>
 
       <div style={styles.tabWrap}>
-        <button style={{ ...styles.tab, ...(tab === 'browse' ? styles.tabActive : {}) }} onClick={() => setTab('browse')}>Browse Services</button>
-        <button style={{ ...styles.tab, ...(tab === 'requests' ? styles.tabActive : {}) }} onClick={() => { setTab('requests'); refetchReqs(); }}>My Requests ({myRequests.length})</button>
+        <button style={{ ...styles.tab, ...(tab === 'browse' ? styles.tabActive : {}) }} onClick={() => setTab('browse')}>{t('services.browseServices')}</button>
+        <button style={{ ...styles.tab, ...(tab === 'requests' ? styles.tabActive : {}) }} onClick={() => { setTab('requests'); refetchReqs(); }}>{t('services.myRequests', { count: myRequests.length })}</button>
       </div>
 
       {tab === 'browse' && (
         <>
           <div style={{ display: 'flex', gap: '0.5rem', overflowX: 'auto', marginBottom: '1.25rem', paddingBottom: '0.25rem' }}>
-            <button style={{ ...styles.tab, ...(!category ? styles.tabActive : {}) }} onClick={() => setSearchParams({})}>All</button>
+            <button style={{ ...styles.tab, ...(!category ? styles.tabActive : {}) }} onClick={() => setSearchParams({})}>{t('services.all')}</button>
             {SERVICE_CATEGORIES.map((c) => {
               const def = VENDOR_CATEGORIES.find((v) => v.key === c);
               return (
@@ -255,7 +262,7 @@ export default function ConsumerServices() {
           ) : listingsError ? (
             <ErrorMessage message={listingsError} />
           ) : !listings || listings.length === 0 ? (
-            <div style={{ ...styles.card, ...styles.empty }}>No service listings yet in this category. Check back soon!</div>
+            <div style={{ ...styles.card, ...styles.empty }}>{t('services.noListings')}</div>
           ) : (
             <div style={styles.grid}>
               {(Array.isArray(listings) ? listings : []).map((l) => (
@@ -269,12 +276,12 @@ export default function ConsumerServices() {
                       ⭐ {l.vendorRating.toFixed(1)} {l.vendorName ? `· ${l.vendorName}` : ''}
                     </div>
                   ) : (
-                    <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginBottom: '0.4rem' }}>No ratings yet</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginBottom: '0.4rem' }}>{t('services.noRatings')}</div>
                   )}
                   <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.6rem' }}>
                     {formatCurrency(l.basePrice)}<span style={{ fontSize: '0.75rem', fontWeight: 500, color: 'var(--muted)' }}> / {l.unitLabel || unitLabelFor(l.pricingModel)}</span>
                   </div>
-                  <button style={styles.button} onClick={() => openRequest(l)}>Request Service</button>
+                  <button style={styles.button} onClick={() => openRequest(l)}>{t('services.requestService')}</button>
                 </div>
               ))}
             </div>
@@ -289,28 +296,28 @@ export default function ConsumerServices() {
           ) : reqsError ? (
             <ErrorMessage message={reqsError} />
           ) : myRequests.length === 0 ? (
-            <div style={styles.empty}>You have no service requests yet. Browse services and request one!</div>
+            <div style={styles.empty}>{t('services.noRequests')}</div>
           ) : (
             myRequests.map((r) => (
               <div key={r.id} style={styles.reqRow}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.title}</div>
                   <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {new Date(r.createdAt).toLocaleDateString()}</div>
-                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: 'var(--ink)', marginTop: '0.2rem' }}>Agreed: {formatCurrency(r.agreedPrice)}</div> : null}
+                  {r.agreedPrice ? <div style={{ fontWeight: 800, color: 'var(--ink)', marginTop: '0.2rem' }}>{t('services.agreed')}: {formatCurrency(r.agreedPrice)}</div> : null}
                   {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: 'var(--muted)' }}>🕐 {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.status === 'ORDERED' && r.orderId && (
                     <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: 'var(--muted)' }}>
                       <span>Order #{r.orderId.slice(0, 8)}</span>{' '}
-                      <a href="/orders" style={{ color: '#1e40af', fontWeight: 700 }}>Track Order →</a>
+                      <a href="/orders" style={{ color: '#1e40af', fontWeight: 700 }}>{t('services.trackOrder')} →</a>
                     </div>
                   )}
                 </div>
                 <div style={{ textAlign: 'right' }}>
                   <StatusBadge status={r.status} />
                   <div style={{ marginTop: '0.5rem' }}>
-                    <button style={styles.buttonSecondary} onClick={() => openThread(r)}>Chat &amp; Quotes</button>
+                    <button style={styles.buttonSecondary} onClick={() => openThread(r)}>{t('services.chatAndQuotes')}</button>
                     {r.status === 'ORDERED' && (
-                      <button style={{ ...styles.buttonSecondary, marginLeft: '0.4rem', color: '#1e40af', borderColor: '#bfdbfe' }} onClick={() => openReview(r)}>Rate Service</button>
+                      <button style={{ ...styles.buttonSecondary, marginLeft: '0.4rem', color: '#1e40af', borderColor: '#bfdbfe' }} onClick={() => openReview(r)}>{t('services.rateService')}</button>
                     )}
                   </div>
                 </div>
@@ -323,43 +330,43 @@ export default function ConsumerServices() {
       {selected && (
         <div style={styles.overlay} onClick={() => !submitting && setSelected(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Request Service — {selected.name}</div>
+            <div style={styles.modalTitle}>{t('services.requestServiceTitle')} — {selected.name}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Quantity ({selected.unitLabel || unitLabelFor(selected.pricingModel)})</label>
+              <label style={styles.label}>{t('services.quantity')} ({selected.unitLabel || unitLabelFor(selected.pricingModel)})</label>
               <input type="number" min={1} style={styles.input} value={requestForm.quantity} onChange={(e) => setRequestForm((f) => ({ ...f, quantity: parseFloat(e.target.value) || 1 }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Unit Label</label>
+              <label style={styles.label}>{t('services.unitLabel')}</label>
               <input style={styles.input} value={requestForm.unitLabel} onChange={(e) => setRequestForm((f) => ({ ...f, unitLabel: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Details (what you need done)</label>
+              <label style={styles.label}>{t('services.details')}</label>
               <textarea style={styles.textarea} value={requestForm.details} onChange={(e) => setRequestForm((f) => ({ ...f, details: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Preferred Date &amp; Time (optional)</label>
+              <label style={styles.label}>{t('services.preferredDateTime')}</label>
               <input type="datetime-local" style={styles.input} value={requestForm.scheduledAt} onChange={(e) => setRequestForm((f) => ({ ...f, scheduledAt: e.target.value }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Photos (up to 4)</label>
+              <label style={styles.label}>{t('services.photos')}</label>
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {photoUrls.map((u, i) => <img key={i} src={u} alt={`photo ${i + 1}`} style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 6 }} />)}
                 {photoUrls.length < 4 && (
                   <label style={{ ...styles.buttonSecondary, cursor: 'pointer', display: 'inline-block' }}>
-                    {uploading ? 'Uploading…' : '+ Add Photo'}
+                    {uploading ? t('services.uploading') : t('services.addPhoto')}
                     <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPhoto(f); e.target.value = ''; }} />
                   </label>
                 )}
               </div>
             </div>
             <div style={{ fontSize: '0.9rem', color: 'var(--ink)', fontWeight: 700, margin: '0.5rem 0' }}>
-              Estimated: {formatCurrency(estimate(selected))}
+              {t('services.estimated')}: {formatCurrency(estimate(selected))}
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.buttonSecondary} onClick={() => setSelected(null)} disabled={submitting}>Cancel</button>
+              <button style={styles.buttonSecondary} onClick={() => setSelected(null)} disabled={submitting}>{t('services.cancel')}</button>
               <button style={styles.button} onClick={submitRequest} disabled={submitting} className="btn-primary">
-                {submitting ? 'Submitting…' : 'Send Request'}
+                {submitting ? t('services.submitting') : t('services.sendRequest')}
               </button>
             </div>
           </div>
@@ -369,9 +376,9 @@ export default function ConsumerServices() {
       {activeReq && (
         <div style={styles.overlay} onClick={() => setActiveReq(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Negotiation — {activeReq.title}</div>
+            <div style={styles.modalTitle}>{t('services.negotiation')} — {activeReq.title}</div>
             <div style={styles.chatBox}>
-              {messages.length === 0 && <div style={styles.smallNote}>No messages yet. Introduce your request to the vendor.</div>}
+              {messages.length === 0 && <div style={styles.smallNote}>{t('services.noMessages')}</div>}
               {messages.map((m) => (
                 <div key={m.id} style={{ ...styles.chatMsg, ...(m.senderId === user?.id ? styles.chatMe : {}) }}>
                   <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
@@ -382,20 +389,20 @@ export default function ConsumerServices() {
               ))}
             </div>
             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
-              <input style={styles.input} placeholder="Type a message…" value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
-              <button style={{ ...styles.buttonSecondary, whiteSpace: 'nowrap' }} onClick={sendMessage}>Send</button>
+              <input style={styles.input} placeholder={t('services.typeMessage')} value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
+              <button style={{ ...styles.buttonSecondary, whiteSpace: 'nowrap' }} onClick={sendMessage}>{t('services.send')}</button>
             </div>
             {(activeReq.quotes?.length || 0) > 0 && (
               <div>
-                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Vendor Quotes</div>
+                <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>{t('services.vendorQuotes')}</div>
                 {activeReq.quotes?.map((q) => (
                   <div key={q.id} style={styles.quoteRow}>
                     <div>
                       <span style={{ fontWeight: 800, color: 'var(--ink)' }}>{formatCurrency(q.price)}</span>
-                      <div style={styles.smallNote}>{q.message || 'No message'}</div>
+                      <div style={styles.smallNote}>{q.message || t('services.noMessage')}</div>
                     </div>
                     {q.status === 'OPEN' && activeReq.status !== 'ORDERED' && activeReq.status !== 'CANCELLED' && (
-                      <button style={styles.button} onClick={() => openAccept(q)} className="btn-primary">Accept</button>
+                      <button style={styles.button} onClick={() => openAccept(q)} className="btn-primary">{t('services.accept')}</button>
                     )}
                     {q.status !== 'OPEN' && <StatusBadge status={q.status} />}
                   </div>
@@ -403,7 +410,7 @@ export default function ConsumerServices() {
               </div>
             )}
             <div style={styles.footer}>
-              <button style={styles.buttonSecondary} onClick={() => setActiveReq(null)}>Close</button>
+              <button style={styles.buttonSecondary} onClick={() => setActiveReq(null)}>{t('services.close')}</button>
             </div>
           </div>
         </div>
@@ -412,28 +419,28 @@ export default function ConsumerServices() {
       {acceptModal && (
         <div style={styles.overlay} onClick={() => !accepting && setAcceptModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Confirm &amp; Pay — {formatCurrency(acceptModal.price)}</div>
+            <div style={styles.modalTitle}>{t('services.confirmAndPay')} — {formatCurrency(acceptModal.price)}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Payment Method</label>
+              <label style={styles.label}>{t('services.paymentMethod')}</label>
               <select style={styles.select} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                <option value="mpesa">M-Pesa</option>
-                <option value="tigo_money">Tigo Pesa</option>
-                <option value="airtel_money">Airtel Money</option>
-                <option value="cash">Cash on Delivery</option>
+                <option value="mpesa">{t('services.mpesa')}</option>
+                <option value="tigo_money">{t('services.tigoPesa')}</option>
+                <option value="airtel_money">{t('services.airtelMoney')}</option>
+                <option value="cash">{t('services.cashOnDelivery')}</option>
               </select>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Delivery Address</label>
+              <label style={styles.label}>{t('services.deliveryAddress')}</label>
               <input style={styles.input} value={deliveryAddress} onChange={(e) => setDeliveryAddress(e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Special Instructions</label>
+              <label style={styles.label}>{t('services.specialInstructions')}</label>
               <textarea style={styles.textarea} value={specialInstructions} onChange={(e) => setSpecialInstructions(e.target.value)} />
             </div>
             <div style={styles.footer}>
-              <button style={styles.buttonSecondary} onClick={() => setAcceptModal(null)} disabled={accepting}>Cancel</button>
+              <button style={styles.buttonSecondary} onClick={() => setAcceptModal(null)} disabled={accepting}>{t('services.cancel')}</button>
               <button style={styles.button} onClick={acceptQuote} disabled={accepting} className="btn-primary">
-                {accepting ? 'Processing…' : 'Confirm & Pay'}
+                {accepting ? t('services.processing') : t('services.confirmAndPayBtn')}
               </button>
             </div>
           </div>
@@ -442,9 +449,9 @@ export default function ConsumerServices() {
       {reviewTarget && (
         <div style={styles.overlay} onClick={() => !reviewBusy && setReviewTarget(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Rate Service — {reviewTarget.title}</div>
+            <div style={styles.modalTitle}>{t('services.rateService')} — {reviewTarget.title}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Your Rating</label>
+              <label style={styles.label}>{t('services.yourRating')}</label>
               <div style={{ display: 'flex', gap: '0.4rem' }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -465,14 +472,14 @@ export default function ConsumerServices() {
               </div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Comment (optional)</label>
-              <textarea style={styles.textarea} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder="How was the service?" />
+              <label style={styles.label}>{t('services.commentOptional')}</label>
+              <textarea style={styles.textarea} value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} placeholder={t('services.howWasService')} />
             </div>
             {reviewError && <div style={styles.smallError}>{reviewError}</div>}
             <div style={styles.footer}>
-              <button style={styles.buttonSecondary} onClick={() => setReviewTarget(null)} disabled={reviewBusy}>Cancel</button>
+              <button style={styles.buttonSecondary} onClick={() => setReviewTarget(null)} disabled={reviewBusy}>{t('services.cancel')}</button>
               <button style={styles.button} onClick={submitReview} disabled={reviewBusy} className="btn-primary">
-                {reviewBusy ? 'Submitting…' : 'Submit Review'}
+                {reviewBusy ? t('services.submitting') : t('services.submitReview')}
               </button>
             </div>
           </div>

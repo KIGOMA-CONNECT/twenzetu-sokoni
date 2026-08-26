@@ -1,26 +1,27 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle } from '../../components/ui';
 import { MapPicker, calculateDistance, VEHICLE_RATES, type VehicleRate } from '../../components/MapPicker';
 import api from '../../api/client';
 
 const CARGO_SUBS = [
-  { id: 'd0000000-0000-0000-0000-000000000090', name: 'Cargo ya Ndani', emoji: '📦', desc: 'Kutoka mji hadi mji' },
-  { id: 'd0000000-0000-0000-0000-000000000091', name: 'Express Delivery', emoji: '⚡', desc: 'Saa 1-2 ndani ya mji' },
-  { id: 'd0000000-0000-0000-0000-000000000092', name: 'Logistics ya Biashara', emoji: '🏢', desc: 'Bulk, kampuni, warehouse' },
-  { id: 'd0000000-0000-0000-0000-000000000093', name: 'Kukodisha Lori/Cherehe', emoji: '🚛', desc: 'Mizigo mikubwa' },
+  { id: 'd0000000-0000-0000-0000-000000000090', name: 'Cargo ya Ndani', emoji: '📦', key: 'domestic' },
+  { id: 'd0000000-0000-0000-0000-000000000091', name: 'Express Delivery', emoji: '⚡', key: 'express' },
+  { id: 'd0000000-0000-0000-0000-000000000092', name: 'Logistics ya Biashara', emoji: '🏢', key: 'business' },
+  { id: 'd0000000-0000-0000-0000-000000000093', name: 'Kukodisha Lori/Cherehe', emoji: '🚛', key: 'rental' },
 ];
 
-const PAYMENT_METHODS: Array<{ id: string; icon: string; name: string; desc: string }> = [
-  { id: 'wallet', icon: '💰', name: 'Wallet (Salio)', desc: 'Maliza mara moja kwa salio lako' },
-  { id: 'mpesa', icon: '📱', name: 'M-Pesa', desc: 'Vodacom Tanzania' },
-  { id: 'tigo_money', icon: '📱', name: 'Mixx by Yas', desc: 'Tigo Tanzania' },
-  { id: 'airtel_money', icon: '📱', name: 'Airtel Money', desc: 'Airtel Tanzania' },
-  { id: 'halotel', icon: '📱', name: 'Halotel', desc: 'Halotel Money' },
-  { id: 'azampesa', icon: '📱', name: 'AzamPay', desc: 'AzamPay Mobile Money' },
-  { id: 'card', icon: '💳', name: 'Kadi / Virtual Card', desc: 'Visa, Mastercard' },
-  { id: 'cash', icon: '💵', name: 'Cash', desc: 'Lipa kwa mkono wakati wa pickup' },
+const PAYMENT_METHODS: Array<{ id: string; icon: string; nameKey: string; descKey: string }> = [
+  { id: 'wallet', icon: '💰', nameKey: 'wallet', descKey: 'walletDesc' },
+  { id: 'mpesa', icon: '📱', nameKey: 'mpesa', descKey: 'mpesaDesc' },
+  { id: 'tigo_money', icon: '📱', nameKey: 'tigoMoney', descKey: 'tigoMoneyDesc' },
+  { id: 'airtel_money', icon: '📱', nameKey: 'airtelMoney', descKey: 'airtelMoneyDesc' },
+  { id: 'halotel', icon: '📱', nameKey: 'halotel', descKey: 'halotelDesc' },
+  { id: 'azampesa', icon: '📱', nameKey: 'azamPay', descKey: 'azamPayDesc' },
+  { id: 'card', icon: '💳', nameKey: 'card', descKey: 'cardDesc' },
+  { id: 'cash', icon: '💵', nameKey: 'cash', descKey: 'cashDesc' },
 ];
 
 interface BookingResult {
@@ -42,6 +43,8 @@ export default function CargoPage() {
   const navigate = useNavigate();
   const device = useDevice();
   const isPhone = device.type === 'phone';
+  const { t } = useTranslation();
+  const c = 'cargo.';
 
   const [selectedSub, setSelectedSub] = useState('');
   const [vehicleId, setVehicleId] = useState('');
@@ -100,13 +103,14 @@ export default function CargoPage() {
         const data = res.data.data;
         setServerFare({ totalFare: data.totalFare, breakdown: data.breakdown });
       } catch (err: any) {
-        setFareError(err.response?.data?.message || err.response?.data?.error || 'Haiwezi kuhesabu nauli kwa sasa');
+        setFareError(err.response?.data?.message || err.response?.data?.error || t('cargo.fareUnavailable'));
         setServerFare(null);
       } finally {
         setFareLoading(false);
       }
     }, 450);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickup, delivery, selectedVehicle, weightKg, cargoValueNum, tripType, insured]);
 
   const bindingFare = serverFare?.totalFare ?? 0;
@@ -163,7 +167,7 @@ export default function CargoPage() {
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
-        'Ombi halijatumwa. Jaribu tena.'
+        t('cargo.requestError')
       );
     } finally {
       setSubmitting(false);
@@ -194,7 +198,7 @@ export default function CargoPage() {
         <div style={{ textAlign: 'center', padding: '2rem 1rem' }}>
           <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>{paid ? '✅' : '⏳'}</div>
           <h2 style={{ fontWeight: 800, marginBottom: '0.5rem' }}>
-            {paid ? 'Usafirishaji Umehakikiwa!' : 'Ombi Limesajiliwa'}
+            {paid ? t(c + 'transportConfirmed') : t(c + 'requestRegistered')}
           </h2>
           <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
             {result.message}
@@ -210,11 +214,11 @@ export default function CargoPage() {
               </div>
             ))}
             <div style={{ borderTop: '1px solid var(--line)', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-              <span style={{ fontWeight: 800 }}>Jumla</span>
+              <span style={{ fontWeight: 800 }}>{t(c + 'total')}</span>
               <span style={{ fontWeight: 800, color: 'var(--brand)' }}>{formatCurrency(result.fare)}</span>
             </div>
             <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.6rem' }}>
-              {result.vehicle} · {result.distanceKm.toFixed(1)} km · Nambari ya ombi: {result.requestId.slice(0, 8)}...
+              {result.vehicle} · {result.distanceKm.toFixed(1)} km · {t(c + 'requestNumber')} {result.requestId.slice(0, 8)}...
             </div>
           </div>
           <button
@@ -222,7 +226,7 @@ export default function CargoPage() {
             onClick={resetForm}
             style={{ fontSize: '1rem', padding: '0.85rem 2rem' }}
           >
-            Tuma Ombi Jipya
+            {t(c + 'newRequest')}
           </button>
         </div>
       </div>
@@ -235,8 +239,8 @@ export default function CargoPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer' }}>←</button>
         <div>
-          <h1 style={{ fontSize: isPhone ? '1.2rem' : '1.5rem', fontWeight: 800 }}>🚚 Cargo, Express & Logistics</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Tuma mzigo wako kwa usalama</p>
+          <h1 style={{ fontSize: isPhone ? '1.2rem' : '1.5rem', fontWeight: 800 }}>🚚 {t(c + 'title')}</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t(c + 'subtitle')}</p>
         </div>
       </div>
 
@@ -245,12 +249,12 @@ export default function CargoPage() {
         background: 'linear-gradient(120deg, #059669, #10b981)', borderRadius: 'var(--radius-lg)',
         padding: '1rem 1.25rem', marginBottom: '1.5rem', color: '#fff',
       }}>
-        <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.25rem' }}>🌐 afriMarket Connect</div>
-        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>Pia unaweza kutumia Connect.com kwa usafiri wa biashara yako</div>
+        <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.25rem' }}>🌐 {t(c + 'connect')}</div>
+        <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>{t(c + 'connectDesc')}</div>
       </div>
 
       {/* Service type */}
-      <SectionTitle title="Aina ya huduma" emoji="📦" />
+      <SectionTitle title={t(c + 'serviceType')} emoji="📦" />
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
         {CARGO_SUBS.map((sub) => (
           <button
@@ -264,8 +268,8 @@ export default function CargoPage() {
             }}
           >
             <div style={{ fontSize: '1.5rem', marginBottom: '0.3rem' }}>{sub.emoji}</div>
-            <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>{sub.name}</div>
-            <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{sub.desc}</div>
+            <div style={{ fontSize: '0.78rem', fontWeight: 700 }}>{t(`cargo.zones.${sub.key}`)}</div>
+            <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{t(`cargo.zones.${sub.key}Desc`)}</div>
           </button>
         ))}
       </div>
@@ -273,7 +277,7 @@ export default function CargoPage() {
       {/* Vehicle type */}
       {selectedSub && (
         <>
-          <SectionTitle title="Aina ya usafiri" emoji="🚗" />
+          <SectionTitle title={t(c + 'vehicleType')} emoji="🚗" />
           <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
             {VEHICLE_RATES.map((v) => (
               <button
@@ -300,26 +304,26 @@ export default function CargoPage() {
       {/* Maps & Address */}
       {vehicleId && (
         <>
-          <SectionTitle title="📍 Mahali pa kuchukua mzigo" emoji="" />
+          <SectionTitle title={t(c + 'pickupLocation')} emoji="📍" />
           <MapPicker
             onSelect={setPickup}
             initialLat={-6.7924}
             initialLng={39.2083}
-            placeholder="Tafuta eneo la pickup..."
+            placeholder={t(c + 'pickupPlaceholder')}
             style={{ marginBottom: '1.5rem' }}
           />
 
-          <SectionTitle title="📍 Mahali pa kuelekeza mzigo" emoji="" />
+          <SectionTitle title={t(c + 'deliveryLocation')} emoji="📍" />
           <MapPicker
             onSelect={setDelivery}
             initialLat={pickup ? pickup.lat : -6.7924}
             initialLng={pickup ? pickup.lng : 39.2083}
-            placeholder="Tafuta eneo la delivery..."
+            placeholder={t(c + 'deliveryPlaceholder')}
             style={{ marginBottom: '1.5rem' }}
           />
 
           {/* Trip type */}
-          <SectionTitle title="🕐 Mpango wa usafiri" emoji="" />
+          <SectionTitle title={t(c + 'tripPlan')} emoji="🕐" />
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '0.75rem', marginBottom: '1rem' }}>
             <button
               onClick={() => setTripType('instant')}
@@ -331,8 +335,8 @@ export default function CargoPage() {
               }}
             >
               <div style={{ fontSize: '1.4rem' }}>⚡</div>
-              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Haraka</div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Chukuliwa sasa</div>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t(c + 'instant')}</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>{t(c + 'instantDesc')}</div>
             </button>
             <button
               onClick={() => setTripType('scheduled')}
@@ -344,13 +348,13 @@ export default function CargoPage() {
               }}
             >
               <div style={{ fontSize: '1.4rem' }}>📅</div>
-              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>Ratiba</div>
-              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>Punguzo 10%</div>
+              <div style={{ fontWeight: 700, fontSize: '0.85rem' }}>{t(c + 'scheduled')}</div>
+              <div style={{ fontSize: '0.68rem', color: 'var(--muted)' }}>{t(c + 'scheduledDesc')}</div>
             </button>
           </div>
           {tripType === 'scheduled' && (
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>Saa ya pickup</label>
+              <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>{t(c + 'pickupTime')}</label>
               <input
                 type="datetime-local"
                 value={scheduledAt}
@@ -363,7 +367,7 @@ export default function CargoPage() {
           {/* Weight & extras */}
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>
-              ⚖️ Uzito (kg) {selectedVehicle && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>— hadi {selectedVehicle.capacityKg} kg</span>}
+              ⚖️ {t(c + 'weight')} {selectedVehicle && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>— {t(c + 'weightUpTo')} {selectedVehicle.capacityKg} kg</span>}
             </label>
             <input
               type="number"
@@ -375,7 +379,7 @@ export default function CargoPage() {
             />
             {overCapacity && selectedVehicle && (
               <div style={{ fontSize: '0.78rem', color: '#b91c1c', marginTop: '0.3rem' }}>
-                Uzito unazidi uwezo wa {selectedVehicle.name} ({selectedVehicle.capacityKg} kg). Chagua gari kubwa zaidi.
+                {t(c + 'capacityExceeded')} {selectedVehicle.name} ({selectedVehicle.capacityKg} kg). {t(c + 'chooseLargerVehicle')}
               </div>
             )}
           </div>
@@ -384,13 +388,13 @@ export default function CargoPage() {
           <div style={{ marginBottom: '1.5rem' }}>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginBottom: '0.4rem' }}>
               <input type="checkbox" checked={insured} onChange={(e) => setInsured(e.target.checked)} />
-              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>🛡️ Bima ya mzigo <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(Tsh 500+ au 0.5%)</span></span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 700 }}>🛡️ {t(c + 'cargoInsurance')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t(c + 'cargoInsuranceNote')}</span></span>
             </label>
             {insured && (
               <input
                 type="number"
                 min="0"
-                placeholder="Thamani ya mzigo (TZS)"
+                placeholder={t(c + 'cargoValuePlaceholder')}
                 value={cargoValue}
                 onChange={(e) => setCargoValue(e.target.value)}
                 style={{ width: '100%', padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)' }}
@@ -399,9 +403,9 @@ export default function CargoPage() {
           </div>
 
           <div style={{ marginBottom: '1.5rem' }}>
-            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>Maelezo ya mzigo</label>
+            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, marginBottom: '0.3rem' }}>{t(c + 'cargoDescription')}</label>
             <textarea
-              placeholder="Eleza mzigo wako..."
+              placeholder={t(c + 'cargoDescriptionPlaceholder')}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -410,7 +414,7 @@ export default function CargoPage() {
           </div>
 
           {/* Payment method */}
-          <SectionTitle title="💳 Njia ya malipo" emoji="" />
+          <SectionTitle title={t(c + 'paymentMethod')} emoji="💳" />
           <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
             {PAYMENT_METHODS.map((m) => (
               <button
@@ -424,8 +428,8 @@ export default function CargoPage() {
                 }}
               >
                 <span style={{ fontSize: '1.2rem', marginRight: '0.4rem' }}>{m.icon}</span>
-                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{m.name}</span>
-                <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{m.desc}</div>
+                <span style={{ fontWeight: 700, fontSize: '0.8rem' }}>{t(c + m.nameKey)}</span>
+                <div style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{t(c + m.descKey)}</div>
               </button>
             ))}
           </div>
@@ -437,23 +441,23 @@ export default function CargoPage() {
               padding: '1.25rem', marginBottom: '1.5rem', border: '1px solid #bbf7d0',
             }}>
               <div style={{ fontWeight: 800, fontSize: '1rem', marginBottom: '0.75rem', color: '#166534' }}>
-                💰 {fareLoading ? 'Inahesabu nauli...' : 'Nauli Inayofunga'}
+                💰 {fareLoading ? t(c + 'calculatingFare') : t(c + 'lockedFare')}
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>Umbali:</span>
+                <span style={{ color: 'var(--muted)' }}>{t(c + 'summaryDistance')}</span>
                 <span style={{ fontWeight: 700 }}>{distance.toFixed(1)} km</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>Uzito:</span>
+                <span style={{ color: 'var(--muted)' }}>{t(c + 'summaryWeight')}</span>
                 <span style={{ fontWeight: 700 }}>{weightKg} kg</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>Usafiri:</span>
+                <span style={{ color: 'var(--muted)' }}>{t(c + 'summaryVehicle')}</span>
                 <span style={{ fontWeight: 700 }}>{selectedVehicle.emoji} {selectedVehicle.name}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem', fontSize: '0.85rem' }}>
-                <span style={{ color: 'var(--muted)' }}>Mpango:</span>
-                <span style={{ fontWeight: 700 }}>{tripType === 'scheduled' ? '📅 Ratiba (punguzo 10%)' : '⚡ Haraka'}</span>
+                <span style={{ color: 'var(--muted)' }}>{t(c + 'summaryPlan')}</span>
+                <span style={{ fontWeight: 700 }}>{tripType === 'scheduled' ? `📅 ${t(c + 'summaryPlanScheduled')}` : `⚡ ${t(c + 'summaryPlanInstant')}`}</span>
               </div>
               {serverFare?.breakdown?.map((b, i) => (
                 <div key={i} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem', fontSize: '0.8rem' }}>
@@ -462,12 +466,12 @@ export default function CargoPage() {
                 </div>
               ))}
               <div style={{ borderTop: '1px solid #bbf7d0', marginTop: '0.5rem', paddingTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: 800, fontSize: '1rem' }}>Jumla ya Nauli:</span>
+                <span style={{ fontWeight: 800, fontSize: '1rem' }}>{t(c + 'totalLabel')}</span>
                 <span style={{ fontWeight: 800, fontSize: '1.2rem', color: '#166534' }}>{formatCurrency(displayFare)}</span>
               </div>
               {!serverFare && !fareLoading && (
                 <div style={{ fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.4rem' }}>
-                  Makadirio — nauli kamili itathibitishwa wakati wa kujaza maelezo yote.
+                  {t(c + 'estimateNote')}
                 </div>
               )}
             </div>
@@ -498,10 +502,10 @@ export default function CargoPage() {
             style={{ width: '100%', fontSize: '1rem', padding: '0.85rem' }}
           >
             {submitting
-              ? 'Inachakata...'
+              ? t(c + 'inProgress')
               : !canBook
-                ? '🚚 Jaza maelezo yote'
-                : `🚚 Omba Usafiri — ${formatCurrency(displayFare)}${paymentMethod === 'wallet' ? '' : ` · ${PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.name ?? ''}`}`}
+                ? `🚚 ${t(c + 'fillAllDetails')}`
+                : `🚚 ${t(c + 'requestRide')} — ${formatCurrency(displayFare)}${paymentMethod === 'wallet' ? '' : ` · ${t(c + PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.nameKey ?? '')}`}`}
           </button>
         </>
       )}

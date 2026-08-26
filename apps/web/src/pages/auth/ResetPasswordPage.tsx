@@ -99,12 +99,12 @@ export default function ResetPasswordPage() {
             <form onSubmit={handleReset}>
               <div className="field">
                 <label className="field-label" htmlFor="otpCode">{t('auth.verificationCode')}</label>
-                <input id="otpCode" type="text" inputMode="numeric" className="input" value={code} onChange={(e) => setCode(e.target.value)} placeholder="4-digit code" maxLength={4} required style={{ textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }} />
+                <input id="otpCode" type="text" inputMode="numeric" className="input" value={code} onChange={(e) => setCode(e.target.value)} placeholder={t('auth.fourDigitCode')} maxLength={4} required style={{ textAlign: 'center', letterSpacing: '0.5rem', fontWeight: 700, fontSize: '1.1rem' }} />
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="newPassword">{t('auth.newPassword')}</label>
                 <div style={{ position: 'relative' }}>
-                  <input id="newPassword" type={showPassword ? 'text' : 'password'} className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="At least 8 characters, A–Z, a–z, 0–9" required />
+                  <input id="newPassword" type={showPassword ? 'text' : 'password'} className="input" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder={t('auth.passwordHintShort')} required />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} tabIndex={-1} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: 'var(--faint)', fontSize: '1rem', cursor: 'pointer' }}>
                     {showPassword ? '👁' : '🔒'}
                   </button>
@@ -112,7 +112,7 @@ export default function ResetPasswordPage() {
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="confirmPassword">{t('auth.confirmNewPassword')}</label>
-                <input id="confirmPassword" type="password" className="input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Repeat new password" required />
+                <input id="confirmPassword" type="password" className="input" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder={t('auth.confirmNewPasswordPlaceholder')} required />
               </div>
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
                 {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> {t('auth.resetting')}</> : t('auth.resetPasswordButton')}

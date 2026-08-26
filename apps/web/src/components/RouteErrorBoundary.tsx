@@ -1,4 +1,5 @@
 import React from 'react';
+import i18n from 'i18next';
 
 interface Props {
   children: React.ReactNode;
@@ -28,9 +29,9 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     if (this.state.hasError) {
       return (
         <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h2>{this.props.fallbackTitle || 'Something went wrong'}</h2>
+          <h2>{this.props.fallbackTitle || i18n.t('common.somethingWentWrong')}</h2>
           <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>
-            This section encountered an error. Please try again.
+            {i18n.t('common.sectionError')}
           </p>
           <button
             onClick={() => this.setState({ hasError: false, error: null })}
@@ -43,7 +44,7 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
               cursor: 'pointer',
             }}
           >
-            Try Again
+            {i18n.t('common.tryAgain')}
           </button>
         </div>
       );

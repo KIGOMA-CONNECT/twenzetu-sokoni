@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
@@ -33,6 +34,7 @@ const S = (obj: Record<string, unknown> | undefined, key: string) =>
   obj && typeof obj[key] === 'string' ? (obj[key] as string) : '';
 
 export default function VendorSettings() {
+  const { t } = useTranslation();
   const { refreshVendorAccess } = useAuth();
   const { data: raw, loading, error, refetch } = useApi<VendorProfile>('/vendors/me');
 
@@ -136,8 +138,8 @@ export default function VendorSettings() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Shop Settings</h1>
-        <div style={styles.subtitle}>Update your public shop profile, logo, contact and payout details</div>
+        <h1 style={styles.title}>{t('vendor.settingsPage.title')}</h1>
+        <div style={styles.subtitle}>{t('vendor.settingsPage.subtitle')}</div>
       </div>
 
       {loading ? (
@@ -145,11 +147,11 @@ export default function VendorSettings() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : !raw ? (
-        <ErrorMessage message="No vendor profile found" />
+        <ErrorMessage message={t('vendor.settingsPage.noVendorProfile')} />
       ) : (
         <>
           <div style={styles.card}>
-            <div style={styles.cardTitle}>Shop Profile</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.shopProfile')}</div>
             <div style={{ ...styles.row, marginBottom: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                 {logoUrl ? (
@@ -158,7 +160,7 @@ export default function VendorSettings() {
                   <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>ðŸª</div>
                 )}
                 <label style={{ ...styles.saveBtn, fontSize: '0.8rem', padding: '0.45rem 1rem', cursor: 'pointer', display: 'inline-block' }}>
-                  {uploadingLogo ? 'Uploadingâ€¦' : logoUrl ? 'Change Logo' : 'Upload Logo'}
+                  {uploadingLogo ? t('vendor.settingsPage.uploading') : logoUrl ? t('vendor.settingsPage.changeLogo') : t('vendor.settingsPage.uploadLogo')}
                   <input
                     type="file"
                     accept="image/*"
@@ -171,11 +173,11 @@ export default function VendorSettings() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={styles.field}>
-                  <label style={styles.label}>Shop name</label>
-                  <input style={styles.input} value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="e.g. Mama Ntilie Kitchen" />
+                  <label style={styles.label}>{t('vendor.settingsPage.shopName')}</label>
+                  <input style={styles.input} value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder={t('vendor.settingsPage.shopNamePlaceholder')} />
                 </div>
                 <div style={styles.field}>
-                  <label style={styles.label}>Category</label>
+                  <label style={styles.label}>{t('vendor.settingsPage.category')}</label>
                   <select style={styles.input} value={category} onChange={(e) => setCategory(e.target.value)}>
                     {VENDOR_CATEGORIES.map((c) => (
                       <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
@@ -185,68 +187,68 @@ export default function VendorSettings() {
               </div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Description</label>
-              <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What do you sell?" />
+              <label style={styles.label}>{t('vendor.settingsPage.description')}</label>
+              <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('vendor.settingsPage.descriptionPlaceholder')} />
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={styles.cardTitle}>Contact &amp; Location</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.contactLocation')}</div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>Phone</label>
-                <input style={styles.input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+255 7XX XXX XXX" />
+                <label style={styles.label}>{t('vendor.settingsPage.phone')}</label>
+                <input style={styles.input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('vendor.settingsPage.phonePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Email</label>
-                <input style={styles.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="shop@example.com" />
+                <label style={styles.label}>{t('vendor.settingsPage.email')}</label>
+                <input style={styles.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('vendor.settingsPage.emailPlaceholder')} />
               </div>
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>Street / Area</label>
-                <input style={styles.input} value={street} onChange={(e) => setStreet(e.target.value)} placeholder="e.g. Kariakoo Market, Block D" />
+                <label style={styles.label}>{t('vendor.settingsPage.streetArea')}</label>
+                <input style={styles.input} value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t('vendor.settingsPage.streetPlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>City</label>
-                <input style={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Dar es Salaam" />
+                <label style={styles.label}>{t('vendor.settingsPage.city')}</label>
+                <input style={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder={t('vendor.settingsPage.cityPlaceholder')} />
               </div>
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>Latitude</label>
-                <input style={styles.input} type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="e.g. -6.7924" />
+                <label style={styles.label}>{t('vendor.settingsPage.latitude')}</label>
+                <input style={styles.input} type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder={t('vendor.settingsPage.latitudePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Longitude</label>
-                <input style={styles.input} type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="e.g. 39.2083" />
+                <label style={styles.label}>{t('vendor.settingsPage.longitude')}</label>
+                <input style={styles.input} type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder={t('vendor.settingsPage.longitudePlaceholder')} />
               </div>
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={styles.cardTitle}>Payout &amp; Bank Details</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.payoutBank')}</div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>Bank Name</label>
-                <input style={styles.input} value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. CRDB Bank" />
+                <label style={styles.label}>{t('vendor.settingsPage.bankName')}</label>
+                <input style={styles.input} value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder={t('vendor.settingsPage.bankNamePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Bank Branch</label>
-                <input style={styles.input} value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} placeholder="e.g. Kariakoo" />
+                <label style={styles.label}>{t('vendor.settingsPage.bankBranch')}</label>
+                <input style={styles.input} value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} placeholder={t('vendor.settingsPage.bankBranchPlaceholder')} />
               </div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Bank Account Number</label>
-              <input style={styles.input} value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="Account number" />
+              <label style={styles.label}>{t('vendor.settingsPage.bankAccountNumber')}</label>
+              <input style={styles.input} value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder={t('vendor.settingsPage.accountPlaceholder')} />
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>M-PESA Number</label>
+                <label style={styles.label}>{t('vendor.settingsPage.mpesaNumber')}</label>
                 <input style={styles.input} value={mpesaNumber} onChange={(e) => setMpesaNumber(e.target.value)} placeholder="+255 7XX XXX XXX" />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>Tigo Pesa Number</label>
+                <label style={styles.label}>{t('vendor.settingsPage.tigoNumber')}</label>
                 <input style={styles.input} value={tigoNumber} onChange={(e) => setTigoNumber(e.target.value)} placeholder="+255 7XX XXX XXX" />
               </div>
             </div>
@@ -254,7 +256,7 @@ export default function VendorSettings() {
 
           <div style={styles.actions}>
             <button style={saving ? styles.saveBtnDisabled : styles.saveBtn} onClick={save} disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
+              {saving ? t('vendor.settingsPage.saving') : t('vendor.settingsPage.saveChanges')}
             </button>
             {status && (
               <span style={{ ...styles.status, ...(status.ok ? styles.statusOk : styles.statusErr) }}>
