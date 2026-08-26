@@ -62,7 +62,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle({ default: { limit: parseInt(process.env.LOGIN_THROTTLE_LIMIT || '60', 10), ttl: 60000 } })
   @ApiOperation({ summary: 'Login with phone number and password' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 201, description: 'Login successful' })

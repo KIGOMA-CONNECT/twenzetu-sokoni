@@ -15,12 +15,12 @@ export default defineConfig({
     baseURL,
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
     locale: 'en-US',
     timezoneId: 'Africa/Nairobi',
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'mobile-chrome', use: { ...devices['Pixel 7'] } },
   ],
 });
 

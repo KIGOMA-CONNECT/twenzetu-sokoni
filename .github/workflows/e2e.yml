@@ -59,6 +59,7 @@ jobs:
       METRICS_SECRET: test-metrics-secret
       APP_PORT: 3000
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/afri_market
+      LOGIN_THROTTLE_LIMIT: "200"
 
     steps:
       - uses: actions/checkout@v4

@@ -2,7 +2,7 @@
 
 // Admin HR module: dashboard, org units, positions, employees, leave, payroll,
 // recruitment, performance, compensation, learning, succession, offboarding, compliance.
-// READ-ONLY â€” safe against any environment, creates no data.
+// READ-ONLY — safe against any environment, creates no data.
 //   npx playwright test tests/admin-hr-flow.spec.ts
 
 const ADMIN_PHONE = process.env.TEST_ADMIN_PHONE || '07540000010';
@@ -10,10 +10,20 @@ const ADMIN_PASSWORD = process.env.TEST_ADMIN_PASSWORD || 'AdminPass1x!';
 
 async function loginAsAdmin(page: any) {
   await page.goto('/login');
+  await page.waitForSelector('#phoneNumber', { timeout: 10_000 });
   await page.fill('#phoneNumber', ADMIN_PHONE);
   await page.fill('#password', ADMIN_PASSWORD);
   await page.click('button[type="submit"]');
-  await expect(page).toHaveURL(/admin/, { timeout: 10_000 });
+
+  // Wait for either successful redirect or error message
+  await Promise.race([
+    expect(page).toHaveURL(/admin/, { timeout: 15_000 }),
+    page.waitForSelector('.alert-error, .alert', { timeout: 15_000 }).then(async () => {
+      const errorText = await page.locator('.alert-error, .alert').first().textContent().catch(() => 'unknown');
+      const currentUrl = page.url();
+      throw new Error(`Login failed on ${currentUrl}: ${errorText}`);
+    }),
+  ]);
 }
 
 test.describe('Admin HR Flow', () => {

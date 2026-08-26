@@ -14,13 +14,14 @@ export class GetWalletUseCase {
     tenantId: string,
     ownerId: string,
     currency?: string,
+    ownerType: string = 'vendor',
   ): Promise<{ id: string; balance: number; pendingBalance: number; currency: string }> {
     let wallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
     if (!wallet) {
       wallet = Wallet.create({
         tenantId: TenantId.create(tenantId),
         ownerId: EntityId.from(ownerId),
-        ownerType: 'vendor',
+        ownerType: ownerType as any,
         currency,
       });
       await this.walletRepo.save(wallet);

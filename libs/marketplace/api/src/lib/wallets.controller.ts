@@ -43,7 +43,8 @@ export class WalletsController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getMyWallet(@CurrentUser() user: JwtPayload) {
-    const wallet = await this.getWallet.execute(user.tenantId, await this.resolveWalletOwner(user), getCurrencyForPhone(user.phoneNumber));
+    const ownerType = user.role === 'vendor' ? 'vendor' : user.role === 'driver' ? 'driver' : 'customer';
+    const wallet = await this.getWallet.execute(user.tenantId, await this.resolveWalletOwner(user), getCurrencyForPhone(user.phoneNumber), ownerType);
     return {
       id: wallet.id,
       balance: wallet.balance,
