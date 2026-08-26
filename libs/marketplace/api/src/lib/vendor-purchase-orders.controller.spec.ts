@@ -1,6 +1,7 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from '@nestjs/passport';
+import { getDataSourceToken } from '@nestjs/typeorm';
 import {
   CreatePurchaseOrderUseCase,
   ListPurchaseOrdersUseCase,
@@ -11,6 +12,7 @@ import {
   SetPurchaseOrderPaymentUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
+import { MobileMoneyService } from '@afri-market/integrations';
 import { VendorPurchaseOrdersController } from './vendor-purchase-orders.controller';
 
 describe('VendorPurchaseOrdersController', () => {
@@ -49,6 +51,14 @@ describe('VendorPurchaseOrdersController', () => {
         {
           provide: VendorAccessService,
           useValue: { assertPermission: jest.fn().mockResolvedValue({ vendorId: 'vendor-1' }) },
+        },
+        {
+          provide: MobileMoneyService,
+          useValue: { disburse: jest.fn().mockResolvedValue({ success: true, reference: 'ref-1' }) },
+        },
+        {
+          provide: getDataSourceToken(),
+          useValue: { query: jest.fn().mockResolvedValue([]) },
         },
       ],
     })
@@ -111,10 +121,17 @@ describe('VendorPurchaseOrdersController', () => {
     expect(cancelOrder.execute).toHaveBeenCalledWith({ vendorId: 'vendor-1', poId });
   });
 
-  it('should mark a purchase order paid', async () => {
-    const result = await controller.payment(poId, { paid: true } as never, user);
+  it('should mark a purchase order unpaid', async () => {
+    const result = await controller.payment(poId, { paid: false } as never, user);
     expect(result).toEqual({ data: { order: { id: poId, paymentStatus: 'PAID' } } });
-    expect(setPayment.execute).toHaveBeenCalledWith({ vendorId: 'vendor-1', poId, paid: true });
+    expect(setPayment.execute).toHaveBeenCalledWith({ vendorId: 'vendor-1', poId, paid: false });
+  });
+
+  it('should reject marking a purchase order paid without real funds', async () => {
+    await expect(controller.payment(poId, { paid: true } as never, user)).rejects.toThrow(
+      'Use POST /vendor/purchase-orders/:id/pay to pay a supplier with real funds',
+    );
+    expect(setPayment.execute).not.toHaveBeenCalled();
   });
 
   it('should forbid when the vendor has no manage_products permission', async () => {

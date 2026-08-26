@@ -4,6 +4,7 @@ import { AuthGuard } from '@nestjs/passport';
 import {
   CreateSupplierUseCase,
   ListSuppliersUseCase,
+  UpdateSupplierUseCase,
   DeleteSupplierUseCase,
   VendorAccessService,
 } from '@afri-market/marketplace-application';
@@ -13,6 +14,7 @@ describe('VendorSuppliersController', () => {
   let controller: VendorSuppliersController;
   let createSupplier: jest.Mocked<CreateSupplierUseCase>;
   let listSuppliers: jest.Mocked<ListSuppliersUseCase>;
+  let updateSupplier: jest.Mocked<UpdateSupplierUseCase>;
   let deleteSupplier: jest.Mocked<DeleteSupplierUseCase>;
 
   const user = { sub: 'operator-1', tenantId: 'tenant-1' } as never;
@@ -22,6 +24,7 @@ describe('VendorSuppliersController', () => {
     jest.clearAllMocks();
     createSupplier = { execute: jest.fn().mockResolvedValue({ supplier: { id: supplierId } }) } as unknown as jest.Mocked<CreateSupplierUseCase>;
     listSuppliers = { execute: jest.fn().mockResolvedValue([]) } as unknown as jest.Mocked<ListSuppliersUseCase>;
+    updateSupplier = { execute: jest.fn().mockResolvedValue({ supplier: { id: supplierId } }) } as unknown as jest.Mocked<UpdateSupplierUseCase>;
     deleteSupplier = { execute: jest.fn().mockResolvedValue({ deleted: true }) } as unknown as jest.Mocked<DeleteSupplierUseCase>;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -29,6 +32,7 @@ describe('VendorSuppliersController', () => {
       providers: [
         { provide: CreateSupplierUseCase, useValue: createSupplier },
         { provide: ListSuppliersUseCase, useValue: listSuppliers },
+        { provide: UpdateSupplierUseCase, useValue: updateSupplier },
         { provide: DeleteSupplierUseCase, useValue: deleteSupplier },
         {
           provide: VendorAccessService,
