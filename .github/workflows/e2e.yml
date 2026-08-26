@@ -100,7 +100,7 @@ jobs:
 
       - name: Start API server
         run: |
-          npx nx run api:serve &
+          node -r tsconfig-paths/register dist/out-tsc/apps/api/src/main.js &
           for i in $(seq 1 30); do
             curl -sf http://localhost:3000/api/health > /dev/null 2>&1 && break
             sleep 2
