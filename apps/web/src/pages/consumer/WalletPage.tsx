@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';

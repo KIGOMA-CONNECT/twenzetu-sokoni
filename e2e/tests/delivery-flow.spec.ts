@@ -1,8 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { apiBaseURL } from '../playwright.config';
+﻿import { expect, test } from '@playwright/test';
 
-// Driver journey: register → login → deliveries → earnings.
-// MUTATES DATA — staging/local only:
+// Driver journey: register â†’ login â†’ deliveries â†’ earnings.
+// MUTATES DATA â€” staging/local only:
 //   RUN_DELIVERY_FLOW=1 npx playwright test tests/delivery-flow.spec.ts
 const enabled = process.env.RUN_DELIVERY_FLOW === '1';
 

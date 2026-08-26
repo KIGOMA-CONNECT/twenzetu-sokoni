@@ -1,8 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { apiBaseURL } from '../playwright.config';
+﻿import { expect, test } from '@playwright/test';
 
 // Wallet transfer flows: send money, withdraw, balance checks.
-// MUTATES DATA — staging/local only:
+// MUTATES DATA â€” staging/local only:
 //   RUN_WALLET_TRANSFER=1 npx playwright test tests/wallet-transfer.spec.ts
 const enabled = process.env.RUN_WALLET_TRANSFER === '1';
 

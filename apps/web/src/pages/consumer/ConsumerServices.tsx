@@ -85,8 +85,8 @@ export default function ConsumerServices() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [specialInstructions, setSpecialInstructions] = useState('');
   const [accepting, setAccepting] = useState(false);
-  const [acceptError, setAcceptError] = useState<string | null>(null);
-  const [acceptSuccess, setAcceptSuccess] = useState<string | null>(null);
+  const [, setAcceptError] = useState<string | null>(null);
+  const [, setAcceptSuccess] = useState<string | null>(null);
 
   const [reviewTarget, setReviewTarget] = useState<ServiceRequest | null>(null);
   const [reviewRating, setReviewRating] = useState(5);
@@ -182,13 +182,12 @@ export default function ConsumerServices() {
     if (!acceptModal) return;
     setAccepting(true);
     try {
-      const res = await api.post('/services/quotes/accept', {
+      await api.post('/services/quotes/accept', {
         quoteId: acceptModal.id,
         paymentMethod,
         deliveryAddress: deliveryAddress.trim() || undefined,
         specialInstructions: specialInstructions.trim() || undefined,
       });
-      const data = res.data?.data ?? res.data;
       setAcceptModal(null);
       if (activeReq) await openThread(activeReq);
       await refetchReqs();

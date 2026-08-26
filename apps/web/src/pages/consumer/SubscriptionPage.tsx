@@ -11,7 +11,7 @@ export default function SubscriptionPage() {
   const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: subscriptions, loading, error, refetch } = useApi<any[]>('/subscriptions');
-  const [actionError, setActionError] = useState<string | null>(null);
+  const [, setActionError] = useState<string | null>(null);
 
   const updateStatus = async (id: string, status: string) => {
     try {

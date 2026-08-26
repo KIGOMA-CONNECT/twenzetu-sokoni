@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
 import { apiBaseURL } from '../playwright.config';
+import { expect, test } from '@playwright/test';
 
 // Authentication flows: register, login, OTP, token refresh, logout, password reset.
-// MUTATES DATA — staging/local only:
+// MUTATES DATA â€” staging/local only:
 //   RUN_AUTH_FLOW=1 npx playwright test tests/auth-flow.spec.ts
 const enabled = process.env.RUN_AUTH_FLOW === '1';
 

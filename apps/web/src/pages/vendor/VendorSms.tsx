@@ -4,7 +4,6 @@ import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
-import { ErrorMessage } from '../../components/ErrorMessage';
 
 interface SmsBalance {
   totalCredits: number;

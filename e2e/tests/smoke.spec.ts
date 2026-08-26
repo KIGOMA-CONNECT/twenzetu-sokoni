@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import { apiBaseURL } from '../playwright.config';
+import { expect, test } from '@playwright/test';
 
 // Read-only smoke suite: safe to run against any environment, creates no data.
 

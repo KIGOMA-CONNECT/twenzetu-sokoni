@@ -13,15 +13,6 @@ const STATUS_STEPS = [
   'PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED',
 ];
 
-const STATUS_LABELS: Record<string, string> = {
-  PLACED: 'Order Placed',
-  CONFIRMED: 'Confirmed',
-  PREPARING: 'Preparing',
-  READY_FOR_PICKUP: 'Ready for Pickup',
-  OUT_FOR_DELIVERY: 'Out for Delivery',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-};
 
 function getActiveStep(status: string): number {
   const idx = STATUS_STEPS.indexOf(status);

@@ -24,6 +24,11 @@ const PAYMENT_METHODS: Array<{ id: string; icon: string; nameKey: string; descKe
   { id: 'cash', icon: '💵', nameKey: 'cash', descKey: 'cashDesc' },
 ];
 
+function cargoPayMethodName(id: string): string {
+  const m = PAYMENT_METHODS.find((x) => x.id === id);
+  return m ? m.nameKey : '';
+}
+
 interface BookingResult {
   success: boolean;
   requestId: string;
@@ -110,7 +115,6 @@ export default function CargoPage() {
       }
     }, 450);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pickup, delivery, selectedVehicle, weightKg, cargoValueNum, tripType, insured]);
 
   const bindingFare = serverFare?.totalFare ?? 0;
@@ -505,7 +509,7 @@ export default function CargoPage() {
               ? t(c + 'inProgress')
               : !canBook
                 ? `🚚 ${t(c + 'fillAllDetails')}`
-                : `🚚 ${t(c + 'requestRide')} — ${formatCurrency(displayFare)}${paymentMethod === 'wallet' ? '' : ` · ${t(c + PAYMENT_METHODS.find((m) => m.id === paymentMethod)?.nameKey ?? '')}`}`}
+                : `🚚 ${t(c + 'requestRide')} — ${formatCurrency(displayFare)}${paymentMethod === 'wallet' ? '' : ` · ${t(c + cargoPayMethodName(paymentMethod))}`}`}
           </button>
         </>
       )}

@@ -520,7 +520,7 @@ export default function VendorProducts() {
       </div>
 
       {modalOpen && (
-        <div style={styles.overlay} onClick={() => !saving && setModalOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') !saving && setModalOpen(false); }}>
+        <div style={styles.overlay} onClick={() => !saving && setModalOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape' && !saving) setModalOpen(false); }}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalTitle}>{editingProduct ? t('vendor.editProduct') : t('vendor.addProduct')}</div>
             <div style={styles.field}>
@@ -637,7 +637,7 @@ export default function VendorProducts() {
       )}
 
       {bulkOpen && (
-        <div style={styles.overlay} onClick={() => !bulkBusy && setBulkOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape') !bulkBusy && setBulkOpen(false); }}>
+        <div style={styles.overlay} onClick={() => !bulkBusy && setBulkOpen(false)} role="dialog" aria-modal="true" onKeyDown={(e) => { if (e.key === 'Escape' && !bulkBusy) setBulkOpen(false); }}>
           <div style={{ ...styles.modal, width: '620px' }} onClick={(e) => e.stopPropagation()}>
             <div style={styles.modalTitle}>{t('vendor.bulkUpload')}</div>
             <div style={styles.bulkBody}>

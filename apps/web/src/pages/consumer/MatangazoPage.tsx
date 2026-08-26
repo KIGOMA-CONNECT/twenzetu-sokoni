@@ -56,7 +56,7 @@ async function copyText(text: string): Promise<boolean> {
 
 export default function MatangazoPage() {
   const { t } = useTranslation();
-  const [copyError, setCopyError] = useState<string | null>(null);
+  const [, setCopyError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: ads, loading: adsLoading, error: adsError } = useApi<Advert[]>('/public/ads', []);
   const { data: categories, loading: catsLoading } = useApi<Category[]>('/public/categories', []);

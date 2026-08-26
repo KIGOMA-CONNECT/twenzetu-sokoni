@@ -1,8 +1,7 @@
-﻿import { Inject, Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+﻿import { Inject, Injectable, ConflictException } from '@nestjs/common';
 import { EntityId, TenantId } from '@afri-market/kernel';
 import { PosShift, IPosShiftRepository } from '@afri-market/marketplace-domain';
 import { POS_SHIFT_REPOSITORY } from '../../tokens';
-import { VendorAccessService } from '../../vendor-access/vendor-access.service';
 
 export interface OpenPosShiftInput {
   readonly tenantId: string;

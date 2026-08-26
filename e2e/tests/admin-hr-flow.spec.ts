@@ -1,9 +1,8 @@
-import { expect, test } from '@playwright/test';
-import { apiBaseURL } from '../playwright.config';
+﻿import { expect, test } from '@playwright/test';
 
 // Admin HR module: dashboard, org units, positions, employees, leave, payroll,
 // recruitment, performance, compensation, learning, succession, offboarding, compliance.
-// READ-ONLY — safe against any environment, creates no data.
+// READ-ONLY â€” safe against any environment, creates no data.
 //   npx playwright test tests/admin-hr-flow.spec.ts
 
 const ADMIN_PHONE = process.env.TEST_ADMIN_PHONE || '07540000010';

@@ -1,8 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { apiBaseURL } from '../playwright.config';
+﻿import { expect, test } from '@playwright/test';
 
-// Vendor journey: register → login → products → POS → orders.
-// MUTATES DATA — staging/local only:
+// Vendor journey: register â†’ login â†’ products â†’ POS â†’ orders.
+// MUTATES DATA â€” staging/local only:
 //   RUN_VENDOR_FLOW=1 npx playwright test tests/vendor-flow.spec.ts
 const enabled = process.env.RUN_VENDOR_FLOW === '1';
 
@@ -13,8 +12,6 @@ const VENDOR_PASSWORD = process.env.TEST_VENDOR_PASSWORD || 'VendorPass1x!';
 
 test.describe('Vendor Flow', () => {
   test('vendor can register and login', async ({ page }) => {
-    const email = `e2e-vendor-${Date.now()}@example.com`;
-
     await page.goto('/register');
     await page.fill('input[type="text"]', 'E2E Vendor Shop');
     await page.fill('input[type="tel"]', VENDOR_PHONE);

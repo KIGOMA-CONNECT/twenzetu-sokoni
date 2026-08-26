@@ -211,7 +211,6 @@ export class VendorPurchaseOrdersController {
     );
 
     let paymentStatus: 'COMPLETED' | 'PENDING' | 'FAILED' = 'PENDING';
-    let disbursementRef: string | null = null;
 
     if (dto.method !== 'bank') {
       try {
@@ -226,7 +225,6 @@ export class VendorPurchaseOrdersController {
 
         if (disburseResult.success) {
           paymentStatus = 'COMPLETED';
-          disbursementRef = disburseResult.reference ?? reference;
         } else {
           paymentStatus = 'FAILED';
 

@@ -11,6 +11,23 @@ export default tseslint.config(
     },
   },
   {
+    files: ['**/jest.config.{js,cjs,mjs,cts,ts}', 'jest.preset.js', '**/*.config.{js,cjs,mjs}'],
+    languageOptions: {
+      globals: {
+        require: 'readonly',
+        module: 'writable',
+        exports: 'writable',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        process: 'readonly',
+        console: 'readonly',
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
+    },
+  },
+  {
     ignores: ['**/dist/**', '**/node_modules/**', '**/.nx/**'],
   },
 );

@@ -149,18 +149,6 @@ export default function VendorPurchaseOrders() {
     }
   };
 
-  const togglePaid = async (order: PurchaseOrder) => {
-    setActionError(null);
-    setBusyId(order.id);
-    try {
-      await api.post(`/vendor/purchase-orders/${order.id}/payment`, { paid: order.paymentStatus !== 'PAID' });
-      await refetch();
-    } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || t(p + 'failedPayment'));
-    } finally {
-      setBusyId(null);
-    }
-  };
 
   const openPay = (order: PurchaseOrder) => {
     setPayOrder(order);

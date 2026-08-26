@@ -356,7 +356,7 @@ export default function FintechPage() {
     const { data: mine, refetch } = useApi<{ id: string; status: string; tier?: SubscriptionTier | null; currentPeriodEnd?: string } | null>('/vendor-subscriptions/me');
     const { data: invoices } = useApi<SubscriptionInvoice[] | null>(isVendor ? '/vendor-subscriptions/me/invoices' : null);
     const [busy, setBusy] = useState<string | null>(null);
-    const [subError, setSubError] = useState<string | null>(null);
+    const [, setSubError] = useState<string | null>(null);
 
     const handleSubscribe = async (tierId: string) => {
       setBusy(tierId);

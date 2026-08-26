@@ -1,8 +1,7 @@
-import { expect, test } from '@playwright/test';
-import { apiBaseURL } from '../playwright.config';
+﻿import { expect, test } from '@playwright/test';
 
 // Finance flows: wallet balance, fintech tabs, savings, loans, send money, bank withdraw.
-// READ-ONLY — safe against any environment, creates no data.
+// READ-ONLY â€” safe against any environment, creates no data.
 //   npx playwright test tests/finance-flow.spec.ts
 
 const TEST_PHONE = process.env.TEST_PHONE || '07540000001';
