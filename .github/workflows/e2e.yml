@@ -5,6 +5,7 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  workflow_call:
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -65,17 +66,27 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
       - name: Build API
-        run: npx nx run api:build
+        run: |
+          set -o pipefail
+          npx nx run api:build 2>&1 | tee build-api.log || {
+            grep -aiE 'error|failed|✖' build-api.log | head -15 | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
 
       - name: Build Web
-        run: npx nx run web:build
+        run: |
+          set -o pipefail
+          npx nx run web:build 2>&1 | tee build-web.log || {
+            grep -aiE 'error|failed|✖' build-web.log | head -25 | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
 
       - name: Run database migrations
         run: npm run migration:run
