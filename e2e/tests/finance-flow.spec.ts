@@ -22,7 +22,7 @@ async function loginAsUser(page: any, phone: string, password: string) {
   ]);
 
   const status = response.status();
-  if (status !== 200) {
+  if (status < 200 || status >= 300) {
     const body = await response.json().catch(() => ({}));
     throw new Error(`Login API returned ${status}: ${JSON.stringify(body).slice(0, 300)}`);
   }
