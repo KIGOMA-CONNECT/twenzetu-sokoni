@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { OrgUnit } from '../../../types';
 
 const s: Record<string, React.CSSProperties> = {
@@ -64,10 +63,10 @@ export default function AdminOrgUnits() {
   const create = async () => { if (!form.name.trim() || !form.typeId) return; setCreating(true); try { await api.post('/organization/units', form); setShowCreate(false); setForm({ name: '', typeId: '', parentId: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setCreating(false); } };
 
   if (loading) return <LoadingSpinner />;
-  if (error) return <ErrorMessage message={error} />;
 
   return (
     <div>
+      {error && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}>{error}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>Org Units</h2>
         <button style={{ padding: '0.5rem 1rem', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', fontWeight: 600 }} onClick={() => setShowCreate(!showCreate)}>{showCreate ? 'Cancel' : '+ New Unit'}</button>
