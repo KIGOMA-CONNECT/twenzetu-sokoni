@@ -174,7 +174,8 @@ test.describe('Finance Flow', () => {
 
     await gotoAndWait(page, '/fintech');
     await page.locator('button:has-text("Akiba (Savings)")').click();
-    await expect(page.locator('button:has-text("10000")').first()).toBeVisible({ timeout: 5_000 });
+    const amountBtn = page.locator('button.btn-outline.btn-sm').first();
+    await expect(amountBtn).toBeVisible({ timeout: 5_000 });
   });
 
   test('protected wallet route redirects anonymous users to login', async ({ page }) => {

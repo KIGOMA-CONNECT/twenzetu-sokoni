@@ -4,7 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { HrEmployee, Position, OrgUnit } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem' }, sel: { width: '100%', padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', background: '#fff' }, btn: { padding: '0.4rem 0.8rem', borderRadius: '6px', border: 'none', color: '#fff', fontWeight: 500, fontSize: '0.8rem' },
@@ -21,9 +20,10 @@ export default function AdminHrEmployees() {
   const flatten = (units?: OrgUnit[]): OrgUnit[] => { if (!units) return []; const r: OrgUnit[] = []; const walk = (list: OrgUnit[]) => { list.forEach(u => { r.push(u); if (u.children) walk(u.children); }); }; walk(units); return r; };
   const [actionError, setActionError] = useState<string | null>(null);
   const create = async () => { if (!f.firstName.trim() || !f.lastName.trim()) return; setSaving(true); try { await api.post('/hr/employees', f); setShowForm(false); setF({ employeeCode: '', firstName: '', lastName: '', email: '', phoneNumber: '', positionId: '', orgUnitId: '', hireDate: new Date().toISOString().split('T')[0], employmentType: 'FULL_TIME' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
-  if (loading) return <LoadingSpinner />; if (error) return <ErrorMessage message={error} />;
+  if (loading) return <LoadingSpinner />;
   return (
     <div>
+      {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>{error}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('hr.employees.title')}</h2>
         <button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setShowForm(!showForm)}>{showForm ? t('hr.employees.cancel') : t('hr.employees.newEmployee')}</button>

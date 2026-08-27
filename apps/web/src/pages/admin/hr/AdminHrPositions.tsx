@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { Position, OrgUnit } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.85rem' }, sel: { width: '100%', padding: '0.45rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.85rem', background: '#fff' }, btn: { padding: '0.45rem 1rem', borderRadius: '6px', border: 'none', color: '#fff', fontWeight: 500, fontSize: '0.85rem' },
@@ -16,9 +15,10 @@ export default function AdminHrPositions() {
   const [actionError, setActionError] = useState<string | null>(null);
   const create = async () => { if (!form.title.trim() || !form.orgUnitId) return; setSaving(true); try { await api.post('/hr/positions', form); setShowForm(false); setForm({ title: '', orgUnitId: '', grade: '', description: '' }); refetch(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } finally { setSaving(false); } };
   const flatten = (units?: OrgUnit[]): OrgUnit[] => { if (!units) return []; const r: OrgUnit[] = []; const walk = (list: OrgUnit[]) => { list.forEach(u => { r.push(u); if (u.children) walk(u.children); }); }; walk(units); return r; };
-  if (loading) return <LoadingSpinner />; if (error) return <ErrorMessage message={error} />;
+  if (loading) return <LoadingSpinner />;
   return (
     <div>
+      {error && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem' }}>{error}</div>}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}><h2 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0 }}>{t('hr.positions.title')}</h2><button style={{ ...s.btn, background: '#3b82f6' }} onClick={() => setShowForm(!showForm)}>{showForm ? t('hr.positions.cancel') : t('hr.positions.newPosition')}</button></div>
       {actionError && <div style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       {showForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', border: '1px solid #e2e8f0', alignItems: 'flex-end' }}>

@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { LeaveType, LeaveRequest } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', width: '100%' },
@@ -28,10 +27,10 @@ export default function AdminHrLeave() {
 
   if ((tab === 'types' && l1) || (tab === 'requests' && l2)) return <LoadingSpinner />;
   const err = tab === 'types' ? e1 : e2;
-  if (err) return <ErrorMessage message={err} />;
 
   return (
     <div>
+      {err && <div style={{ background: 'var(--danger-soft)', color: 'var(--danger)', padding: '0.5rem 0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.85rem' }}>{err}</div>}
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.leave.title')}</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         <button onClick={() => setTab('types')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'types' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'types' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'types' ? '#3b82f6' : 'var(--muted)' }}>{t('hr.leave.leaveTypes')}</button>
