@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { PayrollPeriod, Payslip, HrEmployee } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', width: '100%' }, btn: { padding: '0.4rem 0.8rem', borderRadius: '5px', border: 'none', color: '#fff', fontWeight: 500, fontSize: '0.8rem' },
@@ -31,10 +30,10 @@ export default function AdminHrPayroll() {
   const markPaid = async (id: string) => { try { await api.patch(`/hr/payroll/payslips/${id}/mark-paid`, {}); r2(); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || (selectedPeriod && l2)) return <LoadingSpinner />;
-  if (e1) return <ErrorMessage message={e1} />;
 
   return (
     <div>
+      {e1 && <div style={{ background: 'var(--danger-soft)', color: 'var(--danger)', padding: '0.5rem 0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.85rem' }}>{e1}</div>}
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.payroll.title')}</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         <button onClick={() => setTab('periods')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'periods' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'periods' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'periods' ? '#3b82f6' : 'var(--muted)' }}>{t('hr.payroll.payPeriods')}</button>

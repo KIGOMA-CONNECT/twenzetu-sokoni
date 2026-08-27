@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { JobRequisition, Candidate, JobApplication } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', width: '100%' },
@@ -44,10 +43,10 @@ export default function AdminHrRecruitment() {
   const stageColors: Record<string, string> = { APPLIED: 'var(--faint)', SCREENING: 'var(--warning)', INTERVIEWING: '#3b82f6', OFFER: '#8b5cf6', HIRED: 'var(--success)', REJECTED: 'var(--danger)', WITHDRAWN: 'var(--muted)' };
 
   if (l1 || l2 || l3) return <LoadingSpinner />;
-  if (e1) return <ErrorMessage message={e1} />;
 
   return (
     <div>
+      {e1 && <div style={{ background: 'var(--danger-soft)', color: 'var(--danger)', padding: '0.5rem 0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.85rem' }}>{e1}</div>}
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.recruitment.title')}</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         {[['requisitions', t('hr.recruitment.tabRequisitions')], ['candidates', t('hr.recruitment.tabCandidates')], ['applications', t('hr.recruitment.tabApplications')]].map(([key, label]) => <button key={key} onClick={() => setTab(key as 'requisitions' | 'candidates' | 'applications')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === key ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === key ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === key ? '#3b82f6' : 'var(--muted)', textTransform: 'capitalize' }}>{label}</button>)}
