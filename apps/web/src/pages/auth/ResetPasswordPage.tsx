@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
+import { normalizePhone } from '../../utils/phone';
 
 function getErrorMessage(err: unknown, fallback: string): string {
   if (err && typeof err === 'object' && 'response' in err) {
@@ -29,7 +30,7 @@ export default function ResetPasswordPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await api.post('/auth/forgot-password', { phoneNumber: phoneNumber.trim() });
+      await api.post('/auth/forgot-password', { phoneNumber: normalizePhone(phoneNumber) });
       setStep(2);
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not send code'));
@@ -48,7 +49,7 @@ export default function ResetPasswordPage() {
     setSubmitting(true);
     try {
       await api.post('/auth/reset-password', {
-        phoneNumber: phoneNumber.trim(),
+        phoneNumber: normalizePhone(phoneNumber),
         code: code.trim(),
         newPassword,
       });

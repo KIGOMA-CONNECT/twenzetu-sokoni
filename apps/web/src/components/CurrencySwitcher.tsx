@@ -3,7 +3,7 @@ import { useCurrency, COUNTRIES } from '../context/CurrencyContext';
 
 export function CurrencySwitcher() {
   const { currency, setCurrency } = useCurrency();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   return (
     <select

@@ -2,6 +2,7 @@ import { useState, FormEvent, useEffect } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
+import { normalizePhone } from '../../utils/phone';
 import { PageTitle } from '../../components/PageTitle';
 
 function AuthSidePanel() {
@@ -70,7 +71,7 @@ export default function RegisterPage() {
     setSubmitting(true);
     try {
       const payload: Record<string, string> = {
-        phoneNumber: phone.trim(),
+        phoneNumber: normalizePhone(phone),
         fullName: name,
         role,
         password,

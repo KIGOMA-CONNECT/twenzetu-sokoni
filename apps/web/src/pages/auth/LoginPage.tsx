@@ -2,6 +2,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { normalizePhone } from '../../utils/phone';
 import { PageTitle } from '../../components/PageTitle';
 
 function getErrorMessage(err: unknown, fallback: string): string {
@@ -70,7 +71,7 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await login(phoneNumber.trim(), password);
+      await login(normalizePhone(phoneNumber), password);
       navigate('/dashboard', { replace: true });
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Invalid credentials'));
@@ -84,7 +85,7 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      await sendOtp(phoneNumber.trim());
+      await sendOtp(normalizePhone(phoneNumber));
       setCodeSent(true);
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'Could not send code'));
@@ -98,7 +99,7 @@ export default function LoginPage() {
     setError(null);
     setSubmitting(true);
     try {
-      const { registered } = await verifyOtp(phoneNumber.trim(), code.trim());
+      const { registered } = await verifyOtp(normalizePhone(phoneNumber), code.trim());
       if (registered) {
         navigate('/dashboard', { replace: true });
       } else {
@@ -139,7 +140,7 @@ export default function LoginPage() {
             <form onSubmit={handlePasswordSubmit}>
               <div className="field">
                 <label className="field-label" htmlFor="phoneNumber">{t('auth.phoneNumber')}</label>
-                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000" required style={inputStyle} />
+                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000 (or 0754 000 000)" required style={inputStyle} />
               </div>
               <div className="field">
                 <label className="field-label" htmlFor="password">{t('auth.password')}</label>
@@ -172,7 +173,7 @@ export default function LoginPage() {
             <form onSubmit={handleSendCode}>
               <div className="field">
                 <label className="field-label" htmlFor="phoneNumber">{t('auth.phoneNumber')}</label>
-                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000" required style={inputStyle} />
+                <input id="phoneNumber" type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="+255 754 000 000 (or 0754 000 000)" required style={inputStyle} />
               </div>
               <button type="submit" className="btn btn-primary btn-lg btn-block" disabled={submitting}>
                 {submitting ? <><span className="spinner" style={{ borderTopColor: '#fff', borderColor: 'rgba(255,255,255,0.3)' }} /> {t('auth.sending')}</> : t('auth.sendCode')}
