@@ -110,7 +110,8 @@ describe('AiContextRegistry', () => {
       message: 'hello',
     });
     expect(bundle.system).toContain('ghost-module');
-    expect(bundle.userMessage).toBe('hello');
+    expect(bundle.userMessage).toContain('hello');
+    expect(bundle.userMessage).toContain('<user_message>');
   });
 
   it('uses a registered module builder', async () => {

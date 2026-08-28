@@ -106,4 +106,43 @@ test.describe('AI Flow', () => {
     await gotoAndWait(page, '/wallet');
     await expect(page.locator('text=AI · Wallet & Finance').first()).toBeVisible({ timeout: 10_000 });
   });
+
+  test('AI chat rejects invalid module (whitelist)', async ({ page, request }) => {
+    await loginAsAdmin(page);
+    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const res = await request.post('/api/ai/chat', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: { module: 'invalid module!', message: 'hello' },
+    });
+    expect(res.status()).toBe(400);
+    const body = await res.json().catch(() => ({}));
+    expect(JSON.stringify(body).toLowerCase()).toContain('module');
+  });
+
+  test('AI chat sanitizes xss in message', async ({ page, request }) => {
+    await loginAsAdmin(page);
+    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const res = await request.post('/api/ai/chat', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        module: 'vendor-analytics',
+        message: '<script>alert(1)</script> hello',
+        context: { summary: 'test', facts: { totalRevenue: 100 } },
+      },
+    });
+    expect([200, 500].includes(res.status())).toBe(true);
+    const text = await res.text();
+    expect(text.toLowerCase()).not.toContain('<script>');
+  });
+
+  test('AI chat throttler allows burst but protects', async ({ page, request }) => {
+    await loginAsAdmin(page);
+    const token = await page.evaluate(() => localStorage.getItem('accessToken'));
+    const headers = { Authorization: `Bearer ${token}` };
+    const payload = { module: 'finance', message: 'ping', context: { summary: 'test', facts: { balance: 100 } } };
+    const results = await Promise.all([1, 2, 3, 4, 5].map(() => request.post('/api/ai/chat', { headers, data: payload })));
+    // All should be 200 or 500 (provider not configured), none should be 429 for 5 burst under limit 300/min
+    for (const r of results) expect([200, 500].includes(r.status())).toBe(true);
+    expect(results.some((r) => r.status() === 429)).toBe(false);
+  });
 });

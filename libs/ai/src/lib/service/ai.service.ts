@@ -20,6 +20,7 @@ import type {
   AiContextRequest,
   AiPromptBundle,
 } from '../context/ai-context.types';
+import { dataBoundary } from '../prompts/prompt-templates';
 import { createAiProvider, availableAiProviders } from '../provider/ai-provider.factory';
 import type {
   AiGenerateResult,
@@ -35,6 +36,9 @@ export class AiService {
   private readonly provider: AiProvider | null;
 
   constructor() {
+    const rawTemp = process.env.AI_TEMPERATURE ? Number(process.env.AI_TEMPERATURE) : undefined;
+    const rawMax = process.env.AI_MAX_TOKENS ? Number(process.env.AI_MAX_TOKENS) : undefined;
+    const rawTimeout = process.env.AI_TIMEOUT_MS ? Number(process.env.AI_TIMEOUT_MS) : undefined;
     this.config = {
       provider: process.env.AI_PROVIDER || 'gemini',
       apiKeys: {
@@ -47,9 +51,9 @@ export class AiService {
         openai: process.env.OPENAI_MODEL || '',
         anthropic: process.env.ANTHROPIC_MODEL || '',
       },
-      temperature: process.env.AI_TEMPERATURE ? Number(process.env.AI_TEMPERATURE) : undefined,
-      maxOutputTokens: process.env.AI_MAX_TOKENS ? Number(process.env.AI_MAX_TOKENS) : undefined,
-      timeoutMs: process.env.AI_TIMEOUT_MS ? Number(process.env.AI_TIMEOUT_MS) : undefined,
+      temperature: typeof rawTemp === 'number' && !isNaN(rawTemp) ? Math.min(1, Math.max(0, rawTemp)) : undefined,
+      maxOutputTokens: typeof rawMax === 'number' && !isNaN(rawMax) ? Math.min(4096, Math.max(1, Math.floor(rawMax))) : undefined,
+      timeoutMs: typeof rawTimeout === 'number' && !isNaN(rawTimeout) ? Math.min(30000, Math.max(1000, Math.floor(rawTimeout))) : undefined,
     };
     this.provider = createAiProvider(this.config);
     if (!this.provider) {
@@ -153,7 +157,9 @@ export class AiService {
     const base: AiMessage[] = (request.history ?? [])
       .filter((m) => m.role !== 'system')
       .map((m) => ({ role: m.role as AiMessage['role'], content: m.content }));
-    base.push({ role: 'user', content: bundle.userMessage || request.message });
+    const raw = bundle.userMessage || request.message;
+    const content = raw.includes('<user_message>') ? raw : dataBoundary('user_message', raw);
+    base.push({ role: 'user', content });
     return base;
   }
 }
