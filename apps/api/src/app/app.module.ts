@@ -22,15 +22,16 @@ import { UbrModule } from '@abms/ubr-api';
 import { UBR_ENTITIES } from '@abms/ubr-infrastructure';
 import { MetadataModule } from '@abms/metadata-api';
 import { METADATA_ENTITIES } from '@abms/metadata-infrastructure';
-import { ConfigurationInfraModule, CONFIG_ENTITIES } from '@abms/configuration-infrastructure';
+import { CONFIG_ENTITIES } from '@abms/configuration-infrastructure';
 import { ConfigurationModule } from '@abms/configuration-api';
-import { WorkflowInfraModule, WORKFLOW_ENTITIES } from '@abms/workflow-infrastructure';
+import { WORKFLOW_ENTITIES } from '@abms/workflow-infrastructure';
 import { WorkflowModule } from '@abms/workflow-api';
-import { NotificationInfraModule, NOTIFICATION_ENTITIES } from '@abms/notification-infrastructure';
+import { NOTIFICATION_ENTITIES } from '@abms/notification-infrastructure';
 import { NotificationModule } from '@abms/notification-api';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AiModule } from '@afri-market/ai';
+import { AiApiModule } from '@afri-market/ai-api';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
@@ -82,6 +83,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     IdentityModule,
     MarketplaceModule,
     AiModule,
+    AiApiModule,
     SchedulerModule,
     UssdModule,
   ],

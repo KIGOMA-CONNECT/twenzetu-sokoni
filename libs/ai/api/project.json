@@ -1,0 +1,8 @@
+{
+  "name": "@afri-market/ai-api",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/ai/api/src",
+  "projectType": "library",
+  "tags": ["scope:ai", "type:api"],
+  "targets": {}
+}

@@ -26,6 +26,7 @@
       "@afri-market/core-tracing": ["libs/core-tracing/src/index"],
       "@afri-market/core-finance": ["libs/core-finance/src/index"],
       "@afri-market/ai": ["libs/ai/src/index"],
+      "@afri-market/ai-api": ["libs/ai/api/src/index"],
       "@abms/kernel": ["libs/kernel/src/index"],
       "@abms/ubr": ["libs/ubr/src/index"],
       "@abms/ubr-infrastructure": ["libs/ubr/infrastructure/src/index"],

@@ -77,11 +77,11 @@ test.describe('Admin HR Flow', () => {
     await loginAsAdmin(page);
 
     await gotoAndWait(page, '/admin/org/profile');
-    await expect(page.locator('text=Company')).toBeVisible();
-    await expect(page.locator('text=Branch')).toBeVisible();
-    await expect(page.locator('text=Department')).toBeVisible();
-    await expect(page.locator('text=Cost Center')).toBeVisible();
-    await expect(page.locator('text=Profit Center')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Company' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Branch' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Department' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Cost Center' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Profit Center' })).toBeVisible();
   });
 
   test('admin can view workflows page', async ({ page }) => {
@@ -192,12 +192,12 @@ test.describe('Admin HR Flow', () => {
     await loginAsAdmin(page);
 
     await gotoAndWait(page, '/admin/hr');
-    await page.locator('text=Positions').first().click();
+    await page.getByText('Positions', { exact: true }).first().click();
     await expect(page).toHaveURL(/admin\/hr\/positions/);
     await expect(page.locator('h2')).toContainText('Positions');
 
     await gotoAndWait(page, '/admin/hr');
-    await page.locator('text=Employees').first().click();
+    await page.getByText('Employees', { exact: true }).first().click();
     await expect(page).toHaveURL(/admin\/hr\/employees/);
     await expect(page.locator('h2')).toContainText('Employees');
   });

@@ -26,6 +26,8 @@ module.exports = {
     '^@afri-market/marketplace-api$': path.join(ROOT, 'libs/marketplace/api/src/index.ts'),
     '^@afri-market/integrations$': path.join(ROOT, 'libs/integrations/src/index.ts'),
     '^@afri-market/ussd$': path.join(ROOT, 'libs/ussd/src/index.ts'),
+    '^@afri-market/ai$': path.join(ROOT, 'libs/ai/src/index.ts'),
+    '^@afri-market/ai-api$': path.join(ROOT, 'libs/ai/api/src/index.ts'),
     '^@abms/kernel$': path.join(ROOT, 'libs/kernel/src/index.ts'),
     '^@abms/ubr$': path.join(ROOT, 'libs/ubr/src/index.ts'),
     '^@abms/ubr-infrastructure$': path.join(ROOT, 'libs/ubr/infrastructure/src/index.ts'),
