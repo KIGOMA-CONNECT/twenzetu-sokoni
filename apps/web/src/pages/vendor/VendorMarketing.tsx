@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Advert, Category, CampaignAnalytics, MarketingCampaign } from '../../types';
 
 interface VariantForm {
@@ -109,6 +110,22 @@ export default function VendorMarketing() {
   const [advertForm, setAdvertForm] = useState<AdvertForm>({ title: '', body: '', emoji: '', ctaLabel: '', ctaUrl: '', sortOrder: '' });
   const [campaignForm, setCampaignForm] = useState<CampaignForm>({ name: '', message: '', scheduledAt: '', minOrders: '', lastOrderWithinDays: '', testEnabled: false, variants: [] });
   const [categoryForm, setCategoryForm] = useState<CategoryForm>({ tagline: '', benefits: '', emoji: '' });
+
+  const marketingContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      campaignCount: campaigns?.length ?? 0,
+      advertCount: ads?.length ?? 0,
+      categoryCount: categories?.length ?? 0,
+      draftCampaigns: campaigns?.filter((c) => c.status === 'DRAFT').length ?? 0,
+      activeCampaigns: campaigns?.filter((c) => c.status === 'ACTIVE').length ?? 0,
+      avgSent: campaigns?.length ? Math.round((campaigns.reduce((s, c) => s + (c.sentCount ?? 0), 0) / campaigns.length) * 10) / 10 : 0,
+    };
+    const rows = [
+      ...(campaigns ?? []).slice(0, 15).map((c) => ({ kind: 'campaign', name: c.name, status: c.status, sentCount: c.sentCount, failedCount: c.failedCount, message: c.message.slice(0, 80) })),
+      ...(ads ?? []).slice(0, 10).map((a) => ({ kind: 'advert', title: a.title, sortOrder: a.sortOrder, isActive: a.isActive })),
+    ];
+    return { summary: `Marketing — ${campaigns?.length ?? 0} campaigns, ${ads?.length ?? 0} adverts`, facts, rows, constraints: ['Ground in campaign/advert rows.'] };
+  }, [campaigns, ads, categories]);
 
   const openAdvert = () => {
     setAdvertForm({ title: '', body: '', emoji: '', ctaLabel: '', ctaUrl: '', sortOrder: '' });
@@ -650,6 +667,19 @@ export default function VendorMarketing() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="vendor-catalog"
+          feature="draft"
+          features={['assistant', 'draft', 'recommend', 'analyze', 'summarize']}
+          context={marketingContext}
+          title="AI · Marketing"
+          description={`Ask about ${campaigns?.length ?? 0} campaigns and ${ads?.length ?? 0} adverts — AI sees the same marketing data.`}
+          placeholder="e.g. Draft a campaign SMS, improve this advert, analyze campaign performance…"
+          suggestedPrompts={['Draft a campaign SMS for lapsed customers', 'Analyze campaign performance — what worked?', 'Improve advert copy for conversion', 'Recommend next marketing action']}
+        />
+      </div>
     </div>
   );
 }
