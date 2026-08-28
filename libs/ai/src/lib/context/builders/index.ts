@@ -9,6 +9,9 @@
 
 import { registerVendorAnalyticsContext } from './vendor-analytics.builder';
 import { registerVendorCatalogContext } from './vendor-catalog.builder';
+import { registerAdminAnalyticsContext } from './admin-analytics.builder';
+import { registerFinanceContext } from './finance-wallet.builder';
+import { registerFinanceTools } from '../../tools/finance-tools';
 
 let registered = false;
 
@@ -16,6 +19,9 @@ export function registerCoreAiContexts(): void {
   if (registered) return;
   registerVendorAnalyticsContext();
   registerVendorCatalogContext();
+  registerAdminAnalyticsContext();
+  registerFinanceContext();
+  registerFinanceTools();
   registered = true;
 }
 
@@ -30,5 +36,9 @@ registerCoreAiContexts();
 
 export { VENDOR_ANALYTICS_MODULE_ID, VENDOR_ANALYTICS_ALIASES } from './vendor-analytics.builder';
 export { VENDOR_CATALOG_MODULE_ID, VENDOR_CATALOG_ALIASES } from './vendor-catalog.builder';
+export { ADMIN_ANALYTICS_MODULE_ID, ADMIN_ANALYTICS_ALIASES } from './admin-analytics.builder';
+export { FINANCE_MODULE_ID, FINANCE_ALIASES } from './finance-wallet.builder';
 export { vendorAnalyticsContextBuilder } from './vendor-analytics.builder';
 export { vendorCatalogContextBuilder } from './vendor-catalog.builder';
+export { adminAnalyticsContextBuilder } from './admin-analytics.builder';
+export { financeContextBuilder } from './finance-wallet.builder';

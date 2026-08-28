@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import type {
   AccountingPeriod,
   AnalyticsOverview,
@@ -217,6 +218,52 @@ export default function AdminAnalytics() {
   const funnelTotal = overview?.funnel.reduce((sum, f) => sum + f.count, 0) ?? 0;
   const invTotalStock = inventory ? inventory.items.reduce((sum, i) => sum + i.stockQuantity, 0) : 0;
   const maxRevenue = products.reduce((max, p) => Math.max(max, p.revenue), 0);
+
+  const adminContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      period: customActive ? `${from} to ${to}` : period,
+      rangeLabel,
+      threshold,
+      totalRevenue: overview?.summary?.totalRevenue ?? 0,
+      commission: overview?.summary?.commission ?? 0,
+      netRevenue: overview?.summary?.netRevenue ?? 0,
+      deliveryFeeRevenue: overview?.summary?.deliveryFeeRevenue ?? 0,
+      orderCount: overview?.summary?.orderCount ?? 0,
+      completedOrders: overview?.summary?.completedOrders ?? 0,
+      cancelledOrders: overview?.summary?.cancelledOrders ?? 0,
+      cancellationRate: overview?.summary?.cancellationRate ?? 0,
+      averageOrderValue: overview?.summary?.averageOrderValue ?? 0,
+      uniqueCustomers: overview?.customers?.uniqueCustomers ?? 0,
+      newCustomers: overview?.customers?.newCustomers ?? 0,
+      returningCustomers: overview?.customers?.returningCustomers ?? 0,
+      deliveriesCompleted: overview?.deliveries?.completed ?? 0,
+      deliveriesActive: overview?.deliveries?.active ?? 0,
+      deliveriesFailed: overview?.deliveries?.failed ?? 0,
+      driverEarnings: overview?.deliveries?.driverEarnings ?? 0,
+      inventoryValue: inventory?.inventoryValue ?? 0,
+      activeProductCount: inventory?.activeProductCount ?? 0,
+      lowStockCount: inventory?.lowStockCount ?? 0,
+      outOfStockCount: inventory?.outOfStockCount ?? 0,
+      disputesTotal: disputes?.total ?? 0,
+      disputesOpen: disputes?.open ?? 0,
+      disputesResolved: disputes?.resolved ?? 0,
+      avgResolutionHours: disputes?.averageResolutionTimeHours ?? 0,
+      slaTotal: sla?.total ?? 0,
+      slaCompleted: sla?.completed ?? 0,
+      slaOnTime: sla?.onTime ?? 0,
+      slaOnTimeRate: sla?.onTimeRate ?? 0,
+      slaLateRate: sla?.lateRate ?? 0,
+    };
+    const rows: Record<string, unknown>[] = [
+      ...(overview?.funnel ?? []).map((f) => ({ kind: 'funnel', status: f.status, count: f.count, value: f.value })),
+      ...(overview?.daily ?? []).map((d) => ({ kind: 'daily', date: d.date, orders: d.orders, revenue: d.revenue, commission: d.commission })),
+      ...products.map((p) => ({ kind: 'topProduct', productName: p.productName, quantity: p.quantity, revenue: p.revenue, orderCount: p.orderCount, share: p.share })),
+      ...(inventory?.items ?? []).slice(0, 20).map((i) => ({ kind: 'inventory', name: i.name, sku: i.sku, stockQuantity: i.stockQuantity, unit: i.unit, price: i.price, stockValue: i.stockValue, status: i.status })),
+      ...(drivers ?? []).slice(0, 15).map((d) => ({ kind: 'driverSla', driverName: d.driverName, completed: d.completed, onTime: d.onTime, onTimeRate: d.onTimeRate })),
+      ...(disputes ? Object.entries(disputes.byReason).map(([k, v]) => ({ kind: 'disputeReason', reason: k, count: v })) : []),
+    ];
+    return { summary: `Platform analytics — ${rangeLabel} — ${tab} tab`, facts, rows: rows.slice(0, 60), constraints: [`Active tab is "${tab}". Ground answers in that tab first.`] };
+  }, [overview, products, inventory, disputes, sla, drivers, period, from, to, rangeLabel, tab, threshold]);
 
   return (
     <div style={styles.container}>
@@ -647,6 +694,19 @@ export default function AdminAnalytics() {
           )}
         </>
       ))}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="admin-analytics"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={adminContext}
+          title="AI · Platform Analytics"
+          description={`Ask about platform ${rangeLabel} — AI sees the same ${tab} data you see.`}
+          placeholder="e.g. Why did cancellation spike? Which drivers need coaching? Summarize platform health…"
+          suggestedPrompts={['Analyze platform health for this period — what stands out?', 'Which products and drivers should ops act on first?', 'Summarize revenue, disputes and delivery SLA', 'What is driving late deliveries and how to fix?']}
+        />
+      </div>
     </div>
   );
 }

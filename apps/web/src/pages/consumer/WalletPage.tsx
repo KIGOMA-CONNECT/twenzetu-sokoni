@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import AiAssistant from '../../components/AiAssistant';
 import api from '../../api/client';
 import { useAuth } from '../../context/AuthContext';
 import type { Wallet, WalletTransaction } from '../../types';
@@ -164,6 +165,25 @@ export default function WalletPage() {
   }
 
   const isMobileMoney = selectedMethod === 'mpesa' || selectedMethod === 'mixx_by_yas' || selectedMethod === 'airtel_money' || selectedMethod === 'halotel';
+
+  const financeContext = useMemo(() => {
+    const txs = transactions ?? [];
+    const totalCredit = txs.filter((tx) => tx.type === 'CREDIT').reduce((s, tx) => s + tx.amount, 0);
+    const totalDebit = txs.filter((tx) => tx.type === 'DEBIT').reduce((s, tx) => s + tx.amount, 0);
+    const facts: Record<string, unknown> = {
+      balance: wallet.balance,
+      pendingBalance: wallet.pendingBalance,
+      currency: wallet.currency || currency.code,
+      transactionCount: txs.length,
+      totalCredit,
+      totalDebit,
+      netFlow: totalCredit - totalDebit,
+      canWithdraw: canWithdraw ? 'yes' : 'no',
+      userRole: user?.role ?? 'unknown',
+    };
+    const rows = txs.slice(0, 30).map((tx) => ({ kind: 'transfer', type: tx.type, amount: tx.amount, description: tx.description, balanceAfter: tx.balanceAfter, createdAt: tx.createdAt }));
+    return { summary: `Wallet — ${wallet.currency || currency.code} ${wallet.balance} — ${txs.length} transactions`, facts, rows, constraints: ['Ground in wallet balance and ledger rows. Do not invent amounts.'] };
+  }, [wallet, transactions, currency.code, canWithdraw, user?.role]);
 
   return (
     <div className="page">
@@ -601,6 +621,19 @@ export default function WalletPage() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="finance"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={financeContext}
+          title="AI · Wallet & Finance"
+          description="Ask about balance, fees, or transfers — AI sees your ledger."
+          placeholder="e.g. Summarize my wallet, explain last 5 transfers, what should I reconcile?"
+          suggestedPrompts={['Summarize my wallet and recent movements', 'Analyze last 10 transactions for anomalies', 'What should I reconcile or top up next?', 'Explain fees on my recent withdrawals']}
+        />
+      </div>
     </div>
   );
 }
