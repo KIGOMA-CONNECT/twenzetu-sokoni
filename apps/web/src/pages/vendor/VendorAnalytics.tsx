@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import type {
   AccountingPeriod,
   AnalyticsOverview,
@@ -155,6 +156,47 @@ export default function VendorAnalytics() {
   const funnelTotal = overview?.funnel.reduce((sum, f) => sum + f.count, 0) ?? 0;
   const invTotalStock = inventory ? inventory.items.reduce((sum, i) => sum + i.stockQuantity, 0) : 0;
   const maxRevenue = products.reduce((max, p) => Math.max(max, p.revenue), 0);
+
+  const analyticsContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      period,
+      shopName: overview?.shopName ?? '—',
+      currency: overview?.summary?.currency ?? 'TZS',
+      totalRevenue: overview?.summary?.totalRevenue ?? 0,
+      commission: overview?.summary?.commission ?? 0,
+      netRevenue: overview?.summary?.netRevenue ?? 0,
+      deliveryFeeRevenue: overview?.summary?.deliveryFeeRevenue ?? 0,
+      orderCount: overview?.summary?.orderCount ?? 0,
+      completedOrders: overview?.summary?.completedOrders ?? 0,
+      cancelledOrders: overview?.summary?.cancelledOrders ?? 0,
+      cancellationRate: overview?.summary?.cancellationRate ?? 0,
+      averageOrderValue: overview?.summary?.averageOrderValue ?? 0,
+      uniqueCustomers: overview?.customers?.uniqueCustomers ?? 0,
+      newCustomers: overview?.customers?.newCustomers ?? 0,
+      returningCustomers: overview?.customers?.returningCustomers ?? 0,
+      deliveriesCompleted: overview?.deliveries?.completed ?? 0,
+      deliveriesActive: overview?.deliveries?.active ?? 0,
+      deliveriesFailed: overview?.deliveries?.failed ?? 0,
+      driverEarnings: overview?.deliveries?.driverEarnings ?? 0,
+      lowStockThreshold: threshold,
+      inventoryValue: inventory?.inventoryValue ?? 0,
+      activeProductCount: inventory?.activeProductCount ?? 0,
+      lowStockCount: inventory?.lowStockCount ?? 0,
+      outOfStockCount: inventory?.outOfStockCount ?? 0,
+    };
+    const rows: Record<string, unknown>[] = [
+      ...(overview?.funnel ?? []).map((f) => ({ kind: 'funnel', status: f.status, count: f.count, value: f.value })),
+      ...(overview?.daily ?? []).map((d) => ({ kind: 'daily', date: d.date, orders: d.orders, revenue: d.revenue, commission: d.commission })),
+      ...products.map((p) => ({ kind: 'topProduct', productName: p.productName, quantity: p.quantity, revenue: p.revenue, orderCount: p.orderCount, share: p.share })),
+      ...(inventory?.items ?? []).slice(0, 30).map((i) => ({ kind: 'inventory', name: i.name, sku: i.sku, stockQuantity: i.stockQuantity, unit: i.unit, price: i.price, stockValue: i.stockValue, status: i.status })),
+    ];
+    return {
+      summary: `${overview?.shopName ?? 'Shop'} — ${period} analytics — ${tab} tab`,
+      facts,
+      rows: rows.slice(0, 60),
+      constraints: [`Active tab is "${tab}". Ground answers in that tab's data first.`],
+    };
+  }, [overview, products, inventory, period, tab, threshold]);
 
   return (
     <div style={styles.container}>
@@ -419,6 +461,24 @@ export default function VendorAnalytics() {
           </table>
         </div>
       ))}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="vendor-analytics"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={analyticsContext}
+          title="AI · Vendor Analytics"
+          description={`Ask about this ${period} analytics view — the AI sees the same ${tab} data you see.`}
+          placeholder="e.g. Why did revenue dip last week? Which products should I restock? Summarize this period…"
+          suggestedPrompts={[
+            'Analyze this period — what stands out?',
+            'Which products should I restock first and why?',
+            'Summarize revenue, orders and inventory for this period',
+            'What is driving cancellations and how do I fix it?',
+          ]}
+        />
+      </div>
     </div>
   );
 }

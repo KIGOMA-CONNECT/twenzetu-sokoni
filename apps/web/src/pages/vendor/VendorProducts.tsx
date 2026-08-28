@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Product, PaginatedResponse } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 import { useTranslation } from 'react-i18next';
@@ -292,6 +293,42 @@ export default function VendorProducts() {
   const bulkFileRef = useRef<HTMLInputElement>(null);
 
   const products: Product[] = Array.isArray(raw) ? raw : (raw?.data ?? []);
+
+  const catalogAiContext = useMemo(() => {
+    const editing = modalOpen;
+    const facts: Record<string, unknown> = {
+      productCount: products.length,
+      editing: editing ? (editingProduct ? 'edit' : 'create') : 'browsing',
+      formName: form.name || '(empty)',
+      formPrice: form.price,
+      formStock: form.stock,
+      formUnit: form.unit,
+      formSku: form.sku || '(none)',
+      formType: form.type || '(none)',
+      formCategoryId: form.categoryId || '(none)',
+      formDescription: form.description || '(empty)',
+    };
+    if (editingProduct) {
+      facts.editingProductId = editingProduct.id;
+      facts.editingProductName = editingProduct.name;
+    }
+    const rows = products.slice(0, 20).map((p) => ({
+      name: p.name,
+      price: p.price,
+      stockQuantity: p.stockQuantity,
+      unit: p.unit,
+      sku: p.sku,
+      status: p.status,
+      type: p.type,
+    }));
+    return {
+      summary: editing ? `Catalog draft — ${form.name || 'new product'} — ${products.length} products in catalog` : `Product catalog — ${products.length} products`,
+      facts,
+      rows,
+      constraints: editing ? ['Ground drafts in the current form fields. Do not invent price, stock or SKU.'] : ['Use the catalog rows for recommendations.'],
+      payload: editing ? { product: { ...form, id: editingProduct?.id } } : undefined,
+    };
+  }, [products, form, modalOpen, editingProduct]);
 
   const openModal = () => {
     setEditingProduct(null);
@@ -693,6 +730,31 @@ export default function VendorProducts() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="vendor-catalog"
+          feature="draft"
+          features={['assistant', 'draft', 'recommend', 'review', 'extract']}
+          context={catalogAiContext}
+          title="AI · Product Catalog"
+          description={modalOpen ? `Draft for "${form.name || 'new product'}" — grounded in the form you’re editing.` : `Draft and improve listings — grounded in your ${products.length} products.`}
+          placeholder={modalOpen ? 'e.g. Draft a title + short + long description + SEO tags for this product…' : 'e.g. Review my catalog — what should I improve? Draft a listing for "Mchele 5kg"...'}
+          suggestedPrompts={
+            modalOpen
+              ? [
+                  'Draft a publish-ready title, short and long description, SEO tags and ad blurb for this product',
+                  'Improve this description for conversion — keep price and stock exact',
+                  'Suggest 3 bundle ideas for this product',
+                ]
+              : [
+                  'Review my catalog for missing fields or weak descriptions',
+                  'Recommend pricing or promo improvements for my lowest-stock items',
+                  'Draft a listing for a new product: "Mchele premium 5kg — fresh harvest"',
+                ]
+          }
+        />
+      </div>
     </div>
   );
 }

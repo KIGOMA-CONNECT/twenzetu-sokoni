@@ -21,6 +21,16 @@ export class AiController {
       message: dto.message,
       feature,
       history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      context: dto.context
+        ? {
+            summary: dto.context.summary,
+            facts: dto.context.facts,
+            rows: dto.context.rows,
+            constraints: dto.context.constraints,
+            questions: dto.context.questions,
+            payload: dto.context.payload,
+          }
+        : undefined,
     });
     return { text: result.text, enabled: true };
   }

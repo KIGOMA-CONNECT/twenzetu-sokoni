@@ -6,6 +6,7 @@
 
 import { Module } from '@nestjs/common';
 import { AiService } from './service/ai.service';
+import './context/builders';
 
 @Module({
   providers: [AiService],

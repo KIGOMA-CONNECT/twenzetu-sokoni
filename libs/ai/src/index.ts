@@ -5,6 +5,7 @@ export * from './lib/provider/ai-provider.factory';
 export * from './lib/provider/gemini.provider';
 export * from './lib/context/ai-context.types';
 export * from './lib/context/ai-context-registry';
+export * from './lib/context/builders';
 export * from './lib/tools/ai-tools.registry';
 export * from './lib/prompts/prompt-templates';
 export * from './lib/service/ai.service';
