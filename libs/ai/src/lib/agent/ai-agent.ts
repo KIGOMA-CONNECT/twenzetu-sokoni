@@ -20,7 +20,7 @@ export class AiAgent {
    * Vendor restock: detect low-stock via tool, then draft a restock plan via LLM.
    * Returns the tool result plus the grounded LLM text.
    */
-  public async vendorRestockPlan(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResult: unknown; text: string }> {
+  public async vendorRestockPlan(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResult: unknown; text: string; id?: string }> {
     const threshold = (request.context?.facts?.lowStockThreshold as number | undefined) ?? 5;
     let toolResult: unknown = null;
     try {
@@ -41,13 +41,13 @@ export class AiAgent {
       },
     };
     const result = await this.aiService.complete(enrichedRequest);
-    return { toolResult, text: result.text };
+    return { toolResult, text: result.text, id: (result as { id?: string }).id };
   }
 
   /**
    * Finance commission: calls calculateCommission tool, then explains via LLM.
    */
-  public async financeCommissionExplain(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResult: unknown; text: string }> {
+  public async financeCommissionExplain(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResult: unknown; text: string; id?: string }> {
     const gross = request.context?.facts?.totalRevenue as number | undefined;
     const rate = (request.params?.rate as number | undefined) ?? 0.1;
     let toolResult: unknown = null;
@@ -69,7 +69,7 @@ export class AiAgent {
       },
     };
     const result = await this.aiService.complete(enrichedRequest);
-    return { toolResult, text: result.text };
+    return { toolResult, text: result.text, id: (result as { id?: string }).id };
   }
 
   /**
@@ -77,7 +77,7 @@ export class AiAgent {
    * Heavy task: sum ledger by kind/status, compute commission, then let LLM
    * explain the reconciliation and flag anomalies.
    */
-  public async financeReconciler(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string }> {
+  public async financeReconciler(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string; id?: string }> {
     const toolResults: Record<string, unknown> = {};
     try {
       toolResults.ledgerSummary = await callAiTool('summarizeLedger', { kind: (request.params?.kind as string) ?? 'all' });
@@ -104,14 +104,14 @@ export class AiAgent {
       },
     };
     const result = await this.aiService.complete(enrichedRequest);
-    return { toolResults, text: result.text };
+    return { toolResults, text: result.text, id: (result as { id?: string }).id };
   }
 
   /**
    * POS closer — chains lowStockDetector + summarizeLedger for shift close.
    * Heavy task: detect stock gaps and ledger totals, then draft close summary.
    */
-  public async posCloser(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string }> {
+  public async posCloser(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string; id?: string }> {
     const toolResults: Record<string, unknown> = {};
     try {
       toolResults.lowStock = await callAiTool('lowStockDetector', { threshold: (request.context?.facts?.lowStockThreshold as number) ?? 5 });
@@ -134,7 +134,7 @@ export class AiAgent {
       },
     };
     const result = await this.aiService.complete(enrichedRequest);
-    return { toolResults, text: result.text };
+    return { toolResults, text: result.text, id: (result as { id?: string }).id };
   }
 
   /**

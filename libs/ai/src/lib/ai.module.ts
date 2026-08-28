@@ -5,12 +5,16 @@
  */
 
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { AiService } from './service/ai.service';
 import { AiAgent } from './agent/ai-agent';
+import { AiInteractionOrmEntity } from './learning/ai-interaction.entity';
+import { AiLearningService } from './learning/ai-learning.service';
 import './context/builders';
 
 @Module({
-  providers: [AiService, AiAgent],
-  exports: [AiService, AiAgent],
+  imports: [TypeOrmModule.forFeature([AiInteractionOrmEntity])],
+  providers: [AiService, AiAgent, AiLearningService],
+  exports: [AiService, AiAgent, AiLearningService],
 })
 export class AiModule {}

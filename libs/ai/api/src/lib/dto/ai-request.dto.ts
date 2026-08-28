@@ -71,3 +71,14 @@ export class AiStatusDto {
   @IsString()
   module?: string;
 }
+
+export class AiFeedbackDto {
+  @IsString()
+  @IsNotEmpty()
+  id!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^(up|down)$/, { message: 'feedback must be up or down' })
+  feedback!: string;
+}

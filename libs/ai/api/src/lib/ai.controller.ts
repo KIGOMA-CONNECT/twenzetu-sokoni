@@ -1,27 +1,40 @@
-import { Body, Controller, Get, Post, Query, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Headers, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AiAgent, AiService } from '@afri-market/ai';
+import { AiAgent, AiLearningService, AiService } from '@afri-market/ai';
 import type { AiFeature } from '@afri-market/ai';
-import { AiChatDto, AiStatusDto } from './dto/ai-request.dto';
-import type { Response } from 'express';
+import { AiChatDto, AiFeedbackDto, AiStatusDto } from './dto/ai-request.dto';
+import type { Request, Response } from 'express';
 
 @ApiTags('AI')
 @ApiBearerAuth()
 @Controller('ai')
 @UseGuards(AuthGuard('jwt'))
 export class AiController {
-  constructor(private readonly aiService: AiService, private readonly aiAgent: AiAgent) {}
+  constructor(
+    private readonly aiService: AiService,
+    private readonly aiAgent: AiAgent,
+    private readonly learningService: AiLearningService,
+  ) {}
 
   @Post('chat')
   @ApiOperation({ summary: 'Module-aware AI assistant response (grounded in module context)' })
-  public async chat(@Body() dto: AiChatDto): Promise<{ text: string; enabled: boolean }> {
+  public async chat(
+    @Body() dto: AiChatDto,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<{ text: string; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
+      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
     const result = await this.aiService.complete({
       module: dto.module,
       message: dto.message,
       feature,
       history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      tenantId,
+      userId,
       context: dto.context
         ? {
             summary: dto.context.summary,
@@ -33,13 +46,21 @@ export class AiController {
           }
         : undefined,
     });
-    return { text: result.text, enabled: true };
+    return { text: result.text, id: (result as { id?: string }).id, enabled: true };
   }
 
   @Post('stream')
   @ApiOperation({ summary: 'Streaming module-aware AI response (grounded, chunked)' })
-  public async stream(@Body() dto: AiChatDto, @Res() res: Response): Promise<void> {
+  public async stream(
+    @Body() dto: AiChatDto,
+    @Res() res: Response,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<void> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
+      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('X-Accel-Buffering', 'no');
@@ -49,6 +70,8 @@ export class AiController {
         message: dto.message,
         feature,
         history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+        tenantId,
+        userId,
         context: dto.context
           ? {
               summary: dto.context.summary,
@@ -71,13 +94,22 @@ export class AiController {
 
   @Post('agent/vendor-restock')
   @ApiOperation({ summary: 'Heavy-task agent: vendor restock plan (tool + LLM)' })
-  public async vendorRestock(@Body() dto: AiChatDto): Promise<{ text: string; toolResult: unknown; enabled: boolean }> {
+  public async vendorRestock(
+    @Body() dto: AiChatDto,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<{ text: string; toolResult: unknown; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
+      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
     const result = await this.aiAgent.vendorRestockPlan({
       module: dto.module,
       message: dto.message,
       feature,
       history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      tenantId,
+      userId,
       context: dto.context
         ? {
             summary: dto.context.summary,
@@ -89,18 +121,27 @@ export class AiController {
           }
         : undefined,
     });
-    return { text: result.text, toolResult: result.toolResult, enabled: true };
+    return { text: result.text, toolResult: result.toolResult, id: result.id, enabled: true };
   }
 
   @Post('agent/finance-reconcile')
   @ApiOperation({ summary: 'Heavy-task agent: finance reconciler (2 tools + LLM)' })
-  public async financeReconcile(@Body() dto: AiChatDto): Promise<{ text: string; toolResults: Record<string, unknown>; enabled: boolean }> {
+  public async financeReconcile(
+    @Body() dto: AiChatDto,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<{ text: string; toolResults: Record<string, unknown>; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
+      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
     const result = await this.aiAgent.financeReconciler({
       module: dto.module,
       message: dto.message,
       feature,
       history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      tenantId,
+      userId,
       context: dto.context
         ? {
             summary: dto.context.summary,
@@ -112,18 +153,27 @@ export class AiController {
           }
         : undefined,
     });
-    return { text: result.text, toolResults: result.toolResults, enabled: true };
+    return { text: result.text, toolResults: result.toolResults, id: result.id, enabled: true };
   }
 
   @Post('agent/pos-close')
   @ApiOperation({ summary: 'Heavy-task agent: POS closer (2 tools + LLM)' })
-  public async posClose(@Body() dto: AiChatDto): Promise<{ text: string; toolResults: Record<string, unknown>; enabled: boolean }> {
+  public async posClose(
+    @Body() dto: AiChatDto,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<{ text: string; toolResults: Record<string, unknown>; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
+      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
     const result = await this.aiAgent.posCloser({
       module: dto.module,
       message: dto.message,
       feature,
       history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      tenantId,
+      userId,
       context: dto.context
         ? {
             summary: dto.context.summary,
@@ -135,7 +185,30 @@ export class AiController {
           }
         : undefined,
     });
-    return { text: result.text, toolResults: result.toolResults, enabled: true };
+    return { text: result.text, toolResults: result.toolResults, id: result.id, enabled: true };
+  }
+
+  @Post('feedback')
+  @ApiOperation({ summary: 'Submit feedback for an AI interaction (self-learner)' })
+  public async feedback(
+    @Body() dto: AiFeedbackDto,
+    @Req() req: Request,
+    @Headers('x-tenant-id') headerTenantId?: string,
+  ): Promise<{ ok: boolean }> {
+    const tenantId = headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    if (!tenantId) return { ok: false };
+    const feedback = dto.feedback as 'up' | 'down';
+    await this.learningService.submitFeedback(dto.id, tenantId, feedback);
+    return { ok: true };
+  }
+
+  @Get('learning/insights')
+  @ApiOperation({ summary: 'Self-learner insights: usage by module/feature, feedback, latency' })
+  public async insights(@Req() req: Request, @Headers('x-tenant-id') headerTenantId?: string, @Query('days') days?: string): Promise<unknown> {
+    const tenantId = headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
+    if (!tenantId) return { total: 0, byModule: [], byFeature: [], recentFeedbackLow: [] };
+    const d = days ? Math.min(30, Math.max(1, Number(days) || 7)) : 7;
+    return this.learningService.getInsights(tenantId, d);
   }
 
   @Get('status')

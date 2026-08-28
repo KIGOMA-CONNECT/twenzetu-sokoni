@@ -74,6 +74,10 @@ export interface AiContextRequest {
   readonly history?: readonly AiMessageLike[];
   /** Any extra parameters the module wants included (ids, filters...). */
   readonly params?: Readonly<Record<string, unknown>>;
+  /** Tenant id for self-learner scoping. */
+  readonly tenantId?: string;
+  /** User id for self-learner attribution. */
+  readonly userId?: string;
 }
 
 /** Minimal message shape accepted on the wire (full AiMessage used internally). */

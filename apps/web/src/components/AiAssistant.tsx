@@ -76,7 +76,7 @@ export default function AiAssistant({
   const allowed = features && features.length ? features : ALL_FEATURES;
   const [feature, setFeature] = useState<AiFeature>(() => (allowed.includes(initialFeature) ? initialFeature : allowed[0] ?? 'assistant'));
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState<Array<{ role: AiRole; content: string }>>([]);
+  const [history, setHistory] = useState<Array<{ role: AiRole; content: string; id?: string; feedback?: 'up' | 'down' | null }>>([]);
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [status, setStatus] = useState<{ enabled: boolean; provider: string | null } | null>(null);
@@ -179,7 +179,8 @@ export default function AiAssistant({
       const res = await api.post('/ai/chat', payload);
       const data = res.data?.data ?? res.data;
       const textReply = typeof data?.text === 'string' ? data.text : typeof data === 'string' ? data : '';
-      setHistory((h) => [...h, { role: 'assistant', content: textReply || '(no response)' }]);
+      const id = typeof data?.id === 'string' ? data.id : undefined;
+      setHistory((h) => [...h, { role: 'assistant', content: textReply || '(no response)', id, feedback: null }]);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';
       const apiMsg =
@@ -190,6 +191,17 @@ export default function AiAssistant({
       setErr(apiMsg);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleFeedback = async (idx: number, fb: 'up' | 'down') => {
+    const entry = history[idx];
+    if (!entry?.id || entry.feedback) return;
+    try {
+      await api.post('/ai/feedback', { id: entry.id, feedback: fb });
+      setHistory((h) => h.map((m, i) => (i === idx ? { ...m, feedback: fb } : m)));
+    } catch {
+      // ignore feedback failure
     }
   };
 
@@ -236,8 +248,45 @@ export default function AiAssistant({
           <div style={styles.empty}>Ask anything about this view. The AI sees the same summary, facts and rows you see.</div>
         ) : (
           history.map((m, i) => (
-            <div key={i} style={m.role === 'user' ? styles.msgUser : styles.msgAssistant}>
-              {m.content}
+            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: m.role === 'user' ? 'flex-end' : 'flex-start', gap: '0.25rem' }}>
+              <div style={m.role === 'user' ? styles.msgUser : styles.msgAssistant}>{m.content}</div>
+              {m.role === 'assistant' && m.id && (
+                <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.15rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(i, 'up')}
+                    disabled={!!m.feedback}
+                    style={{
+                      padding: '0.15rem 0.4rem',
+                      border: '1px solid #cbd5e1',
+                      background: m.feedback === 'up' ? '#dcfce7' : 'var(--surface)',
+                      borderRadius: '999px',
+                      cursor: m.feedback ? 'default' : 'pointer',
+                      fontSize: '0.7rem',
+                    }}
+                    aria-label="Thumbs up"
+                  >
+                    👍
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleFeedback(i, 'down')}
+                    disabled={!!m.feedback}
+                    style={{
+                      padding: '0.15rem 0.4rem',
+                      border: '1px solid #cbd5e1',
+                      background: m.feedback === 'down' ? '#fee2e2' : 'var(--surface)',
+                      borderRadius: '999px',
+                      cursor: m.feedback ? 'default' : 'pointer',
+                      fontSize: '0.7rem',
+                    }}
+                    aria-label="Thumbs down"
+                  >
+                    👎
+                  </button>
+                  {m.feedback && <span style={{ fontSize: '0.68rem', color: 'var(--muted)', alignSelf: 'center' }}>{m.feedback === 'up' ? 'Thanks!' : 'Noted'}</span>}
+                </div>
+              )}
             </div>
           ))
         )}

@@ -13,7 +13,7 @@
  * the registry directly.
  */
 
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { AiConfig } from '../ai-config';
 import { resolveAiContextBuilder } from '../context/ai-context-registry';
 import type {
@@ -28,6 +28,7 @@ import type {
   AiMessage,
   AiProvider,
 } from '../provider/ai-provider.interface';
+import { AiLearningService } from '../learning/ai-learning.service';
 
 @Injectable()
 export class AiService {
@@ -35,7 +36,7 @@ export class AiService {
   private readonly config: AiConfig;
   private readonly provider: AiProvider | null;
 
-  constructor() {
+  constructor(@Optional() private readonly learningService?: AiLearningService) {
     const rawTemp = process.env.AI_TEMPERATURE ? Number(process.env.AI_TEMPERATURE) : undefined;
     const rawMax = process.env.AI_MAX_TOKENS ? Number(process.env.AI_MAX_TOKENS) : undefined;
     const rawTimeout = process.env.AI_TIMEOUT_MS ? Number(process.env.AI_TIMEOUT_MS) : undefined;
@@ -94,12 +95,15 @@ export class AiService {
   async complete(
     request: AiContextRequest,
     options?: AiGenerationOptions,
-  ): Promise<AiGenerateResult> {
+  ): Promise<AiGenerateResult & { id?: string }> {
     const provider = this.assertProvider();
     const builder = resolveAiContextBuilder(request.module);
     const bundle = await builder(request);
     const messages = this.toMessages(request, bundle);
-    return provider.generate(bundle.system, messages, options);
+    const start = Date.now();
+    const result = await provider.generate(bundle.system, messages, options);
+    const id = await this.logAndGetId(request, result.text, Date.now() - start);
+    return { ...result, id };
   }
 
   /**
@@ -109,14 +113,17 @@ export class AiService {
   async chat(
     request: AiContextRequest & { history: readonly AiMessage[] },
     options?: AiGenerationOptions,
-  ): Promise<AiGenerateResult> {
+  ): Promise<AiGenerateResult & { id?: string }> {
     const provider = this.assertProvider();
     const builder = resolveAiContextBuilder(request.module);
     const bundle = await builder(request);
     const history = request.history
       .filter((m) => m.role !== 'system')
       .map((m) => ({ role: m.role as AiMessage['role'], content: m.content }));
-    return provider.generate(bundle.system, history, options);
+    const start = Date.now();
+    const result = await provider.generate(bundle.system, history, options);
+    const id = await this.logAndGetId(request, result.text, Date.now() - start);
+    return { ...result, id };
   }
 
   /**
@@ -131,7 +138,13 @@ export class AiService {
     const builder = resolveAiContextBuilder(request.module);
     const bundle = await builder(request);
     const messages = this.toMessages(request, bundle);
-    yield* provider.stream(bundle.system, messages, options);
+    const start = Date.now();
+    let full = '';
+    for await (const chunk of provider.stream(bundle.system, messages, options)) {
+      full += chunk;
+      yield chunk;
+    }
+    this.logInteraction(request, full, Date.now() - start);
   }
 
   /** Convenience: is the provider configurable and ready? */
@@ -147,6 +160,33 @@ export class AiService {
       throw new Error(`AI provider "${this.provider.id}" is not configured (missing API key).`);
     }
     return this.provider;
+  }
+
+  private async logAndGetId(request: AiContextRequest, response: string, latencyMs: number): Promise<string | undefined> {
+    if (!this.learningService || !request.tenantId) return undefined;
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(request.tenantId)) return undefined;
+    try {
+      const entity = await this.learningService.logInteraction({
+        tenantId: request.tenantId,
+        userId: request.userId ?? null,
+        module: request.module,
+        feature: request.feature ?? null,
+        message: request.message,
+        response,
+        contextSummary: request.context?.summary ?? null,
+        latencyMs,
+        provider: this.providerId,
+      });
+      return (entity as { id?: string })?.id;
+    } catch (e) {
+      this.logger.warn(`self-learner log failed: ${(e as Error).message}`);
+      return undefined;
+    }
+  }
+
+  private logInteraction(request: AiContextRequest, response: string, latencyMs: number): void {
+    if (!this.learningService || !request.tenantId) return;
+    void this.logAndGetId(request, response, latencyMs);
   }
 
   /** Compose the conversation messages from request history + user question. */
