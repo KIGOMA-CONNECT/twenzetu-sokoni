@@ -92,6 +92,52 @@ export class AiController {
     return { text: result.text, toolResult: result.toolResult, enabled: true };
   }
 
+  @Post('agent/finance-reconcile')
+  @ApiOperation({ summary: 'Heavy-task agent: finance reconciler (2 tools + LLM)' })
+  public async financeReconcile(@Body() dto: AiChatDto): Promise<{ text: string; toolResults: Record<string, unknown>; enabled: boolean }> {
+    const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const result = await this.aiAgent.financeReconciler({
+      module: dto.module,
+      message: dto.message,
+      feature,
+      history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      context: dto.context
+        ? {
+            summary: dto.context.summary,
+            facts: dto.context.facts,
+            rows: dto.context.rows,
+            constraints: dto.context.constraints,
+            questions: dto.context.questions,
+            payload: dto.context.payload,
+          }
+        : undefined,
+    });
+    return { text: result.text, toolResults: result.toolResults, enabled: true };
+  }
+
+  @Post('agent/pos-close')
+  @ApiOperation({ summary: 'Heavy-task agent: POS closer (2 tools + LLM)' })
+  public async posClose(@Body() dto: AiChatDto): Promise<{ text: string; toolResults: Record<string, unknown>; enabled: boolean }> {
+    const feature: AiFeature | undefined = this.validFeature(dto.feature);
+    const result = await this.aiAgent.posCloser({
+      module: dto.module,
+      message: dto.message,
+      feature,
+      history: dto.history?.map((m) => ({ role: m.role, content: m.content })),
+      context: dto.context
+        ? {
+            summary: dto.context.summary,
+            facts: dto.context.facts,
+            rows: dto.context.rows,
+            constraints: dto.context.constraints,
+            questions: dto.context.questions,
+            payload: dto.context.payload,
+          }
+        : undefined,
+    });
+    return { text: result.text, toolResults: result.toolResults, enabled: true };
+  }
+
   @Get('status')
   @ApiOperation({ summary: 'AI capability status for the configured provider' })
   public status(@Query() _dto?: AiStatusDto) {

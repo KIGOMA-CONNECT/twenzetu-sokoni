@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import { PageTitle } from '../../components/PageTitle';
 
 interface QueuedOrder {
@@ -95,6 +96,15 @@ export default function AdminDeliveries() {
 
   const orders = data?.orders ?? [];
   const drivers = data?.drivers ?? [];
+
+  const deliveryContext = useMemo(() => {
+    const facts: Record<string, unknown> = { queuedOrders: orders.length, availableDrivers: drivers.length, onlineDrivers: drivers.filter((d) => d.isOnline).length, selectedCount: selected.size };
+    const rows = [
+      ...orders.slice(0, 15).map((o) => ({ kind: 'order', id: o.id, status: o.status, vendorName: o.vendorName, totalAmount: o.totalAmount })),
+      ...drivers.slice(0, 15).map((d) => ({ kind: 'driver', fullName: d.fullName, isOnline: d.isOnline, vehicleType: d.vehicleType })),
+    ];
+    return { summary: `Dispatch — ${orders.length} orders, ${drivers.length} drivers`, facts, rows, constraints: ['Ground in dispatch queue.'] };
+  }, [orders, drivers, selected.size]);
 
   const toggleRow = (orderId: string) => {
     setSelected((prev) => {
@@ -251,6 +261,19 @@ export default function AdminDeliveries() {
             </tbody>
           </table>
         )}
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="delivery"
+          feature="recommend"
+          features={['assistant', 'recommend', 'analyze', 'summarize']}
+          context={deliveryContext}
+          title="AI · Dispatch"
+          description={`Ask about ${orders.length} queued orders and ${drivers.length} drivers — AI sees the dispatch board.`}
+          placeholder="e.g. Which orders to auto-assign first? Summarize dispatch…"
+          suggestedPrompts={['Recommend next auto-assign batch', 'Summarize dispatch queue', 'Which drivers are best for these orders?']}
+        />
       </div>
     </div>
   );

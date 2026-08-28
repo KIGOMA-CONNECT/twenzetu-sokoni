@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import type { AccountingPeriod, BalanceSheetAccount, VendorStatements } from '../../types';
 
 
@@ -219,6 +220,28 @@ export default function VendorReports() {
 
   const totalTrialDebit = report?.trialBalance.reduce((s, row) => s + row.debit, 0) ?? 0;
   const totalTrialCredit = report?.trialBalance.reduce((s, row) => s + row.credit, 0) ?? 0;
+
+  const reportsContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      period,
+      tab,
+      shopName: report?.shopName ?? '(unknown)',
+      currency: report?.incomeStatement.currency ?? report?.cashFlow.currency ?? 'TZS',
+      grossRevenue: report?.incomeStatement.grossRevenue ?? 0,
+      netRevenue: report?.incomeStatement.netRevenue ?? 0,
+      netProfit: report?.incomeStatement.netProfit ?? 0,
+      cashClosing: report?.cashFlow.closingCash ?? 0,
+      totalAssets: report?.financialPosition.totalAssets ?? 0,
+      totalLiabilities: report?.financialPosition.totalLiabilities ?? 0,
+      manualAccounts: accounts.length,
+    };
+    const rows = [
+      ...(report?.incomeStatement ? [{ kind: 'income', grossRevenue: report.incomeStatement.grossRevenue, netRevenue: report.incomeStatement.netRevenue, netProfit: report.incomeStatement.netProfit }] : []),
+      ...(report?.trialBalance?.slice(0, 10).map((r) => ({ kind: 'trial', account: r.account, debit: r.debit, credit: r.credit })) ?? []),
+      ...accounts.slice(0, 10).map((a) => ({ kind: 'account', name: a.name, category: a.category, amount: a.amount })),
+    ];
+    return { summary: `Reports — ${period} — ${tab} — ${report?.shopName ?? 'shop'}`, facts, rows, constraints: [`Active tab is "${tab}".`] };
+  }, [report, accounts, period, tab]);
 
   return (
     <div style={styles.container}>
@@ -520,6 +543,19 @@ export default function VendorReports() {
           )}
         </>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="finance"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={reportsContext}
+          title="AI · Financial Reports"
+          description={`Ask about ${period} ${tab} — AI sees the same statements.`}
+          placeholder="e.g. Explain net profit, summarize cash flow, what to reconcile?"
+          suggestedPrompts={['Analyze this period — what stands out?', 'Explain net profit vs cash', 'Summarize trial balance', 'What should I reconcile?']}
+        />
+      </div>
     </div>
   );
 }

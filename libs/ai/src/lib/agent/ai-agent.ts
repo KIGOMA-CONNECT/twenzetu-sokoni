@@ -73,6 +73,71 @@ export class AiAgent {
   }
 
   /**
+   * Finance reconciler — chains summarizeLedger + calculateCommission before LLM.
+   * Heavy task: sum ledger by kind/status, compute commission, then let LLM
+   * explain the reconciliation and flag anomalies.
+   */
+  public async financeReconciler(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string }> {
+    const toolResults: Record<string, unknown> = {};
+    try {
+      toolResults.ledgerSummary = await callAiTool('summarizeLedger', { kind: (request.params?.kind as string) ?? 'all' });
+    } catch (e) {
+      this.logger.warn(`summarizeLedger failed: ${(e as Error).message}`);
+    }
+    const gross = request.context?.facts?.totalRevenue as number | undefined;
+    if (typeof gross === 'number') {
+      try {
+        toolResults.commission = await callAiTool('calculateCommission', { grossRevenue: gross, rate: (request.params?.rate as number) ?? 0.1 });
+      } catch (e) {
+        this.logger.warn(`calculateCommission failed: ${(e as Error).message}`);
+      }
+    }
+    const enrichedRequest: AiContextRequest = {
+      ...request,
+      feature: 'review',
+      message: `${request.message}\n\nTool results: ${JSON.stringify(toolResults)}`,
+      context: {
+        summary: request.context?.summary ?? 'Finance reconciliation',
+        facts: { ...(request.context?.facts ?? {}), ...toolResults },
+        rows: request.context?.rows,
+        constraints: [...(request.context?.constraints ?? []), 'Use tool results as ground truth for sums.'],
+      },
+    };
+    const result = await this.aiService.complete(enrichedRequest);
+    return { toolResults, text: result.text };
+  }
+
+  /**
+   * POS closer — chains lowStockDetector + summarizeLedger for shift close.
+   * Heavy task: detect stock gaps and ledger totals, then draft close summary.
+   */
+  public async posCloser(request: AiContextRequest & { feature?: AiFeature }): Promise<{ toolResults: Record<string, unknown>; text: string }> {
+    const toolResults: Record<string, unknown> = {};
+    try {
+      toolResults.lowStock = await callAiTool('lowStockDetector', { threshold: (request.context?.facts?.lowStockThreshold as number) ?? 5 });
+    } catch (e) {
+      this.logger.warn(`lowStockDetector failed: ${(e as Error).message}`);
+    }
+    try {
+      toolResults.ledger = await callAiTool('summarizeLedger', { kind: 'transfer' });
+    } catch (e) {
+      this.logger.warn(`summarizeLedger failed: ${(e as Error).message}`);
+    }
+    const enrichedRequest: AiContextRequest = {
+      ...request,
+      feature: 'summarize',
+      message: `${request.message}\n\nTool results: ${JSON.stringify(toolResults)}`,
+      context: {
+        summary: request.context?.summary ?? 'POS close',
+        facts: { ...(request.context?.facts ?? {}), ...toolResults },
+        rows: request.context?.rows,
+      },
+    };
+    const result = await this.aiService.complete(enrichedRequest);
+    return { toolResults, text: result.text };
+  }
+
+  /**
    * Generic streaming heavy task: streams LLM tokens after tool enrichment.
    */
   public async *streamWithTools(request: AiContextRequest): AsyncIterable<string> {

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
@@ -6,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Delivery } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 import { useTranslation } from 'react-i18next';
@@ -76,6 +77,25 @@ export default function DriverDeliveries() {
   }, [subscribe, refetch]);
 
   const filtered = (deliveries || []).filter((d) => filter === 'ALL' || d.status === filter);
+
+  const deliveryContext = useMemo(() => {
+    const all = deliveries ?? [];
+    const facts: Record<string, unknown> = {
+      total: all.length,
+      filtered: filtered.length,
+      filter,
+      byStatus: {
+        PENDING: all.filter((d) => d.status === 'PENDING').length,
+        ASSIGNED: all.filter((d) => d.status === 'ASSIGNED').length,
+        PICKED_UP: all.filter((d) => d.status === 'PICKED_UP').length,
+        IN_TRANSIT: all.filter((d) => d.status === 'IN_TRANSIT').length,
+        DELIVERED: all.filter((d) => d.status === 'DELIVERED').length,
+      },
+      totalEarnings: all.reduce((s, d) => s + (d.driverEarnings ?? 0), 0),
+    };
+    const rows = filtered.slice(0, 20).map((d) => ({ kind: 'delivery', status: d.status, orderId: d.orderId, pickupAddress: d.pickupAddress, deliveryAddress: d.deliveryAddress, driverEarnings: d.driverEarnings }));
+    return { summary: `Driver deliveries — ${filter} — ${filtered.length}/${all.length}`, facts, rows, constraints: [`Active filter is "${filter}".`] };
+  }, [deliveries, filtered, filter]);
 
   const handleShareLocation = async (id: string) => {
     if (!navigator.geolocation) {
@@ -238,128 +258,142 @@ export default function DriverDeliveries() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : (
-        <div style={styles.card}>
-          {actionError && <div style={{ padding: '0 1rem' }}><ErrorMessage message={actionError} /></div>}
-          {filtered.length === 0 ? (
-            <div style={styles.empty}>{t('driver.noDeliveriesMatch')}</div>
-          ) : (
-            <table style={styles.table}>
-              <thead>
-                <tr>
-                  <th style={styles.th}>{t('driver.orderTableId')}</th>
-                  <th style={styles.th}>{t('driver.pickup')}</th>
-                  <th style={styles.th}>{t('driver.delivery')}</th>
-                  <th style={styles.th}>{t('driver.statusLabel')}</th>
-                  <th style={styles.th}>{t('driver.earnings')}</th>
-                  <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((d) => {
-                  const busy = busyId === d.id;
-                  return (
-                    <tr key={d.id}>
-                      <td style={styles.td}>{truncateId(d.orderId)}</td>
-                      <td style={styles.td}>{d.pickupAddress}</td>
-                      <td style={styles.td}>{d.deliveryAddress}</td>
-                      <td style={styles.td}><StatusBadge status={d.status} /></td>
-                      <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
-                      <td style={styles.td}>
-                        {d.status === 'PENDING' && (
-                          <div style={styles.actionWrap}>
-                            <button
-                              style={{ ...styles.acceptBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleAccept(d.id)}
-                            >
-                              {t('driver.acceptDelivery')}
-                            </button>
-                            <button
-                              style={{ ...styles.declineBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleDecline(d.id)}
-                            >
-                              {t('driver.decline')}
-                            </button>
-                          </div>
-                        )}
-                        {d.status === 'ASSIGNED' && (
-                          <div style={styles.actionWrap}>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={6}
-                              placeholder={t('driver.pickupOtp')}
-                              value={pickupOtp[d.id] || ''}
-                              onChange={(e) => setPickupOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
-                              style={styles.otpInput}
-                            />
-                            <button
-                              style={{ ...styles.pickupBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handlePickUp(d.id)}
-                            >
-                              {t('driver.pickUp')}
-                            </button>
-                          </div>
-                        )}
-                        {d.status === 'PICKED_UP' && (
-                          <div style={styles.actionWrap}>
-                            <button
-                              style={{ ...styles.transitBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleInTransit(d.id)}
-                            >
-                              {t('driver.inTransit')}
-                            </button>
-                          </div>
-                        )}
-                        {d.status === 'IN_TRANSIT' && (
-                          <div style={styles.actionWrap}>
-                            <button
-                              style={{
-                                ...styles.locationBtn,
-                                ...(liveSharing[d.id] ? { background: '#16a34a' } : {}),
-                                ...(busy ? styles.disabledBtn : {}),
-                              }}
-                              disabled={busy}
-                              onClick={() => toggleLiveSharing(d.id)}
-                            >
-                              {liveSharing[d.id] ? t('driver.liveSharingOn') : t('driver.liveSharingOff')}
-                            </button>
-                            <button
-                              style={{ ...styles.locationBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleShareLocation(d.id)}
-                            >
-                              {t('driver.shareLocation')}
-                            </button>
-                            <input
-                              type="text"
-                              inputMode="numeric"
-                              maxLength={6}
-                              placeholder={t('driver.deliveryOtp')}
-                              value={deliveryOtp[d.id] || ''}
-                              onChange={(e) => setDeliveryOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
-                              style={styles.otpInput}
-                            />
-                            <button
-                              style={{ ...styles.completeBtn, ...(busy ? styles.disabledBtn : {}) }}
-                              disabled={busy}
-                              onClick={() => handleComplete(d.id)}
-                            >
-                              {t('driver.complete')}
-                            </button>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          )}
-        </div>
+        <>
+          <div style={styles.card}>
+            {actionError && <div style={{ padding: '0 1rem' }}><ErrorMessage message={actionError} /></div>}
+            {filtered.length === 0 ? (
+              <div style={styles.empty}>{t('driver.noDeliveriesMatch')}</div>
+            ) : (
+              <table style={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={styles.th}>{t('driver.orderTableId')}</th>
+                    <th style={styles.th}>{t('driver.pickup')}</th>
+                    <th style={styles.th}>{t('driver.delivery')}</th>
+                    <th style={styles.th}>{t('driver.statusLabel')}</th>
+                    <th style={styles.th}>{t('driver.earnings')}</th>
+                    <th style={{ ...styles.th, textAlign: 'right' }}>{t('vendor.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((d) => {
+                    const busy = busyId === d.id;
+                    return (
+                      <tr key={d.id}>
+                        <td style={styles.td}>{truncateId(d.orderId)}</td>
+                        <td style={styles.td}>{d.pickupAddress}</td>
+                        <td style={styles.td}>{d.deliveryAddress}</td>
+                        <td style={styles.td}><StatusBadge status={d.status} /></td>
+                        <td style={styles.td}>{formatCurrency(d.driverEarnings)}</td>
+                        <td style={styles.td}>
+                          {d.status === 'PENDING' && (
+                            <div style={styles.actionWrap}>
+                              <button
+                                style={{ ...styles.acceptBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handleAccept(d.id)}
+                              >
+                                {t('driver.acceptDelivery')}
+                              </button>
+                              <button
+                                style={{ ...styles.declineBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handleDecline(d.id)}
+                              >
+                                {t('driver.decline')}
+                              </button>
+                            </div>
+                          )}
+                          {d.status === 'ASSIGNED' && (
+                            <div style={styles.actionWrap}>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                placeholder={t('driver.pickupOtp')}
+                                value={pickupOtp[d.id] || ''}
+                                onChange={(e) => setPickupOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
+                                style={styles.otpInput}
+                              />
+                              <button
+                                style={{ ...styles.pickupBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handlePickUp(d.id)}
+                              >
+                                {t('driver.pickUp')}
+                              </button>
+                            </div>
+                          )}
+                          {d.status === 'PICKED_UP' && (
+                            <div style={styles.actionWrap}>
+                              <button
+                                style={{ ...styles.transitBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handleInTransit(d.id)}
+                              >
+                                {t('driver.inTransit')}
+                              </button>
+                            </div>
+                          )}
+                          {d.status === 'IN_TRANSIT' && (
+                            <div style={styles.actionWrap}>
+                              <button
+                                style={{
+                                  ...styles.locationBtn,
+                                  ...(liveSharing[d.id] ? { background: '#16a34a' } : {}),
+                                  ...(busy ? styles.disabledBtn : {}),
+                                }}
+                                disabled={busy}
+                                onClick={() => toggleLiveSharing(d.id)}
+                              >
+                                {liveSharing[d.id] ? t('driver.liveSharingOn') : t('driver.liveSharingOff')}
+                              </button>
+                              <button
+                                style={{ ...styles.locationBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handleShareLocation(d.id)}
+                              >
+                                {t('driver.shareLocation')}
+                              </button>
+                              <input
+                                type="text"
+                                inputMode="numeric"
+                                maxLength={6}
+                                placeholder={t('driver.deliveryOtp')}
+                                value={deliveryOtp[d.id] || ''}
+                                onChange={(e) => setDeliveryOtp(prev => ({ ...prev, [d.id]: e.target.value.replace(/\D/g, '') }))}
+                                style={styles.otpInput}
+                              />
+                              <button
+                                style={{ ...styles.completeBtn, ...(busy ? styles.disabledBtn : {}) }}
+                                disabled={busy}
+                                onClick={() => handleComplete(d.id)}
+                              >
+                                {t('driver.complete')}
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
+          </div>
+          <div style={{ marginTop: '1.5rem' }}>
+            <AiAssistant
+              module="delivery"
+              feature="analyze"
+              features={['assistant', 'analyze', 'summarize', 'recommend']}
+              context={deliveryContext}
+              title="AI · Deliveries"
+              description={`Ask about ${filter} deliveries — AI sees the same ${filtered.length} jobs.`}
+              placeholder="e.g. Which deliveries need OTP? Summarize my earnings…"
+              suggestedPrompts={['Analyze my deliveries — what needs action?', 'Summarize earnings by status', 'Which pending should I accept first?']}
+            />
+          </div>
+        </>
       )}
     </div>
   );
