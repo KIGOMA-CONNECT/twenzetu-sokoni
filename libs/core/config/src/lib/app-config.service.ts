@@ -105,4 +105,24 @@ export class AppConfigService {
       serverKey: this.config.GOOGLE_FCM_SERVER_KEY,
     };
   }
+
+  public get ai() {
+    return {
+      provider: this.config.AI_PROVIDER,
+      keys: {
+        gemini: this.config.GEMINI_API_KEY,
+        openai: this.config.OPENAI_API_KEY,
+        anthropic: this.config.ANTHROPIC_API_KEY,
+      },
+      models: {
+        gemini: this.config.GEMINI_MODEL,
+        openai: this.config.OPENAI_MODEL,
+        anthropic: this.config.ANTHROPIC_MODEL,
+      },
+      geminiBaseUrl: this.config.GEMINI_BASE_URL,
+      temperature: this.config.AI_TEMPERATURE,
+      maxOutputTokens: this.config.AI_MAX_TOKENS,
+      timeoutMs: this.config.AI_TIMEOUT_MS,
+    };
+  }
 }
