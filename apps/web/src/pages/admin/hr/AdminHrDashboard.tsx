@@ -1,5 +1,7 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import AiAssistant from '../../../components/AiAssistant';
 
 export default function AdminHrDashboard() {
   const { t } = useTranslation();
@@ -21,6 +23,12 @@ export default function AdminHrDashboard() {
     { title: t('hr.dashboard.workflowsTitle'), desc: t('hr.dashboard.workflowsDesc'), path: '/admin/workflows', color: '#a855f7' },
   ];
 
+  const hrContext = useMemo(() => {
+    const facts: Record<string, unknown> = { moduleCount: modules.length, modules: modules.map((m) => m.title).join(', ') };
+    const rows = modules.map((m) => ({ kind: 'hrModule', title: m.title, path: m.path }));
+    return { summary: `HR suite — ${modules.length} modules`, facts, rows, constraints: ['Ground in HR suite modules.'] };
+  }, []);
+
   return (
     <div>
       <h1 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem' }}>{t('hr.dashboard.suiteTitle')}</h1>
@@ -39,6 +47,18 @@ export default function AdminHrDashboard() {
             <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{m.desc}</div>
           </div>
         ))}
+      </div>
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="hr"
+          feature="assistant"
+          features={['assistant', 'analyze', 'recommend', 'summarize', 'review']}
+          context={hrContext}
+          title="AI · HR Suite"
+          description="Ask about org, roles, leave or payroll — AI sees the HR suite map."
+          placeholder="e.g. How should I structure org units? Summarize HR coverage…"
+          suggestedPrompts={['Summarize HR suite coverage', 'Recommend next HR module to implement', 'Analyze gaps in HR data', 'Draft a new position description']}
+        />
       </div>
     </div>
   );
