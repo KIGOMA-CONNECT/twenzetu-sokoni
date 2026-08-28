@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { ComplianceRequirement, ComplianceRecord, HrEmployee } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', width: '100%' }, btn: { padding: '0.4rem 0.8rem', borderRadius: '5px', border: 'none', color: '#fff', fontWeight: 500, fontSize: '0.8rem' },
@@ -27,10 +26,10 @@ export default function AdminHrCompliance() {
   const updateRecord = async (id: string, action: string) => { try { await api.patch(`/hr/compliance/records/${id}/${action}`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1) return <LoadingSpinner />;
-  if (e1) return <ErrorMessage message={e1} />;
 
   return (
     <div>
+      {e1 && <div style={{ background: 'var(--danger-soft)', color: 'var(--danger)', padding: '0.5rem 0.75rem', borderRadius: '6px', marginBottom: '1rem', fontSize: '0.85rem' }}>{e1}</div>}
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.compliance.title')}</h2>
       {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
