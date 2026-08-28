@@ -10,7 +10,7 @@
  */
 
 /** Stable identifier of the domain module the AI is assisting. */
-export type AiModule = string;
+export type AiModuleId = string;
 
 /** The role an AI assistant plays in a module. */
 export type AiAssistantRole = 'assistant' | 'analyst' | 'reviewer' | 'writer' | 'coach';
@@ -63,7 +63,7 @@ export type AiContextBuilder = (
 
 export interface AiContextRequest {
   /** Module id that this builder serves. */
-  readonly module: AiModule;
+  readonly module: AiModuleId;
   /** The user's raw message / question (or command). */
   readonly message: string;
   /** Optional feature hint. */
