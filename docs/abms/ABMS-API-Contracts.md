@@ -535,7 +535,384 @@ Generate a dynamic form configuration.
 
 ---
 
-## 4. Field Types Reference
+## 4. Configuration Platform
+
+### GET /config/system
+
+List all system-wide configuration entries.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| category | string | Filter by category (optional) |
+
+### GET /config/system/:key
+
+Get a specific system config entry by key.
+
+### POST /config/system
+
+Set (upsert) a system config entry.
+
+**Request:**
+```json
+{
+  "key": "max_upload_size_mb",
+  "value": "100",
+  "valueType": "NUMBER",
+  "description": "Maximum file upload size in megabytes",
+  "category": "upload"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "key": "max_upload_size_mb",
+    "value": "100",
+    "valueType": "NUMBER",
+    "description": "Maximum file upload size in megabytes",
+    "category": "upload"
+  }
+}
+```
+
+### GET /config/tenant/:tenantId
+
+List all config entries for a specific tenant.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| category | string | Filter by category (optional) |
+
+### GET /config/tenant/:tenantId/:key
+
+Get a specific tenant config entry.
+
+### POST /config/tenant/:tenantId
+
+Set (upsert) a tenant config entry. Tenant config overrides system config.
+
+**Request:**
+```json
+{
+  "key": "max_upload_size_mb",
+  "value": "200",
+  "valueType": "NUMBER",
+  "description": "Tenant override for upload size",
+  "category": "upload"
+}
+```
+
+### GET /config/feature-flags
+
+List all feature flags.
+
+### GET /config/feature-flags/:key
+
+Get a specific feature flag, evaluated against the current user's tenant and role.
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "key": "new_dashboard",
+    "enabled": true,
+    "reason": "Role 'ADMIN' is allowed"
+  }
+}
+```
+
+### POST /config/feature-flags
+
+Create or update a feature flag.
+
+**Request:**
+```json
+{
+  "key": "new_dashboard",
+  "name": "New Dashboard UI",
+  "state": "ENABLED",
+  "percentage": 50,
+  "allowedTenantIds": ["tenant-uuid-1", "tenant-uuid-2"],
+  "allowedRoles": ["ADMIN", "SUPER_ADMIN"],
+  "description": "Roll out new dashboard UI gradually"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "key": "new_dashboard",
+    "name": "New Dashboard UI",
+    "state": "ENABLED",
+    "percentage": 50,
+    "allowedTenantIds": ["tenant-uuid-1", "tenant-uuid-2"],
+    "allowedRoles": ["ADMIN", "SUPER_ADMIN"]
+  }
+}
+```
+
+---
+
+## 5. Workflow Platform
+
+### POST /workflow/workflows
+
+Create a new workflow definition.
+
+**Request:**
+```json
+{
+  "name": "Vendor Approval",
+  "description": "Approval workflow for new vendors",
+  "entityType": "Vendor",
+  "steps": [
+    {
+      "name": "Manager Review",
+      "stepType": "APPROVAL",
+      "assigneeRole": "MANAGER",
+      "order": 1,
+      "isRequired": true,
+      "timeoutHours": 48
+    },
+    {
+      "name": "Finance Approval",
+      "stepType": "APPROVAL",
+      "assigneeRole": "FINANCE",
+      "order": 2,
+      "isRequired": true,
+      "conditions": { "amount": { "$gt": 1000000 } }
+    }
+  ]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "name": "Vendor Approval",
+    "entityType": "Vendor",
+    "status": "DRAFT",
+    "version": 1,
+    "steps": [ ... ]
+  }
+}
+```
+
+### GET /workflow/workflows
+
+List workflows for the current tenant, optionally filtered by entity type.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| entityType | string | Filter by entity type (optional) |
+
+### GET /workflow/workflows/:id
+
+Get a specific workflow with its steps.
+
+### PATCH /workflow/workflows/:id/status
+
+Activate or deactivate a workflow.
+
+**Request:**
+```json
+{
+  "status": "ACTIVE"
+}
+```
+
+### POST /workflow/instances
+
+Start a new workflow instance.
+
+**Request:**
+```json
+{
+  "workflowId": "workflow-uuid",
+  "entityType": "Vendor",
+  "entityId": "vendor-uuid",
+  "initiatedBy": "user-uuid",
+  "data": {
+    "vendorName": "Acme Supplies",
+    "amount": 2500000
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "workflowId": "workflow-uuid",
+    "status": "PENDING",
+    "currentStep": "Manager Review",
+    "history": []
+  }
+}
+```
+
+### GET /workflow/instances
+
+List workflow instances, optionally filtered by workflow ID.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| workflowId | string | Filter by workflow definition (optional) |
+
+### POST /workflow/instances/:id/advance
+
+Advance a workflow instance to the next step.
+
+**Request:**
+```json
+{
+  "stepName": "Manager Review",
+  "action": "APPROVE",
+  "performedBy": "user-uuid",
+  "comment": "Looks good, approved."
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "status": "PENDING",
+    "currentStep": "Finance Approval",
+    "history": [
+      { "step": "Manager Review", "action": "APPROVE", "performedBy": "user-uuid" }
+    ]
+  }
+}
+```
+
+### POST /workflow/instances/:id/cancel
+
+Cancel a workflow instance.
+
+---
+
+## 6. Notification Platform
+
+### POST /notifications/send
+
+Send a notification to a user.
+
+**Request:**
+```json
+{
+  "userId": "user-uuid",
+  "channel": "EMAIL",
+  "title": "Welcome to ABMS",
+  "body": "Your account has been created successfully.",
+  "priority": "NORMAL",
+  "data": { "actionUrl": "/dashboard" },
+  "templateId": "template-uuid",
+  "templateVariables": { "userName": "John Doe" }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "status": "PENDING",
+    "channel": "EMAIL",
+    "title": "Welcome to ABMS",
+    "priority": "NORMAL",
+    "createdAt": "2026-08-26T12:00:00.000Z"
+  }
+}
+```
+
+### GET /notifications
+
+List notifications for the current tenant, with optional filters.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| userId | string | Filter by recipient user (optional) |
+| status | string | Filter by status: PENDING, SENT, READ, FAILED (optional) |
+| channel | string | Filter by channel: EMAIL, SMS, PUSH, IN_APP (optional) |
+
+### PATCH /notifications/:id/read
+
+Mark a notification as read.
+
+### PATCH /notifications/:id/sent
+
+Mark a notification as sent (after successful delivery).
+
+### POST /notifications/templates
+
+Create a notification template.
+
+**Request:**
+```json
+{
+  "name": "welcome-email",
+  "channel": "EMAIL",
+  "subject": "Welcome, {{userName}}!",
+  "bodyTemplate": "<h1>Welcome {{userName}}</h1><p>Your account is ready.</p>",
+  "variables": ["userName"],
+  "isActive": true
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "uuid",
+    "name": "welcome-email",
+    "channel": "EMAIL",
+    "subject": "Welcome, {{userName}}!",
+    "bodyTemplate": "<h1>Welcome {{userName}}</h1><p>Your account is ready.</p>",
+    "variables": ["userName"],
+    "isActive": true
+  }
+}
+```
+
+### GET /notifications/templates
+
+List all notification templates, optionally filtered by channel.
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|---|---|---|
+| channel | string | Filter by channel: EMAIL, SMS, PUSH, IN_APP (optional) |
+
+### GET /notifications/templates/:id
+
+Get a specific notification template by ID.
+
+---
+
+## 7. Field Types Reference
 
 | Type | Description | Example |
 |---|---|---|
@@ -563,7 +940,7 @@ Generate a dynamic form configuration.
 
 ---
 
-## 5. Relationship Types
+## 8. Relationship Types
 
 | Type | Description | Example |
 |---|---|---|
@@ -579,7 +956,7 @@ Generate a dynamic form configuration.
 
 ---
 
-## 6. Entity Categories
+## 9. Entity Categories
 
 | Category | Description | Examples |
 |---|---|---|
@@ -596,7 +973,7 @@ Generate a dynamic form configuration.
 
 ---
 
-## 7. Permission Actions
+## 10. Permission Actions
 
 | Action | Description |
 |---|---|
@@ -610,7 +987,7 @@ Generate a dynamic form configuration.
 | REJECT | Reject workflows |
 | MANAGE | Full management access |
 
-## 8. Permission Scopes
+## 11. Permission Scopes
 
 | Scope | Description |
 |---|---|
