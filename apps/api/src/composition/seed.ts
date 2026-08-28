@@ -102,6 +102,8 @@ const PAYMENTS = [
 const WALLETS = [
   { id: '0c000000-0000-0000-0000-000000000010', tenantId: TENANT_DAR, ownerId: 'c0000000-0000-0000-0000-000000000010', ownerType: 'vendor', balance: 17100, pending: 0, currency: 'TZS' },
   { id: '0c000000-0000-0000-0000-000000000011', tenantId: TENANT_DAR, ownerId: 'c0000000-0000-0000-0000-000000000011', ownerType: 'vendor', balance: 0, pending: 0, currency: 'TZS' },
+  { id: '0c000000-0000-0000-0000-000000000012', tenantId: TENANT_DAR, ownerId: 'b0000000-0000-0000-0000-000000000012', ownerType: 'customer', balance: 50000, pending: 5000, currency: 'TZS' },
+  { id: '0c000000-0000-0000-0000-000000000013', tenantId: TENANT_DAR, ownerId: 'b0000000-0000-0000-0000-000000000014', ownerType: 'driver', balance: 3000, pending: 0, currency: 'TZS' },
 ];
 
 const DELIVERIES = [

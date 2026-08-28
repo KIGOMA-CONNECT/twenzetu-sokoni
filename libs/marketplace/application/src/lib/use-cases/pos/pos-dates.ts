@@ -32,6 +32,7 @@ export function endOfLocalDay(d: Date, tzOffsetHours?: number): Date {
  */
 export function getUtcOffsetHours(timezone?: string): number {
   if (!timezone) return 3; // EAT default
+  let offset = 3;
   try {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('en-US', {
@@ -44,12 +45,14 @@ export function getUtcOffsetHours(timezone?: string): number {
       const match = tzPart.value.match(/GMT([+-]\d{1,2}(?::\d{2})?)/);
       if (match) {
         const [h, m] = match[1].split(':');
-        return parseInt(h, 10) + (m ? parseInt(m, 10) / 60 : 0);
+        offset = parseInt(h, 10) + (m ? parseInt(m, 10) / 60 : 0);
       }
-      if (tzPart.value === 'GMT') return 0;
+      if (tzPart.value === 'GMT') offset = 0;
     }
-  } catch {}
-  return 3; // EAT fallback
+  } catch {
+    offset = 3; // EAT fallback
+  }
+  return offset;
 }
 
 export function isDateString(value: string): boolean {

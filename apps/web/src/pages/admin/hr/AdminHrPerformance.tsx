@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
@@ -8,6 +9,7 @@ const s: Record<string, React.CSSProperties> = {
 };
 
 export default function AdminHrPerformance() {
+  const { t } = useTranslation();
   const [tab, setTab] = useState<'goals' | 'cycles'>('goals');
   const { data: goals, loading: l1, refetch: r1 } = useApi<Goal[]>('/hr/performance/employees/goals');
   const { data: cycles, loading: l2, refetch: r2 } = useApi<ReviewCycle[]>('/hr/performance/review-cycles');
@@ -32,33 +34,33 @@ export default function AdminHrPerformance() {
 
   return (
     <div>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Performance</h2>
+      <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>{t('hr.performance.title')}</h2>
       {actionError && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: 'var(--danger-soft)', color: 'var(--danger)', borderRadius: '6px', fontSize: '0.85rem', display: 'flex', alignItems: 'center' }}><span>{actionError}</span><button onClick={() => setActionError(null)} style={{ marginLeft: '0.5rem', background: 'none', border: 'none', cursor: 'pointer' }}>&times;</button></div>}
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
-        <button onClick={() => setTab('goals')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'goals' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'goals' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'goals' ? '#3b82f6' : 'var(--muted)' }}>Goals</button>
-        <button onClick={() => setTab('cycles')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'cycles' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'cycles' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'cycles' ? '#3b82f6' : 'var(--muted)' }}>Review Cycles</button>
+        <button onClick={() => setTab('goals')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'goals' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'goals' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'goals' ? '#3b82f6' : 'var(--muted)' }}>{t('hr.performance.goals')}</button>
+        <button onClick={() => setTab('cycles')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'cycles' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'cycles' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'cycles' ? '#3b82f6' : 'var(--muted)' }}>{t('hr.performance.reviewCycles')}</button>
       </div>
 
       {tab === 'goals' && <div>
-        <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowGoalForm(!showGoalForm)}>{showGoalForm ? 'Cancel' : '+ New Goal'}</button>
+        <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowGoalForm(!showGoalForm)}>{showGoalForm ? t('hr.performance.cancel') : t('hr.performance.newGoal')}</button>
         {showGoalForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
-          <div style={{ width: '160px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Employee</div><select style={{ ...s.input, width: '100%' }} value={selEmpId} onChange={e => setSelEmpId(e.target.value)}><option value="">Select...</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select></div>
-          <div style={{ width: '160px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Title *</div><input style={s.input} value={gf.title} onChange={e => setGf(f => ({ ...f, title: e.target.value }))} /></div>
-          <div style={{ width: '120px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Target</div><input type="number" style={s.input} value={gf.targetValue} onChange={e => setGf(f => ({ ...f, targetValue: +e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Start</div><input type="date" style={s.input} value={gf.startDate} onChange={e => setGf(f => ({ ...f, startDate: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>End</div><input type="date" style={s.input} value={gf.endDate} onChange={e => setGf(f => ({ ...f, endDate: e.target.value }))} /></div>
-          <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !gf.title.trim() || !selEmpId} onClick={createGoal}>{saving ? 'Saving...' : 'Create'}</button>
+          <div style={{ width: '160px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.employee')}</div><select style={{ ...s.input, width: '100%' }} value={selEmpId} onChange={e => setSelEmpId(e.target.value)}><option value="">{t('hr.recruitment.select')}</option>{employees?.map(e => <option key={e.id} value={e.id}>{e.firstName} {e.lastName}</option>)}</select></div>
+          <div style={{ width: '160px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.titleLabel')}</div><input style={s.input} value={gf.title} onChange={e => setGf(f => ({ ...f, title: e.target.value }))} /></div>
+          <div style={{ width: '120px' }}><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.target')}</div><input type="number" style={s.input} value={gf.targetValue} onChange={e => setGf(f => ({ ...f, targetValue: +e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.start')}</div><input type="date" style={s.input} value={gf.startDate} onChange={e => setGf(f => ({ ...f, startDate: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.end')}</div><input type="date" style={s.input} value={gf.endDate} onChange={e => setGf(f => ({ ...f, endDate: e.target.value }))} /></div>
+          <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !gf.title.trim() || !selEmpId} onClick={createGoal}>{saving ? t('hr.performance.saving') : t('hr.performance.create')}</button>
         </div>}
         <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Title</th><th style={{ padding: '0.6rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>Progress</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>{t('hr.performance.colTitle')}</th><th style={{ padding: '0.6rem', textAlign: 'center', borderBottom: '1px solid #e2e8f0' }}>{t('hr.performance.colProgress')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colStatus')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colActions')}</th></tr></thead>
             <tbody>{goals?.map(g => <tr key={g.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
               <td style={{ padding: '0.6rem', fontWeight: 500 }}>{g.title}</td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>{g.currentValue || 0}/{g.targetValue || 100}</td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: g.status === 'ACTIVE' ? '#fefce8' : g.status === 'COMPLETED' ? 'var(--success-soft)' : 'var(--line-soft)', color: g.status === 'ACTIVE' ? '#ca8a04' : g.status === 'COMPLETED' ? 'var(--success)' : 'var(--muted)', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{g.status}</span></td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                {g.status === 'ACTIVE' && <><button style={{ ...s.btn, background: '#10b981', marginRight: '0.3rem' }} onClick={() => completeGoal(g.id)}>Complete</button>
-                  <input type="number" placeholder="Progress" style={{ width: '70px', padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: '4px' }} onBlur={e => { const v = +e.target.value; if (v > 0) updateGoalProgress(g.id, v); }} /></>}
+                {g.status === 'ACTIVE' && <><button style={{ ...s.btn, background: '#10b981', marginRight: '0.3rem' }} onClick={() => completeGoal(g.id)}>{t('hr.performance.complete')}</button>
+                  <input type="number" placeholder={t('hr.performance.progressPlaceholder')} style={{ width: '70px', padding: '0.3rem', border: '1px solid #cbd5e1', borderRadius: '4px' }} onBlur={e => { const v = +e.target.value; if (v > 0) updateGoalProgress(g.id, v); }} /></>}
               </td>
             </tr>)}</tbody>
           </table>
@@ -66,31 +68,31 @@ export default function AdminHrPerformance() {
       </div>}
 
       {tab === 'cycles' && <div>
-        <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowCycleForm(!showCycleForm)}>{showCycleForm ? 'Cancel' : '+ New Cycle'}</button>
+        <button style={{ ...s.btn, background: '#3b82f6', marginBottom: '1rem' }} onClick={() => setShowCycleForm(!showCycleForm)}>{showCycleForm ? t('hr.performance.cancel') : t('hr.performance.newCycle')}</button>
         {showCycleForm && <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem', padding: '1rem', background: 'var(--bg)', borderRadius: '8px', alignItems: 'flex-end' }}>
-          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Name *</div><input style={s.input} value={cyf.name} onChange={e => setCyf(f => ({ ...f, name: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Start</div><input type="date" style={s.input} value={cyf.startDate} onChange={e => setCyf(f => ({ ...f, startDate: e.target.value }))} /></div>
-          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>End</div><input type="date" style={s.input} value={cyf.endDate} onChange={e => setCyf(f => ({ ...f, endDate: e.target.value }))} /></div>
-          <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !cyf.name.trim() || !cyf.startDate || !cyf.endDate} onClick={createCycle}>{saving ? 'Saving...' : 'Create'}</button>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.name')}</div><input style={s.input} value={cyf.name} onChange={e => setCyf(f => ({ ...f, name: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.start')}</div><input type="date" style={s.input} value={cyf.startDate} onChange={e => setCyf(f => ({ ...f, startDate: e.target.value }))} /></div>
+          <div><div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('hr.performance.end')}</div><input type="date" style={s.input} value={cyf.endDate} onChange={e => setCyf(f => ({ ...f, endDate: e.target.value }))} /></div>
+          <button style={{ ...s.btn, background: '#10b981' }} disabled={saving || !cyf.name.trim() || !cyf.startDate || !cyf.endDate} onClick={createCycle}>{saving ? t('hr.performance.saving') : t('hr.performance.create')}</button>
         </div>}
         <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Name</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>Period</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Actions</th></tr></thead>
+            <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>{t('hr.performance.colName')}</th><th style={{ padding: '0.6rem', textAlign: 'left' }}>{t('hr.performance.colPeriod')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colStatus')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colActions')}</th></tr></thead>
             <tbody>{cycles?.map(c => <tr key={c.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
               <td style={{ padding: '0.6rem', fontWeight: 500 }}>{c.name}</td>
               <td style={{ padding: '0.6rem', color: 'var(--muted)' }}>{new Date(c.startDate).toLocaleDateString()} - {new Date(c.endDate).toLocaleDateString()}</td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}><span style={{ background: c.status === 'OPEN' ? '#fefce8' : 'var(--line-soft)', color: c.status === 'OPEN' ? '#ca8a04' : 'var(--muted)', padding: '0.1rem 0.4rem', borderRadius: '999px' }}>{c.status}</span></td>
               <td style={{ padding: '0.6rem', textAlign: 'center' }}>
-                {c.status === 'OPEN' && <><button style={{ ...s.btn, background: '#3b82f6', marginRight: '0.3rem' }} onClick={() => { setSelectedCycle(c.id); }}>Reviews</button><button style={{ ...s.btn, background: 'var(--warning)' }} onClick={() => closeCycle(c.id)}>Close</button></>}
+                {c.status === 'OPEN' && <><button style={{ ...s.btn, background: '#3b82f6', marginRight: '0.3rem' }} onClick={() => { setSelectedCycle(c.id); }}>{t('hr.performance.reviews')}</button><button style={{ ...s.btn, background: 'var(--warning)' }} onClick={() => closeCycle(c.id)}>{t('hr.performance.close')}</button></>}
               </td>
             </tr>)}</tbody>
           </table>
         </div>
         {selectedCycle && <div style={{ marginTop: '1rem' }}>
-          <h3 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>Reviews for Selected Cycle</h3>
+          <h3 style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{t('hr.performance.reviewsForCycle')}</h3>
           <div style={{ background: '#fff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem' }}>
-              <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>Employee</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Rating</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>Status</th></tr></thead>
+              <thead><tr style={{ background: 'var(--bg)' }}><th style={{ padding: '0.6rem', textAlign: 'left' }}>{t('hr.performance.colEmployee')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colRating')}</th><th style={{ padding: '0.6rem', textAlign: 'center' }}>{t('hr.performance.colStatus')}</th></tr></thead>
               <tbody>{reviews?.map(r => <tr key={r.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
                 <td style={{ padding: '0.6rem' }}>{r.employeeName || r.employeeId.slice(0, 8)}</td>
                 <td style={{ padding: '0.6rem', textAlign: 'center' }}>{r.rating != null ? `${r.rating}/5` : '-'}</td>

@@ -5,9 +5,12 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import { PageTitle } from '../../components/PageTitle';
+import { useTranslation } from 'react-i18next';
 import type { Order, Vendor } from '../../types';
 
 export default function AdminDashboard() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: stats, loading, error } = useApi<any>('/admin/dashboard');
@@ -18,21 +21,22 @@ export default function AdminDashboard() {
   if (error) return <ErrorMessage message={error} />;
 
   const statCards = [
-    { label: 'Total Vendors', value: stats?.totalVendors ?? 0 },
-    { label: 'Active Orders', value: stats?.activeOrders ?? 0 },
-    { label: 'Total Revenue', value: formatCurrency(stats?.totalRevenue ?? 0) },
-    { label: 'Pending Vendors', value: stats?.pendingVendors ?? 0 },
-    { label: 'Open Disputes', value: stats?.openDisputes ?? 0 },
-    { label: 'Total Customers', value: stats?.totalUsers ?? 0 },
-    { label: 'Service Listings', value: stats?.serviceListings ?? 0 },
-    { label: 'Open Service Requests', value: stats?.openServiceRequests ?? 0 },
+    { label: t('admin.totalVendors'), value: stats?.totalVendors ?? 0 },
+    { label: t('admin.activeOrders'), value: stats?.activeOrders ?? 0 },
+    { label: t('admin.totalRevenue'), value: formatCurrency(stats?.totalRevenue ?? 0) },
+    { label: t('admin.pendingVendors'), value: stats?.pendingVendors ?? 0 },
+    { label: t('admin.openDisputes'), value: stats?.openDisputes ?? 0 },
+    { label: t('admin.totalCustomers'), value: stats?.totalUsers ?? 0 },
+    { label: t('admin.serviceListings'), value: stats?.serviceListings ?? 0 },
+    { label: t('admin.openServiceRequests'), value: stats?.openServiceRequests ?? 0 },
   ];
 
   return (
     <div className="page">
+      <PageTitle title={t('admin.dashboard')} description="Platform overview and management for afriMarket administrators." />
       <PageHeader
-        title="Admin Dashboard"
-        sub={`Welcome back, ${user?.fullName || 'Admin'}. Here's your platform overview.`}
+        title={t('admin.dashboard')}
+        sub={t('admin.welcomeBack', { name: user?.fullName || 'Admin' })}
       />
 
       <div className="grid grid-2">
@@ -46,15 +50,15 @@ export default function AdminDashboard() {
 
       <div className="grid grid-2">
         <div className="card">
-          <h3 className="card-title">Recent Orders</h3>
+          <h3 className="card-title">{t('admin.recentOrders')}</h3>
           {recentOrders && recentOrders.length > 0 ? (
             <div className="table-wrap">
               <table className="table">
                 <thead>
                   <tr>
-                    <th>Order ID</th>
-                    <th>Total</th>
-                    <th>Status</th>
+                    <th>{t('admin.orderId')}</th>
+                    <th>{t('admin.total')}</th>
+                    <th>{t('admin.status')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -69,12 +73,12 @@ export default function AdminDashboard() {
               </table>
             </div>
           ) : (
-            <EmptyState icon="📦" title="No recent orders" />
+            <EmptyState icon="📦" title={t('admin.noRecentOrders')} />
           )}
         </div>
 
         <div className="card">
-          <h3 className="card-title">Pending Vendors</h3>
+          <h3 className="card-title">{t('admin.pendingVendorsTitle')}</h3>
           {pendingVendors && pendingVendors.length > 0 ? (
             <div className="stack">
               {pendingVendors.slice(0, 5).map((v) => (
@@ -88,7 +92,7 @@ export default function AdminDashboard() {
               ))}
             </div>
           ) : (
-            <EmptyState icon="🏪" title="No pending vendors" />
+            <EmptyState icon="🏪" title={t('admin.noPendingVendors')} />
           )}
         </div>
       </div>

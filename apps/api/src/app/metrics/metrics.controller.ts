@@ -1,3 +1,4 @@
+import { timingSafeEqual } from 'crypto';
 import { Controller, Get, Headers, UnauthorizedException } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -26,7 +27,9 @@ export class MetricsController {
       const authHeader = headers['authorization'];
       const authToken = Array.isArray(authHeader) ? authHeader[0] : authHeader;
       const provided = authToken && authToken.startsWith('Bearer ') ? authToken.substring('Bearer '.length) : '';
-      if (provided !== secret) {
+      const a = Buffer.from(provided || '');
+      const b = Buffer.from(secret);
+      if (a.length !== b.length || !timingSafeEqual(a, b)) {
         throw new UnauthorizedException('Invalid metrics token');
       }
     }

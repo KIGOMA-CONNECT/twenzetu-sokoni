@@ -1,0 +1,169 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_call:
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: afri_market
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      NODE_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_NAME: afri_market
+      DB_BOOTSTRAP_USER: postgres
+      DB_BOOTSTRAP_PASSWORD: postgres
+      DB_OWNER_USER: postgres
+      DB_OWNER_PASSWORD: postgres
+      DB_RUNTIME_USER: postgres
+      DB_RUNTIME_PASSWORD: postgres
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_SECRET: test-jwt-secret-for-e2e
+      PAYMENT_CONFIRM_SECRET: test-payment-secret
+      WEBHOOK_INTERNAL_SECRET: test-webhook-secret
+      METRICS_SECRET: test-metrics-secret
+      APP_PORT: 3000
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/afri_market
+      LOGIN_THROTTLE_LIMIT: "200"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build API
+        run: |
+          set -o pipefail
+          npx nx run api:build 2>&1 | tee build-api.log || {
+            grep -aiE 'error|failed|✖' build-api.log | head -15 | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
+
+      - name: Build Web
+        run: |
+          set -o pipefail
+          npx nx run web:build 2>&1 | tee build-web.log || {
+            grep -aiE 'error|failed|✖' build-web.log | head -25 | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
+
+      - name: Run database migrations
+        run: npm run migration:run
+
+      - name: Seed test data
+        run: |
+          npm run seed 2>&1 | tee seed.log || {
+            tail -30 seed.log | while IFS= read -r line; do echo "::error::$line"; done
+            exit 1
+          }
+
+      - name: Start API server
+        run: |
+          npx nx run api:serve &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:3000/api/health > /dev/null 2>&1 && break
+            sleep 2
+          done
+
+      - name: Verify login API works
+        run: |
+          echo "=== Health check ==="
+          curl -sf http://localhost:3000/api/health | head -c 200
+          echo ""
+          echo "=== Login admin ==="
+          curl -s -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber":"+255754100001","password":"password123"}' | head -c 500
+          echo ""
+          echo "=== Login customer ==="
+          curl -s -X POST http://localhost:3000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"phoneNumber":"+255754100003","password":"password123"}' | head -c 500
+          echo ""
+          echo "=== SPA index ==="
+          curl -sf http://localhost:3000/ | head -c 200
+          echo ""
+          echo "=== SPA login ==="
+          curl -sf http://localhost:3000/login | head -c 200
+          echo ""
+          echo "=== SPA JS assets ==="
+          curl -sf http://localhost:3000/ | grep -oP 'src="[^"]*"' | head -5
+
+      - name: Install e2e dependencies
+        working-directory: e2e
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: e2e
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        working-directory: e2e
+        run: |
+          set -o pipefail
+          npx playwright test --config=playwright.config.ts --project=chromium --reporter=list 2>&1 | tee e2e-run.log || {
+            grep -aE '✘|✗|Error:|failed|timed out|expect\(' e2e-run.log | head -40 | while IFS= read -r line; do echo "::error::$line"; done
+            echo "=== Last 50 lines of e2e output ==="
+            tail -50 e2e-run.log
+            exit 1
+          }
+        env:
+          BASE_URL: http://localhost:3000
+          TEST_PHONE: "+255754100003"
+          TEST_PASSWORD: "password123"
+          TEST_ADMIN_PHONE: "+255754100001"
+          TEST_ADMIN_PASSWORD: "password123"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report/
+            e2e/test-results/
+            e2e/e2e-run.log
+          retention-days: 7
+          if-no-files-found: ignore

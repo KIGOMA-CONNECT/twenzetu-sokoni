@@ -13,15 +13,6 @@ const STATUS_STEPS = [
   'PLACED', 'CONFIRMED', 'PREPARING', 'READY_FOR_PICKUP', 'OUT_FOR_DELIVERY', 'DELIVERED',
 ];
 
-const STATUS_LABELS: Record<string, string> = {
-  PLACED: 'Order Placed',
-  CONFIRMED: 'Confirmed',
-  PREPARING: 'Preparing',
-  READY_FOR_PICKUP: 'Ready for Pickup',
-  OUT_FOR_DELIVERY: 'Out for Delivery',
-  DELIVERED: 'Delivered',
-  CANCELLED: 'Cancelled',
-};
 
 function getActiveStep(status: string): number {
   const idx = STATUS_STEPS.indexOf(status);
@@ -107,9 +98,9 @@ export default function OrderTracking() {
       }
     });
 
-    const unsub2 = subscribe('delivery-status-changed', (data: any) => {
+    const unsub2 = subscribe('delivery-status-changed', (data: { status?: string; orderStatus?: string; [key: string]: unknown }) => {
       if (data.status === 'DELIVERED' || data.status === 'IN_TRANSIT') {
-        setOrderStatus((data as any).orderStatus || orderStatus);
+        setOrderStatus(data.orderStatus || orderStatus);
         refetchTracking();
       }
     });
@@ -272,29 +263,29 @@ export default function OrderTracking() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <button style={styles.backBtn} onClick={() => navigate(-1)}>← Back</button>
+        <button style={styles.backBtn} onClick={() => navigate(-1)}>← {t('orders.tracking.back')}</button>
         <div>
-          <h1 style={styles.title}>Order Tracking</h1>
+          <h1 style={styles.title}>{t('orders.tracking.title')}</h1>
           <p style={styles.subtitle}>
-            Order #{orderId?.substring(0, 8)}
+            {t('orders.tracking.orderNumber', { id: orderId?.substring(0, 8) })}
             {connected && (
               <span style={{ ...styles.connectionBadge, backgroundColor: '#d1fae5', color: '#065f46', marginLeft: 8 }}>
-                ● Live
+                ● {t('orders.tracking.live')}
               </span>
             )}
-            {lastUpdate && <span style={{ marginLeft: 12, color: '#999', fontSize: 12 }}>Updated {lastUpdate}</span>}
+            {lastUpdate && <span style={{ marginLeft: 12, color: '#999', fontSize: 12 }}>{t('orders.tracking.updated', { time: lastUpdate })}</span>}
           </p>
         </div>
       </div>
 
-      {loading && <div style={styles.card}>Loading...</div>}
+      {loading && <div style={styles.card}>{t('common.loading')}</div>}
 
       {orderData && (
         <>
           {/* Status Timeline */}
           <div style={styles.card}>
             <h2 style={{ margin: '0 0 8px 0', fontSize: 16 }}>
-              Status: <span style={styles.badge(orderStatus)}>{STATUS_LABELS[orderStatus] || orderStatus}</span>
+              {t('orders.tracking.statusLabel')} <span style={styles.badge(orderStatus)}>{t(`status.${orderStatus}`, { defaultValue: orderStatus })}</span>
             </h2>
             {!isCancelled && (
               <div style={styles.progressContainer}>
@@ -307,7 +298,7 @@ export default function OrderTracking() {
                       {i < activeStep ? '✓' : i + 1}
                     </div>
                     <div style={styles.stepLabel(i <= activeStep)}>
-                      {STATUS_LABELS[step]}
+                      {t(`status.${step}`, { defaultValue: step })}
                     </div>
                   </div>
                 ))}
@@ -319,12 +310,12 @@ export default function OrderTracking() {
           {(currentLat && currentLng) ? (
             <div style={styles.card}>
               <h3 style={{ margin: '0 0 12px 0', fontSize: 14, color: '#666' }}>
-                {isDelivered ? 'Delivery Location' : 'Driver Location'}
+                {isDelivered ? t('orders.tracking.deliveryLocation') : t('orders.tracking.driverLocation')}
               </h3>
               <div ref={mapRef} style={{ width: '100%', height: 260, borderRadius: 10, overflow: 'hidden' }} />
               <div style={{ display: 'flex', gap: 16, marginTop: 10, fontSize: 12, color: 'var(--muted)' }}>
-                <span>🛵 Driver</span>
-                <span>📍 Drop-off</span>
+                <span>🛵 {t('orders.tracking.driver')}</span>
+                <span>📍 {t('orders.tracking.dropoff')}</span>
                 {trackingData?.distanceKm != null && <span>📏 {trackingData.distanceKm.toFixed(1)} km</span>}
                 {trackingData?.estimatedTimeMinutes != null && <span>⏱ {trackingData.estimatedTimeMinutes} min ETA</span>}
               </div>
@@ -334,7 +325,7 @@ export default function OrderTracking() {
               <div style={styles.card}>
                 <div style={styles.mapPlaceholder}>
                   <span style={{ fontSize: 32 }}>🚚</span>
-                  <span>Driver location will appear here once out for delivery</span>
+                  <span>{t('orders.tracking.driverWillAppear')}</span>
                 </div>
               </div>
             )
@@ -343,29 +334,29 @@ export default function OrderTracking() {
           {/* Delivery Info */}
           {trackingData && (
             <div style={styles.card}>
-              <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>Delivery Information</h3>
+              <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>{t('orders.tracking.deliveryInfo')}</h3>
               <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Pickup</span>
+                <span style={styles.infoLabel}>{t('orders.tracking.pickup')}</span>
                 <span style={styles.infoValue}>{trackingData.pickupAddress}</span>
               </div>
               <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Delivery</span>
+                <span style={styles.infoLabel}>{t('orders.tracking.delivery')}</span>
                 <span style={styles.infoValue}>{trackingData.deliveryAddress}</span>
               </div>
               {trackingData.distanceKm != null && (
                 <div style={styles.infoRow}>
-                  <span style={styles.infoLabel}>Distance</span>
+                  <span style={styles.infoLabel}>{t('orders.tracking.distance')}</span>
                   <span style={styles.infoValue}>{trackingData.distanceKm.toFixed(1)} km</span>
                 </div>
               )}
               {trackingData.estimatedTimeMinutes != null && (
                 <div style={styles.infoRow}>
-                  <span style={styles.infoLabel}>Estimated Time</span>
+                  <span style={styles.infoLabel}>{t('orders.tracking.estimatedTime')}</span>
                   <span style={styles.infoValue}>{trackingData.estimatedTimeMinutes} min</span>
                 </div>
               )}
               <div style={styles.infoRow}>
-                <span style={styles.infoLabel}>Delivery Status</span>
+                <span style={styles.infoLabel}>{t('orders.tracking.deliveryStatus')}</span>
                 <span style={styles.badge(trackingData.status)}>{trackingData.status}</span>
               </div>
             </div>
@@ -375,7 +366,7 @@ export default function OrderTracking() {
           {isDelivered && trackingData && orderData?.customerId === user?.id && (
             myDriverReview ? (
               <div style={styles.card}>
-                <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>Driver Review</h3>
+                <h3 style={{ margin: '0 0 8px 0', fontSize: 14, fontWeight: 600 }}>{t('orders.tracking.driverReview')}</h3>
                 <div style={{ fontSize: 22, color: 'var(--warning)', letterSpacing: 2 }}>
                   {'★'.repeat(myDriverReview.rating)}{'☆'.repeat(5 - (myDriverReview.rating || 0))}
                 </div>
@@ -385,7 +376,7 @@ export default function OrderTracking() {
               </div>
             ) : (
               <div style={styles.card}>
-                <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>Rate your driver</h3>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>{t('orders.tracking.rateDriver')}</h3>
                 <div style={{ display: 'flex', gap: 4, marginBottom: 12 }}>
                   {[1, 2, 3, 4, 5].map(n => (
                     <button
@@ -406,7 +397,7 @@ export default function OrderTracking() {
                   style={{ width: '100%', padding: '7px 10px', marginBottom: 10 }}
                   value={rateComment}
                   onChange={(e) => setRateComment(e.target.value)}
-                  placeholder="How was the delivery? (optional)"
+                  placeholder={t('orders.tracking.howWasDelivery')}
                 />
                 {rateError && <div style={{ color: 'var(--danger)', fontSize: 12, marginBottom: 8 }}>{rateError}</div>}
                 <button
@@ -414,7 +405,7 @@ export default function OrderTracking() {
                   disabled={!starRating || submittingRate}
                   onClick={submitDriverReview}
                 >
-                  {submittingRate ? 'Submitting…' : 'Submit Review'}
+                  {submittingRate ? t('orders.tracking.submitting') : t('orders.tracking.submitReview')}
                 </button>
               </div>
             )
@@ -422,21 +413,21 @@ export default function OrderTracking() {
 
           {/* Order Summary */}
           <div style={styles.card}>
-            <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>Order Summary</h3>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: 14, fontWeight: 600 }}>{t('orders.tracking.orderSummary')}</h3>
             <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Total</span>
+              <span style={styles.infoLabel}>{t('orders.tracking.total')}</span>
               <span style={styles.infoValue}>
                 {orderData.currency} {orderData.totalAmount.toLocaleString()}
               </span>
             </div>
             <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Delivery Fee</span>
+              <span style={styles.infoLabel}>{t('orders.tracking.deliveryFee')}</span>
               <span style={styles.infoValue}>
                 {orderData.currency} {orderData.deliveryFee.toLocaleString()}
               </span>
             </div>
             <div style={{ ...styles.infoRow, borderBottom: 'none' }}>
-              <span style={styles.infoLabel}>Address</span>
+              <span style={styles.infoLabel}>{t('orders.tracking.address')}</span>
               <span style={{ ...styles.infoValue, maxWidth: 300, textAlign: 'right' as const }}>
                 {orderData.deliveryAddress}
               </span>

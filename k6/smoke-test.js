@@ -10,7 +10,8 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.API_URL || 'http://localhost:3000/api';
+const BASE = __ENV.BASE_URL || 'http://localhost:3000';
+const BASE_URL = __ENV.API_URL || `${BASE}/api`;
 
 export default function () {
   group('Health Check', () => {

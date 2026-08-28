@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNotifications } from '../context/NotificationContext';
 import {
   disablePushNotifications,
@@ -17,6 +18,7 @@ type PushState =
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, markRead, markAllRead, loading } = useNotifications();
+  const { t } = useTranslation();
   const [pushState, setPushState] = useState<PushState>({ status: 'loading' });
 
   const refreshPushStatus = useCallback(async () => {
@@ -62,14 +64,14 @@ export default function NotificationsPage() {
     <div className="page" style={{ maxWidth: 720, margin: '0 auto' }}>
       <div className="flex items-center justify-between wrap" style={{ marginBottom: '1.25rem' }}>
         <div>
-          <h1 className="page-title" style={{ margin: 0 }}>Notifications</h1>
+          <h1 className="page-title" style={{ margin: 0 }}>{t('notification.title')}</h1>
           <div className="text-muted" style={{ fontSize: '0.9rem', marginTop: '0.25rem' }}>
-            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up'}
+            {unreadCount > 0 ? t('notification.unread', { count: unreadCount }) : t('notification.allCaughtUp')}
           </div>
         </div>
         {unreadCount > 0 && (
           <button className="btn btn-outline btn-sm" onClick={markAllRead}>
-            Mark all as read
+            {t('notification.markAllRead')}
           </button>
         )}
       </div>
@@ -79,13 +81,13 @@ export default function NotificationsPage() {
           <div className="flex items-center justify-between wrap" style={{ gap: '0.75rem' }}>
             <div style={{ minWidth: 0 }}>
               <div style={{ fontWeight: 600, fontSize: '0.9rem', color: 'var(--ink)' }}>
-                Push notifications
+                {t('notification.pushNotifications')}
               </div>
               <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '0.15rem', lineHeight: 1.4 }}>
-                {pushState.status === 'loading' && 'Checking your device...'}
-                {pushState.status === 'idle' && 'Get alerts even when the app is closed.'}
-                {pushState.status === 'enabled' && 'You will get alerts even when the app is closed.'}
-                {pushState.status === 'denied' && 'Notifications are blocked in your browser settings. Enable them to receive alerts.'}
+                {pushState.status === 'loading' && t('notification.checkingDevice')}
+                {pushState.status === 'idle' && t('notification.pushIdle')}
+                {pushState.status === 'enabled' && t('notification.pushEnabled')}
+                {pushState.status === 'denied' && t('notification.pushDenied')}
                 {pushState.status === 'error' && pushState.message}
               </div>
             </div>
@@ -95,7 +97,7 @@ export default function NotificationsPage() {
                 onClick={pushState.status === 'enabled' ? handleDisable : handleEnable}
                 disabled={pushState.status === 'denied'}
               >
-                {pushState.status === 'enabled' ? 'Disable' : 'Enable'}
+                {pushState.status === 'enabled' ? t('notification.disable') : t('notification.enable')}
               </button>
             )}
           </div>
@@ -104,9 +106,9 @@ export default function NotificationsPage() {
 
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {loading && notifications.length === 0 ? (
-          <div className="empty">Loading...</div>
+          <div className="empty">{t('notification.loading')}</div>
         ) : notifications.length === 0 ? (
-          <div className="empty">No notifications yet. They'll appear here when something happens.</div>
+          <div className="empty">{t('notification.empty')}</div>
         ) : (
           notifications.map(n => (
             <div

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle, ProductCard } from '../../components/ui';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -22,6 +23,7 @@ const GENERAL_SUBS = [
 export default function GeneralProductsPage() {
   const navigate = useNavigate();
   const device = useDevice();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
   const [isTyping, setIsTyping] = useState(false);
@@ -44,7 +46,7 @@ export default function GeneralProductsPage() {
       setActiveVendor(p.vendorId);
       await addItem(p.id);
     } catch (err: any) {
-      setCartError(err?.response?.data?.message || err?.message || 'Imeshindikana kuongeza kwenye kikapu');
+      setCartError(err?.response?.data?.message || err?.message || t('generalProducts.failedToAddToCart'));
     }
   }
 
@@ -86,8 +88,8 @@ export default function GeneralProductsPage() {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
         <button onClick={() => navigate(-1)} style={{ background: 'none', border: 'none', fontSize: '1.3rem', cursor: 'pointer' }}>←</button>
         <div>
-          <h1 style={{ fontSize: isPhone ? '1.2rem' : '1.5rem', fontWeight: 800 }}>🛍️ Mahitaji ya Jumla</h1>
-          <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Electronics · Vifaa · Fanicha · Vyombo · Hardware</p>
+          <h1 style={{ fontSize: isPhone ? '1.2rem' : '1.5rem', fontWeight: 800 }}>🛍️ {t('generalProducts.title')}</h1>
+          <p style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('generalProducts.subtitle')}</p>
         </div>
       </div>
 
@@ -95,14 +97,14 @@ export default function GeneralProductsPage() {
       <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1rem', marginBottom: '1.5rem', border: '1px solid var(--line)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
           <span style={{ fontSize: '1.2rem' }}>🤖</span>
-          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>Smart Shopping Assistant</span>
+          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{t('generalProducts.smartAssistant')}</span>
         </div>
 
         {/* Chat messages */}
         <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: '0.75rem' }}>
           {chatMessages.length === 0 && (
             <p style={{ color: 'var(--muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>
-              Eleza unachohitaji, nitakusaidia kupata
+              {t('generalProducts.describeNeeds')}
             </p>
           )}
           {chatMessages.map((msg, i) => (
@@ -134,17 +136,17 @@ export default function GeneralProductsPage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder="Eleza unachohitaji..."
+            placeholder={t('generalProducts.describePlaceholder')}
             style={{ flex: 1, padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)', fontSize: '0.85rem' }}
           />
           <button className="btn btn-primary" onClick={handleSendMessage} style={{ padding: '0.65rem 1rem' }}>
-            Tuma
+            {t('common.send')}
           </button>
         </div>
       </div>
 
       {/* Subcategories */}
-      <SectionTitle title="Categories" emoji="📦" />
+      <SectionTitle title={t('common.categories')} emoji="📦" />
       <div style={{ display: 'grid', gridTemplateColumns: isPhone ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: '0.75rem', marginBottom: '1.5rem' }}>
         {GENERAL_SUBS.map((sub) => (
           <button
@@ -179,14 +181,14 @@ export default function GeneralProductsPage() {
                     imageUrl={p.imageUrl}
                     stockQuantity={p.stockQuantity}
                     unit={p.unit}
-                    actionLabel={p.stockQuantity <= 0 ? 'Haipatikani' : 'Kikapuni'}
+                    actionLabel={p.stockQuantity <= 0 ? t('common.unavailable') : t('cart.addToCart')}
                     onClick={() => handleAdd(p)}
                   />
                 ))}
               </div>
             ) : (
               <div className="card" style={{ textAlign: 'center', color: 'var(--muted)', padding: '2rem 0', marginBottom: '1.5rem' }}>
-                Hakuna bidhaa katika kundi hili kwa sasa. Angalia tena hivi karibuni.
+                {t('generalProducts.noProductsInCategory')}
               </div>
             )
           )}

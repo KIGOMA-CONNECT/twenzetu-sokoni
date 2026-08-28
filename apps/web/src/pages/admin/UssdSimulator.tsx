@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 
 const PHONE_NUMBERS = [
@@ -9,6 +10,7 @@ const PHONE_NUMBERS = [
 ];
 
 export default function UssdSimulator() {
+  const { t } = useTranslation();
   const [selectedPhone, setSelectedPhone] = useState(PHONE_NUMBERS[0].phone);
   const [input, setInput] = useState('');
   const [history, setHistory] = useState<{ type: 'request' | 'response'; text: string }[]>([]);
@@ -77,11 +79,9 @@ export default function UssdSimulator() {
   return (
     <div style={{ maxWidth: 600, margin: '0 auto', padding: 24 }}>
       <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 4, color: '#1a1a2e' }}>
-        USSD Simulator
+        {t('admin.ussdTitle')}
       </h2>
-      <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }}>
-        Simulate dialing <strong>*150*30#</strong> on your phone
-      </p>
+      <p style={{ fontSize: 13, color: '#666', marginBottom: 16 }} dangerouslySetInnerHTML={{ __html: t('admin.ussdSubtitle') }} />
 
       <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
         <select
@@ -93,7 +93,7 @@ export default function UssdSimulator() {
             border: '1px solid #d1d5db',
             borderRadius: 8,
             fontSize: 13,
-            background: '#fff',
+            background: 'var(--surface)',
           }}
         >
           {PHONE_NUMBERS.map((p) => (
@@ -115,7 +115,7 @@ export default function UssdSimulator() {
             cursor: 'pointer',
           }}
         >
-          Dial *150*30#
+          {t('admin.dial')}
         </button>
       </div>
 
@@ -137,7 +137,7 @@ export default function UssdSimulator() {
       >
         {history.length === 0 && (
           <div style={{ color: '#666', fontStyle: 'italic' }}>
-            Tap "Dial *150*30#" to start a session...
+            {t('admin.tapToStart')}
           </div>
         )}
         {history.map((entry, i) => (
@@ -154,7 +154,7 @@ export default function UssdSimulator() {
           </div>
         ))}
         {loading && (
-          <div style={{ color: '#fbbf24' }}>Processing...</div>
+          <div style={{ color: '#fbbf24' }}>{t('admin.processing')}</div>
         )}
       </div>
 
@@ -164,7 +164,7 @@ export default function UssdSimulator() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter your choice (e.g. 1, 2, 0)"
+            placeholder={t('admin.ussdPlaceholder')}
             autoFocus
             style={{
               flex: 1,
@@ -189,7 +189,7 @@ export default function UssdSimulator() {
               opacity: loading || !input.trim() ? 0.5 : 1,
             }}
           >
-            Send
+            {t('admin.sendUssd')}
           </button>
           <button
             type="button"
@@ -204,20 +204,20 @@ export default function UssdSimulator() {
               cursor: 'pointer',
             }}
           >
-            End
+            {t('admin.end')}
           </button>
         </form>
       ) : (
         <div style={{ marginTop: 12, textAlign: 'center', color: '#666', fontSize: 13 }}>
-          Session ended. Click "Dial *150*30#" to start a new session.
+          {t('admin.sessionEndedClick')}
         </div>
       )}
 
       <div style={{ marginTop: 24, padding: 12, background: 'var(--bg)', borderRadius: 8, fontSize: 12, color: '#666' }}>
-        <strong>Quick Guide:</strong><br />
+        <strong>{t('admin.quickGuide')}</strong><br />
         0 = Back/Exit &nbsp;|&nbsp; 1-5 = Menu options &nbsp;|&nbsp;
-        Customer: Shop → Categories → Products → Add to Cart → Checkout<br />
-        Vendor: View Orders → My Products → My Sales → My Wallet
+        {t('admin.shopCategories')}<br />
+        {t('admin.vendorGuide')}
       </div>
     </div>
   );

@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@sentry/react": "^10.70.0",
     "i18next": "^26.3.6",
+    "react-helmet-async": "^3.0.0",
     "react-i18next": "^17.0.11",
     "socket.io-client": "^4.8.3"
   }

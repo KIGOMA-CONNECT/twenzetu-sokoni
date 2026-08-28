@@ -75,10 +75,7 @@ export * from './lib/poi/poi-type';
 export * from './lib/poi/hyperlocal-poi.aggregate';
 export * from './lib/poi/hyperlocal-poi.repository.interface';
 // Finance
-export * from './lib/finance/micro-loan-status';
-export * from './lib/finance/micro-loan.aggregate';
 export * from './lib/finance/credit-score';
-export * from './lib/finance/micro-loan.repository.interface';
 export * from './lib/finance/credit-score.repository.interface';
 // B2B
 export * from './lib/b2b/bulk-order-status';

@@ -7,11 +7,11 @@ import { VENDOR_CATEGORIES, PLATFORM_COMMISSION, DEFAULT_PLATFORM_COMMISSION } f
 
 export default function VendorOnboarding() {
   const { t } = useTranslation();
+  const STEPS = [t('vendor.onboarding.shopInfo'), t('vendor.onboarding.contactLocation'), t('vendor.onboarding.kycDocuments'), t('vendor.onboarding.reviewSubmit')];
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const STEPS = [t('vendor.onboarding.stepShopInfo'), t('vendor.onboarding.stepContact'), t('vendor.onboarding.stepKyc'), t('vendor.onboarding.stepReview')];
 
   const [form, setForm] = useState({
     shopName: '',
@@ -104,7 +104,7 @@ export default function VendorOnboarding() {
       <div className="card" style={{ padding: '2rem' }}>
         {step === 0 && (
           <>
-            <h3 className="card-title">{t('vendor.onboarding.shopInformation')}</h3>
+            <h3 className="card-title">{t('vendor.onboarding.shopInfo')}</h3>
             <div className="field">
               <label className="field-label">{t('vendor.onboarding.shopName')} *</label>
               <input className="input" value={form.shopName} onChange={e => update('shopName', e.target.value)} placeholder={t('vendor.onboarding.shopNamePlaceholder')} />
@@ -122,21 +122,21 @@ export default function VendorOnboarding() {
               </select>
             </div>
             <div className="card-flat" style={{ padding: '0.75rem 1rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
-              <strong>{t('vendor.onboarding.platformCommission')}:</strong> {(PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION)}% — {t('vendor.onboarding.cannotChange')}.
+              <strong>{t('vendor.onboarding.commission')}:</strong> {(PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION)}% — {t('vendor.onboarding.commissionNote')}
             </div>
           </>
         )}
 
         {step === 1 && (
           <>
-            <h3 className="card-title">{t('vendor.onboarding.contactAndLocation')}</h3>
+            <h3 className="card-title">{t('vendor.onboarding.contactLocation')}</h3>
             <div className="field">
               <label className="field-label">{t('vendor.onboarding.phoneNumber')} *</label>
-              <input className="input" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder="+255 7XX XXX XXX" />
+              <input className="input" value={form.phone} onChange={e => update('phone', e.target.value)} placeholder={t('vendor.onboarding.phonePlaceholder')} />
             </div>
             <div className="field">
               <label className="field-label">{t('vendor.onboarding.emailOptional')}</label>
-              <input className="input" value={form.email} onChange={e => update('email', e.target.value)} placeholder="shop@example.com" />
+              <input className="input" value={form.email} onChange={e => update('email', e.target.value)} placeholder={t('vendor.onboarding.emailPlaceholder')} />
             </div>
             <div className="field">
               <label className="field-label">{t('vendor.onboarding.businessAddress')}</label>
@@ -145,11 +145,11 @@ export default function VendorOnboarding() {
             <div className="grid grid-2">
               <div className="field">
                 <label className="field-label">{t('vendor.onboarding.gpsLatitude')}</label>
-                <input className="input" value={form.gpsLatitude} onChange={e => update('gpsLatitude', e.target.value)} placeholder="-6.7924" />
+                <input className="input" value={form.gpsLatitude} onChange={e => update('gpsLatitude', e.target.value)} placeholder={t('vendor.onboarding.latitudePlaceholder')} />
               </div>
               <div className="field">
                 <label className="field-label">{t('vendor.onboarding.gpsLongitude')}</label>
-                <input className="input" value={form.gpsLongitude} onChange={e => update('gpsLongitude', e.target.value)} placeholder="39.2083" />
+                <input className="input" value={form.gpsLongitude} onChange={e => update('gpsLongitude', e.target.value)} placeholder={t('vendor.onboarding.longitudePlaceholder')} />
               </div>
             </div>
           </>
@@ -168,7 +168,7 @@ export default function VendorOnboarding() {
               <input className="input" value={kyc.tinNumber} onChange={e => setKyc(k => ({ ...k, tinNumber: e.target.value }))} placeholder={t('vendor.onboarding.tinPlaceholder')} />
             </div>
             <div className="field">
-              <label className="field-label">{t('vendor.onboarding.businessLicenseNumber')}</label>
+              <label className="field-label">{t('vendor.onboarding.businessLicense')}</label>
               <input className="input" value={kyc.licenseNumber} onChange={e => setKyc(k => ({ ...k, licenseNumber: e.target.value }))} placeholder={t('vendor.onboarding.licensePlaceholder')} />
             </div>
           </>
@@ -176,16 +176,16 @@ export default function VendorOnboarding() {
 
         {step === 3 && (
           <>
-            <h3 className="card-title">{t('vendor.onboarding.reviewAndSubmit')}</h3>
+            <h3 className="card-title">{t('vendor.onboarding.reviewSubmit')}</h3>
             <div className="card-flat" style={{ marginBottom: '1rem' }}>
-              <p><strong>{t('vendor.onboarding.shopLabel')}:</strong> {form.shopName}</p>
-              <p><strong>{t('vendor.onboarding.categoryLabel')}:</strong> {form.category}</p>
-              <p><strong>{t('vendor.onboarding.phoneLabel')}:</strong> {form.phone}</p>
-              <p><strong>{t('vendor.onboarding.addressLabel')}:</strong> {form.address || '-'}</p>
-              <p><strong>{t('vendor.onboarding.commissionLabel')}:</strong> {PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION}%</p>
-              <p><strong>{t('vendor.onboarding.nidaLabel')}:</strong> {kyc.nidaNumber || '-'}</p>
+              <p><strong>{t('vendor.onboarding.shop')}:</strong> {form.shopName}</p>
+              <p><strong>{t('vendor.onboarding.category')}:</strong> {form.category}</p>
+              <p><strong>{t('vendor.onboarding.phone')}:</strong> {form.phone}</p>
+              <p><strong>{t('vendor.onboarding.address')}:</strong> {form.address || '-'}</p>
+              <p><strong>{t('vendor.onboarding.commission')}:</strong> {PLATFORM_COMMISSION[form.category] ?? DEFAULT_PLATFORM_COMMISSION}%</p>
+              <p><strong>{t('vendor.onboarding.nida')}:</strong> {kyc.nidaNumber || '-'}</p>
             </div>
-            <p className="text-muted" style={{ fontSize: '0.85rem' }}>{t('vendor.onboarding.reviewNotice')}</p>
+            <p className="text-muted" style={{ fontSize: '0.85rem' }}>{t('vendor.onboarding.applicationNote')}</p>
           </>
         )}
 
@@ -194,7 +194,7 @@ export default function VendorOnboarding() {
             {step === 0 ? t('vendor.onboarding.cancel') : t('vendor.onboarding.back')}
           </button>
           {step < STEPS.length - 1 ? (
-            <button className="btn btn-primary" onClick={next}>{t('vendor.onboarding.continue')}</button>
+            <button className="btn btn-primary" onClick={next}>{t('vendor.onboarding.continueBtn')}</button>
           ) : (
             <button className="btn btn-success" onClick={submit} disabled={submitting}>
               {submitting ? t('vendor.onboarding.submitting') : t('vendor.onboarding.submitApplication')}

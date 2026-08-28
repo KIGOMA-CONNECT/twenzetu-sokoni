@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -8,6 +9,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import { PageHeader, EmptyState } from '../../components/ui';
 import type { Order, Vendor, OrderItem } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface OrderReviewTarget {
   orderId: string;
@@ -16,6 +18,7 @@ interface OrderReviewTarget {
 }
 
 function OrderHistory() {
+  const { t } = useTranslation();
   const PAGE_SIZE = 10;
   const navigate = useNavigate();
   const { formatCurrency } = useCurrency();
@@ -150,23 +153,24 @@ function OrderHistory() {
 
   return (
     <div className="page">
-      <PageHeader title="Order History" subtitle="Track your past and current orders" />
+      <PageTitle title={t('orders.history.myOrders')} />
+      <PageHeader title={t('orders.history.title')} subtitle={t('orders.history.subtitle')} />
 
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
 
       {!loading && !error && (
         !orders || orders.length === 0 ? (
-          <EmptyState icon="📦" title="You have no orders yet." sub="Browse vendors and place your first order" />
+          <EmptyState icon="📦" title={t('orders.history.noOrders')} sub={t('orders.history.browseVendors')} />
         ) : (
           <div className="table-wrap">
             <table className="table">
               <thead>
                 <tr>
-                  <th>Vendor</th>
-                  <th>Status</th>
-                  <th>Total</th>
-                  <th>Date</th>
+                  <th>{t('orders.history.vendor')}</th>
+                  <th>{t('orders.history.status')}</th>
+                  <th>{t('orders.history.total')}</th>
+                  <th>{t('orders.history.date')}</th>
                   <th></th>
                 </tr>
               </thead>
@@ -190,30 +194,30 @@ function OrderHistory() {
                               <button
                                 className="btn btn-primary btn-sm"
                                 onClick={(e) => { e.stopPropagation(); navigate(`/orders/${o.id}/tracking`); }}
-                              >Track</button>
+                              >{t('orders.history.track')}</button>
                             )}
                             {o.status === 'DELIVERED' && (
                               reviewedOrders[o.id] ? (
-                                <span className="btn btn-sm" style={{ background: 'var(--success-soft)', color: '#166534', border: 'none', cursor: 'default' }}>✓ Reviewed</span>
+                                <span className="btn btn-sm" style={{ background: 'var(--success-soft)', color: '#166534', border: 'none', cursor: 'default' }}>{t('orders.history.reviewed')}</span>
                               ) : (
                                 <button
                                   className="btn btn-outline btn-sm"
                                   onClick={(e) => { e.stopPropagation(); openReview(o); }}
-                                >Rate &amp; Review</button>
+                                >{t('orders.history.rateReview')}</button>
                               )
                             )}
                             {o.status === 'DELIVERED' && (
                               driverReviewedOrders[o.id] ? (
-                                <span className="btn btn-sm" style={{ background: '#e0f2fe', color: '#075985', border: 'none', cursor: 'default' }}>✓ Driver Rated</span>
+                                <span className="btn btn-sm" style={{ background: '#e0f2fe', color: '#075985', border: 'none', cursor: 'default' }}>{t('orders.history.driverRated')}</span>
                               ) : (
                                 <button
                                   className="btn btn-outline btn-sm"
                                   onClick={(e) => { e.stopPropagation(); openDriverReview(o); }}
-                                >Rate Driver</button>
+                                >{t('orders.history.rateDriver')}</button>
                               )
                             )}
                             <span style={{ fontSize: '0.75rem', color: 'var(--faint)', fontStyle: 'italic' }}>
-                              {isExpanded ? '▾ hide' : '▸ details'}
+                              {isExpanded ? t('orders.history.hide') : t('orders.history.details')}
                             </span>
                           </div>
                         </td>
@@ -222,13 +226,13 @@ function OrderHistory() {
                         <tr key={`${o.id}-items`}>
                           <td colSpan={5} style={{ padding: '0 1rem 1rem', background: 'var(--surface)' }}>
                             <div className="card card-flat" style={{ marginTop: '0.5rem' }}>
-                              <div style={{ fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontSize: '0.85rem' }}>Order items — #{o.id}</div>
-                              {itemsLoading && <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>Loading items...</div>}
+                              <div style={{ fontWeight: 800, color: 'var(--ink)', marginBottom: '0.5rem', fontSize: '0.85rem' }}>{t('orders.history.orderItems', { id: o.id })}</div>
+                              {itemsLoading && <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>{t('orders.history.loadingItems')}</div>}
                               {itemsError && <div style={{ color: 'var(--danger)', fontSize: '0.85rem' }}>{itemsError}</div>}
                               {!itemsLoading && !itemsError && items && (
                                 <>
                                   {items.length === 0 ? (
-                                    <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>Item details unavailable for this order.</div>
+                                    <div style={{ color: 'var(--faint)', fontSize: '0.85rem' }}>{t('orders.history.itemsUnavailable')}</div>
                                   ) : (
                                     items.map((it, idx) => (
                                       <div key={idx} className="flex justify-between" style={{ fontSize: '0.85rem', padding: '0.25rem 0', color: 'var(--text)' }}>
@@ -240,11 +244,11 @@ function OrderHistory() {
                                 </>
                               )}
                               <div className="flex justify-between mt-1" style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text)', borderTop: '1px solid var(--line)', paddingTop: '0.5rem' }}>
-                                <span>Delivery fee</span>
+                                <span>{t('orders.history.deliveryFee')}</span>
                                 <span>{formatCurrency(o.deliveryFee || 0)}</span>
                               </div>
                               <div className="flex justify-between" style={{ fontWeight: 800, color: 'var(--ink)' }}>
-                                <span>Total</span>
+                                <span>{t('orders.history.total')}</span>
                                 <span className="text-brand">{formatCurrency(o.totalAmount || 0)}</span>
                               </div>
                             </div>
@@ -258,9 +262,9 @@ function OrderHistory() {
             </table>
             {totalPages > 1 && (
               <div className="flex items-center justify-center gap-1" style={{ padding: '1rem' }}>
-                <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Prev</button>
-                <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>Page {page} of {totalPages}</span>
-                <button className="btn btn-outline btn-sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>Next</button>
+                <button className="btn btn-outline btn-sm" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>{t('orders.history.prev')}</button>
+                <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('orders.history.pageOf', { current: page, total: totalPages })}</span>
+                <button className="btn btn-outline btn-sm" disabled={page >= totalPages} onClick={() => setPage((p) => p + 1)}>{t('orders.history.next')}</button>
               </div>
             )}
           </div>
@@ -273,14 +277,14 @@ function OrderHistory() {
           onClick={() => !driverReviewBusy && setDriverReviewOrderId(null)}
         >
           <div
-            style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+            style={{ background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' }}>
-              Rate Your Driver
+              {t('orders.history.rateYourDriver')}
             </div>
             <div className="field">
-              <label className="field-label">Driver Rating</label>
+              <label className="field-label">{t('orders.history.driverRating')}</label>
               <div className="flex" style={{ gap: '0.4rem' }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -298,20 +302,20 @@ function OrderHistory() {
               </div>
             </div>
             <div className="field">
-              <label className="field-label">Comment (optional)</label>
+              <label className="field-label">{t('orders.history.commentOptional')}</label>
               <textarea
                 className="input"
                 style={{ minHeight: '80px' }}
                 value={driverReviewComment}
                 onChange={(e) => setDriverReviewComment(e.target.value)}
-                placeholder="How was your delivery experience?"
+                placeholder={t('orders.history.howWasDeliveryExp')}
               />
             </div>
             {driverReviewError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{driverReviewError}</div>}
             <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <button className="btn btn-outline" onClick={() => setDriverReviewOrderId(null)} disabled={driverReviewBusy}>Cancel</button>
+              <button className="btn btn-outline" onClick={() => setDriverReviewOrderId(null)} disabled={driverReviewBusy}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={submitDriverReview} disabled={driverReviewBusy}>
-                {driverReviewBusy ? 'Submitting…' : 'Submit Rating'}
+                {driverReviewBusy ? t('orders.tracking.submitting') : t('orders.history.submitRating')}
               </button>
             </div>
           </div>
@@ -324,14 +328,14 @@ function OrderHistory() {
           onClick={() => !reviewBusy && setReviewTarget(null)}
         >
           <div
-            style={{ background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
+            style={{ background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '92vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' }}
             onClick={(e) => e.stopPropagation()}
           >
             <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' }}>
-              Rate &amp; Review — {reviewTarget.vendorName}
+              {t('orders.history.rateAndReview', { vendor: reviewTarget.vendorName })}
             </div>
             <div className="field">
-              <label className="field-label">Your Rating</label>
+              <label className="field-label">{t('orders.history.yourRating')}</label>
               <div className="flex" style={{ gap: '0.4rem' }}>
                 {[1, 2, 3, 4, 5].map((n) => (
                   <button
@@ -349,20 +353,20 @@ function OrderHistory() {
               </div>
             </div>
             <div className="field">
-              <label className="field-label">Comment (optional)</label>
+              <label className="field-label">{t('orders.history.commentOptional')}</label>
               <textarea
                 className="input"
                 style={{ minHeight: '80px' }}
                 value={reviewComment}
                 onChange={(e) => setReviewComment(e.target.value)}
-                placeholder="How was your order?"
+                placeholder={t('orders.history.howWasOrder')}
               />
             </div>
             {reviewError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{reviewError}</div>}
             <div className="flex" style={{ justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-              <button className="btn btn-outline" onClick={() => setReviewTarget(null)} disabled={reviewBusy}>Cancel</button>
+              <button className="btn btn-outline" onClick={() => setReviewTarget(null)} disabled={reviewBusy}>{t('common.cancel')}</button>
               <button className="btn btn-primary" onClick={submitReview} disabled={reviewBusy}>
-                {reviewBusy ? 'Submitting…' : 'Submit Review'}
+                {reviewBusy ? t('orders.tracking.submitting') : t('orders.history.submitReview')}
               </button>
             </div>
           </div>

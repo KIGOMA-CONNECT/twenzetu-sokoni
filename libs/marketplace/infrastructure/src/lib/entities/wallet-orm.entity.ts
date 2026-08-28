@@ -7,7 +7,7 @@ export class WalletOrmEntity extends TenantAwareEntity {
   @Column({ name: 'owner_id', type: 'uuid' })
   public ownerId!: string;
 
-  @Column({ name: 'owner_type', type: 'varchar', length: 10 })
+  @Column({ name: 'owner_type', type: 'varchar', length: 20 })
   public ownerType!: string;
 
   @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })

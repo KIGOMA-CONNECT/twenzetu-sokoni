@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export interface ToastItem {
   id: string;
@@ -16,6 +17,7 @@ export function ToastStack({
   onDismiss: (id: string) => void;
   autoDismissMs?: number;
 }) {
+  const { t } = useTranslation();
   useEffect(() => {
     if (toasts.length === 0) return;
     const timers = toasts.map((t) =>
@@ -28,16 +30,16 @@ export function ToastStack({
 
   return (
     <div className="toast-stack" role="status" aria-live="polite">
-      {toasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.variant ?? 'info'}`}>
+      {toasts.map((toast) => (
+        <div key={toast.id} className={`toast toast-${toast.variant ?? 'info'}`}>
           <div style={{ minWidth: 0 }}>
-            {t.title && <div className="toast-title">{t.title}</div>}
-            <div>{t.message}</div>
+            {toast.title && <div className="toast-title">{toast.title}</div>}
+            <div>{toast.message}</div>
           </div>
           <button
             className="toast-close"
-            aria-label="Dismiss notification"
-            onClick={() => onDismiss(t.id)}
+            aria-label={t('notifications.dismiss')}
+            onClick={() => onDismiss(toast.id)}
           >
             ✕
           </button>

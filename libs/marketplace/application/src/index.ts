@@ -110,10 +110,7 @@ export * from './lib/use-cases/kyc/verify-kyc.use-case';
 export * from './lib/use-cases/kyc/get-kyc-status.use-case';
 
 // Use Cases - Finance
-export * from './lib/use-cases/finance/request-loan.use-case';
-export * from './lib/use-cases/finance/repay-loan.use-case';
 export * from './lib/use-cases/finance/calculate-credit-score.use-case';
-export * from './lib/use-cases/finance/list-my-loans.use-case';
 
 // Use Cases - B2B
 export * from './lib/use-cases/b2b/create-bulk-order.use-case';

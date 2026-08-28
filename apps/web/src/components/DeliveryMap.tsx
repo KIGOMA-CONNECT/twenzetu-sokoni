@@ -87,7 +87,7 @@ export default function DeliveryMap({
   return (
     <div
       ref={mapRef}
-      style={{ width: '100%', height, borderRadius: 10, border: '1px solid #e2e8f0', zIndex: 0 }}
+      style={{ width: '100%', height, borderRadius: 10, border: '1px solid var(--line)', zIndex: 0 }}
     />
   );
 }

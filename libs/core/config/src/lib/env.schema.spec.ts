@@ -62,7 +62,7 @@ describe('envSchema', () => {
     expect(env.DB_HOST).toBe('localhost');
     expect(env.DB_PORT).toBe(5432);
     expect(env.JWT_SECRET).toBe('dev-jwt-secret');
-    expect(env.JWT_EXPIRY).toBe('7d');
+    expect(env.JWT_EXPIRY).toBe('1h');
     expect(env.JWT_REFRESH_EXPIRY).toBe('30d');
     expect(env.OTP_EXPIRY_MINUTES).toBe(5);
     expect(env.OTP_LENGTH).toBe(6);

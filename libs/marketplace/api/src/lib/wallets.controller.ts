@@ -8,6 +8,8 @@ import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
 import { WalletWithdrawDto } from './dto/wallet-withdraw.dto';
+import { WalletTransferDto } from './dto/wallet-transfer.dto';
+import { WalletBankWithdrawDto } from './dto/wallet-bank-withdraw.dto';
 import { MobileMoneyService, defaultCurrency, getCurrencyForPhone, providerLabel } from '@afri-market/integrations';
 import {
   GetWalletUseCase,
@@ -41,7 +43,8 @@ export class WalletsController {
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async getMyWallet(@CurrentUser() user: JwtPayload) {
-    const wallet = await this.getWallet.execute(user.tenantId, await this.resolveWalletOwner(user), getCurrencyForPhone(user.phoneNumber));
+    const ownerType = user.role === 'vendor' ? 'vendor' : user.role === 'driver' ? 'driver' : 'customer';
+    const wallet = await this.getWallet.execute(user.tenantId, await this.resolveWalletOwner(user), getCurrencyForPhone(user.phoneNumber), ownerType);
     return {
       id: wallet.id,
       balance: wallet.balance,
@@ -303,6 +306,233 @@ export class WalletsController {
       reference,
       balance,
       message: `${providerLabel(body.provider)} withdrawal of ${body.amount} ${currency} initiated to ${body.phoneNumber}.`,
+    };
+  }
+
+  @Post('transfer')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Transfer funds to another user wallet (P2P)', description: 'Transfers funds between wallets by recipient phone, email, or user ID' })
+  @ApiBody({ type: WalletTransferDto })
+  @ApiResponse({ status: 201, description: 'Transfer successful' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance, recipient not found, or self-transfer attempt' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  public async transfer(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: WalletTransferDto,
+  ) {
+    const senderOwnerId = await this.resolveWalletOwner(user);
+    const reference = `transfer_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    // Look up recipient user by identifier type
+    let recipientUser: { id: string } | null = null;
+    if (body.recipientType === 'phone') {
+      recipientUser = await this.ds.query(
+        `SELECT id FROM users WHERE phone_number = $1 LIMIT 1`,
+        [body.recipientIdentifier],
+      ).then(rows => rows[0] ?? null);
+    } else if (body.recipientType === 'email') {
+      recipientUser = await this.ds.query(
+        `SELECT id FROM users WHERE email = $1 LIMIT 1`,
+        [body.recipientIdentifier],
+      ).then(rows => rows[0] ?? null);
+    } else {
+      recipientUser = await this.ds.query(
+        `SELECT id FROM users WHERE id = $1 LIMIT 1`,
+        [body.recipientIdentifier],
+      ).then(rows => rows[0] ?? null);
+    }
+
+    if (!recipientUser) {
+      throw new BadRequestException('Recipient not found');
+    }
+
+    if (recipientUser.id === user.sub) {
+      throw new BadRequestException('Cannot transfer to yourself');
+    }
+
+    // Get sender wallet
+    const senderWallets = await this.ds.query(
+      `SELECT id, balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+      [senderOwnerId, user.tenantId],
+    );
+    if (!senderWallets.length) {
+      throw new BadRequestException('Sender wallet not found');
+    }
+    const senderWallet = senderWallets[0];
+
+    if (Number(senderWallet.balance) < body.amount) {
+      throw new BadRequestException('Insufficient wallet balance');
+    }
+
+    // Get or create recipient wallet
+    let recipientWallets = await this.ds.query(
+      `SELECT id FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+      [recipientUser.id, user.tenantId],
+    );
+
+    if (!recipientWallets.length) {
+      await this.ds.query(
+        `INSERT INTO wallets (id, tenant_id, owner_id, owner_type, balance, pending_balance, currency, version, created_at, updated_at)
+         VALUES (gen_random_uuid(), $1, $2, 'customer', 0, 0, 'TZS', 1, NOW(), NOW())`,
+        [user.tenantId, recipientUser.id],
+      );
+      recipientWallets = await this.ds.query(
+        `SELECT id FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+        [recipientUser.id, user.tenantId],
+      );
+    }
+    const recipientWalletId = recipientWallets[0].id;
+
+    // Debit sender
+    await this.ds.query(
+      `UPDATE wallets SET balance = balance - $1, version = version + 1, updated_at = NOW()
+       WHERE id = $2`,
+      [body.amount, senderWallet.id],
+    );
+
+    // Credit recipient
+    await this.ds.query(
+      `UPDATE wallets SET balance = balance + $1, version = version + 1, updated_at = NOW()
+       WHERE id = $2`,
+      [body.amount, recipientWalletId],
+    );
+
+    // Record sender transaction
+    await this.ds.query(
+      `INSERT INTO wallet_transactions (id, tenant_id, wallet_id, type, amount, currency, description, reference, reference_type, balance_before, balance_after, created_at)
+       VALUES (gen_random_uuid(), $1, $2, 'debit', $3, 'TZS', $4, $5, 'transfer', $6, $7, NOW())`,
+      [
+        user.tenantId, senderWallet.id, body.amount,
+        body.description ?? `Transfer to ${body.recipientIdentifier}`,
+        reference,
+        Number(senderWallet.balance),
+        Number(senderWallet.balance) - body.amount,
+      ],
+    );
+
+    // Record recipient transaction
+    const recipientBalanceAfter = await this.ds.query(
+      `SELECT balance FROM wallets WHERE id = $1`,
+      [recipientWalletId],
+    ).then(rows => Number(rows[0].balance));
+
+    await this.ds.query(
+      `INSERT INTO wallet_transactions (id, tenant_id, wallet_id, type, amount, currency, description, reference, reference_type, balance_before, balance_after, created_at)
+       VALUES (gen_random_uuid(), $1, $2, 'credit', $3, 'TZS', $4, $5, 'transfer', $6, $7, NOW())`,
+      [
+        user.tenantId, recipientWalletId, body.amount,
+        body.description ?? `Transfer from ${user.sub}`,
+        reference,
+        recipientBalanceAfter - body.amount,
+        recipientBalanceAfter,
+      ],
+    );
+
+    // Record the transfer
+    await this.ds.query(
+      `INSERT INTO wallet_transfers (id, tenant_id, sender_id, sender_type, recipient_id, recipient_type, amount, currency, description, reference, status, created_at)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, 'TZS', $7, $8, 'COMPLETED', NOW())`,
+      [
+        user.tenantId, senderOwnerId, user.role,
+        recipientUser.id, 'customer',
+        body.amount, body.description ?? null, reference,
+      ],
+    );
+
+    const updatedSenderBalance = await this.ds.query(
+      `SELECT balance FROM wallets WHERE id = $1`,
+      [senderWallet.id],
+    ).then(rows => Number(rows[0].balance));
+
+    return {
+      success: true,
+      reference,
+      balance: updatedSenderBalance,
+      message: `Transferred ${body.amount} TZS to ${body.recipientIdentifier}.`,
+    };
+  }
+
+  @Post('withdraw-bank')
+  @UseInterceptors(CacheInvalidationInterceptor)
+  @UseGuards(AuthGuard('jwt'))
+  @ApiOperation({ summary: 'Withdraw wallet balance to bank account (vendors & drivers)', description: 'Initiates a bank transfer from wallet balance to a bank account' })
+  @ApiBody({ type: WalletBankWithdrawDto })
+  @ApiResponse({ status: 201, description: 'Bank withdrawal initiated' })
+  @ApiResponse({ status: 400, description: 'Insufficient balance or invalid bank details' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Only vendors and drivers can withdraw' })
+  public async withdrawBank(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: WalletBankWithdrawDto,
+  ) {
+    if (user.role !== 'vendor' && user.role !== 'driver') {
+      throw new ForbiddenException('Only vendors and drivers can withdraw wallet funds');
+    }
+
+    const ownerId = await this.resolveWalletOwner(user);
+    const reference = `bank_withdrawal_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+
+    // Get wallet
+    const wallets = await this.ds.query(
+      `SELECT id, balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+      [ownerId, user.tenantId],
+    );
+    if (!wallets.length) {
+      throw new BadRequestException('Wallet not found');
+    }
+    const wallet = wallets[0];
+
+    if (Number(wallet.balance) < body.amount) {
+      throw new BadRequestException('Insufficient wallet balance');
+    }
+
+    // Debit wallet
+    await this.ds.query(
+      `UPDATE wallets SET balance = balance - $1, version = version + 1, updated_at = NOW()
+       WHERE id = $2`,
+      [body.amount, wallet.id],
+    );
+
+    // Record wallet transaction
+    await this.ds.query(
+      `INSERT INTO wallet_transactions (id, tenant_id, wallet_id, type, amount, currency, description, reference, reference_type, balance_before, balance_after, created_at)
+       VALUES (gen_random_uuid(), $1, $2, 'debit', $3, 'TZS', $4, $5, 'bank_withdrawal', $6, $7, NOW())`,
+      [
+        user.tenantId, wallet.id, body.amount,
+        body.description ?? `Bank withdrawal to ${body.bankAccountNumber}`,
+        reference,
+        Number(wallet.balance),
+        Number(wallet.balance) - body.amount,
+      ],
+    );
+
+    // Record bank withdrawal
+    await this.ds.query(
+      `INSERT INTO wallet_withdrawals (tenant_id, user_id, amount, phone_number, provider, reference, status, message)
+       VALUES ($1, $2, $3, $4, 'bank', $5, 'PENDING', $6)`,
+      [
+        user.tenantId, user.sub, body.amount, body.bankAccountNumber,
+        reference,
+        JSON.stringify({
+          bankName: body.bankName,
+          bankAccountNumber: body.bankAccountNumber,
+          bankAccountName: body.bankAccountName,
+          bankCode: body.bankCode,
+        }),
+      ],
+    );
+
+    const updatedBalance = await this.ds.query(
+      `SELECT balance FROM wallets WHERE id = $1`,
+      [wallet.id],
+    ).then(rows => Number(rows[0].balance));
+
+    return {
+      success: true,
+      reference,
+      balance: updatedBalance,
+      message: `Bank withdrawal of ${body.amount} TZS to ${body.bankName} (${body.bankAccountNumber}) initiated.`,
     };
   }
 }

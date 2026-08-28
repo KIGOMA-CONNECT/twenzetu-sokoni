@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useApi } from '../../../hooks/useApi';
 import api from '../../../api/client';
 import { LoadingSpinner } from '../../../components/LoadingSpinner';
-import { ErrorMessage } from '../../../components/ErrorMessage';
 import type { WorkflowDefinition, WorkflowInstance } from '../../../types';
 const s: Record<string, React.CSSProperties> = {
   input: { padding: '0.4rem', border: '1px solid #cbd5e1', borderRadius: '4px', fontSize: '0.85rem', width: '100%' }, btn: { padding: '0.4rem 0.8rem', borderRadius: '5px', border: 'none', color: '#fff', fontWeight: 500, fontSize: '0.8rem' },
@@ -22,10 +21,10 @@ export default function AdminWorkflows() {
   const reject = async (id: string) => { try { await api.patch(`/workflows/instances/${id}/reject`, {}); } catch (err: any) { setActionError(err.response?.data?.message || err.message); } };
 
   if (l1 || l2) return <LoadingSpinner />;
-  if (e1) return <ErrorMessage message={e1} />;
 
   return (
     <div>
+      {e1 && <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', borderRadius: '8px', background: '#fef2f2', border: '1px solid #fecaca', color: '#991b1b', fontSize: '0.85rem' }}>{e1}</div>}
       <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>Workflow Approvals</h2>
       <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '1rem' }}>
         <button onClick={() => setTab('definitions')} style={{ padding: '0.4rem 0.8rem', borderRadius: '5px', border: tab === 'definitions' ? '2px solid #3b82f6' : '1px solid #cbd5e1', background: tab === 'definitions' ? 'var(--info-soft)' : '#fff', fontWeight: 500, color: tab === 'definitions' ? '#3b82f6' : 'var(--muted)' }}>Definitions</button>

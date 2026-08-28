@@ -14,7 +14,7 @@ export const envSchema = z.object({
   DB_RUNTIME_USER: z.string().default('afri_runtime'),
   DB_RUNTIME_PASSWORD: z.string().default('afri_runtime_dev_password'),
   JWT_SECRET: z.string().default('dev-jwt-secret'),
-  JWT_EXPIRY: z.string().default('7d'),
+  JWT_EXPIRY: z.string().default('1h'),
   JWT_REFRESH_EXPIRY: z.string().default('30d'),
   OTP_EXPIRY_MINUTES: z.coerce.number().default(5),
   OTP_LENGTH: z.coerce.number().default(6),
@@ -34,6 +34,17 @@ export const envSchema = z.object({
   BEEM_PAYMENT_SECRET_KEY: z.string().default(''),
   GOOGLE_MAPS_API_KEY: z.string().default(''),
   GOOGLE_FCM_SERVER_KEY: z.string().default(''),
+  AI_PROVIDER: z.string().default('gemini'),
+  GEMINI_API_KEY: z.string().default(''),
+  GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+  GEMINI_BASE_URL: z.string().default('https://generativelanguage.googleapis.com/v1beta/models'),
+  OPENAI_API_KEY: z.string().default(''),
+  OPENAI_MODEL: z.string().default(''),
+  ANTHROPIC_API_KEY: z.string().default(''),
+  ANTHROPIC_MODEL: z.string().default(''),
+  AI_TEMPERATURE: z.coerce.number().optional(),
+  AI_MAX_TOKENS: z.coerce.number().optional(),
+  AI_TIMEOUT_MS: z.coerce.number().optional(),
 }).superRefine((val, ctx) => {
   if (val.APP_ENV !== 'production') return;
   const defaults = new Set(['postgres', 'afri_owner_dev_password', 'afri_runtime_dev_password', 'dev-jwt-secret']);

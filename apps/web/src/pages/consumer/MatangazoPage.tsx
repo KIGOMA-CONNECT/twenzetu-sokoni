@@ -56,7 +56,7 @@ async function copyText(text: string): Promise<boolean> {
 
 export default function MatangazoPage() {
   const { t } = useTranslation();
-  const [copyError, setCopyError] = useState<string | null>(null);
+  const [, setCopyError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { data: ads, loading: adsLoading, error: adsError } = useApi<Advert[]>('/public/ads', []);
   const { data: categories, loading: catsLoading } = useApi<Category[]>('/public/categories', []);
@@ -85,18 +85,18 @@ export default function MatangazoPage() {
     <div className="page">
       <PageHeader
         title={t('nav.promotions', 'Matangazo')}
-        sub="Chagua tangazo au kategoria, nakili kiungo na ushiriki na marafiki zako"
+        sub={t('matangazo.subtitle')}
       />
 
       {/* ── Adverts ── */}
       <section className="section">
         <div className="flex gap-2" style={{ justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-          <h3 className="card-title">Tangazo la Siku</h3>
+          <h3 className="card-title">{t('matangazo.dailyAd')}</h3>
         </div>
         {adsLoading && <LoadingSpinner />}
         {adsError && <ErrorMessage message={adsError} />}
         {!adsLoading && !adsError && (!ads || ads.length === 0) && (
-          <EmptyState icon="📣" title="Hakuna matangazo kwa sasa" sub="Tazama tena baadaye" />
+          <EmptyState icon="📣" title={t('matangazo.noAds')} sub={t('matangazo.checkBackLater')} />
         )}
         {!adsLoading && ads && ads.length > 0 && (
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
@@ -111,10 +111,10 @@ export default function MatangazoPage() {
                   {ad.body && <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0, lineHeight: 1.5 }}>{ad.body}</p>}
                   <div className="flex gap-2 wrap" style={{ marginTop: 'auto', paddingTop: '0.5rem' }}>
                     <button className="btn btn-primary btn-sm" onClick={() => goTo(ad.ctaUrl)}>
-                      {ad.ctaLabel || 'Fungua'}
+                      {ad.ctaLabel || t('matangazo.open')}
                     </button>
                     <button className="btn btn-outline btn-sm" onClick={() => handleCopy(`ad-${ad.id}`, shareLink)}>
-                      {copiedKey === `ad-${ad.id}` ? '✓ Imekopiwa!' : '🔗 Nakili Kiungo'}
+                      {copiedKey === `ad-${ad.id}` ? t('matangazo.copied') : t('matangazo.copyLink')}
                     </button>
                   </div>
                 </div>
@@ -126,10 +126,10 @@ export default function MatangazoPage() {
 
       {/* ── Category share links ── */}
       <section className="section">
-        <h3 className="card-title">Nakili Kiungo cha Kategoria</h3>
+        <h3 className="card-title">{t('matangazo.copyCategoryLink')}</h3>
         {catsLoading && <LoadingSpinner />}
         {!catsLoading && parents.length === 0 && (
-          <EmptyState icon="🗂️" title="Hakuna kategoria" sub="Kategoria zitakapokuwa zinaonyeshwa hapa" />
+          <EmptyState icon="🗂️" title={t('matangazo.noCategories')} sub={t('matangazo.categoriesWillAppear')} />
         )}
         {!catsLoading && parents.length > 0 && (
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '0.75rem' }}>
@@ -148,9 +148,9 @@ export default function MatangazoPage() {
                     </div>
                   </div>
                   <div className="flex gap-2 wrap">
-                    <button className="btn btn-primary btn-sm" onClick={() => goTo(route)}>Fungua</button>
+                    <button className="btn btn-primary btn-sm" onClick={() => goTo(route)}>{t('matangazo.open')}</button>
                     <button className="btn btn-outline btn-sm" onClick={() => handleCopy(key, route)}>
-                      {copiedKey === key ? '✓ Imekopiwa!' : '🔗 Nakili'}
+                      {copiedKey === key ? t('matangazo.copied') : t('matangazo.copyLink')}
                     </button>
                   </div>
                 </div>
@@ -162,11 +162,11 @@ export default function MatangazoPage() {
 
       {/* ── How to share ── */}
       <div className="card" style={{ marginTop: '1rem' }}>
-        <h3 className="card-title">Jinsi ya Kushiriki</h3>
+        <h3 className="card-title">{t('matangazo.howToShare')}</h3>
         <ol style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.8, paddingLeft: '1.25rem', margin: 0 }}>
-          <li>Bonyeza <b>Nakili Kiungo</b> kwenye kategoria au tangazo unalotaka.</li>
-          <li>Fungua WhatsApp, Telegram au Mtandao wa Kijamii.</li>
-          <li>Bandika (paste) kiungo na utume kwa marafiki na wateja wako.</li>
+          <li>{t('matangazo.shareStep1')}</li>
+          <li>{t('matangazo.shareStep2')}</li>
+          <li>{t('matangazo.shareStep3')}</li>
         </ol>
       </div>
     </div>

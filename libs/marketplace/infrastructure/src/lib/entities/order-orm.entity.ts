@@ -6,6 +6,7 @@ import { Column, Entity, Index } from 'typeorm';
 @Index(['vendorId'])
 @Index(['driverId'])
 @Index(['status'])
+@Index(['createdAt'])
 @Index(['tenantId', 'vendorId'])
 @Index(['tenantId', 'status'])
 @Index(['tenantId', 'customerId'])

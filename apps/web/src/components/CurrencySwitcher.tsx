@@ -3,7 +3,7 @@ import { useCurrency, COUNTRIES } from '../context/CurrencyContext';
 
 export function CurrencySwitcher() {
   const { currency, setCurrency } = useCurrency();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   return (
     <select
@@ -12,7 +12,7 @@ export function CurrencySwitcher() {
         setCurrency(e.target.value);
         i18n.changeLanguage('en');
       }}
-      aria-label="Select currency"
+      aria-label={t('common.selectCurrency')}
       style={{
         width: '100%',
         padding: '4px 8px',

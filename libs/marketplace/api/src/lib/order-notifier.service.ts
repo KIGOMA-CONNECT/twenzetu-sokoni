@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
 import { ISmsService } from '@afri-market/integrations';
@@ -11,6 +11,8 @@ import { NotificationRouterService } from './notification-router.service';
  */
 @Injectable()
 export class OrderNotifierService {
+  private readonly logger = new Logger(OrderNotifierService.name);
+
   constructor(
     @InjectDataSource() private readonly ds: DataSource,
     @Inject(SMS_SERVICE) private readonly smsService: ISmsService,
@@ -49,7 +51,8 @@ export class OrderNotifierService {
             }
           : null,
       });
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Notification failed: ${error instanceof Error ? error.message : String(error)}`, 'OrderNotifierService');
       return;
     }
   }
@@ -85,7 +88,8 @@ export class OrderNotifierService {
             }
           : null,
       });
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Notification failed: ${error instanceof Error ? error.message : String(error)}`, 'OrderNotifierService');
       return;
     }
   }
@@ -130,7 +134,8 @@ export class OrderNotifierService {
             }
           : null,
       });
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Notification failed: ${error instanceof Error ? error.message : String(error)}`, 'OrderNotifierService');
       return;
     }
   }
@@ -178,7 +183,8 @@ export class OrderNotifierService {
             }
           : null,
       });
-    } catch {
+    } catch (error) {
+      this.logger.warn(`Notification failed: ${error instanceof Error ? error.message : String(error)}`, 'OrderNotifierService');
       return;
     }
   }

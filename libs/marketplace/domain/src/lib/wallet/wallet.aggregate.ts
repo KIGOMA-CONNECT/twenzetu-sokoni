@@ -3,7 +3,7 @@ import { AggregateRoot, EntityId, Money, TenantId } from '@afri-market/kernel';
 export interface CreateWalletProps {
   readonly tenantId: TenantId;
   readonly ownerId: EntityId;
-  readonly ownerType: 'vendor' | 'driver';
+  readonly ownerType: 'vendor' | 'driver' | 'customer';
   readonly currency?: string;
 }
 
@@ -11,7 +11,7 @@ export interface ReconstituteWalletProps {
   readonly id: EntityId;
   readonly tenantId: TenantId;
   readonly ownerId: EntityId;
-  readonly ownerType: 'vendor' | 'driver';
+  readonly ownerType: 'vendor' | 'driver' | 'customer';
   readonly balance: Money;
   readonly pendingBalance: Money;
   readonly version: number;
@@ -22,7 +22,7 @@ export class Wallet extends AggregateRoot<EntityId> {
     id: EntityId,
     private readonly _tenantId: TenantId,
     private readonly _ownerId: EntityId,
-    private readonly _ownerType: 'vendor' | 'driver',
+    private readonly _ownerType: 'vendor' | 'driver' | 'customer',
     private _balance: Money,
     private _pendingBalance: Money,
     private readonly _version: number,
@@ -46,7 +46,7 @@ export class Wallet extends AggregateRoot<EntityId> {
 
   public get tenantId(): TenantId { return this._tenantId; }
   public get ownerId(): EntityId { return this._ownerId; }
-  public get ownerType(): 'vendor' | 'driver' { return this._ownerType; }
+  public get ownerType(): 'vendor' | 'driver' | 'customer' { return this._ownerType; }
   public get balance(): Money { return this._balance; }
   public get pendingBalance(): Money { return this._pendingBalance; }
   public get version(): number { return this._version; }

@@ -1,6 +1,7 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AppLoggerService } from '@afri-market/core-logger';
+import * as Sentry from '@sentry/node';
 import {
   BusinessRuleViolationException,
   DomainException,
@@ -59,6 +60,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         exception.stack,
         GlobalExceptionFilter.name,
       );
+    }
+
+    if (process.env.SENTRY_DSN) {
+      Sentry.captureException(exception);
     }
 
     response.status(status).json({

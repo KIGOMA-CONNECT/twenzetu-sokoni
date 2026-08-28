@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+﻿import { expect, test } from '@playwright/test';
 
 // Full buyer journey: register -> login -> browse -> add to cart -> checkout.
 // MUTATES DATA (creates a user + order). Opt-in only:

@@ -20,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -34,3 +34,7 @@ jobs:
 
       - name: Build api + web
         run: npx nx run-many -t build -p api web
+
+  e2e:
+    needs: verify
+    uses: ./.github/workflows/e2e.yml

@@ -1,5 +1,6 @@
 ﻿import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useCart } from '../../context/CartContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -27,6 +28,7 @@ const SUBCAT_BG: Record<string, string> = {
 
 export default function UsedGoodsPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { categoryId } = useParams<{ categoryId?: string }>();
   const [cartError, setCartError] = useState<string | null>(null);
   const { data: categories, loading: catsLoading, error: catsError } = useApi<Category[]>('/public/categories', []);
@@ -50,7 +52,7 @@ export default function UsedGoodsPage() {
       setActiveVendor(p.vendorId);
       await addItem(p.id);
     } catch (err: any) {
-      setCartError(err?.response?.data?.message || err?.message || 'Imeshindikana kuongeza kwenye kikapu');
+      setCartError(err?.response?.data?.message || err?.message || t('generalProducts.failedToAddToCart'));
     }
   };
 
@@ -61,15 +63,15 @@ export default function UsedGoodsPage() {
     return (
       <div className="page">
         <PageHeader
-          title={`${SUBCAT_ICONS[selectedCat?.name ?? ''] ?? '♻️'} ${selectedCat?.name || 'Vitu vya Used'}`}
-          subtitle="Chagua bidhaa unazohitaji"
+          title={`${SUBCAT_ICONS[selectedCat?.name ?? ''] ?? '♻️'} ${selectedCat?.name || t('usedGoods.title')}`}
+          subtitle={t('usedGoods.selectItems')}
         />
         <button
           className="btn btn-ghost mb-2"
           onClick={() => navigate('/used-goods')}
           style={{ fontSize: '0.85rem' }}
         >
-          ‹ Rudi kwenye subcategories
+          {t('usedGoods.backToSubcategories')}
         </button>
         {cartError && (
           <div className="card" style={{ borderColor: '#ef4444', color: '#ef4444', fontSize: '0.85rem', padding: '0.7rem 1rem', marginBottom: '1rem' }}>
@@ -81,7 +83,7 @@ export default function UsedGoodsPage() {
         {!prodsLoading && !prodsError && (
           (products ?? []).length === 0 ? (
             <div className="card" style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--muted)' }}>
-              Hakuna bidhaa kwenye subcategory hii bado.
+              {t('usedGoods.noProductsYet')}
             </div>
           ) : (
             <div className="grid grid-auto-sm">
@@ -93,7 +95,7 @@ export default function UsedGoodsPage() {
                   imageUrl={p.imageUrl}
                   stockQuantity={p.stockQuantity}
                   unit={p.unit}
-                  actionLabel={p.stockQuantity <= 0 ? 'Unavailable' : 'Add'}
+                  actionLabel={p.stockQuantity <= 0 ? t('usedGoods.unavailable') : t('usedGoods.add')}
                   onClick={() => handleAdd(p)}
                 />
               ))}
@@ -106,7 +108,7 @@ export default function UsedGoodsPage() {
 
   return (
     <div className="page">
-      <PageHeader title="♻️ Vitu vya Used" subtitle="Chagua aina ya bidhaa za used" />
+      <PageHeader title={`♻️ ${t('usedGoods.title')}`} subtitle={t('usedGoods.subtitle')} />
       <div className="grid grid-auto-lg" style={{ marginTop: '1.5rem' }}>
         {subcategories.map((cat) => {
           const icon = SUBCAT_ICONS[cat.name] ?? '♻️';

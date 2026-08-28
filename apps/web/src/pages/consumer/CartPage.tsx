@@ -7,6 +7,7 @@ import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
 import { useApi } from '../../hooks/useApi';
 import type { Vendor } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 function CartPage() {
   const { t } = useTranslation();
@@ -35,6 +36,7 @@ function CartPage() {
 
   return (
     <div className="page">
+      <PageTitle title={t('cart.pageTitle')} />
       <PageHeader title={t('cart.title')} subtitle={t('cart.subtitle')} />
       {loading && <LoadingSpinner />}
       {error && <ErrorMessage message={error} />}
@@ -70,6 +72,7 @@ function CartPage() {
                         style={{ padding: '0.2rem 0.5rem' }}
                         disabled={mutation}
                         onClick={() => updateItem(item.productId, Math.max(1, item.quantity - 1))}
+                        aria-label={t('cart.decreaseQuantity')}
                       >
                         −
                       </button>
@@ -79,6 +82,7 @@ function CartPage() {
                         style={{ padding: '0.2rem 0.5rem' }}
                         disabled={mutation}
                         onClick={() => updateItem(item.productId, item.quantity + 1)}
+                        aria-label={t('cart.increaseQuantity')}
                       >
                         +
                       </button>
@@ -87,6 +91,7 @@ function CartPage() {
                         style={{ padding: '0.2rem 0.5rem', color: 'var(--danger)' }}
                         disabled={mutation}
                         onClick={() => removeItem(item.productId)}
+                        aria-label={t('cart.removeItem')}
                       >
                         ✕
                       </button>

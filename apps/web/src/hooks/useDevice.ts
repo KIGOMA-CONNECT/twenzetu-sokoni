@@ -1,5 +1,9 @@
 import { useState, useEffect } from 'react';
 
+interface NavigatorStandalone extends Navigator {
+  standalone?: boolean;
+}
+
 export type DeviceType = 'phone' | 'tablet' | 'desktop';
 export type PhoneSize = 'small' | 'medium' | 'large';
 
@@ -55,7 +59,7 @@ export function useDevice(): DeviceInfo {
       height: h,
       isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
       pixelRatio: window.devicePixelRatio || 1,
-      isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true,
+      isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as NavigatorStandalone).standalone === true,
       hasNotch: detectHasNotch(),
       safeAreaInsets: getSafeAreaInsets(),
     };
@@ -72,7 +76,7 @@ export function useDevice(): DeviceInfo {
         height: h,
         isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
         pixelRatio: window.devicePixelRatio || 1,
-        isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true,
+        isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as NavigatorStandalone).standalone === true,
         hasNotch: detectHasNotch(),
         safeAreaInsets: getSafeAreaInsets(),
       });

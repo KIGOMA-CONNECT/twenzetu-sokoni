@@ -12,7 +12,7 @@ describe('WebhooksController', () => {
 
    beforeEach(async () => {
      jest.clearAllMocks();
-     delete process.env.PAYMENT_CONFIRM_SECRET;
+     process.env.PAYMENT_CONFIRM_SECRET = 'test-secret';
      delete process.env.WEBHOOK_INTERNAL_SECRET;
      confirmPayment = {
       execute: jest.fn().mockResolvedValue({ paymentId: 'pay-1', status: 'CONFIRMED', message: 'Payment confirmed and vendor wallet credited' }),
@@ -59,6 +59,7 @@ describe('WebhooksController', () => {
   });
 
   describe('handleMpesaCallback', () => {
+    const auth = { 'x-webhook-secret': 'test-secret' };
     const stk = (overrides: Record<string, unknown>) => ({
       Body: {
         stkCallback: {
@@ -76,13 +77,18 @@ describe('WebhooksController', () => {
       },
     });
 
+    it('should reject with Unauthorized when the header is missing', async () => {
+      await expect(controller.handleMpesaCallback({}, stk({}))).rejects.toThrow('Invalid webhook secret');
+      expect(confirmPayment.execute).not.toHaveBeenCalled();
+    });
+
     it('should return success response shape', async () => {
-      const result = await controller.handleMpesaCallback(stk({}));
+      const result = await controller.handleMpesaCallback(auth, stk({}));
       expect(result).toEqual({ ResultCode: 0, ResultDesc: 'Success' });
     });
 
     it('should call confirmPayment.execute when ResultCode=0', async () => {
-      await controller.handleMpesaCallback(stk({}));
+      await controller.handleMpesaCallback(auth, stk({}));
 
       expect(confirmPayment.execute).toHaveBeenCalledWith({
         transactionRef: 'ext-1',
@@ -91,7 +97,7 @@ describe('WebhooksController', () => {
     });
 
     it('should not call confirmPayment.execute when ResultCode is not 0', async () => {
-      await controller.handleMpesaCallback(stk({ ResultCode: 1, ResultDesc: 'Failed' }));
+      await controller.handleMpesaCallback(auth, stk({ ResultCode: 1, ResultDesc: 'Failed' }));
 
       expect(confirmPayment.execute).not.toHaveBeenCalled();
     });
@@ -99,14 +105,15 @@ describe('WebhooksController', () => {
     it('should still return success when payment not found', async () => {
       confirmPayment.execute.mockResolvedValue({ paymentId: '', status: 'NOT_FOUND', message: 'Payment not found for transaction ref' });
 
-      const result = await controller.handleMpesaCallback(stk({ CheckoutRequestID: 'nonexistent' }));
+      const result = await controller.handleMpesaCallback(auth, stk({ CheckoutRequestID: 'nonexistent' }));
       expect(result).toEqual({ ResultCode: 0, ResultDesc: 'Success' });
     });
   });
 
    describe('handleMtnMomoCallback', () => {
+    const auth = { 'x-webhook-secret': 'test-secret' };
     it('should return success response shape', async () => {
-      const result = await controller.handleMtnMomoCallback({}, {
+      const result = await controller.handleMtnMomoCallback(auth, {
         externalId: 'ext-1',
         status: 'SUCCESSFUL',
         financialTransactionId: 'txn-123',
@@ -115,7 +122,7 @@ describe('WebhooksController', () => {
     });
 
     it('should call confirmPayment.execute when status is SUCCESSFUL', async () => {
-      await controller.handleMtnMomoCallback({}, {
+      await controller.handleMtnMomoCallback(auth, {
         externalId: 'ext-1',
         status: 'SUCCESSFUL',
         financialTransactionId: 'txn-123',
@@ -128,7 +135,7 @@ describe('WebhooksController', () => {
     });
 
     it('should not call confirmPayment.execute when status is not SUCCESSFUL', async () => {
-      await controller.handleMtnMomoCallback({}, {
+      await controller.handleMtnMomoCallback(auth, {
         externalId: 'ext-1',
         status: 'FAILED',
       });
@@ -142,14 +149,14 @@ describe('WebhooksController', () => {
       await expect(controller.handleMtnMomoCallback({}, { externalId: 'ext-1', status: 'SUCCESSFUL' }))
         .rejects.toThrow('Invalid webhook secret');
 
-      delete process.env.PAYMENT_CONFIRM_SECRET;
       expect(confirmPayment.execute).not.toHaveBeenCalled();
     });
    });
 
    describe('handleTigoPesaCallback', () => {
+    const auth = { 'x-webhook-secret': 'test-secret' };
     it('should return success response shape', async () => {
-      const result = await controller.handleTigoPesaCallback({}, {
+      const result = await controller.handleTigoPesaCallback(auth, {
         TransactionID: 'tigo-456',
         ConversationMetadata: { CallbackReason: 'Success' },
       });
@@ -157,7 +164,7 @@ describe('WebhooksController', () => {
     });
 
     it('should call confirmPayment.execute when CallbackReason is Success', async () => {
-      await controller.handleTigoPesaCallback({}, {
+      await controller.handleTigoPesaCallback(auth, {
         TransactionID: 'tigo-456',
         ConversationMetadata: { CallbackReason: 'Success' },
       });
@@ -168,14 +175,14 @@ describe('WebhooksController', () => {
     });
 
     it('should not call confirmPayment.execute when CallbackReason is not Success', async () => {
-      await controller.handleTigoPesaCallback({}, {
+      await controller.handleTigoPesaCallback(auth, {
         TransactionID: 'tigo-456',
         ConversationMetadata: { CallbackReason: 'Failed' },
       });
 
       expect(confirmPayment.execute).not.toHaveBeenCalled();
     });
-   });
+    });
 
   describe('handleAzamPayCallback', () => {
     it('should return success response shape', async () => {

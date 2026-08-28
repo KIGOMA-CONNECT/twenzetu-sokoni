@@ -4,6 +4,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam, ApiQuery, ApiResponse, 
 import { DataSource } from 'typeorm';
 import { CurrentUser, JwtPayload } from '@afri-market/identity-infrastructure';
 import { CreateDeliveryDto } from './dto/create-delivery.dto';
+import { ManualAssignDriverDto } from './dto/manual-assign-driver.dto';
 import { DriverUpdateDeliveryStatusDto } from './dto/driver-update-delivery-status.dto';
 import { CompleteDeliveryDto } from './dto/complete-delivery.dto';
 import { UpdateDriverLocationDto } from './dto/update-driver-location.dto';
@@ -114,12 +115,11 @@ export class DeliveriesController {
 
   @Post('admin/assign')
   @ApiOperation({ summary: 'Manually assign a driver to an order (admin only)' })
-  @ApiBody({ schema: { type: 'object', properties: { orderId: { type: 'string' }, driverId: { type: 'string' } } } })
   @ApiResponse({ status: 201, description: 'Driver assigned' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   public async assign(
-    @Body() body: { orderId: string; driverId: string },
+    @Body() body: ManualAssignDriverDto,
     @CurrentUser() user: JwtPayload,
   ) {
     if (!ADMIN_ROLES.includes(user.role)) {

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface MapPickerProps {
   onSelect: (location: { address: string; lat: number; lng: number }) => void;
@@ -9,6 +10,7 @@ interface MapPickerProps {
 }
 
 export function MapPicker({ onSelect, initialLat = -6.7924, initialLng = 39.2083, placeholder = 'Tafuta anwani...', style }: MapPickerProps) {
+  const { t } = useTranslation();
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -107,6 +109,7 @@ export function MapPicker({ onSelect, initialLat = -6.7924, initialLng = 39.2083
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && searchLocation()}
           placeholder={placeholder}
+          aria-label={t('common.searchAddress')}
           style={{ flex: 1, padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)', fontSize: '0.85rem' }}
         />
         <button className="btn btn-primary" onClick={searchLocation} style={{ padding: '0.65rem 1rem' }}>

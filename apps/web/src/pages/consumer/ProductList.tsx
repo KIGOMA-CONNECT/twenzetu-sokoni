@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, ProductCard } from '../../components/ui';
+import { PageTitle } from '../../components/PageTitle';
 import type { Product, Vendor } from '../../types';
 
 function ProductList() {
@@ -62,6 +63,7 @@ function ProductList() {
 
   return (
     <div className="page">
+      <PageTitle title={t('product.browseTitle')} description={t('product.browseDescription')} />
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '0.5rem' }}>
         {logoUrl && (
           <img

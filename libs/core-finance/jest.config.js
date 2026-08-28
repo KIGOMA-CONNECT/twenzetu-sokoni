@@ -1,9 +1,10 @@
-import * as path from 'path';
+const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
 
 module.exports = {
   displayName: 'core-finance',
+  preset: '../../jest.preset.js',
   testEnvironment: 'node',
   roots: ['<rootDir>/src'],
   transform: {
@@ -17,5 +18,5 @@ module.exports = {
   },
   testMatch: ['**/*.spec.ts'],
   testPathIgnorePatterns: ['/node_modules/', '__tests__/'],
-  coverageDirectory: '../../../coverage/libs/core-finance',
+  coverageDirectory: '../../coverage/libs/core-finance',
 };

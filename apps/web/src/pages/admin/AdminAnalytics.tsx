@@ -11,6 +11,7 @@ import type {
   AnalyticsDriverSlaRow,
   MetricDefinition,
 } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 const fmt = (n: number) => n.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -219,6 +220,7 @@ export default function AdminAnalytics() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Analytics" />
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>Platform Analytics</h1>

@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
@@ -8,6 +8,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
 import type { Product, PosPaymentMethod, PosCheckoutResult, PosShift } from '../../types';
+import { PageTitle } from '../../components/PageTitle';
 
 interface CartLine {
   product: Product;
@@ -37,41 +38,41 @@ const styles: Record<string, React.CSSProperties> = {
   scan: { flex: 1.4, padding: '0.7rem 0.9rem', border: '2px solid #1e40af', borderRadius: '8px', fontSize: '1rem', fontFamily: 'inherit' },
   layout: { display: 'flex', gap: '1rem', flex: 1, minHeight: 0 },
   grid: { flex: 1, overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.65rem', alignContent: 'start', padding: '2px' },
-  tile: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '0.7rem', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
+  tile: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px', padding: '0.7rem', cursor: 'pointer', textAlign: 'left', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' },
   tileDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   tileName: { fontWeight: 700, color: 'var(--ink)', fontSize: '0.85rem', lineHeight: 1.2, marginBottom: '0.25rem' },
   tileSku: { fontSize: '0.7rem', color: 'var(--faint)', marginBottom: '0.3rem' },
   tilePrice: { color: '#1e40af', fontWeight: 700, fontSize: '0.95rem' },
   tileStock: { fontSize: '0.72rem', color: 'var(--muted)', marginTop: '0.15rem' },
-  cart: { width: '370px', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
-  cartHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid #e2e8f0', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)' },
+  cart: { width: '370px', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '12px', display: 'flex', flexDirection: 'column', overflow: 'hidden' },
+  cartHeader: { padding: '0.8rem 1rem', borderBottom: '1px solid var(--line)', background: 'var(--bg)', fontWeight: 700, color: 'var(--ink)' },
   cartItems: { flex: 1, overflowY: 'auto', padding: '0.6rem 1rem' },
   cartRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.45rem 0', borderBottom: '1px dashed #f1f5f9', gap: '0.5rem' },
   cartInfo: { flex: 1, minWidth: 0 },
   cartName: { fontSize: '0.82rem', fontWeight: 600, color: 'var(--ink-soft)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
   cartSub: { fontSize: '0.72rem', color: 'var(--muted)' },
   qtyControls: { display: 'flex', alignItems: 'center', gap: '0.35rem' },
-  qtyBtn: { width: 26, height: 26, borderRadius: 6, border: '1px solid #cbd5e1', background: '#fff', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, color: 'var(--text)' },
+  qtyBtn: { width: 26, height: 26, borderRadius: 6, border: '1px solid #cbd5e1', background: 'var(--surface)', cursor: 'pointer', fontSize: '1rem', lineHeight: 1, color: 'var(--text)' },
   qtyValue: { minWidth: 22, textAlign: 'center', fontSize: '0.85rem', fontWeight: 700, color: 'var(--ink)' },
   cartLineTotal: { width: 70, textAlign: 'right', fontSize: '0.82rem', fontWeight: 700, color: 'var(--ink)' },
-  cartFooter: { padding: '0.8rem 1rem', borderTop: '1px solid #e2e8f0', background: 'var(--bg)' },
+  cartFooter: { padding: '0.8rem 1rem', borderTop: '1px solid var(--line)', background: 'var(--bg)' },
   totalRow: { display: 'flex', justifyContent: 'space-between', fontSize: '1.15rem', fontWeight: 800, color: 'var(--ink)', marginBottom: '0.7rem' },
   payBtn: { width: '100%', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.8rem', fontSize: '1rem', fontWeight: 800, cursor: 'pointer' },
   payBtnDisabled: { opacity: 0.5, cursor: 'not-allowed' },
   emptyCart: { color: 'var(--faint)', fontSize: '0.85rem', textAlign: 'center', padding: '2rem 0' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '400px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '400px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   bigTotal: { background: 'var(--success-soft)', border: '1px solid #bbf7d0', borderRadius: '8px', padding: '0.6rem 0.9rem', display: 'flex', justifyContent: 'space-between', fontWeight: 800, color: '#15803d', marginBottom: '0.85rem' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: 'var(--success)', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700 },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
-  receipt: { background: '#fff', borderRadius: '12px', padding: '1.25rem', width: '380px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
-  receiptPre: { whiteSpace: 'pre-wrap', fontFamily: '"Courier New", monospace', fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--ink)', background: '#fff', border: '1px dashed #e2e8f0', padding: '0.8rem', maxHeight: '55vh', overflow: 'auto' },
+  receipt: { background: 'var(--surface)', borderRadius: '12px', padding: '1.25rem', width: '380px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  receiptPre: { whiteSpace: 'pre-wrap', fontFamily: '"Courier New", monospace', fontSize: '0.8rem', lineHeight: 1.5, color: 'var(--ink)', background: 'var(--surface)', border: '1px dashed #e2e8f0', padding: '0.8rem', maxHeight: '55vh', overflow: 'auto' },
   receiptMsg: { background: 'var(--success-soft)', border: '1px solid #bbf7d0', color: '#15803d', borderRadius: '8px', padding: '0.6rem 0.8rem', fontSize: '0.85rem', marginBottom: '0.8rem', fontWeight: 600 },
 };
 
@@ -98,8 +99,8 @@ export default function VendorPos() {
   const [closingCash, setClosingCash] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
   const [shiftSaving, setShiftSaving] = useState(false);
-  const [posError, setPosError] = useState<string | null>(null);
-  const [posSuccess, setPosSuccess] = useState<string | null>(null);
+  const [, setPosError] = useState<string | null>(null);
+  const [, setPosSuccess] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const fetchShift = useCallback(async () => {
@@ -253,54 +254,55 @@ export default function VendorPos() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Point of Sale" />
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>{t('vendor.pos.title')}</h1>
-          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.pos.subtitle')}</div>
+          <h1 style={styles.title}>{t('vendor.pos')}</h1>
+          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.posPage.scanPlaceholder')}</div>
         </div>
         {cartList.length > 0 && (
           <button style={{ ...styles.cancelBtn, color: 'var(--danger)', borderColor: '#fecaca' }} onClick={() => setCart({})}>
-            {t('vendor.pos.clearCart')}
+            {t('vendor.posPage.clearCart')}
           </button>
         )}
       </div>
 
       {/* Shift Status Banner */}
       {shiftLoading ? (
-        <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.pos.loadingShift')}</div>
+        <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.posPage.loadingShift')}</div>
       ) : shiftError ? (
         <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{shiftError}</div>
       ) : !shift ? (
         <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>{t('vendor.pos.shiftClosed')}</div>
-            <div style={{ color: '#a16207', fontSize: '0.82rem' }}>{t('vendor.pos.openShiftToStart')}</div>
+            <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>{t('vendor.posPage.shiftClosed')}</div>
+            <div style={{ color: '#a16207', fontSize: '0.82rem' }}>{t('vendor.posPage.openShiftToStart')}</div>
           </div>
-          <button style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setShiftModal('open'); setOpeningFloat(''); }}>{t('vendor.pos.openShift')}</button>
+          <button style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setShiftModal('open'); setOpeningFloat(''); }}>{t('vendor.posPage.openShift')}</button>
         </div>
       ) : (
         <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '10px', padding: '0.6rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <span><strong>{t('vendor.pos.shiftLabel')}:</strong> {shift.shiftNumber}</span>
-            <span><strong>{t('vendor.pos.openedLabel')}:</strong> {new Date(shift.openedAt).toLocaleTimeString()}</span>
-            <span><strong>{t('vendor.pos.salesLabel')}:</strong> {shift.salesCount}</span>
-            <span><strong>{t('vendor.pos.totalLabel')}:</strong> {shift.totalSales.toLocaleString()}</span>
+            <span><strong>{t('vendor.posPage.shift')}</strong> {shift.shiftNumber}</span>
+            <span><strong>{t('vendor.posPage.opened')}</strong> {new Date(shift.openedAt).toLocaleTimeString()}</span>
+            <span><strong>{t('vendor.posPage.sales')}</strong> {shift.salesCount}</span>
+            <span><strong>{t('vendor.posPage.total')}</strong> {shift.totalSales.toLocaleString()}</span>
           </div>
-          <button style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => { setShiftModal('close'); setClosingCash(''); setShiftNotes(''); }}>{t('vendor.pos.closeShift')}</button>
+          <button style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => { setShiftModal('close'); setClosingCash(''); setShiftNotes(''); }}>{t('vendor.posPage.closeShift')}</button>
         </div>
       )}
 
       <div style={styles.searchRow}>
         <input
           style={styles.search}
-          placeholder={t('vendor.pos.searchPlaceholder')}
+          placeholder={t('vendor.posPage.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <input
           ref={scanRef}
           style={styles.scan}
-          placeholder={t('vendor.pos.scanPlaceholder')}
+          placeholder={t('vendor.posPage.scanPlaceholder')}
           value={scan}
           onChange={(e) => setScan(e.target.value)}
           onKeyDown={handleScan}
@@ -316,7 +318,7 @@ export default function VendorPos() {
           <div style={styles.grid}>
             {filtered.length === 0 && (
               <div style={{ color: 'var(--faint)', padding: '2rem', gridColumn: '1 / -1', textAlign: 'center' }}>
-                {t('vendor.pos.noProducts')}
+                {t('vendor.posPage.noProducts')}
               </div>
             )}
             {filtered.map((p) => {
@@ -332,7 +334,7 @@ export default function VendorPos() {
                   <div style={styles.tileSku}>{p.sku || p.barcode || p.id.slice(0, 8)}</div>
                   <div style={styles.tilePrice}>{formatCurrency(p.price)} {p.currency}</div>
                   <div style={styles.tileStock}>
-                    {out ? (p.status !== 'ACTIVE' ? <StatusBadge status={p.status} /> : 'Out of stock') : `${p.stockQuantity} in stock`}
+                    {out ? (p.status !== 'ACTIVE' ? <StatusBadge status={p.status} /> : t('vendor.posPage.outOfStock')) : `${p.stockQuantity} ${t('vendor.posPage.inStock')}`}
                   </div>
                 </button>
               );
@@ -340,14 +342,14 @@ export default function VendorPos() {
           </div>
 
           <div style={styles.cart}>
-            <div style={styles.cartHeader}>{t('vendor.pos.currentSale')}</div>
+            <div style={styles.cartHeader}>{t('vendor.posPage.currentSale')}</div>
             <div style={styles.cartItems}>
-              {cartList.length === 0 && <div style={styles.emptyCart}>{t('vendor.pos.noItems')}</div>}
+              {cartList.length === 0 && <div style={styles.emptyCart}>{t('vendor.posPage.noItemsYet')}</div>}
               {cartList.map((l) => (
                 <div key={l.product.id} style={styles.cartRow}>
                   <div style={styles.cartInfo}>
                     <div style={styles.cartName}>{l.product.name}</div>
-                    <div style={styles.cartSub}>{formatCurrency(l.product.price)} each</div>
+                    <div style={styles.cartSub}>{formatCurrency(l.product.price)} {t('vendor.posPage.each')}</div>
                   </div>
                   <div style={styles.qtyControls}>
                     <button style={styles.qtyBtn} onClick={() => setQty(l.product.id, l.quantity - 1)}>âˆ’</button>
@@ -360,11 +362,11 @@ export default function VendorPos() {
             </div>
             <div style={styles.cartFooter}>
               <div style={styles.totalRow}>
-                <span>{t('vendor.pos.total')}</span>
+                <span>{t('vendor.posPage.total')}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
               <button style={{ ...styles.payBtn, ...(total <= 0 ? styles.payBtnDisabled : {}) }} disabled={total <= 0} onClick={openPay}>
-                {t('vendor.pos.charge')} {total > 0 ? formatCurrency(total) : ''}
+                {t('vendor.posPage.charge')} {total > 0 ? formatCurrency(total) : ''}
               </button>
             </div>
           </div>
@@ -374,13 +376,13 @@ export default function VendorPos() {
       {payOpen && (
         <div style={styles.overlay} onClick={() => !saving && setPayOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{t('vendor.pos.takePayment')}</div>
+            <div style={styles.modalTitle}>{t('vendor.posPage.takePayment')}</div>
             <div style={styles.bigTotal}>
-              <span>{t('vendor.pos.totalDue')}</span>
+              <span>{t('vendor.posPage.totalDue')}</span>
               <span>{formatCurrency(total)}</span>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.pos.paymentMethod')}</label>
+              <label style={styles.label}>{t('vendor.posPage.paymentMethod')}</label>
               <select style={styles.input} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PosPaymentMethod)}>
                 {PAYMENT_METHODS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -389,7 +391,7 @@ export default function VendorPos() {
             </div>
             {paymentMethod === 'cash' && (
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.pos.amountTendered')}</label>
+                <label style={styles.label}>{t('vendor.posPage.amountTendered')}</label>
                 <input
                   style={styles.input}
                   type="number"
@@ -402,9 +404,9 @@ export default function VendorPos() {
             )}
             {payError && <div style={styles.smallError}>{payError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={saving}>{t('vendor.pos.cancel')}</button>
+              <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submitCheckout} disabled={saving}>
-                {saving ? t('vendor.pos.processing') : t('vendor.pos.completeSale')}
+                {saving ? t('vendor.posPage.processing') : t('vendor.posPage.completeSale')}
               </button>
             </div>
           </div>
@@ -414,12 +416,12 @@ export default function VendorPos() {
       {receipt && (
         <div style={styles.overlay}>
           <div style={styles.receipt} id="receipt-print">
-            <div style={styles.receiptMsg}>{t('vendor.pos.saleComplete')} — #{receipt.sale.saleNumber}</div>
+            <div style={styles.receiptMsg}>{t('vendor.posPage.saleComplete')}{receipt.sale.saleNumber}</div>
             {receipt.shiftNumber && <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Shift: {receipt.shiftNumber}</div>}
             <pre style={styles.receiptPre}>{receipt.receiptText}</pre>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={doneReceipt}>{t('vendor.pos.done')}</button>
-              <button style={styles.saveBtn} onClick={() => window.print()}>{t('vendor.pos.print')}</button>
+              <button style={styles.cancelBtn} onClick={doneReceipt}>{t('vendor.posPage.done')}</button>
+              <button style={styles.saveBtn} onClick={() => window.print()}>{t('vendor.posPage.print')}</button>
             </div>
           </div>
         </div>
@@ -429,15 +431,15 @@ export default function VendorPos() {
       {shiftModal === 'open' && (
         <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{t('vendor.pos.openShift')}</div>
+            <div style={styles.modalTitle}>{t('vendor.posPage.openShift')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.pos.openingFloat')}</label>
-              <input style={styles.input} type="number" min={0} value={openingFloat} onChange={(e) => setOpeningFloat(e.target.value)} placeholder={t('vendor.pos.openingFloatPlaceholder')} />
+              <label style={styles.label}>{t('vendor.posPage.openingFloat')}</label>
+              <input style={styles.input} type="number" min={0} value={openingFloat} onChange={(e) => setOpeningFloat(e.target.value)} placeholder={t('vendor.posPage.cashInDrawer')} />
             </div>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>{t('vendor.pos.cancel')}</button>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={openShift} disabled={shiftSaving}>
-                {shiftSaving ? t('vendor.pos.opening') : t('vendor.pos.openShift')}
+                {shiftSaving ? t('vendor.posPage.opening') : t('vendor.posPage.openShift')}
               </button>
             </div>
           </div>
@@ -448,22 +450,22 @@ export default function VendorPos() {
       {shiftModal === 'close' && shift && (
         <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{t('vendor.pos.closeShift')} {shift.shiftNumber}</div>
+            <div style={styles.modalTitle}>{t('vendor.posPage.closeShiftTitle')} {shift.shiftNumber}</div>
             <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '0.6rem', marginBottom: '1rem', fontSize: '0.82rem' }}>
-              <div>{t('vendor.pos.salesLabel')}: {shift.salesCount} — {t('vendor.pos.totalLabel')}: {shift.totalSales.toLocaleString()}</div>
+              <div>Sales: {shift.salesCount} â€” Total: {shift.totalSales.toLocaleString()}</div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.pos.closingCash')} *</label>
-              <input style={styles.input} type="number" min={0} value={closingCash} onChange={(e) => setClosingCash(e.target.value)} placeholder={t('vendor.pos.closingCashPlaceholder')} />
+              <label style={styles.label}>{t('vendor.posPage.closingCash')}</label>
+              <input style={styles.input} type="number" min={0} value={closingCash} onChange={(e) => setClosingCash(e.target.value)} placeholder={t('vendor.posPage.countCashInDrawer')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.pos.notesOptional')}</label>
-              <textarea style={{ ...styles.input, minHeight: '60px', resize: 'vertical' }} value={shiftNotes} onChange={(e) => setShiftNotes(e.target.value)} placeholder={t('vendor.pos.notesPlaceholder')} />
+              <label style={styles.label}>{t('vendor.posPage.notesOptional')}</label>
+              <textarea style={{ ...styles.input, minHeight: '60px', resize: 'vertical' }} value={shiftNotes} onChange={(e) => setShiftNotes(e.target.value)} placeholder={t('vendor.posPage.shiftNotesPlaceholder')} />
             </div>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>{t('vendor.pos.cancel')}</button>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
               <button style={{ ...styles.saveBtn, background: '#dc2626', ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={closeShift} disabled={shiftSaving || !closingCash.trim()}>
-                {shiftSaving ? t('vendor.pos.closing') : t('vendor.pos.closeShift')}
+                {shiftSaving ? t('vendor.posPage.closing') : t('vendor.posPage.closeShift')}
               </button>
             </div>
           </div>

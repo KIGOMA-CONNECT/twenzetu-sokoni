@@ -15,7 +15,8 @@ export const options = {
   },
 };
 
-const BASE_URL = __ENV.API_URL || 'http://localhost:3000/api';
+const BASE = __ENV.BASE_URL || 'http://localhost:3000';
+const BASE_URL = __ENV.API_URL || `${BASE}/api`;
 const TENANT_ID = 'a0000000-0000-0000-0000-000000000002';
 
 function getToken() {

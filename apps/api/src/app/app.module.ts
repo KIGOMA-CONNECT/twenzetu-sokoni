@@ -30,6 +30,7 @@ import { NotificationInfraModule, NOTIFICATION_ENTITIES } from '@abms/notificati
 import { NotificationModule } from '@abms/notification-api';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
+import { AiModule } from '@afri-market/ai';
 import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
@@ -80,6 +81,7 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     MetricsModule,
     IdentityModule,
     MarketplaceModule,
+    AiModule,
     SchedulerModule,
     UssdModule,
   ],

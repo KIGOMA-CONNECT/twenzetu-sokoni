@@ -68,7 +68,8 @@
       "@abms/workflow-api": ["./libs/workflow/api/src/index"],
       "@abms/notification": ["./libs/notification/src/index"],
       "@abms/notification-infrastructure": ["./libs/notification/infrastructure/src/index"],
-      "@abms/notification-api": ["./libs/notification/api/src/index"]
+      "@abms/notification-api": ["./libs/notification/api/src/index"],
+      "@afri-market/ai": ["./libs/ai/src/index"]
     }
   },
   "exclude": ["node_modules", "tmp", "**/__tests__/**", "**/*.spec.ts"]

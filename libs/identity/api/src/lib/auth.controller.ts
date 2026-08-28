@@ -16,6 +16,8 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { DeactivateAccountDto } from './dto/deactivate-account.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { RejectVerificationDto } from './dto/reject-verification.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -60,7 +62,7 @@ export class AuthController {
   }
 
   @Post('login')
-  @Throttle({ default: { limit: 20, ttl: 60000 } })
+  @Throttle({ default: { limit: parseInt(process.env.LOGIN_THROTTLE_LIMIT || '60', 10), ttl: 60000 } })
   @ApiOperation({ summary: 'Login with phone number and password' })
   @ApiBody({ type: LoginDto })
   @ApiResponse({ status: 201, description: 'Login successful' })
@@ -83,13 +85,12 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update current user profile (fullName, email)' })
-  @ApiBody({ schema: { properties: { fullName: { type: 'string' }, email: { type: 'string' } } } })
   @ApiResponse({ status: 200, description: 'Profile updated' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   public async updateProfile(
     @CurrentUser() user: JwtPayload,
-    @Body() body: { fullName?: string; email?: string },
+    @Body() body: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(user.sub, body);
   }
@@ -280,7 +281,7 @@ export class AuthController {
   public async rejectVerification(
     @Param('id', ParseUUIDPipe) id: string,
     @CurrentUser() caller: JwtPayload,
-    @Body() body: { reason: string },
+    @Body() body: RejectVerificationDto,
   ) {
     return this.authService.rejectVerification(id, caller.tenantId, body.reason);
   }

@@ -27,7 +27,7 @@ const styles: Record<string, React.CSSProperties> = {
   status: { fontSize: '0.85rem', fontWeight: 600 },
   statusOk: { color: 'var(--success)' },
   statusErr: { color: 'var(--danger)' },
-  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid #e2e8f0', background: 'var(--line-soft)' },
+  logo: { width: '88px', height: '88px', borderRadius: '12px', objectFit: 'cover', border: '1px solid var(--line)', background: 'var(--line-soft)' },
 };
 
 const S = (obj: Record<string, unknown> | undefined, key: string) =>
@@ -91,7 +91,7 @@ export default function VendorSettings() {
       const payload = res.data?.data ?? res.data;
       setLogoUrl(payload.url);
     } catch (err: any) {
-        setStatus({ ok: false, text: err.response?.data?.message || err.message || t('vendor.settings.logoUploadFailed') });
+      setStatus({ ok: false, text: err.response?.data?.message || err.message || 'Logo upload failed' });
     } finally {
       setUploadingLogo(false);
     }
@@ -99,7 +99,7 @@ export default function VendorSettings() {
 
   const save = async () => {
     if (!shopName.trim()) {
-      setStatus({ ok: false, text: t('vendor.settings.shopNameRequired') });
+      setStatus({ ok: false, text: 'Shop name is required' });
       return;
     }
     setSaving(true);
@@ -125,11 +125,11 @@ export default function VendorSettings() {
       if (latitude.trim() !== '') payload.latitude = Number(latitude);
       if (longitude.trim() !== '') payload.longitude = Number(longitude);
       await api.patch('/vendors/me/profile', payload);
-      setStatus({ ok: true, text: t('vendor.settings.profileUpdated') });
+      setStatus({ ok: true, text: 'Profile updated' });
       void refreshVendorAccess();
       void refetch();
     } catch (err: any) {
-      setStatus({ ok: false, text: err.response?.data?.message || err.message || t('vendor.settings.failedToUpdate') });
+      setStatus({ ok: false, text: err.response?.data?.message || err.message || 'Failed to update profile' });
     } finally {
       setSaving(false);
     }
@@ -138,8 +138,8 @@ export default function VendorSettings() {
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>{t('vendor.settings.title')}</h1>
-        <div style={styles.subtitle}>{t('vendor.settings.subtitle')}</div>
+        <h1 style={styles.title}>{t('vendor.settingsPage.title')}</h1>
+        <div style={styles.subtitle}>{t('vendor.settingsPage.subtitle')}</div>
       </div>
 
       {loading ? (
@@ -147,20 +147,20 @@ export default function VendorSettings() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : !raw ? (
-        <ErrorMessage message={t('vendor.settings.noProfile')} />
+        <ErrorMessage message={t('vendor.settingsPage.noVendorProfile')} />
       ) : (
         <>
           <div style={styles.card}>
-            <div style={styles.cardTitle}>{t('vendor.settings.shopProfile')}</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.shopProfile')}</div>
             <div style={{ ...styles.row, marginBottom: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-start' }}>
                 {logoUrl ? (
                   <img src={logoUrl} alt="Shop logo" style={styles.logo} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 ) : (
-                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>🏪</div>
+                  <div style={{ ...styles.logo, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--faint)', fontSize: '1.6rem' }}>ðŸª</div>
                 )}
                 <label style={{ ...styles.saveBtn, fontSize: '0.8rem', padding: '0.45rem 1rem', cursor: 'pointer', display: 'inline-block' }}>
-                  {uploadingLogo ? t('vendor.settings.uploading') : logoUrl ? t('vendor.settings.changeLogo') : t('vendor.settings.uploadLogo')}
+                  {uploadingLogo ? t('vendor.settingsPage.uploading') : logoUrl ? t('vendor.settingsPage.changeLogo') : t('vendor.settingsPage.uploadLogo')}
                   <input
                     type="file"
                     accept="image/*"
@@ -169,15 +169,15 @@ export default function VendorSettings() {
                     onChange={(e) => { if (e.target.files?.[0]) void uploadLogo(e.target.files[0]); }}
                   />
                 </label>
-                <div style={styles.hint}>{t('vendor.settings.logoHint')}</div>
+                <div style={styles.hint}>PNG/JPG, max 5MB â€” shown on your public shop page</div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={styles.field}>
-                  <label style={styles.label}>{t('vendor.settings.shopName')}</label>
-                  <input style={styles.input} value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder="e.g. Mama Ntilie Kitchen" />
+                  <label style={styles.label}>{t('vendor.settingsPage.shopName')}</label>
+                  <input style={styles.input} value={shopName} onChange={(e) => setShopName(e.target.value)} placeholder={t('vendor.settingsPage.shopNamePlaceholder')} />
                 </div>
                 <div style={styles.field}>
-                  <label style={styles.label}>{t('vendor.settings.category')}</label>
+                  <label style={styles.label}>{t('vendor.settingsPage.category')}</label>
                   <select style={styles.input} value={category} onChange={(e) => setCategory(e.target.value)}>
                     {VENDOR_CATEGORIES.map((c) => (
                       <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
@@ -187,68 +187,68 @@ export default function VendorSettings() {
               </div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.settings.description')}</label>
-              <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder="What do you sell?" />
+              <label style={styles.label}>{t('vendor.settingsPage.description')}</label>
+              <textarea style={styles.textarea} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={t('vendor.settingsPage.descriptionPlaceholder')} />
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={styles.cardTitle}>{t('vendor.settings.contactAndLocation')}</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.contactLocation')}</div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.phone')}</label>
-                <input style={styles.input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+255 7XX XXX XXX" />
+                <label style={styles.label}>{t('vendor.settingsPage.phone')}</label>
+                <input style={styles.input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder={t('vendor.settingsPage.phonePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.email')}</label>
-                <input style={styles.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="shop@example.com" />
+                <label style={styles.label}>{t('vendor.settingsPage.email')}</label>
+                <input style={styles.input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t('vendor.settingsPage.emailPlaceholder')} />
               </div>
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.streetArea')}</label>
-                <input style={styles.input} value={street} onChange={(e) => setStreet(e.target.value)} placeholder="e.g. Kariakoo Market, Block D" />
+                <label style={styles.label}>{t('vendor.settingsPage.streetArea')}</label>
+                <input style={styles.input} value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t('vendor.settingsPage.streetPlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.city')}</label>
-                <input style={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Dar es Salaam" />
+                <label style={styles.label}>{t('vendor.settingsPage.city')}</label>
+                <input style={styles.input} value={city} onChange={(e) => setCity(e.target.value)} placeholder={t('vendor.settingsPage.cityPlaceholder')} />
               </div>
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.latitude')}</label>
-                <input style={styles.input} type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder="e.g. -6.7924" />
+                <label style={styles.label}>{t('vendor.settingsPage.latitude')}</label>
+                <input style={styles.input} type="number" step="any" value={latitude} onChange={(e) => setLatitude(e.target.value)} placeholder={t('vendor.settingsPage.latitudePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.longitude')}</label>
-                <input style={styles.input} type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder="e.g. 39.2083" />
+                <label style={styles.label}>{t('vendor.settingsPage.longitude')}</label>
+                <input style={styles.input} type="number" step="any" value={longitude} onChange={(e) => setLongitude(e.target.value)} placeholder={t('vendor.settingsPage.longitudePlaceholder')} />
               </div>
             </div>
           </div>
 
           <div style={styles.card}>
-            <div style={styles.cardTitle}>{t('vendor.settings.payoutBankDetails')}</div>
+            <div style={styles.cardTitle}>{t('vendor.settingsPage.payoutBank')}</div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.bankName')}</label>
-                <input style={styles.input} value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder="e.g. CRDB Bank" />
+                <label style={styles.label}>{t('vendor.settingsPage.bankName')}</label>
+                <input style={styles.input} value={bankName} onChange={(e) => setBankName(e.target.value)} placeholder={t('vendor.settingsPage.bankNamePlaceholder')} />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.bankBranch')}</label>
-                <input style={styles.input} value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} placeholder="e.g. Kariakoo" />
+                <label style={styles.label}>{t('vendor.settingsPage.bankBranch')}</label>
+                <input style={styles.input} value={bankBranch} onChange={(e) => setBankBranch(e.target.value)} placeholder={t('vendor.settingsPage.bankBranchPlaceholder')} />
               </div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.settings.bankAccountNumber')}</label>
-              <input style={styles.input} value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder="Account number" />
+              <label style={styles.label}>{t('vendor.settingsPage.bankAccountNumber')}</label>
+              <input style={styles.input} value={bankAccount} onChange={(e) => setBankAccount(e.target.value)} placeholder={t('vendor.settingsPage.accountPlaceholder')} />
             </div>
             <div style={styles.row}>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.mpesaNumber')}</label>
+                <label style={styles.label}>{t('vendor.settingsPage.mpesaNumber')}</label>
                 <input style={styles.input} value={mpesaNumber} onChange={(e) => setMpesaNumber(e.target.value)} placeholder="+255 7XX XXX XXX" />
               </div>
               <div style={styles.field}>
-                <label style={styles.label}>{t('vendor.settings.tigoPesaNumber')}</label>
+                <label style={styles.label}>{t('vendor.settingsPage.tigoNumber')}</label>
                 <input style={styles.input} value={tigoNumber} onChange={(e) => setTigoNumber(e.target.value)} placeholder="+255 7XX XXX XXX" />
               </div>
             </div>
@@ -256,7 +256,7 @@ export default function VendorSettings() {
 
           <div style={styles.actions}>
             <button style={saving ? styles.saveBtnDisabled : styles.saveBtn} onClick={save} disabled={saving}>
-              {saving ? t('vendor.settings.saving') : t('vendor.settings.saveChanges')}
+              {saving ? t('vendor.settingsPage.saving') : t('vendor.settingsPage.saveChanges')}
             </button>
             {status && (
               <span style={{ ...styles.status, ...(status.ok ? styles.statusOk : styles.statusErr) }}>

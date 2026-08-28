@@ -1,0 +1,159 @@
+/**
+ * AiService — the single facade every module feature uses for AI.
+ *
+ * Responsibilities:
+ *  - Build an AiConfig from the environment at construction (provider, keys,
+ *    models), mirroring how integrations read their config.
+ *  - Resolve the configured provider through the factory.
+ *  - Resolve the module-specific context builder for module-aware prompts.
+ *  - Expose buffered (complete/chat) and streaming (stream) calls that degrade
+ *    gracefully when no provider is configured.
+ *
+ * Upper layers depend only on this service; they never touch the provider or
+ * the registry directly.
+ */
+
+import { Injectable, Logger } from '@nestjs/common';
+import type { AiConfig } from '../ai-config';
+import { resolveAiContextBuilder } from '../context/ai-context-registry';
+import type {
+  AiContextRequest,
+  AiPromptBundle,
+} from '../context/ai-context.types';
+import { createAiProvider, availableAiProviders } from '../provider/ai-provider.factory';
+import type {
+  AiGenerateResult,
+  AiGenerationOptions,
+  AiMessage,
+  AiProvider,
+} from '../provider/ai-provider.interface';
+
+@Injectable()
+export class AiService {
+  private readonly logger = new Logger(AiService.name);
+  private readonly config: AiConfig;
+  private readonly provider: AiProvider | null;
+
+  constructor() {
+    this.config = {
+      provider: process.env.AI_PROVIDER || 'gemini',
+      apiKeys: {
+        gemini: process.env.GEMINI_API_KEY || '',
+        openai: process.env.OPENAI_API_KEY || '',
+        anthropic: process.env.ANTHROPIC_API_KEY || '',
+      },
+      models: {
+        gemini: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+        openai: process.env.OPENAI_MODEL || '',
+        anthropic: process.env.ANTHROPIC_MODEL || '',
+      },
+      temperature: process.env.AI_TEMPERATURE ? Number(process.env.AI_TEMPERATURE) : undefined,
+      maxOutputTokens: process.env.AI_MAX_TOKENS ? Number(process.env.AI_MAX_TOKENS) : undefined,
+      timeoutMs: process.env.AI_TIMEOUT_MS ? Number(process.env.AI_TIMEOUT_MS) : undefined,
+    };
+    this.provider = createAiProvider(this.config);
+    if (!this.provider) {
+      this.logger.warn(
+        `AI provider "${this.config.provider}" not available. Available: ${availableAiProviders().join(', ')}`,
+      );
+    }
+  }
+
+  /** True when a configured provider is ready to serve requests. */
+  get isConfigured(): boolean {
+    return !!this.provider?.isConfigured;
+  }
+
+  /** Provider id currently in use, or null. */
+  get providerId(): string | null {
+    return this.provider?.id ?? null;
+  }
+
+  /** List of provider ids resolvable by the factory. */
+  get providers(): string[] {
+    return availableAiProviders();
+  }
+
+  /**
+   * Build the prompt bundle for a module request, grounding it in the module's
+   * registered context builder.
+   */
+  async bundle(request: AiContextRequest): Promise<AiPromptBundle> {
+    const builder = resolveAiContextBuilder(request.module);
+    return builder(request);
+  }
+
+  /**
+   * Buffered, module-aware completion. Resolves the module context builder,
+   * composes system + history + question and returns the full text.
+   */
+  async complete(
+    request: AiContextRequest,
+    options?: AiGenerationOptions,
+  ): Promise<AiGenerateResult> {
+    const provider = this.assertProvider();
+    const builder = resolveAiContextBuilder(request.module);
+    const bundle = await builder(request);
+    const messages = this.toMessages(request, bundle);
+    return provider.generate(bundle.system, messages, options);
+  }
+
+  /**
+   * Buffered chat where the caller passes prebuilt messages plus an optional
+   * system prompt (module context still applied via `request.module`).
+   */
+  async chat(
+    request: AiContextRequest & { history: readonly AiMessage[] },
+    options?: AiGenerationOptions,
+  ): Promise<AiGenerateResult> {
+    const provider = this.assertProvider();
+    const builder = resolveAiContextBuilder(request.module);
+    const bundle = await builder(request);
+    const history = request.history
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role as AiMessage['role'], content: m.content }));
+    return provider.generate(bundle.system, history, options);
+  }
+
+  /**
+   * Streaming, module-aware completion. Yields incremental text deltas. This
+   * is the preferred path for the UI so tokens appear as they are generated.
+   */
+  async *stream(
+    request: AiContextRequest,
+    options?: AiGenerationOptions,
+  ): AsyncIterable<string> {
+    const provider = this.assertProvider();
+    const builder = resolveAiContextBuilder(request.module);
+    const bundle = await builder(request);
+    const messages = this.toMessages(request, bundle);
+    yield* provider.stream(bundle.system, messages, options);
+  }
+
+  /** Convenience: is the provider configurable and ready? */
+  get isEnabled(): boolean {
+    return this.isConfigured;
+  }
+
+  private assertProvider(): AiProvider {
+    if (!this.provider) {
+      throw new Error('No AI provider is configured. Set AI_PROVIDER and the matching API key.');
+    }
+    if (!this.provider.isConfigured) {
+      throw new Error(`AI provider "${this.provider.id}" is not configured (missing API key).`);
+    }
+    return this.provider;
+  }
+
+  /** Compose the conversation messages from request history + user question. */
+  private toMessages(
+    request: AiContextRequest,
+    bundle: AiPromptBundle,
+  ): AiMessage[] {
+    const base: AiMessage[] = (request.history ?? [])
+      .filter((m) => m.role !== 'system')
+      .map((m) => ({ role: m.role as AiMessage['role'], content: m.content }));
+    base.push({ role: 'user', content: bundle.userMessage || request.message });
+    return base;
+  }
+}

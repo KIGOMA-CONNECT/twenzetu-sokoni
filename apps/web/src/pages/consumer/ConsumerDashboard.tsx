@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -8,6 +9,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
 import { SectionTitle } from '../../components/ui';
+import { PageTitle } from '../../components/PageTitle';
 import type { Order, Category } from '../../types';
 
 // ── New parent category IDs ──
@@ -128,14 +130,14 @@ function ConsumerDashboard() {
   const { data: categories } = useApi<Category[]>('/categories', []);
   const device = useDevice();
 
-  const activeOrders = (orders || []).filter((o) =>
+  const activeOrders = useMemo(() => (orders || []).filter((o) =>
     ['PLACED', 'CONFIRMED', 'ESCROW_HELD'].includes(o.status)
-  ).length;
-  const totalSpent = (orders || []).reduce(
+  ).length, [orders]);
+  const totalSpent = useMemo(() => (orders || []).reduce(
     (sum, o) => sum + (o.totalAmount || 0),
     0
-  );
-  const loyaltyPoints = Math.floor(totalSpent / 1000);
+  ), [orders]);
+  const loyaltyPoints = useMemo(() => Math.floor(totalSpent / 1000), [totalSpent]);
   const firstName = user?.fullName?.split(' ')[0] || 'there';
   const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
@@ -145,9 +147,9 @@ function ConsumerDashboard() {
   const heroPadding = isSmallPhone ? '1.5rem 1rem' : isPhone ? '1.75rem 1.25rem' : '2rem';
 
   // Only show parent categories (no parentId) that are active
-  const parentCategories = (categories ?? [])
+  const parentCategories = useMemo(() => (categories ?? [])
     .filter((c) => c.isActive && !c.parentId)
-    .sort((a, b) => (PARENT_ORDER[a.id] ?? 999) - (PARENT_ORDER[b.id] ?? 999));
+    .sort((a, b) => (PARENT_ORDER[a.id] ?? 999) - (PARENT_ORDER[b.id] ?? 999)), [categories]);
 
   function handleCategoryClick(cat: Category) {
     if (cat.id === PARENT_IDS.USED) {
@@ -165,14 +167,15 @@ function ConsumerDashboard() {
 
   return (
     <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
+      <PageTitle title="Dashboard" />
       {/* Hero welcome */}
       <section className="hero" style={{ borderRadius: 'var(--radius-lg)', marginBottom: isPhone ? '1rem' : '1.5rem', width: '100%' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: heroMinHeight, padding: heroPadding, textAlign: 'center' }}>
           <div>
             <h1 style={{ fontSize: isSmallPhone ? '1.6rem' : 'clamp(1.9rem, 5vw, 3rem)', fontWeight: 800, letterSpacing: '-0.02em', marginBottom: '0.4rem' }}>
-              Hello, <span className="hero-gradient">{firstNameLabel}</span>
+              {t('app.welcome')}, <span className="hero-gradient">{firstNameLabel}</span>
             </h1>
-            <p style={{ color: 'var(--muted)', margin: '0', fontSize: isSmallPhone ? '0.9rem' : '1.05rem' }}>Welcome back to afriMarket</p>
+            <p style={{ color: 'var(--muted)', margin: '0', fontSize: isSmallPhone ? '0.9rem' : '1.05rem' }}>{t('app.welcomeBack')}</p>
           </div>
         </div>
       </section>
@@ -225,13 +228,13 @@ function ConsumerDashboard() {
         <span style={{ fontSize: '1.8rem' }}>🤖</span>
         <span style={{ flex: 1, minWidth: 0 }}>
           <span style={{ display: 'block', fontWeight: 800, fontSize: '1.05rem' }}>
-            Smart Shopping List
+            {t('app.smartShoppingList')}
           </span>
           <span style={{ display: 'block', opacity: 0.85, fontSize: '0.85rem', marginTop: '0.15rem' }}>
-            🛍️ AI Assistant · Eleza unachohitaji, tupa orodha yako
+            🛍️ {t('app.aiAssistant')}
           </span>
         </span>
-        <span style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', fontWeight: 700 }}>Anza →</span>
+        <span style={{ whiteSpace: 'nowrap', fontSize: '0.9rem', fontWeight: 700 }}>{t('app.startCta')}</span>
       </button>
 
       {loading && <LoadingSpinner />}
@@ -259,11 +262,11 @@ function ConsumerDashboard() {
           <div className="section">
             <SectionTitle title={t('app.quickLinks')} emoji="⚡" />
             <div className="flex gap-2 wrap">
-              <button className="btn btn-primary" onClick={() => navigate('/orders')}>📦 My Orders</button>
+              <button className="btn btn-primary" onClick={() => navigate('/orders')}>📦 {t('nav.orders')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/matangazo')}>📣 {t('nav.promotions')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/referrals')}>🎁 {t('nav.referrals')}</button>
               <button className="btn btn-outline" onClick={() => navigate('/subscriptions')}>🔁 {t('nav.subscriptions')}</button>
-              <button className="btn btn-outline" onClick={() => navigate('/wallet')}>💳 Wallet</button>
+              <button className="btn btn-outline" onClick={() => navigate('/wallet')}>💳 {t('nav.wallet')}</button>
             </div>
           </div>
 

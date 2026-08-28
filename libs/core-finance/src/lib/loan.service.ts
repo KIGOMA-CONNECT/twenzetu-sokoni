@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { InjectDataSource } from '@nestjs/typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { LoanEntity } from './entities/loan.entity';
 import { LoanRepaymentEntity } from './entities/loan-repayment.entity';
 import { LoanProductEntity, RequiredAttachment } from './entities/loan-product.entity';
@@ -66,6 +67,7 @@ export class LoanService {
     private readonly documentRepo: Repository<LoanDocumentEntity>,
     @InjectRepository(LoanWorkflowEventEntity)
     private readonly workflowRepo: Repository<LoanWorkflowEventEntity>,
+    @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
   // ---- Product catalog -----------------------------------------------------
@@ -262,6 +264,22 @@ export class LoanService {
       }
     }
 
+    // Wallet-based lending: max loan = 3x wallet balance
+    const walletRows = await this.ds.query(
+      `SELECT balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+      [input.borrowerId, input.tenantId],
+    );
+    const walletBalance = walletRows.length > 0 ? parseFloat(walletRows[0].balance) : 0;
+    const maxWalletLoan = Math.round(walletBalance * 3 * 100) / 100;
+
+    // If wallet has balance, cap loan at 3x wallet balance
+    // If wallet is empty, use product max as fallback (new users)
+    if (maxWalletLoan > 0 && input.principal > maxWalletLoan) {
+      throw new BadRequestException(
+        `Loan amount cannot exceed 3x your wallet balance (max: ${maxWalletLoan.toLocaleString()} ${input.borrowerType === 'customer' ? 'TZS' : 'TZS'}). Your wallet balance: ${walletBalance.toLocaleString()} TZS`,
+      );
+    }
+
     // Cost breakdown.
     const annualRate = product.annualInterestRate;
     const monthlyRate = annualRate / 12;
@@ -397,6 +415,49 @@ export class LoanService {
       const dueDate = new Date();
       dueDate.setMonth(dueDate.getMonth() + loan.termMonths);
       loan.dueDate = dueDate;
+
+      // Auto-credit wallet on loan disbursement
+      try {
+        const tenantId = loan.productId
+          ? (await this.productRepo.findOne({ where: { id: loan.productId } }))?.tenantId
+          : undefined;
+        if (!tenantId) {
+          this.logger.error(`Cannot credit wallet for loan ${loanId}: no tenantId found from product`);
+        } else {
+          const walletRows = await this.ds.query(
+            `SELECT id, balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+            [loan.borrowerId, tenantId],
+          );
+          let walletId: string;
+          let balanceBefore: number;
+          if (walletRows.length > 0) {
+            walletId = walletRows[0].id;
+            balanceBefore = parseFloat(walletRows[0].balance);
+            await this.ds.query(
+              `UPDATE wallets SET balance = balance + $1, version = version + 1
+               WHERE id = $2`,
+              [loan.principal, walletId],
+            );
+          } else {
+            walletId = (await this.ds.query(`SELECT gen_random_uuid() as id`))[0].id;
+            balanceBefore = 0;
+            await this.ds.query(
+              `INSERT INTO wallets (id, tenant_id, owner_id, owner_type, balance, pending_balance, currency, version, created_at, updated_at)
+               VALUES ($1, $2, $3, $4, $5, 0, 'TZS', 1, NOW(), NOW())`,
+              [walletId, tenantId, loan.borrowerId, loan.borrowerType, loan.principal],
+            );
+          }
+          const balanceAfter = balanceBefore + loan.principal;
+          await this.ds.query(
+            `INSERT INTO wallet_transactions (id, tenant_id, owner_id, owner_type, type, amount, currency, balance_before, balance_after, description, reference_id, reference_type, created_at)
+             VALUES (gen_random_uuid(), $1, $2, $3, 'CREDIT', $4, 'TZS', $5, $6, 'Loan disbursement', $7, 'loan_disbursement', NOW())`,
+            [tenantId, loan.borrowerId, loan.borrowerType, loan.principal, balanceBefore, balanceAfter, loanId],
+          );
+          this.logger.log(`Wallet credited with ${loan.principal} for loan ${loanId} disbursement`);
+        }
+      } catch (err) {
+        this.logger.error(`Failed to credit wallet for loan ${loanId}: ${err}`);
+      }
     }
     await this.loanRepo.save(loan);
     await this.recordWorkflow(loanId, next, opts);
@@ -447,6 +508,50 @@ export class LoanService {
     loan.dueDate = dueDate;
     loan.workflowState = 'FSP_DISBURSED';
     await this.loanRepo.save(loan);
+
+    // Auto-credit wallet on loan disbursement (same logic as advanceWorkflow)
+    try {
+      const tenantId = loan.productId
+        ? (await this.productRepo.findOne({ where: { id: loan.productId } }))?.tenantId
+        : undefined;
+      if (!tenantId) {
+        this.logger.error(`Cannot credit wallet for loan ${loanId}: no tenantId found from product`);
+      } else {
+        const walletRows = await this.ds.query(
+          `SELECT id, balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+          [loan.borrowerId, tenantId],
+        );
+        let walletId: string;
+        let balanceBefore: number;
+        if (walletRows.length > 0) {
+          walletId = walletRows[0].id;
+          balanceBefore = parseFloat(walletRows[0].balance);
+          await this.ds.query(
+            `UPDATE wallets SET balance = balance + $1, version = version + 1
+             WHERE id = $2`,
+            [loan.principal, walletId],
+          );
+        } else {
+          walletId = (await this.ds.query(`SELECT gen_random_uuid() as id`))[0].id;
+          balanceBefore = 0;
+          await this.ds.query(
+            `INSERT INTO wallets (id, tenant_id, owner_id, owner_type, balance, pending_balance, currency, version, created_at, updated_at)
+             VALUES ($1, $2, $3, $4, $5, 0, 'TZS', 1, NOW(), NOW())`,
+            [walletId, tenantId, loan.borrowerId, loan.borrowerType, loan.principal],
+          );
+        }
+        const balanceAfter = balanceBefore + loan.principal;
+        await this.ds.query(
+          `INSERT INTO wallet_transactions (id, tenant_id, owner_id, owner_type, type, amount, currency, balance_before, balance_after, description, reference_id, reference_type, created_at)
+           VALUES (gen_random_uuid(), $1, $2, $3, 'CREDIT', $4, 'TZS', $5, $6, 'Loan disbursement', $7, 'loan_disbursement', NOW())`,
+          [tenantId, loan.borrowerId, loan.borrowerType, loan.principal, balanceBefore, balanceAfter, loanId],
+        );
+        this.logger.log(`Wallet credited with ${loan.principal} for loan ${loanId} disbursement`);
+      }
+    } catch (err) {
+      this.logger.error(`Failed to credit wallet for loan ${loanId}: ${err}`);
+    }
+
     await this.recordWorkflow(loanId, 'FSP_DISBURSED', opts ?? { actorRole: 'fsp' });
     return loan;
   }
@@ -601,7 +706,41 @@ export class LoanService {
     }
     await this.loanRepo.save(loan);
 
-    return this.repaymentRepo.save(repayment);
+    const savedRepayment = await this.repaymentRepo.save(repayment);
+
+    // Auto-debit wallet for loan repayment
+    try {
+      const tenantId = loan.productId
+        ? (await this.productRepo.findOne({ where: { id: loan.productId } }))?.tenantId
+        : undefined;
+      if (tenantId) {
+        const walletRows = await this.ds.query(
+          `SELECT id, balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 AND balance >= $3 LIMIT 1`,
+          [loan.borrowerId, tenantId, amount],
+        );
+        if (walletRows.length > 0) {
+          const walletId = walletRows[0].id;
+          const balanceBefore = parseFloat(walletRows[0].balance);
+          await this.ds.query(
+            `UPDATE wallets SET balance = balance - $1, version = version + 1
+             WHERE id = $2`,
+            [amount, walletId],
+          );
+          const balanceAfter = balanceBefore - amount;
+          await this.ds.query(
+            `INSERT INTO wallet_transactions (id, tenant_id, owner_id, owner_type, type, amount, currency, balance_before, balance_after, description, reference_id, reference_type, created_at)
+             VALUES (gen_random_uuid(), $1, $2, $3, 'DEBIT', $4, 'TZS', $5, $6, 'Loan repayment', $7, 'loan_repayment', NOW())`,
+            [tenantId, loan.borrowerId, loan.borrowerType, amount, balanceBefore, balanceAfter, loanId],
+          );
+          this.logger.log(`Wallet debited ${amount} for loan ${loanId} repayment`);
+        }
+      }
+    } catch (err) {
+      this.logger.error(`Failed to debit wallet for loan ${loanId} repayment: ${err}`);
+      // Don't fail the repayment if wallet debit fails — the repayment is still recorded
+    }
+
+    return savedRepayment;
   }
 
   async getBorrowerLoans(borrowerId: string, borrowerType: string): Promise<LoanEntity[]> {
@@ -650,6 +789,16 @@ export class LoanService {
     ) / 100;
 
     return { pending, approved, active, paid, totalDisbursed, outstanding };
+  }
+
+  async getWalletLendingInfo(tenantId: string, borrowerId: string): Promise<{ walletBalance: number; maxLoanAmount: number }> {
+    const rows = await this.ds.query(
+      `SELECT balance FROM wallets WHERE owner_id = $1 AND tenant_id = $2 LIMIT 1`,
+      [borrowerId, tenantId],
+    );
+    const walletBalance = rows.length > 0 ? parseFloat(rows[0].balance) : 0;
+    const maxLoanAmount = Math.round(walletBalance * 3 * 100) / 100;
+    return { walletBalance, maxLoanAmount };
   }
 
   async getLoanRepayments(loanId: string, borrowerId?: string): Promise<LoanRepaymentEntity[]> {

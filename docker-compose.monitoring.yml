@@ -7,6 +7,7 @@ services:
       - '127.0.0.1:9090:9090'
     volumes:
       - ./docker/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./docker/monitoring/alerts.yml:/etc/prometheus/alerts.yml
       - afri-market-prometheus-data:/prometheus
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
@@ -67,6 +68,21 @@ services:
       - '127.0.0.1:9187:9187'
     environment:
       DATA_SOURCE_NAME: 'postgresql://${DB_RUNTIME_USER:-afri_runtime}:${DB_RUNTIME_PASSWORD:-afri_runtime_dev_password}@postgres:5432/${DB_NAME:-afri_market}?sslmode=disable'
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: afri-market-alertmanager
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:9093:9093'
+    volumes:
+      - ./docker/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    environment:
+      ALERT_EMAIL_PASSWORD: ${ALERT_EMAIL_PASSWORD:-}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:-}
 
 volumes:
   afri-market-prometheus-data:

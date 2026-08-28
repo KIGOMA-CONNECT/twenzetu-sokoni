@@ -6,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import { PageTitle } from '../../components/PageTitle';
 
 interface QueuedOrder {
   id: string;
@@ -37,10 +38,10 @@ const styles: Record<string, React.CSSProperties> = {
   container: { display: 'flex', flexDirection: 'column', gap: '1.5rem' },
   header: { fontSize: '1.75rem', fontWeight: 700, color: 'var(--ink-soft)', margin: 0 },
   subheader: { color: 'var(--muted)', fontSize: '0.95rem', marginTop: '0.25rem' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '8px', padding: '1.5rem', overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid #e2e8f0', whiteSpace: 'nowrap' },
-  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid #f1f5f9', color: 'var(--text)' },
+  th: { textAlign: 'left', padding: '0.6rem 0.5rem', color: 'var(--muted)', fontWeight: 600, borderBottom: '1px solid var(--line)', whiteSpace: 'nowrap' },
+  td: { padding: '0.6rem 0.5rem', borderBottom: '1px solid var(--line)', color: 'var(--text)' },
   btn: { padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 600, borderRadius: '6px', border: 'none', cursor: 'pointer' },
   assignBtn: { background: 'var(--success)', color: '#fff' },
   bulkAssignBtn: { background: '#1d4ed8', color: '#fff' },
@@ -54,7 +55,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #cbd5e1',
     borderRadius: '6px',
     fontSize: '0.8rem',
-    background: '#fff',
+    background: 'var(--surface)',
     color: 'var(--text)',
     minWidth: '180px',
   },
@@ -128,6 +129,7 @@ export default function AdminDeliveries() {
 
   return (
     <div style={styles.container}>
+      <PageTitle title="Deliveries" />
       <div>
         <h1 style={styles.header}>Deliveries Dispatch</h1>
         <div style={styles.subheader}>Assign drivers to cargo orders, {user?.fullName || 'Admin'}.</div>
@@ -152,7 +154,7 @@ export default function AdminDeliveries() {
               onClick={bulkAutoAssign}
               title={drivers.length === 0 ? 'No available drivers' : 'Assign each selected order to the least-loaded available driver'}
             >
-              {bulkLoading ? 'Auto-assigning…' : `Auto-assign ${selected.size} order(s)`}
+              {bulkLoading ? 'Auto-assigningâ€¦' : `Auto-assign ${selected.size} order(s)`}
             </button>
           </div>
         )}
@@ -182,7 +184,7 @@ export default function AdminDeliveries() {
                   <td style={styles.td}>
                     <input type="checkbox" style={styles.checkbox} checked={selected.has(o.id)} onChange={() => toggleRow(o.id)} />
                   </td>
-                  <td style={styles.td}>{o.id.slice(0, 8)}…</td>
+                  <td style={styles.td}>{o.id.slice(0, 8)}â€¦</td>
                   <td style={styles.td}>{o.vendorName}</td>
                   <td style={styles.td}>{o.deliveryAddress}</td>
                   <td style={styles.td}><StatusBadge status={o.status} /></td>
@@ -193,7 +195,7 @@ export default function AdminDeliveries() {
                       value={selectedDriver[o.id] ?? ''}
                       onChange={(e) => setSelectedDriver(prev => ({ ...prev, [o.id]: e.target.value }))}
                     >
-                      <option value="">Select driver…</option>
+                      <option value="">Select driverâ€¦</option>
                       {drivers.map((d) => (
                         <option key={d.driverId} value={d.driverId}>
                           {d.fullName} {d.isOnline ? '(online)' : ''}
@@ -207,7 +209,7 @@ export default function AdminDeliveries() {
                       disabled={assigningId === o.id}
                       onClick={() => handleAssign(o.id)}
                     >
-                      {assigningId === o.id ? 'Assigning…' : 'Assign'}
+                      {assigningId === o.id ? 'Assigningâ€¦' : 'Assign'}
                     </button>
                   </td>
                 </tr>

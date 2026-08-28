@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useDevice } from '../../hooks/useDevice';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,6 +21,7 @@ interface ChatProps {
 
 export function OrderChat({ orderId, otherParty, onClose }: ChatProps) {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const device = useDevice();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
@@ -37,7 +39,7 @@ export function OrderChat({ orderId, otherParty, onClose }: ChatProps) {
       id: `msg-${Date.now()}`,
       senderId: user.id,
       senderName: user.fullName,
-      senderRole: user.role as any,
+      senderRole: user.role as 'customer' | 'vendor' | 'driver',
       text: input.trim(),
       timestamp: new Date().toISOString(),
       read: false,
@@ -104,7 +106,7 @@ export function OrderChat({ orderId, otherParty, onClose }: ChatProps) {
         {messages.length === 0 && (
           <div style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--muted)' }}>
             <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>💬</div>
-            <p style={{ fontSize: '0.9rem' }}>Anza mazungumzo na {otherParty.name}</p>
+            <p style={{ fontSize: '0.9rem' }}>{t('chat.startConversation', { name: otherParty.name })}</p>
           </div>
         )}
         {messages.map((msg) => {
@@ -159,7 +161,7 @@ export function OrderChat({ orderId, otherParty, onClose }: ChatProps) {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Andika ujumbe..."
+          placeholder={t('common.typeMessage')}
           style={{ flex: 1, padding: '0.7rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)', fontSize: '0.9rem' }}
         />
         <button
@@ -167,7 +169,7 @@ export function OrderChat({ orderId, otherParty, onClose }: ChatProps) {
           onClick={sendMessage}
           style={{ padding: '0.7rem 1.2rem' }}
         >
-          Tuma
+          {t('common.send')}
         </button>
       </div>
     </div>

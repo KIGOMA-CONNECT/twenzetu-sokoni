@@ -22,27 +22,28 @@ const styles: Record<string, React.CSSProperties> = {
   title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   subtitle: { color: 'var(--muted)', fontSize: '0.85rem', marginTop: '0.15rem' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', overflow: 'hidden' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid #e2e8f0' },
-  td: { padding: '0.7rem 1rem', borderBottom: '1px solid #f1f5f9', color: 'var(--ink-soft)', verticalAlign: 'top' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', background: 'var(--bg)', color: 'var(--muted)', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.04em', borderBottom: '1px solid var(--line)' },
+  td: { padding: '0.7rem 1rem', borderBottom: '1px solid var(--line)', color: 'var(--ink-soft)', verticalAlign: 'top' },
   empty: { padding: '2.5rem', textAlign: 'center', color: 'var(--faint)' },
   deleteBtn: { background: 'none', border: '1px solid #fecaca', color: 'var(--danger)', borderRadius: '6px', padding: '0.3rem 0.7rem', cursor: 'pointer', fontSize: '0.78rem', fontWeight: 600 },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '440px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '440px', maxWidth: '92vw', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.1rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.9rem', boxSizing: 'border-box', fontFamily: 'inherit', minHeight: '64px', resize: 'vertical' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 700 },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
 };
 
 export default function VendorSuppliers() {
   const { t } = useTranslation();
+  const s = 'vendor.suppliersPage.';
   const { data: raw, loading, error, refetch } = useApi<Supplier[]>('/vendor/suppliers');
   const suppliers: Supplier[] = Array.isArray(raw) ? raw : [];
   const [open, setOpen] = useState(false);
@@ -76,7 +77,7 @@ export default function VendorSuppliers() {
 
   const submit = async () => {
     if (!form.name.trim()) {
-      setFormError('Supplier name is required.');
+      setFormError(t(s + 'nameRequired'));
       return;
     }
     setSaving(true);
@@ -97,21 +98,21 @@ export default function VendorSuppliers() {
       setEditId(null);
       await refetch();
     } catch (err: any) {
-      setFormError(err.response?.data?.message || err.message || 'Failed to save supplier.');
+      setFormError(err.response?.data?.message || err.message || t(s + 'failedSave'));
     } finally {
       setSaving(false);
     }
   };
 
   const remove = async (supplier: Supplier) => {
-    if (!window.confirm(`Deactivate supplier "${supplier.name}"?`)) return;
+    if (!window.confirm(`${t(s + 'deactivateConfirmPrefix')}"${supplier.name}"?`)) return;
     setActionError(null);
     setBusyId(supplier.id);
     try {
       await api.delete(`/vendor/suppliers/${supplier.id}`);
       await refetch();
     } catch (err: any) {
-      setActionError(err.response?.data?.message || err.message || 'Failed to deactivate supplier.');
+      setActionError(err.response?.data?.message || err.message || t(s + 'failedDeactivate'));
     } finally {
       setBusyId(null);
     }
@@ -122,10 +123,10 @@ export default function VendorSuppliers() {
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>{t('vendor.suppliers.title')}</h1>
-          <div style={styles.subtitle}>{t('vendor.suppliers.subtitle')}</div>
+          <h1 style={styles.title}>{t(s + 'title')}</h1>
+          <div style={styles.subtitle}>{t(s + 'subtitle')}</div>
         </div>
-        <button style={styles.addButton} onClick={openCreate}>+ {t('vendor.suppliers.addSupplier')}</button>
+        <button style={styles.addButton} onClick={openCreate}>{t(s + 'addSupplier')}</button>
       </div>
 
       {loading ? (
@@ -137,36 +138,36 @@ export default function VendorSuppliers() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={styles.th}>Name</th>
-                <th style={styles.th}>Contact</th>
-                <th style={styles.th}>Phone</th>
-                <th style={styles.th}>Status</th>
+                <th style={styles.th}>{t(s + 'name')}</th>
+                <th style={styles.th}>{t(s + 'contact')}</th>
+                <th style={styles.th}>{t(s + 'phone')}</th>
+                <th style={styles.th}>{t(s + 'status')}</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
             <tbody>
               {suppliers.length === 0 && (
                 <tr>
-                  <td style={styles.empty} colSpan={5}>{t('vendor.suppliers.noSuppliers')}</td>
+                  <td style={styles.empty} colSpan={5}>{t(s + 'noSuppliers')}</td>
                 </tr>
               )}
-              {suppliers.map((s) => (
-                <tr key={s.id}>
+              {suppliers.map((sup) => (
+                <tr key={sup.id}>
                   <td style={styles.td}>
-                    <div style={{ fontWeight: 700 }}>{s.name}</div>
-                    {s.notes && <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{s.notes}</div>}
+                    <div style={{ fontWeight: 700 }}>{sup.name}</div>
+                    {sup.notes && <div style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{sup.notes}</div>}
                   </td>
-                  <td style={styles.td}>{s.contactPerson || '—'}</td>
-                  <td style={styles.td}>{s.phone || '—'}</td>
-                  <td style={styles.td}><StatusBadge status={s.status} /></td>
+                  <td style={styles.td}>{sup.contactPerson || '—'}</td>
+                  <td style={styles.td}>{sup.phone || '—'}</td>
+                  <td style={styles.td}><StatusBadge status={sup.status} /></td>
                   <td style={{ ...styles.td, textAlign: 'right' }}>
-                    {s.status === 'ACTIVE' && (
+                    {sup.status === 'ACTIVE' && (
                       <>
-                        <button style={{ ...styles.deleteBtn, marginRight: '0.5rem', borderColor: '#93c5fd', color: '#2563eb' }} disabled={busyId === s.id} onClick={() => openEdit(s)}>
-                          Edit
+                        <button style={{ ...styles.deleteBtn, marginRight: '0.5rem', borderColor: '#93c5fd', color: '#2563eb' }} disabled={busyId === sup.id} onClick={() => openEdit(sup)}>
+                          {t(s + 'edit')}
                         </button>
-                        <button style={styles.deleteBtn} disabled={busyId === s.id} onClick={() => remove(s)}>
-                          {busyId === s.id ? '…' : 'Deactivate'}
+                        <button style={styles.deleteBtn} disabled={busyId === sup.id} onClick={() => remove(sup)}>
+                          {busyId === sup.id ? '…' : t(s + 'deactivate')}
                         </button>
                       </>
                     )}
@@ -181,28 +182,28 @@ export default function VendorSuppliers() {
       {open && (
         <div style={styles.overlay} onClick={() => !saving && setOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{editId ? t('vendor.suppliers.editSupplier') : t('vendor.suppliers.addSupplier')}</div>
+            <div style={styles.modalTitle}>{editId ? t(s + 'editSupplier') : t(s + 'addSupplierTitle')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.suppliers.name')} *</label>
-              <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="e.g. Central Millers" />
+              <label style={styles.label}>{t(s + 'nameLabel')}</label>
+              <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder={t(s + 'namePlaceholder')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.suppliers.phone')}</label>
-              <input style={styles.input} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="e.g. +2557xxxxxxxx" />
+              <label style={styles.label}>{t(s + 'phoneLabel')}</label>
+              <input style={styles.input} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder={t(s + 'phonePlaceholder')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.suppliers.contactPerson')}</label>
+              <label style={styles.label}>{t(s + 'contactPerson')}</label>
               <input style={styles.input} value={form.contactPerson} onChange={(e) => update('contactPerson', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>{t('vendor.suppliers.notes')}</label>
+              <label style={styles.label}>{t(s + 'notes')}</label>
               <textarea style={styles.textarea} value={form.notes} onChange={(e) => update('notes', e.target.value)} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>{t('vendor.suppliers.cancel')}</button>
+              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>{t(s + 'cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submit} disabled={saving}>
-                {saving ? t('vendor.suppliers.saving') : t('vendor.suppliers.saveSupplier')}
+                {saving ? t(s + 'saving') : t(s + 'saveSupplier')}
               </button>
             </div>
           </div>

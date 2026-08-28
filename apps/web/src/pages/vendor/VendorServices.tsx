@@ -9,6 +9,11 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { VENDOR_CATEGORIES } from '../../constants/categories';
 import type { ServiceListing, ServiceRequest, ServiceMessage } from '../../types';
 
+interface ApiResponse<T> {
+  data: T;
+  [key: string]: unknown;
+}
+
 interface ListingForm {
   name: string;
   description: string;
@@ -20,7 +25,7 @@ interface ListingForm {
 }
 
 const PRICING_MODELS = [
-  { value: 'per_sqm', label: 'Per m² (e.g. painting, tiling, fumigation)' },
+  { value: 'per_sqm', label: 'Per mÂ² (e.g. painting, tiling, fumigation)' },
   { value: 'per_hour', label: 'Per hour (e.g. plumbing, electrical)' },
   { value: 'per_room', label: 'Per room (e.g. deep cleaning)' },
   { value: 'per_unit', label: 'Per unit (e.g. tailoring, laundry item)' },
@@ -31,33 +36,33 @@ const styles: Record<string, React.CSSProperties> = {
   headerRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', gap: '0.5rem', flexWrap: 'wrap' },
   title: { fontSize: '1.5rem', fontWeight: 700, color: 'var(--ink)', margin: 0 },
   tabWrap: { display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' },
-  tab: { padding: '0.5rem 1rem', border: '1px solid #e2e8f0', background: '#fff', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' },
+  tab: { padding: '0.5rem 1rem', border: '1px solid var(--line)', background: 'var(--surface)', borderRadius: '8px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' },
   tabActive: { background: '#1e40af', color: '#fff', borderColor: '#1e40af' },
   addButton: { background: '#1e40af', color: '#fff', border: 'none', padding: '0.6rem 1.1rem', borderRadius: '8px', fontSize: '0.875rem', fontWeight: 600, cursor: 'pointer' },
-  card: { background: '#fff', border: '1px solid #e2e8f0', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' },
+  card: { background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '10px', boxShadow: '0 1px 3px rgba(0,0,0,0.04)', overflow: 'hidden' },
   table: { width: '100%', borderCollapse: 'collapse' },
-  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid #e2e8f0', fontWeight: 600, background: 'var(--bg)' },
-  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid #f1f5f9' },
+  th: { textAlign: 'left', padding: '0.7rem 1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--muted)', borderBottom: '1px solid var(--line)', fontWeight: 600, background: 'var(--bg)' },
+  td: { padding: '0.75rem 1rem', fontSize: '0.875rem', color: 'var(--ink-soft)', borderBottom: '1px solid var(--line)' },
   empty: { textAlign: 'center', color: 'var(--muted)', padding: '2rem' },
   overlay: { position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 },
-  modal: { background: '#fff', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '90vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
+  modal: { background: 'var(--surface)', borderRadius: '12px', padding: '1.5rem', width: '480px', maxWidth: '90vw', maxHeight: '88vh', overflow: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.2)' },
   modalTitle: { fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '1rem' },
   field: { marginBottom: '0.85rem' },
   label: { display: 'block', fontSize: '0.8rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.3rem' },
   input: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', boxSizing: 'border-box', fontFamily: 'inherit' },
   textarea: { width: '100%', padding: '0.55rem 0.7rem', border: '1px solid #cbd5e1', borderRadius: '6px', fontSize: '0.875rem', minHeight: '70px', boxSizing: 'border-box', fontFamily: 'inherit' },
   footer: { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' },
-  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
+  cancelBtn: { padding: '0.5rem 1rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', color: 'var(--text)' },
   saveBtn: { padding: '0.5rem 1rem', background: '#1e40af', color: '#fff', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '0.875rem', fontWeight: 600 },
   saveBtnDisabled: { opacity: 0.6, cursor: 'not-allowed' },
   smallError: { color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.5rem' },
   smallNote: { fontSize: '0.78rem', color: 'var(--muted)' },
-  reqRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid #f1f5f9', gap: '1rem', flexWrap: 'wrap' },
-  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: '#fff', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text)' },
-  chatBox: { border: '1px solid #e2e8f0', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--bg)' },
+  reqRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 1rem', borderBottom: '1px solid var(--line)', gap: '1rem', flexWrap: 'wrap' },
+  buttonSecondary: { padding: '0.45rem 0.85rem', border: '1px solid #cbd5e1', background: 'var(--surface)', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', color: 'var(--text)' },
+  chatBox: { border: '1px solid var(--line)', borderRadius: '8px', height: '220px', overflowY: 'auto', padding: '0.75rem', marginBottom: '0.75rem', background: 'var(--bg)' },
   chatMsg: { marginBottom: '0.5rem', fontSize: '0.85rem' },
   chatMe: { textAlign: 'right' },
-  chatBubble: { display: 'inline-block', background: '#fff', border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.4rem 0.7rem', maxWidth: '80%' },
+  chatBubble: { display: 'inline-block', background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: '8px', padding: '0.4rem 0.7rem', maxWidth: '80%' },
   chatBubbleMe: { background: '#1e40af', color: '#fff', borderColor: '#1e40af' },
 };
 
@@ -86,8 +91,8 @@ const [chatError, setChatError] = useState<string | null>(null);
   const [quoteBusy, setQuoteBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
-  const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as any)?.data ?? []);
-  const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as any)?.data ?? []);
+  const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as ApiResponse<ServiceListing[]>)?.data ?? []);
+  const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as ApiResponse<ServiceRequest[]>)?.data ?? []);
 
   const openModal = () => {
     setForm(emptyForm);
@@ -186,7 +191,7 @@ const [chatError, setChatError] = useState<string | null>(null);
       await refetchReqs();
       const refreshed = await api.get('/services/requests?status=');
       const payload = refreshed.data?.data ?? refreshed.data?.data ?? [];
-      const list = Array.isArray(payload) ? payload : ((payload as any)?.data ?? []);
+      const list = Array.isArray(payload) ? payload : ((payload as ApiResponse<ServiceRequest[]>)?.data ?? []);
       const updated = list.find((r: ServiceRequest) => r.id === activeReq.id);
       if (updated) setActiveReq(updated);
       setActionError(null);
@@ -245,7 +250,7 @@ const [chatError, setChatError] = useState<string | null>(null);
                       <td style={styles.td}><StatusBadge status={l.isActive ? 'ACTIVE' : 'INACTIVE'} /></td>
                       <td style={{ ...styles.td, textAlign: 'right' }}>
                         <button style={{ ...styles.buttonSecondary, color: 'var(--danger)', borderColor: '#fecaca' }} onClick={() => deleteListing(l.id, l.name)} disabled={deletingId === l.id}>
-                          {deletingId === l.id ? 'Deleting…' : 'Delete'}
+                          {deletingId === l.id ? 'Deletingâ€¦' : 'Delete'}
                         </button>
                       </td>
                     </tr>
@@ -270,8 +275,8 @@ const [chatError, setChatError] = useState<string | null>(null);
               <div key={r.id} style={styles.reqRow}>
                 <div style={{ flex: 1 }}>
                   <div style={{ fontWeight: 700, color: 'var(--ink)' }}>{r.title}</div>
-                  <div style={styles.smallNote}>{r.quantity} {r.unitLabel} • {r.details || 'No details'}</div>
-                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#1e40af' }}>🕐 Requested for: {new Date(r.scheduledAt).toLocaleString()}</div>}
+                  <div style={styles.smallNote}>{r.quantity} {r.unitLabel} â€¢ {r.details || 'No details'}</div>
+                  {r.scheduledAt && <div style={{ marginTop: '0.2rem', fontSize: '0.82rem', color: '#1e40af' }}>ðŸ• Requested for: {new Date(r.scheduledAt).toLocaleString()}</div>}
                   {r.photoUrls?.length > 0 && (
                     <div style={{ display: 'flex', gap: '0.3rem', marginTop: '0.4rem' }}>
                       {r.photoUrls.slice(0, 4).map((u, i) => <img key={i} src={u} alt={`req ${i + 1}`} style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 6 }} />)}
@@ -306,7 +311,7 @@ const [chatError, setChatError] = useState<string | null>(null);
             <div style={styles.field}>
               <label style={styles.label}>Category</label>
               <select style={styles.input} value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}>
-                <option value="">Select category…</option>
+                <option value="">Select categoryâ€¦</option>
                 {VENDOR_CATEGORIES.map((c) => (
                   <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
                 ))}
@@ -325,7 +330,7 @@ const [chatError, setChatError] = useState<string | null>(null);
               <input type="number" min={0} style={styles.input} value={form.basePrice} onChange={(e) => setForm((f) => ({ ...f, basePrice: parseFloat(e.target.value) || 0 }))} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Unit Label (e.g. m², hour, room)</label>
+              <label style={styles.label}>Unit Label (e.g. mÂ², hour, room)</label>
               <input style={styles.input} value={form.unitLabel} onChange={(e) => setForm((f) => ({ ...f, unitLabel: e.target.value }))} />
             </div>
             <div style={styles.field}>
@@ -336,7 +341,7 @@ const [chatError, setChatError] = useState<string | null>(null);
             <div style={styles.footer}>
               <button style={styles.cancelBtn} onClick={() => setModalOpen(false)} disabled={saving}>Cancel</button>
               <button style={{ ...styles.saveBtn, ...(saving ? styles.saveBtnDisabled : {}) }} onClick={submitListing} disabled={saving}>
-                {saving ? 'Saving…' : 'Save'}
+                {saving ? 'Savingâ€¦' : 'Save'}
               </button>
             </div>
           </div>
@@ -346,13 +351,13 @@ const [chatError, setChatError] = useState<string | null>(null);
       {activeReq && (
         <div style={styles.overlay} onClick={() => setActiveReq(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Service Request — {activeReq.title}</div>
+            <div style={styles.modalTitle}>Service Request â€” {activeReq.title}</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text)', marginBottom: '0.75rem' }}>
-              {activeReq.quantity} {activeReq.unitLabel} • {activeReq.details || 'No details'}
+              {activeReq.quantity} {activeReq.unitLabel} â€¢ {activeReq.details || 'No details'}
             </div>
             {activeReq.scheduledAt && (
               <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#1e40af', marginBottom: '0.75rem' }}>
-                🕐 Requested for: {new Date(activeReq.scheduledAt).toLocaleString()}
+                ðŸ• Requested for: {new Date(activeReq.scheduledAt).toLocaleString()}
               </div>
             )}
             {activeReq.photoUrls?.length > 0 && (
@@ -361,7 +366,7 @@ const [chatError, setChatError] = useState<string | null>(null);
               </div>
             )}
             {activeReq.status === 'PENDING' && (
-              <div style={{ border: '1px solid #e2e8f0', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.75rem' }}>
+              <div style={{ border: '1px solid var(--line)', borderRadius: '8px', padding: '0.75rem', marginBottom: '0.75rem' }}>
                 <div style={{ fontWeight: 700, fontSize: '0.9rem', marginBottom: '0.5rem' }}>Submit Quote</div>
                 <div style={styles.field}>
                   <label style={styles.label}>Price (TZS)</label>
@@ -371,7 +376,7 @@ const [chatError, setChatError] = useState<string | null>(null);
                   <label style={styles.label}>Message (optional)</label>
                   <textarea style={styles.textarea} value={quoteMsg} onChange={(e) => setQuoteMsg(e.target.value)} />
                 </div>
-                <button style={styles.saveBtn} onClick={submitQuote} disabled={quoteBusy}>{quoteBusy ? 'Sending…' : 'Send Quote'}</button>
+                <button style={styles.saveBtn} onClick={submitQuote} disabled={quoteBusy}>{quoteBusy ? 'Sendingâ€¦' : 'Send Quote'}</button>
               </div>
             )}
             {activeReq.status !== 'PENDING' && (
@@ -383,7 +388,7 @@ const [chatError, setChatError] = useState<string | null>(null);
               {messages.length === 0 && <div style={styles.smallNote}>No messages yet.</div>}
               {messages.map((m) => (
                 <div key={m.id} style={{ ...styles.chatMsg, ...(m.senderId === user?.id ? styles.chatMe : {}) }}>
-                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{m.senderName} · {new Date(m.createdAt).toLocaleTimeString()}</span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{m.senderName} Â· {new Date(m.createdAt).toLocaleTimeString()}</span>
                   <div>
                     <span style={{ ...styles.chatBubble, ...(m.senderId === user?.id ? styles.chatBubbleMe : {}) }}>{m.message}</span>
                   </div>
@@ -392,7 +397,7 @@ const [chatError, setChatError] = useState<string | null>(null);
             </div>
             {chatError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginTop: '0.25rem' }}>{chatError}</div>}
             <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <input style={styles.input} placeholder="Type a message…" value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
+              <input style={styles.input} placeholder="Type a messageâ€¦" value={messageText} onChange={(e) => setMessageText(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') sendMessage(); }} />
               <button style={{ ...styles.buttonSecondary, whiteSpace: 'nowrap' }} onClick={sendMessage}>Send</button>
             </div>
             <div style={styles.footer}>

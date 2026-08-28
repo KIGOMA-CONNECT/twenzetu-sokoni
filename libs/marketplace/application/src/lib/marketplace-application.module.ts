@@ -21,7 +21,6 @@ import {
   TypeOrmCustomProcurementRepository,
   TypeOrmVendorQuoteRepository,
   TypeOrmPartnerKycRepository,
-  TypeOrmMicroLoanRepository,
   TypeOrmCreditScoreRepository,
   TypeOrmBulkOrderRepository,
   TypeOrmFieldAgentRepository,
@@ -51,7 +50,7 @@ import {
   CUSTOMER_POINTS_REPOSITORY, SURGE_RULE_REPOSITORY,
   WALLET_REPOSITORY, WALLET_TRANSACTION_REPOSITORY, USED_GOODS_REPOSITORY,
   REVIEW_REPOSITORY, PROCUREMENT_REPOSITORY, VENDOR_QUOTE_REPOSITORY, DRIVER_REVIEW_REPOSITORY,
-  PARTNER_KYC_REPOSITORY, MICRO_LOAN_REPOSITORY, CREDIT_SCORE_REPOSITORY,
+  PARTNER_KYC_REPOSITORY, CREDIT_SCORE_REPOSITORY,
   BULK_ORDER_REPOSITORY, FIELD_AGENT_REPOSITORY, HYPERLOCAL_POI_REPOSITORY,
   SMS_SERVICE, MOBILE_MONEY_SERVICE, EMAIL_SERVICE, COUNTRY_CONFIG_REPOSITORY, MARKETPLACE_GATEWAY,
   VEHICLE_REPOSITORY,
@@ -89,8 +88,6 @@ import { EarnPointsUseCase } from './use-cases/loyalty/earn-points.use-case';
 import { RedeemPointsUseCase } from './use-cases/loyalty/redeem-points.use-case';
 import { SubmitKycUseCase } from './use-cases/kyc/submit-kyc.use-case';
 import { VerifyKycUseCase } from './use-cases/kyc/verify-kyc.use-case';
-import { RequestLoanUseCase } from './use-cases/finance/request-loan.use-case';
-import { RepayLoanUseCase } from './use-cases/finance/repay-loan.use-case';
 import { CalculateCreditScoreUseCase } from './use-cases/finance/calculate-credit-score.use-case';
 import { CreateBulkOrderUseCase } from './use-cases/b2b/create-bulk-order.use-case';
 import { JoinBulkOrderUseCase } from './use-cases/b2b/join-bulk-order.use-case';
@@ -122,7 +119,6 @@ import { FindReviewsByVendorUseCase } from './use-cases/review/find-reviews-by-v
 import { FindMyReviewedOrdersUseCase } from './use-cases/review/find-my-reviewed-orders.use-case';
 import { CreateSurgeRuleUseCase, ListSurgeRulesUseCase } from './use-cases/surge/list-surge-rules.use-case';
 import { GetMyKycStatusUseCase, ListPendingKycUseCase } from './use-cases/kyc/get-kyc-status.use-case';
-import { ListMyLoansUseCase } from './use-cases/finance/list-my-loans.use-case';
 import { GetMyLoyaltyUseCase } from './use-cases/loyalty/get-my-loyalty.use-case';
 import { ListActiveBulkOrdersUseCase } from './use-cases/b2b/list-active-bulk-orders.use-case';
 import { GetMyAgentProfileUseCase } from './use-cases/agent/get-my-agent-profile.use-case';
@@ -239,7 +235,6 @@ const REPOSITORIES = [
   { provide: PROCUREMENT_REPOSITORY, useClass: TypeOrmCustomProcurementRepository },
   { provide: VENDOR_QUOTE_REPOSITORY, useClass: TypeOrmVendorQuoteRepository },
   { provide: PARTNER_KYC_REPOSITORY, useClass: TypeOrmPartnerKycRepository },
-  { provide: MICRO_LOAN_REPOSITORY, useClass: TypeOrmMicroLoanRepository },
   { provide: CREDIT_SCORE_REPOSITORY, useClass: TypeOrmCreditScoreRepository },
   { provide: BULK_ORDER_REPOSITORY, useClass: TypeOrmBulkOrderRepository },
   { provide: FIELD_AGENT_REPOSITORY, useClass: TypeOrmFieldAgentRepository },
@@ -299,8 +294,6 @@ const USE_CASES = [
   RedeemPointsUseCase,
   SubmitKycUseCase,
   VerifyKycUseCase,
-  RequestLoanUseCase,
-  RepayLoanUseCase,
   CalculateCreditScoreUseCase,
   CreateBulkOrderUseCase,
   JoinBulkOrderUseCase,
@@ -335,7 +328,6 @@ const USE_CASES = [
   ListSurgeRulesUseCase,
   GetMyKycStatusUseCase,
   ListPendingKycUseCase,
-  ListMyLoansUseCase,
   GetMyLoyaltyUseCase,
   ListActiveBulkOrdersUseCase,
   GetMyAgentProfileUseCase,

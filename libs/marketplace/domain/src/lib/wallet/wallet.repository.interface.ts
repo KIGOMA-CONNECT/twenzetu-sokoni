@@ -3,4 +3,5 @@ import { Wallet } from './wallet.aggregate';
 
 export interface IWalletRepository extends IRepository<Wallet, EntityId> {
   findByOwnerId(ownerId: string, tenantId?: string): Promise<Wallet | null>;
+  findByOwnerIdAndTenant(ownerId: string, tenantId: string): Promise<Wallet | null>;
 }

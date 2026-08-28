@@ -48,10 +48,10 @@ export default function AdminAuditLog() {
         <div style={{ color: 'var(--faint)', fontSize: '0.9rem' }}>{total} total entries</div>
       </div>
 
-      <div style={{ background: '#fff', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--surface)', borderRadius: '8px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
-            <tr style={{ background: 'var(--bg)', borderBottom: '2px solid #e2e8f0' }}>
+            <tr style={{ background: 'var(--bg)', borderBottom: '2px solid var(--line)' }}>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Action</th>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Actor</th>
               <th style={{ padding: '0.75rem', textAlign: 'left' }}>Target</th>
@@ -61,7 +61,7 @@ export default function AdminAuditLog() {
           </thead>
           <tbody>
             {logs.map(log => (
-              <tr key={log.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+              <tr key={log.id} style={{ borderBottom: '1px solid var(--line)' }}>
                 <td style={{ padding: '0.75rem' }}>
                   <span style={{
                     background: `${actionColor(log.action)}20`,
@@ -96,7 +96,7 @@ export default function AdminAuditLog() {
         <button
           disabled={page === 0}
           onClick={() => setPage(p => p - 1)}
-          style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.5 : 1 }}
+          style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: 'var(--surface)', cursor: page === 0 ? 'not-allowed' : 'pointer', opacity: page === 0 ? 0.5 : 1 }}
         >
           Previous
         </button>
@@ -106,7 +106,7 @@ export default function AdminAuditLog() {
         <button
           disabled={(page + 1) * limit >= total}
           onClick={() => setPage(p => p + 1)}
-          style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: '#fff', cursor: (page + 1) * limit >= total ? 'not-allowed' : 'pointer', opacity: (page + 1) * limit >= total ? 0.5 : 1 }}
+          style={{ padding: '0.5rem 1rem', border: '1px solid #cbd5e1', borderRadius: '6px', background: 'var(--surface)', cursor: (page + 1) * limit >= total ? 'not-allowed' : 'pointer', opacity: (page + 1) * limit >= total ? 0.5 : 1 }}
         >
           Next
         </button>

@@ -19,6 +19,21 @@ if [ ! -f "$ENV_FILE" ]; then
   exit 1
 fi
 
+# Apply env overrides (e.g. GOOGLE_MAPS_API_KEY=xxx ./deploy.sh)
+apply_env_override() {
+  local key="$1" value="$2"
+  if [ -n "$value" ] && [ -f "$ENV_FILE" ]; then
+    if grep -q "^${key}=" "$ENV_FILE" 2>/dev/null; then
+      sed -i "s|^${key}=.*|${key}=${value}|" "$ENV_FILE"
+    else
+      echo "${key}=${value}" >> "$ENV_FILE"
+    fi
+    echo "  Applied ${key} to ${ENV_FILE}"
+  fi
+}
+
+apply_env_override "GOOGLE_MAPS_API_KEY" "${GOOGLE_MAPS_API_KEY:-}"
+
 # Load env vars
 set -a; source "$ENV_FILE"; set +a
 
