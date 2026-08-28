@@ -1,9 +1,11 @@
+import { useMemo } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Order, Wallet } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 import { useTranslation } from 'react-i18next';
@@ -81,6 +83,12 @@ export default function VendorDashboard() {
 
   const firstName = user?.fullName?.split(' ')[0] || 'Vendor';
   const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
+
+  const vendorContext = useMemo(() => {
+    const facts: Record<string, unknown> = { totalOrders, totalRevenue, walletBalance, pendingBalance, todayOrders: computedTodayOrders, todayRevenue: computedTodayRevenue, serviceListings: stats?.serviceListings ?? 0, openServiceRequests: stats?.openServiceRequests ?? 0, recentOrders: recentOrders.length };
+    const rows = recentOrders.slice(0, 5).map((o) => ({ kind: 'order', id: o.id, status: o.status, totalAmount: o.totalAmount }));
+    return { summary: `Vendor dashboard — ${totalOrders} orders, ${formatCurrency(totalRevenue)} revenue`, facts, rows, constraints: ['Ground in dashboard stats.'] };
+  }, [totalOrders, totalRevenue, walletBalance, pendingBalance, computedTodayOrders, computedTodayRevenue, stats, recentOrders, formatCurrency]);
 
   return (
     <div style={styles.container}>
@@ -169,6 +177,19 @@ export default function VendorDashboard() {
                 </tbody>
               </table>
             )}
+          </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <AiAssistant
+              module="vendor-analytics"
+              feature="analyze"
+              features={['assistant', 'analyze', 'summarize', 'recommend']}
+              context={vendorContext}
+              title="AI · Store Overview"
+              description="Ask about today's sales, wallet, or recent orders — AI sees the same dashboard."
+              placeholder="e.g. How was today vs yesterday? Summarize store health…"
+              suggestedPrompts={['Summarize today', 'Analyze recent orders', 'What should I restock?', 'How is wallet health?']}
+            />
           </div>
         </>
       )}

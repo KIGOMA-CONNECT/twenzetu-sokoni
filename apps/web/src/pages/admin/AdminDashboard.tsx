@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import { useCurrency } from '../../context/CurrencyContext';
@@ -5,6 +6,7 @@ import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import AiAssistant from '../../components/AiAssistant';
 import { PageTitle } from '../../components/PageTitle';
 import { useTranslation } from 'react-i18next';
 import type { Order, Vendor } from '../../types';
@@ -30,6 +32,26 @@ export default function AdminDashboard() {
     { label: t('admin.serviceListings'), value: stats?.serviceListings ?? 0 },
     { label: t('admin.openServiceRequests'), value: stats?.openServiceRequests ?? 0 },
   ];
+
+  const adminContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      totalVendors: stats?.totalVendors ?? 0,
+      activeOrders: stats?.activeOrders ?? 0,
+      totalRevenue: stats?.totalRevenue ?? 0,
+      pendingVendors: stats?.pendingVendors ?? 0,
+      openDisputes: stats?.openDisputes ?? 0,
+      totalUsers: stats?.totalUsers ?? 0,
+      serviceListings: stats?.serviceListings ?? 0,
+      openServiceRequests: stats?.openServiceRequests ?? 0,
+      recentOrders: (recentOrders ?? []).length,
+      pendingVendorsCount: (pendingVendors ?? []).length,
+    };
+    const rows = [
+      ...(recentOrders ?? []).slice(0, 5).map((o) => ({ kind: 'order', id: o.id, totalAmount: o.totalAmount, status: o.status })),
+      ...(pendingVendors ?? []).slice(0, 5).map((v) => ({ kind: 'vendor', shopName: v.shopName, status: v.status })),
+    ];
+    return { summary: `Admin dashboard — ${stats?.totalVendors ?? 0} vendors, ${stats?.activeOrders ?? 0} active orders`, facts, rows, constraints: ['Ground in dashboard stats.'] };
+  }, [stats, recentOrders, pendingVendors]);
 
   return (
     <div className="page">
@@ -95,6 +117,19 @@ export default function AdminDashboard() {
             <EmptyState icon="🏪" title={t('admin.noPendingVendors')} />
           )}
         </div>
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="admin-analytics"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend']}
+          context={adminContext}
+          title="AI · Admin Overview"
+          description="Ask about platform health — AI sees the same dashboard stats."
+          placeholder="e.g. Summarize platform health, what needs attention?"
+          suggestedPrompts={['Summarize admin dashboard', 'What needs attention today?', 'Analyze pending vendors and disputes']}
+        />
       </div>
     </div>
   );
