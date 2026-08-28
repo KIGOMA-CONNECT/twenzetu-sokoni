@@ -9,6 +9,7 @@ import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { Recommendations } from '../../components/Recommendations';
 import { SectionTitle } from '../../components/ui';
+import AiAssistant from '../../components/AiAssistant';
 import { PageTitle } from '../../components/PageTitle';
 import type { Order, Category } from '../../types';
 
@@ -141,6 +142,15 @@ function ConsumerDashboard() {
   const firstName = user?.fullName?.split(' ')[0] || 'there';
   const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
+  const consumerDashboardContext = useMemo(() => {
+    const facts: Record<string, unknown> = { activeOrders, totalSpent, loyaltyPoints, categoryCount: parentCategories.length, orderCount: (orders ?? []).length };
+    const rows = [
+      ...(orders ?? []).slice(0, 10).map((o) => ({ kind: 'order', status: o.status, totalAmount: o.totalAmount })),
+      ...parentCategories.slice(0, 8).map((c) => ({ kind: 'category', name: c.name, type: c.type })),
+    ];
+    return { summary: `Consumer — ${firstNameLabel} — ${activeOrders} active, ${formatCurrency(totalSpent)} spent`, facts, rows, constraints: ['Ground in orders and categories.'] };
+  }, [activeOrders, totalSpent, loyaltyPoints, parentCategories, orders, firstNameLabel, formatCurrency]);
+
   const isPhone = device.type === 'phone';
   const isSmallPhone = device.phoneSize === 'small';
   const heroMinHeight = isSmallPhone ? '160px' : isPhone ? '180px' : '220px';
@@ -272,6 +282,18 @@ function ConsumerDashboard() {
 
           <Recommendations title={t('app.featured')} endpoint="/recommendations/featured" />
           <Recommendations title={t('app.recommended')} endpoint="/recommendations/for-you" />
+          <div style={{ marginTop: '1.5rem' }}>
+            <AiAssistant
+              module="consumer"
+              feature="recommend"
+              features={['assistant', 'recommend', 'summarize', 'analyze']}
+              context={consumerDashboardContext}
+              title="AI · Shopping Assistant"
+              description={`Hi ${firstNameLabel} — ask about orders, categories, or what to buy next.`}
+              placeholder="e.g. What should I order today? Recommend for my budget…"
+              suggestedPrompts={['What should I buy next?', 'Summarize my orders', 'Recommend based on my history', 'Any deals for me?']}
+            />
+          </div>
         </>
       )}
     </div>

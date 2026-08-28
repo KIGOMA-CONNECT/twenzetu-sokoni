@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useDevice } from '../../hooks/useDevice';
 import { SectionTitle, ProductCard } from '../../components/ui';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import { useApi } from '../../hooks/useApi';
 import { useCart } from '../../context/CartContext';
 import type { Product } from '../../types';
@@ -24,9 +25,6 @@ export default function GeneralProductsPage() {
   const navigate = useNavigate();
   const device = useDevice();
   const { t } = useTranslation();
-  const [query, setQuery] = useState('');
-  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'ai'; text: string }[]>([]);
-  const [isTyping, setIsTyping] = useState(false);
   const [activeSub, setActiveSub] = useState<(typeof GENERAL_SUBS)[number] | null>(null);
   const [cartError, setCartError] = useState<string | null>(null);
   const { setActiveVendor, addItem } = useCart();
@@ -35,6 +33,16 @@ export default function GeneralProductsPage() {
     activeSub ? `/public/products?categoryId=${activeSub.id}&limit=24` : null,
     [activeSub],
   );
+
+  const consumerContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      activeCategory: activeSub?.name ?? '(none)',
+      productCount: products?.length ?? 0,
+      hasProducts: (products?.length ?? 0) > 0 ? 'yes' : 'no',
+    };
+    const rows = (products ?? []).slice(0, 15).map((p) => ({ kind: 'product', name: p.name, price: p.price, stockQuantity: p.stockQuantity }));
+    return { summary: `General products — ${activeSub?.name ?? 'browse'} — ${products?.length ?? 0} products`, facts, rows, constraints: ['Ground in displayed products.'] };
+  }, [activeSub, products]);
 
   async function handleAdd(p: Product) {
     if (!localStorage.getItem('accessToken')) {
@@ -50,38 +58,6 @@ export default function GeneralProductsPage() {
     }
   }
 
-  function handleSendMessage() {
-    if (!query.trim()) return;
-    const userMsg = query.trim();
-    setChatMessages((prev) => [...prev, { role: 'user', text: userMsg }]);
-    setQuery('');
-    setIsTyping(true);
-
-    // Simulate AI response
-    setTimeout(() => {
-      const aiResponse = generateAIResponse(userMsg);
-      setChatMessages((prev) => [...prev, { role: 'ai', text: aiResponse }]);
-      setIsTyping(false);
-    }, 1200);
-  }
-
-  function generateAIResponse(msg: string): string {
-    const lower = msg.toLowerCase();
-    if (lower.includes('simu') || lower.includes('phone') || lower.includes('laptop')) {
-      return 'Nakuelewa! Unatafuta vifaa vya tech. Je, una bajeti fulani? Ninapendekeza kuangalia category ya Electronics — kuna simu, laptop na TV kutoka kwa wauzaji wetu bora.';
-    }
-    if (lower.includes('jiko') || lower.includes('kitchen') || lower.includes('fridge')) {
-      return 'Vifaa vya jiko! Nina orodha ya wauzaji wanaouza fridge, gas cooker, blender na vingine. Bonyeza "Vifaa vya Nyumbani" hapo chini au niambie zaidi.';
-    }
-    if (lower.includes('mchezo') || lower.includes('sport') || lower.includes('mpira')) {
-      return 'Vifaa vya michezo! Kuna mpira wa miguu, gym equipment, na vifaa vya sports. Bonyeza "Vifaa vya Michezo" kuangalia.';
-    }
-    if (lower.includes('ujenzi') || lower.includes('cement') || lower.includes('mabati')) {
-      return 'Vifaa vya ujenzi! Tuna cement, mabati, bricks, nails na vingine. Wauzaji wetu wako karibu nawe. Bonyeza "Vifaa vya Ujenzi".';
-    }
-    return 'Nakuelewa! Unachohitaji kina katika moja ya categories zetu. Chagua moja hapo chini au nieleze zaidi kuhusu unachotafuta — nitakusaidia kupata sahihi!';
-  }
-
   return (
     <div className="page" style={{ paddingTop: device.safeAreaInsets.top || undefined }}>
       {/* Header */}
@@ -93,56 +69,17 @@ export default function GeneralProductsPage() {
         </div>
       </div>
 
-      {/* AI Chat */}
-      <div style={{ background: 'var(--surface)', borderRadius: 'var(--radius-lg)', padding: '1rem', marginBottom: '1.5rem', border: '1px solid var(--line)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-          <span style={{ fontSize: '1.2rem' }}>🤖</span>
-          <span style={{ fontWeight: 700, fontSize: '0.9rem' }}>{t('generalProducts.smartAssistant')}</span>
-        </div>
-
-        {/* Chat messages */}
-        <div style={{ maxHeight: 200, overflowY: 'auto', marginBottom: '0.75rem' }}>
-          {chatMessages.length === 0 && (
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>
-              {t('generalProducts.describeNeeds')}
-            </p>
-          )}
-          {chatMessages.map((msg, i) => (
-            <div key={i} style={{
-              display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: '0.5rem',
-            }}>
-              <div style={{
-                maxWidth: '80%', padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-lg)', fontSize: '0.85rem',
-                background: msg.role === 'user' ? 'var(--brand)' : 'var(--bg)',
-                color: msg.role === 'user' ? '#fff' : 'var(--ink)',
-              }}>
-                {msg.text}
-              </div>
-            </div>
-          ))}
-          {isTyping && (
-            <div style={{ display: 'flex', gap: '0.3rem', padding: '0.5rem' }}>
-              <span style={{ animation: 'pulse 1s infinite' }}>●</span>
-              <span style={{ animation: 'pulse 1s infinite 0.2s' }}>●</span>
-              <span style={{ animation: 'pulse 1s infinite 0.4s' }}>●</span>
-            </div>
-          )}
-        </div>
-
-        {/* Input */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-            placeholder={t('generalProducts.describePlaceholder')}
-            style={{ flex: 1, padding: '0.65rem', borderRadius: 'var(--radius)', border: '1px solid var(--line)', fontSize: '0.85rem' }}
-          />
-          <button className="btn btn-primary" onClick={handleSendMessage} style={{ padding: '0.65rem 1rem' }}>
-            {t('common.send')}
-          </button>
-        </div>
+      <div style={{ marginBottom: '1.5rem' }}>
+        <AiAssistant
+          module="consumer"
+          feature="recommend"
+          features={['assistant', 'recommend', 'summarize', 'analyze']}
+          context={consumerContext}
+          title="AI · Shopping Assistant"
+          description={`Ask about ${activeSub?.name ?? 'all'} — grounded in ${products?.length ?? 0} products.`}
+          placeholder={t('generalProducts.describePlaceholder')}
+          suggestedPrompts={['Unatafuta nini leo?', 'Nina bajeti ya 50000, nini ni bora?', 'Jiko vs Fridge — nipe mapendekezo']}
+        />
       </div>
 
       {/* Subcategories */}
