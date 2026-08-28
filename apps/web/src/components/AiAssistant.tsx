@@ -107,25 +107,78 @@ export default function AiAssistant({
     setHistory((h) => [...h, { role: 'user', content: message }]);
     setInput('');
     setLoading(true);
+    const payload = {
+      module,
+      message,
+      feature,
+      history: history.map((m) => ({ role: m.role, content: m.content })),
+      context: context
+        ? {
+            summary: context.summary,
+            facts: context.facts,
+            rows: context.rows,
+            constraints: context.constraints,
+            questions: context.questions,
+            payload: context.payload,
+          }
+        : undefined,
+    };
+    // Try streaming first; fall back to buffered chat on failure
     try {
-      const res = await api.post('/ai/chat', {
-        module,
-        message,
-        feature,
-        history: history.map((m) => ({ role: m.role, content: m.content })),
-        context: context
-          ? {
-              summary: context.summary,
-              facts: context.facts,
-              rows: context.rows,
-              constraints: context.constraints,
-              questions: context.questions,
-              payload: context.payload,
-            }
-          : undefined,
+      const token = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+      const tenantId = typeof window !== 'undefined' ? localStorage.getItem('tenantId') : null;
+      const res = await fetch('/api/ai/stream', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...(tenantId ? { 'x-tenant-id': tenantId } : {}),
+        },
+        body: JSON.stringify(payload),
       });
-      const payload = res.data?.data ?? res.data;
-      const textReply = typeof payload?.text === 'string' ? payload.text : typeof payload === 'string' ? payload : '';
+      if (res.ok && res.body) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let streamed = '';
+        setHistory((h) => [...h, { role: 'assistant', content: '' }]);
+        let done = false;
+        while (!done) {
+          const { value, done: readerDone } = await reader.read();
+          done = readerDone;
+          if (value) {
+            streamed += decoder.decode(value, { stream: true });
+            const snap = streamed;
+            setHistory((h) => {
+              const last = h[h.length - 1];
+              if (last?.role === 'assistant') return [...h.slice(0, -1), { role: 'assistant', content: snap }];
+              return h;
+            });
+          }
+        }
+        if (streamed.trim()) {
+          setHistory((h) => {
+            const last = h[h.length - 1];
+            if (last?.role === 'assistant' && last.content !== streamed) return [...h.slice(0, -1), { role: 'assistant', content: streamed }];
+            return h;
+          });
+          setLoading(false);
+          return;
+        }
+        // Empty stream — fall through to buffered
+        setHistory((h) => h.filter((_, i) => !(i === h.length - 1 && h[i].role === 'assistant' && h[i].content === '')));
+      }
+    } catch {
+      // ignore streaming failure, fallback to buffered
+      setHistory((h) => {
+        const last = h[h.length - 1];
+        if (last?.role === 'assistant' && last.content === '') return h.slice(0, -1);
+        return h;
+      });
+    }
+    try {
+      const res = await api.post('/ai/chat', payload);
+      const data = res.data?.data ?? res.data;
+      const textReply = typeof data?.text === 'string' ? data.text : typeof data === 'string' ? data : '';
       setHistory((h) => [...h, { role: 'assistant', content: textReply || '(no response)' }]);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : '';

@@ -7,6 +7,7 @@ import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Product, PosPaymentMethod, PosCheckoutResult, PosShift } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 
@@ -134,6 +135,24 @@ export default function VendorPos() {
 
   const cartList = Object.values(cart);
   const total = cartList.reduce((sum, l) => sum + l.product.price * l.quantity, 0);
+
+  const posContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      shiftNumber: shift?.shiftNumber ?? '(no active shift)',
+      shiftStatus: shift ? 'open' : 'closed',
+      salesCount: shift?.salesCount ?? 0,
+      totalSales: shift?.totalSales ?? 0,
+      cartItemCount: cartList.length,
+      cartTotal: total,
+      filteredProducts: filtered.length,
+      totalProducts: products.length,
+    };
+    const rows = [
+      ...cartList.slice(0, 20).map((l) => ({ kind: 'cart', name: l.product.name, quantity: l.quantity, price: l.product.price, total: l.product.price * l.quantity })),
+      ...filtered.slice(0, 20).map((p) => ({ kind: 'product', name: p.name, price: p.price, stockQuantity: p.stockQuantity, sku: p.sku })),
+    ];
+    return { summary: `POS — ${shift ? `shift ${shift.shiftNumber}` : 'no shift'} — ${cartList.length} cart items`, facts, rows, constraints: ['Ground in shift and cart.'] };
+  }, [shift, cartList, total, filtered, products.length]);
 
   const addToCart = (product: Product, qty = 1) => {
     const existing = cart[product.id];
@@ -314,63 +333,77 @@ export default function VendorPos() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : (
-        <div style={styles.layout}>
-          <div style={styles.grid}>
-            {filtered.length === 0 && (
-              <div style={{ color: 'var(--faint)', padding: '2rem', gridColumn: '1 / -1', textAlign: 'center' }}>
-                {t('vendor.posPage.noProducts')}
-              </div>
-            )}
-            {filtered.map((p) => {
-              const out = p.status !== 'ACTIVE' || p.stockQuantity <= 0;
-              return (
-                <button
-                  key={p.id}
-                  style={{ ...styles.tile, ...(out ? styles.tileDisabled : {}) }}
-                  disabled={out}
-                  onClick={() => addToCart(p)}
-                >
-                  <div style={styles.tileName}>{p.name}</div>
-                  <div style={styles.tileSku}>{p.sku || p.barcode || p.id.slice(0, 8)}</div>
-                  <div style={styles.tilePrice}>{formatCurrency(p.price)} {p.currency}</div>
-                  <div style={styles.tileStock}>
-                    {out ? (p.status !== 'ACTIVE' ? <StatusBadge status={p.status} /> : t('vendor.posPage.outOfStock')) : `${p.stockQuantity} ${t('vendor.posPage.inStock')}`}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          <div style={styles.cart}>
-            <div style={styles.cartHeader}>{t('vendor.posPage.currentSale')}</div>
-            <div style={styles.cartItems}>
-              {cartList.length === 0 && <div style={styles.emptyCart}>{t('vendor.posPage.noItemsYet')}</div>}
-              {cartList.map((l) => (
-                <div key={l.product.id} style={styles.cartRow}>
-                  <div style={styles.cartInfo}>
-                    <div style={styles.cartName}>{l.product.name}</div>
-                    <div style={styles.cartSub}>{formatCurrency(l.product.price)} {t('vendor.posPage.each')}</div>
-                  </div>
-                  <div style={styles.qtyControls}>
-                    <button style={styles.qtyBtn} onClick={() => setQty(l.product.id, l.quantity - 1)}>âˆ’</button>
-                    <span style={styles.qtyValue}>{l.quantity}</span>
-                    <button style={styles.qtyBtn} onClick={() => addToCart(l.product)}>+</button>
-                  </div>
-                  <div style={styles.cartLineTotal}>{formatCurrency(l.product.price * l.quantity)}</div>
+        <>
+          <div style={styles.layout}>
+            <div style={styles.grid}>
+              {filtered.length === 0 && (
+                <div style={{ color: 'var(--faint)', padding: '2rem', gridColumn: '1 / -1', textAlign: 'center' }}>
+                  {t('vendor.posPage.noProducts')}
                 </div>
-              ))}
+              )}
+              {filtered.map((p) => {
+                const out = p.status !== 'ACTIVE' || p.stockQuantity <= 0;
+                return (
+                  <button
+                    key={p.id}
+                    style={{ ...styles.tile, ...(out ? styles.tileDisabled : {}) }}
+                    disabled={out}
+                    onClick={() => addToCart(p)}
+                  >
+                    <div style={styles.tileName}>{p.name}</div>
+                    <div style={styles.tileSku}>{p.sku || p.barcode || p.id.slice(0, 8)}</div>
+                    <div style={styles.tilePrice}>{formatCurrency(p.price)} {p.currency}</div>
+                    <div style={styles.tileStock}>
+                      {out ? (p.status !== 'ACTIVE' ? <StatusBadge status={p.status} /> : t('vendor.posPage.outOfStock')) : `${p.stockQuantity} ${t('vendor.posPage.inStock')}`}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
-            <div style={styles.cartFooter}>
-              <div style={styles.totalRow}>
-                <span>{t('vendor.posPage.total')}</span>
-                <span>{formatCurrency(total)}</span>
+
+            <div style={styles.cart}>
+              <div style={styles.cartHeader}>{t('vendor.posPage.currentSale')}</div>
+              <div style={styles.cartItems}>
+                {cartList.length === 0 && <div style={styles.emptyCart}>{t('vendor.posPage.noItemsYet')}</div>}
+                {cartList.map((l) => (
+                  <div key={l.product.id} style={styles.cartRow}>
+                    <div style={styles.cartInfo}>
+                      <div style={styles.cartName}>{l.product.name}</div>
+                      <div style={styles.cartSub}>{formatCurrency(l.product.price)} {t('vendor.posPage.each')}</div>
+                    </div>
+                    <div style={styles.qtyControls}>
+                      <button style={styles.qtyBtn} onClick={() => setQty(l.product.id, l.quantity - 1)}>âˆ’</button>
+                      <span style={styles.qtyValue}>{l.quantity}</span>
+                      <button style={styles.qtyBtn} onClick={() => addToCart(l.product)}>+</button>
+                    </div>
+                    <div style={styles.cartLineTotal}>{formatCurrency(l.product.price * l.quantity)}</div>
+                  </div>
+                ))}
               </div>
-              <button style={{ ...styles.payBtn, ...(total <= 0 ? styles.payBtnDisabled : {}) }} disabled={total <= 0} onClick={openPay}>
-                {t('vendor.posPage.charge')} {total > 0 ? formatCurrency(total) : ''}
-              </button>
+              <div style={styles.cartFooter}>
+                <div style={styles.totalRow}>
+                  <span>{t('vendor.posPage.total')}</span>
+                  <span>{formatCurrency(total)}</span>
+                </div>
+                <button style={{ ...styles.payBtn, ...(total <= 0 ? styles.payBtnDisabled : {}) }} disabled={total <= 0} onClick={openPay}>
+                  {t('vendor.posPage.charge')} {total > 0 ? formatCurrency(total) : ''}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+          <div style={{ marginTop: '1rem' }}>
+            <AiAssistant
+              module="pos"
+              feature="assistant"
+              features={['assistant', 'analyze', 'summarize', 'recommend']}
+              context={posContext}
+              title="AI · POS"
+              description={shift ? `Shift ${shift.shiftNumber} — ${cartList.length} items — grounded in cart and shift.` : 'No active shift — AI sees POS state.'}
+              placeholder="e.g. Is this cart low on stock? Summarize shift…"
+              suggestedPrompts={['Analyze cart for stock risk', 'Summarize current shift', 'Recommend next restock', 'Is there a pricing anomaly?']}
+            />
+          </div>
+        </>
       )}
 
       {payOpen && (

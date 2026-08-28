@@ -5,6 +5,7 @@ import { registerAiContext, resolveAiContextBuilder, unregisterAiContext } from 
 import { registerAiTool, callAiTool, hasAiTool, unregisterAiTool } from './tools/ai-tools.registry';
 import { composeModuleSystemPrompt } from './prompts/prompt-templates';
 import type { AiConfig } from './ai-config';
+import './context/builders';
 
 jest.mock('@afri-market/integrations', () => ({
   httpRequest: jest.fn(),
@@ -189,5 +190,54 @@ describe('AiToolRegistry', () => {
 
   it('throws for unknown tools', async () => {
     await expect(callAiTool('nope', {})).rejects.toThrow('Unknown AI tool');
+  });
+});
+
+describe('Core Ai Contexts', () => {
+  it('registers and resolves admin-analytics, finance, hr, ubr, delivery, marketplace, metadata, workflow, configuration, notification, consumer, pos builders', async () => {
+    // Builders are auto-registered via AiModule side-effect (libs/ai/src/lib/ai.module.ts:9)
+    const modules = [
+      'vendor-analytics',
+      'vendor-catalog',
+      'admin-analytics',
+      'finance',
+      'hr',
+      'ubr',
+      'delivery',
+      'marketplace',
+      'metadata',
+      'workflow',
+      'configuration',
+      'notification',
+      'consumer',
+      'pos',
+      'purchase-orders',
+      'suppliers',
+    ];
+    for (const mod of modules) {
+      const bundle = await resolveAiContextBuilder(mod)({ module: mod, message: 'hello', context: { summary: 'test', facts: { a: 1 }, rows: [{ kind: 'test', v: 1 }] } });
+      expect(bundle.system).toContain('afriMarket');
+      expect(bundle.system.length).toBeGreaterThan(20);
+      expect(bundle.userMessage).toBe('hello');
+    }
+  });
+
+  it('admin-analytics builder respects feature intents', async () => {
+    const bundle = await resolveAiContextBuilder('admin-analytics')({
+      module: 'admin-analytics',
+      feature: 'analyze',
+      message: 'analyze',
+      context: { summary: 'platform', facts: { totalRevenue: 1000 }, rows: [] },
+    });
+    expect(bundle.system).toContain('Platform Admin Analytics');
+    expect(bundle.system).toContain('1000');
+  });
+});
+
+describe('Finance Tools', () => {
+  it('calculateCommission tool computes correctly via registry', async () => {
+    const res = (await callAiTool('calculateCommission', { grossRevenue: 1000, rate: 0.1 })) as { commission: number; netRevenue: number };
+    expect(res.commission).toBe(100);
+    expect(res.netRevenue).toBe(900);
   });
 });

@@ -5,6 +5,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Order, OrderItem } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 import { useTranslation } from 'react-i18next';
@@ -76,6 +77,25 @@ export default function VendorOrders() {
   const filtered = useMemo(() => (orders || []).filter((o) => filter === 'ALL' || o.status === filter), [orders, filter]);
   const totalPages = useMemo(() => Math.ceil(filtered.length / PAGE_SIZE), [filtered.length]);
   const paged = useMemo(() => filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), [filtered, page]);
+
+  const marketplaceContext = useMemo(() => {
+    const all = orders ?? [];
+    const facts: Record<string, unknown> = {
+      totalOrders: all.length,
+      filteredOrders: filtered.length,
+      filter,
+      byStatus: {
+        PLACED: all.filter((o) => o.status === 'PLACED').length,
+        CONFIRMED: all.filter((o) => o.status === 'CONFIRMED').length,
+        CANCELLED: all.filter((o) => o.status === 'CANCELLED').length,
+        DELIVERED: all.filter((o) => o.status === 'DELIVERED').length,
+      },
+      page,
+      totalPages,
+    };
+    const rows = filtered.slice(0, 30).map((o) => ({ kind: 'order', id: o.id, status: o.status, totalAmount: o.totalAmount, customerId: o.customerId, pickupCode: o.pickupCode, createdAt: o.createdAt }));
+    return { summary: `Vendor orders — ${filter} — ${filtered.length}/${all.length} orders`, facts, rows, constraints: [`Active filter is "${filter}".`] };
+  }, [orders, filtered, filter, page, totalPages]);
 
   const viewOrder = async (order: Order) => {
     setSelectedOrder(order);
@@ -251,6 +271,19 @@ export default function VendorOrders() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="marketplace"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={marketplaceContext}
+          title="AI · Orders"
+          description={`Ask about ${filter} orders — AI sees the same ${filtered.length} orders you see.`}
+          placeholder="e.g. Which orders need attention? Summarize this filter…"
+          suggestedPrompts={['Analyze these orders — what needs action?', 'Which PLACED orders should I confirm first?', 'Summarize orders by status', 'What is driving cancellations?']}
+        />
+      </div>
     </div>
   );
 }

@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Supplier } from '../../types';
 
 interface SupplierForm {
@@ -46,6 +47,11 @@ export default function VendorSuppliers() {
   const s = 'vendor.suppliersPage.';
   const { data: raw, loading, error, refetch } = useApi<Supplier[]>('/vendor/suppliers');
   const suppliers: Supplier[] = Array.isArray(raw) ? raw : [];
+  const suppliersContext = useMemo(() => {
+    const facts: Record<string, unknown> = { totalSuppliers: suppliers.length, activeSuppliers: suppliers.filter((s) => s.status === 'ACTIVE').length };
+    const rows = suppliers.slice(0, 20).map((s) => ({ kind: 'supplier', name: s.name, phone: s.phone, contactPerson: s.contactPerson, status: s.status }));
+    return { summary: `Suppliers — ${suppliers.length} suppliers`, facts, rows, constraints: ['Ground in supplier rows.'] };
+  }, [suppliers]);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<SupplierForm>(emptyForm);
   const [editId, setEditId] = useState<string | null>(null);
@@ -209,6 +215,19 @@ export default function VendorSuppliers() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="suppliers"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend']}
+          context={suppliersContext}
+          title="AI · Suppliers"
+          description={`Ask about your ${suppliers.length} suppliers — AI sees the same list.`}
+          placeholder="e.g. Which suppliers need follow-up? Summarize my supplier base…"
+          suggestedPrompts={['Analyze my suppliers — who is most critical?', 'Summarize suppliers by status', 'Recommend supplier cleanup actions']}
+        />
+      </div>
     </div>
   );
 }

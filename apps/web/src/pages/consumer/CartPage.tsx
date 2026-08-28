@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
@@ -5,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, EmptyState } from '../../components/ui';
+import AiAssistant from '../../components/AiAssistant';
 import { useApi } from '../../hooks/useApi';
 import type { Vendor } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
@@ -15,6 +17,19 @@ function CartPage() {
   const { formatCurrency } = useCurrency();
   const { cart, activeVendorId, loading, mutation, error, itemCount, updateItem, removeItem, clearCart } = useCart();
   const { data: vendor } = useApi<Vendor>(activeVendorId ? `/vendors/${activeVendorId}` : null);
+
+  const consumerContext = useMemo(() => {
+    const items = cart?.items ?? [];
+    const facts: Record<string, unknown> = {
+      vendorName: vendor?.shopName ?? '(no vendor)',
+      itemCount,
+      subtotal: cart?.subtotal ?? 0,
+      currency: cart?.items[0] ? 'TZS' : 'TZS',
+      hasCart: items.length > 0 ? 'yes' : 'no',
+    };
+    const rows = items.slice(0, 20).map((it) => ({ kind: 'cart', productName: it.productName, quantity: it.quantity, unitPrice: it.unitPrice, totalPrice: it.totalPrice }));
+    return { summary: `Cart — ${vendor?.shopName ?? 'no vendor'} — ${items.length} items — ${cart?.subtotal ?? 0} TZS`, facts, rows, constraints: ['Ground in cart rows.'] };
+  }, [cart, vendor, itemCount]);
 
   if (!activeVendorId) {
     return (
@@ -154,6 +169,21 @@ function CartPage() {
             </div>
           </div>
         )
+      )}
+
+      {activeVendorId && (
+        <div style={{ marginTop: '1.5rem' }}>
+          <AiAssistant
+            module="consumer"
+            feature="recommend"
+            features={['assistant', 'recommend', 'summarize', 'analyze']}
+            context={consumerContext}
+            title="AI · Shopping Assistant"
+            description={`Your cart at ${vendor?.shopName ?? 'vendor'} — AI sees ${itemCount} items.`}
+            placeholder="e.g. What should I add? Is this cart good value?"
+            suggestedPrompts={['Recommend what to add to this cart', 'Summarize my cart', 'Is there a cheaper alternative?', 'What is missing for a balanced order?']}
+          />
+        </div>
       )}
     </div>
   );

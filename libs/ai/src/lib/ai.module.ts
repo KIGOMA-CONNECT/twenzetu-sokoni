@@ -6,10 +6,11 @@
 
 import { Module } from '@nestjs/common';
 import { AiService } from './service/ai.service';
+import { AiAgent } from './agent/ai-agent';
 import './context/builders';
 
 @Module({
-  providers: [AiService],
-  exports: [AiService],
+  providers: [AiService, AiAgent],
+  exports: [AiService, AiAgent],
 })
 export class AiModule {}
