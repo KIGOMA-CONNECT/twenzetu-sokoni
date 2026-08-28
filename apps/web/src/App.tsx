@@ -65,6 +65,7 @@ const UssdSimulator = lazy(() => import('./pages/admin/UssdSimulator'));
 const AdminPromotions = lazy(() => import('./pages/admin/AdminPromotions'));
 const AdminDrivers = lazy(() => import('./pages/admin/AdminDrivers'));
 const AdminDeliveries = lazy(() => import('./pages/admin/AdminDeliveries'));
+const AdminAiInsights = lazy(() => import('./pages/admin/AdminAiInsights'));
 const AdminManageAdmins = lazy(() => import('./pages/admin/AdminManageAdmins'));
 const AdminReconciliation = lazy(() => import('./pages/admin/AdminReconciliation'));
 const AdminLoans = lazy(() => import('./pages/admin/AdminLoans'));
@@ -172,6 +173,7 @@ function AppRoutes() {
             <Route path="/admin/promotions" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminPromotions /></ProtectedRoute>} />
             <Route path="/admin/drivers" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDrivers /></ProtectedRoute>} />
             <Route path="/admin/deliveries" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminDeliveries /></ProtectedRoute>} />
+            <Route path="/admin/ai/insights" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminAiInsights /></ProtectedRoute>} />
             <Route path="/admin/manage-admins" element={<ProtectedRoute roles={['super_admin']}><AdminManageAdmins /></ProtectedRoute>} />
             <Route path="/admin/reconciliation" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminReconciliation /></ProtectedRoute>} />
             <Route path="/admin/loans" element={<ProtectedRoute roles={STAFF_ADMIN_ROLES}><AdminLoans /></ProtectedRoute>} />

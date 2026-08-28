@@ -60,6 +60,11 @@ export class AiLearningService {
     return this.repo.save(entity);
   }
 
+  public async distinctTenants(limit = 20): Promise<string[]> {
+    const rows: Array<{ tenantId: string }> = await this.repo.query('SELECT DISTINCT tenant_id AS "tenantId" FROM ai_interactions LIMIT $1', [limit]);
+    return rows.map((r) => r.tenantId).filter(Boolean);
+  }
+
   public async getInsights(tenantId: string, days = 7): Promise<{
     total: number;
     byModule: Array<{ module: string; count: number; avgLatencyMs: number | null; feedbackUp: number; feedbackDown: number }>;

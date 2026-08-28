@@ -10,11 +10,12 @@ import { AiService } from './service/ai.service';
 import { AiAgent } from './agent/ai-agent';
 import { AiInteractionOrmEntity } from './learning/ai-interaction.entity';
 import { AiLearningService } from './learning/ai-learning.service';
+import { AiAutoTuneService } from './learning/ai-auto-tune.service';
 import './context/builders';
 
 @Module({
   imports: [TypeOrmModule.forFeature([AiInteractionOrmEntity])],
-  providers: [AiService, AiAgent, AiLearningService],
-  exports: [AiService, AiAgent, AiLearningService],
+  providers: [AiService, AiAgent, AiLearningService, AiAutoTuneService],
+  exports: [AiService, AiAgent, AiLearningService, AiAutoTuneService],
 })
 export class AiModule {}
