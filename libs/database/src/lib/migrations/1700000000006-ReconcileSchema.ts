@@ -57,7 +57,6 @@ export class ReconcileSchema1700000000006 implements MigrationInterface {
 
     // Align vehicles table with VehicleOrmEntity
     await queryRunner.query(`ALTER TABLE "vehicles" ADD COLUMN IF NOT EXISTS "vehicle_type" VARCHAR(20)`);
-    await queryRunner.query(`UPDATE "vehicles" SET "vehicle_type" = "type" WHERE "vehicle_type" IS NULL`);
     await queryRunner.query(`ALTER TABLE "vehicles" ALTER COLUMN "vehicle_type" SET NOT NULL`);
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_vehicles_vehicle_type" ON "vehicles" ("vehicle_type")`);
     await queryRunner.query(`ALTER TABLE "vehicles" ADD COLUMN IF NOT EXISTS "capacity_kg" DECIMAL(8,2) NOT NULL DEFAULT 0`);
@@ -77,7 +76,7 @@ export class ReconcileSchema1700000000006 implements MigrationInterface {
     await queryRunner.query(`CREATE INDEX IF NOT EXISTS "IDX_reviews_target" ON "reviews" ("target_id", "target_type")`);
 
     // Align partner_kyc table name and columns with PartnerKycOrmEntity
-    await queryRunner.query(`ALTER TABLE "partner_kyc" RENAME TO "partner_kycs"`);
+    await queryRunner.query(`ALTER TABLE IF EXISTS "partner_kyc" RENAME TO "partner_kycs"`);
     await queryRunner.query(`ALTER TABLE "partner_kycs" ADD COLUMN IF NOT EXISTS "face_match_score" DECIMAL(5,2)`);
     await queryRunner.query(`ALTER TABLE "partner_kycs" ADD COLUMN IF NOT EXISTS "ocr_extracted_data" JSONB`);
     await queryRunner.query(`ALTER TABLE "partner_kycs" ADD COLUMN IF NOT EXISTS "version" INTEGER NOT NULL DEFAULT 1`);

@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -75,6 +76,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorPos() {
+  const { t } = useTranslation();
   const { refreshVendorAccess } = useAuth();
   const { formatCurrency } = useCurrency();
   const { data: raw, loading, error, refetch } = useApi<Product[]>('/pos/products');
@@ -253,52 +255,52 @@ export default function VendorPos() {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Point of Sale</h1>
-          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Scan or tap a product to ring it up</div>
+          <h1 style={styles.title}>{t('vendor.pos.title')}</h1>
+          <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.pos.subtitle')}</div>
         </div>
         {cartList.length > 0 && (
           <button style={{ ...styles.cancelBtn, color: 'var(--danger)', borderColor: '#fecaca' }} onClick={() => setCart({})}>
-            Clear Cart
+            {t('vendor.pos.clearCart')}
           </button>
         )}
       </div>
 
       {/* Shift Status Banner */}
       {shiftLoading ? (
-        <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>Loading shift...</div>
+        <div style={{ padding: '0.5rem', textAlign: 'center', color: 'var(--muted)', fontSize: '0.85rem' }}>{t('vendor.pos.loadingShift')}</div>
       ) : shiftError ? (
         <div className="alert alert-error" style={{ marginBottom: '1rem' }}>{shiftError}</div>
       ) : !shift ? (
         <div style={{ background: '#fef3c7', border: '1px solid #fbbf24', borderRadius: '10px', padding: '1rem 1.25rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>Shift Closed</div>
-            <div style={{ color: '#a16207', fontSize: '0.82rem' }}>Open a shift to start selling.</div>
+            <div style={{ fontWeight: 700, color: '#92400e', fontSize: '0.95rem' }}>{t('vendor.pos.shiftClosed')}</div>
+            <div style={{ color: '#a16207', fontSize: '0.82rem' }}>{t('vendor.pos.openShiftToStart')}</div>
           </div>
-          <button style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setShiftModal('open'); setOpeningFloat(''); }}>Open Shift</button>
+          <button style={{ background: '#1e40af', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.5rem 1.2rem', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setShiftModal('open'); setOpeningFloat(''); }}>{t('vendor.pos.openShift')}</button>
         </div>
       ) : (
         <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '10px', padding: '0.6rem 1rem', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <span><strong>Shift:</strong> {shift.shiftNumber}</span>
-            <span><strong>Opened:</strong> {new Date(shift.openedAt).toLocaleTimeString()}</span>
-            <span><strong>Sales:</strong> {shift.salesCount}</span>
-            <span><strong>Total:</strong> {shift.totalSales.toLocaleString()}</span>
+            <span><strong>{t('vendor.pos.shiftLabel')}:</strong> {shift.shiftNumber}</span>
+            <span><strong>{t('vendor.pos.openedLabel')}:</strong> {new Date(shift.openedAt).toLocaleTimeString()}</span>
+            <span><strong>{t('vendor.pos.salesLabel')}:</strong> {shift.salesCount}</span>
+            <span><strong>{t('vendor.pos.totalLabel')}:</strong> {shift.totalSales.toLocaleString()}</span>
           </div>
-          <button style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => { setShiftModal('close'); setClosingCash(''); setShiftNotes(''); }}>Close Shift</button>
+          <button style={{ background: '#dc2626', color: '#fff', border: 'none', borderRadius: '8px', padding: '0.4rem 1rem', fontWeight: 700, cursor: 'pointer', fontSize: '0.8rem' }} onClick={() => { setShiftModal('close'); setClosingCash(''); setShiftNotes(''); }}>{t('vendor.pos.closeShift')}</button>
         </div>
       )}
 
       <div style={styles.searchRow}>
         <input
           style={styles.search}
-          placeholder="Search products by name, SKU or barcode..."
+          placeholder={t('vendor.pos.searchPlaceholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
         <input
           ref={scanRef}
           style={styles.scan}
-          placeholder="Scan barcode / type code + Enter"
+          placeholder={t('vendor.pos.scanPlaceholder')}
           value={scan}
           onChange={(e) => setScan(e.target.value)}
           onKeyDown={handleScan}
@@ -314,7 +316,7 @@ export default function VendorPos() {
           <div style={styles.grid}>
             {filtered.length === 0 && (
               <div style={{ color: 'var(--faint)', padding: '2rem', gridColumn: '1 / -1', textAlign: 'center' }}>
-                No products found. Add products with stock first.
+                {t('vendor.pos.noProducts')}
               </div>
             )}
             {filtered.map((p) => {
@@ -338,9 +340,9 @@ export default function VendorPos() {
           </div>
 
           <div style={styles.cart}>
-            <div style={styles.cartHeader}>Current Sale</div>
+            <div style={styles.cartHeader}>{t('vendor.pos.currentSale')}</div>
             <div style={styles.cartItems}>
-              {cartList.length === 0 && <div style={styles.emptyCart}>No items yet</div>}
+              {cartList.length === 0 && <div style={styles.emptyCart}>{t('vendor.pos.noItems')}</div>}
               {cartList.map((l) => (
                 <div key={l.product.id} style={styles.cartRow}>
                   <div style={styles.cartInfo}>
@@ -358,11 +360,11 @@ export default function VendorPos() {
             </div>
             <div style={styles.cartFooter}>
               <div style={styles.totalRow}>
-                <span>TOTAL</span>
+                <span>{t('vendor.pos.total')}</span>
                 <span>{formatCurrency(total)}</span>
               </div>
               <button style={{ ...styles.payBtn, ...(total <= 0 ? styles.payBtnDisabled : {}) }} disabled={total <= 0} onClick={openPay}>
-                Charge {total > 0 ? formatCurrency(total) : ''}
+                {t('vendor.pos.charge')} {total > 0 ? formatCurrency(total) : ''}
               </button>
             </div>
           </div>
@@ -372,13 +374,13 @@ export default function VendorPos() {
       {payOpen && (
         <div style={styles.overlay} onClick={() => !saving && setPayOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Take Payment</div>
+            <div style={styles.modalTitle}>{t('vendor.pos.takePayment')}</div>
             <div style={styles.bigTotal}>
-              <span>Total Due</span>
+              <span>{t('vendor.pos.totalDue')}</span>
               <span>{formatCurrency(total)}</span>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Payment Method</label>
+              <label style={styles.label}>{t('vendor.pos.paymentMethod')}</label>
               <select style={styles.input} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PosPaymentMethod)}>
                 {PAYMENT_METHODS.map((m) => (
                   <option key={m.value} value={m.value}>{m.label}</option>
@@ -387,7 +389,7 @@ export default function VendorPos() {
             </div>
             {paymentMethod === 'cash' && (
               <div style={styles.field}>
-                <label style={styles.label}>Amount Tendered</label>
+                <label style={styles.label}>{t('vendor.pos.amountTendered')}</label>
                 <input
                   style={styles.input}
                   type="number"
@@ -400,9 +402,9 @@ export default function VendorPos() {
             )}
             {payError && <div style={styles.smallError}>{payError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setPayOpen(false)} disabled={saving}>{t('vendor.pos.cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submitCheckout} disabled={saving}>
-                {saving ? 'Processingâ€¦' : 'Complete Sale'}
+                {saving ? t('vendor.pos.processing') : t('vendor.pos.completeSale')}
               </button>
             </div>
           </div>
@@ -412,12 +414,12 @@ export default function VendorPos() {
       {receipt && (
         <div style={styles.overlay}>
           <div style={styles.receipt} id="receipt-print">
-            <div style={styles.receiptMsg}>Sale complete — receipt #{receipt.sale.saleNumber}</div>
+            <div style={styles.receiptMsg}>{t('vendor.pos.saleComplete')} — #{receipt.sale.saleNumber}</div>
             {receipt.shiftNumber && <div style={{ fontSize: '0.8rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>Shift: {receipt.shiftNumber}</div>}
             <pre style={styles.receiptPre}>{receipt.receiptText}</pre>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={doneReceipt}>Done</button>
-              <button style={styles.saveBtn} onClick={() => window.print()}>Print</button>
+              <button style={styles.cancelBtn} onClick={doneReceipt}>{t('vendor.pos.done')}</button>
+              <button style={styles.saveBtn} onClick={() => window.print()}>{t('vendor.pos.print')}</button>
             </div>
           </div>
         </div>
@@ -427,15 +429,15 @@ export default function VendorPos() {
       {shiftModal === 'open' && (
         <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Open Shift</div>
+            <div style={styles.modalTitle}>{t('vendor.pos.openShift')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Opening Float (optional)</label>
-              <input style={styles.input} type="number" min={0} value={openingFloat} onChange={(e) => setOpeningFloat(e.target.value)} placeholder="Cash in drawer to start" />
+              <label style={styles.label}>{t('vendor.pos.openingFloat')}</label>
+              <input style={styles.input} type="number" min={0} value={openingFloat} onChange={(e) => setOpeningFloat(e.target.value)} placeholder={t('vendor.pos.openingFloatPlaceholder')} />
             </div>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>{t('vendor.pos.cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={openShift} disabled={shiftSaving}>
-                {shiftSaving ? 'Openingâ€¦' : 'Open Shift'}
+                {shiftSaving ? t('vendor.pos.opening') : t('vendor.pos.openShift')}
               </button>
             </div>
           </div>
@@ -446,22 +448,22 @@ export default function VendorPos() {
       {shiftModal === 'close' && shift && (
         <div style={styles.overlay} onClick={() => !shiftSaving && setShiftModal(null)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>Close Shift {shift.shiftNumber}</div>
+            <div style={styles.modalTitle}>{t('vendor.pos.closeShift')} {shift.shiftNumber}</div>
             <div style={{ background: '#f0fdf4', border: '1px solid #86efac', borderRadius: '8px', padding: '0.6rem', marginBottom: '1rem', fontSize: '0.82rem' }}>
-              <div>Sales: {shift.salesCount} â€” Total: {shift.totalSales.toLocaleString()}</div>
+              <div>{t('vendor.pos.salesLabel')}: {shift.salesCount} — {t('vendor.pos.totalLabel')}: {shift.totalSales.toLocaleString()}</div>
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Closing Cash (count physical cash) *</label>
-              <input style={styles.input} type="number" min={0} value={closingCash} onChange={(e) => setClosingCash(e.target.value)} placeholder="Count cash in drawer" />
+              <label style={styles.label}>{t('vendor.pos.closingCash')} *</label>
+              <input style={styles.input} type="number" min={0} value={closingCash} onChange={(e) => setClosingCash(e.target.value)} placeholder={t('vendor.pos.closingCashPlaceholder')} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Notes (optional)</label>
-              <textarea style={{ ...styles.input, minHeight: '60px', resize: 'vertical' }} value={shiftNotes} onChange={(e) => setShiftNotes(e.target.value)} placeholder="Any notes about this shiftâ€¦" />
+              <label style={styles.label}>{t('vendor.pos.notesOptional')}</label>
+              <textarea style={{ ...styles.input, minHeight: '60px', resize: 'vertical' }} value={shiftNotes} onChange={(e) => setShiftNotes(e.target.value)} placeholder={t('vendor.pos.notesPlaceholder')} />
             </div>
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setShiftModal(null)} disabled={shiftSaving}>{t('vendor.pos.cancel')}</button>
               <button style={{ ...styles.saveBtn, background: '#dc2626', ...(shiftSaving ? { opacity: 0.6 } : {}) }} onClick={closeShift} disabled={shiftSaving || !closingCash.trim()}>
-                {shiftSaving ? 'Closingâ€¦' : 'Close Shift'}
+                {shiftSaving ? t('vendor.pos.closing') : t('vendor.pos.closeShift')}
               </button>
             </div>
           </div>

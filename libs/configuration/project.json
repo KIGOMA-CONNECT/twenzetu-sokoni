@@ -1,0 +1,7 @@
+{
+  "name": "@abms/configuration",
+  "sourceRoot": "libs/configuration/src",
+  "projectType": "library",
+  "tags": ["scope:configuration", "type:lib"],
+  "targets": {}
+}

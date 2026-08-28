@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
@@ -41,6 +42,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorSuppliers() {
+  const { t } = useTranslation();
   const { data: raw, loading, error, refetch } = useApi<Supplier[]>('/vendor/suppliers');
   const suppliers: Supplier[] = Array.isArray(raw) ? raw : [];
   const [open, setOpen] = useState(false);
@@ -120,10 +122,10 @@ export default function VendorSuppliers() {
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>Suppliers</h1>
-          <div style={styles.subtitle}>Your vendor supplier registry</div>
+          <h1 style={styles.title}>{t('vendor.suppliers.title')}</h1>
+          <div style={styles.subtitle}>{t('vendor.suppliers.subtitle')}</div>
         </div>
-        <button style={styles.addButton} onClick={openCreate}>+ Add Supplier</button>
+        <button style={styles.addButton} onClick={openCreate}>+ {t('vendor.suppliers.addSupplier')}</button>
       </div>
 
       {loading ? (
@@ -145,7 +147,7 @@ export default function VendorSuppliers() {
             <tbody>
               {suppliers.length === 0 && (
                 <tr>
-                  <td style={styles.empty} colSpan={5}>No suppliers yet. Add your first supplier.</td>
+                  <td style={styles.empty} colSpan={5}>{t('vendor.suppliers.noSuppliers')}</td>
                 </tr>
               )}
               {suppliers.map((s) => (
@@ -179,28 +181,28 @@ export default function VendorSuppliers() {
       {open && (
         <div style={styles.overlay} onClick={() => !saving && setOpen(false)}>
           <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <div style={styles.modalTitle}>{editId ? 'Edit Supplier' : 'Add Supplier'}</div>
+            <div style={styles.modalTitle}>{editId ? t('vendor.suppliers.editSupplier') : t('vendor.suppliers.addSupplier')}</div>
             <div style={styles.field}>
-              <label style={styles.label}>Name *</label>
+              <label style={styles.label}>{t('vendor.suppliers.name')} *</label>
               <input style={styles.input} value={form.name} onChange={(e) => update('name', e.target.value)} placeholder="e.g. Central Millers" />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Phone</label>
+              <label style={styles.label}>{t('vendor.suppliers.phone')}</label>
               <input style={styles.input} value={form.phone} onChange={(e) => update('phone', e.target.value)} placeholder="e.g. +2557xxxxxxxx" />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Contact Person</label>
+              <label style={styles.label}>{t('vendor.suppliers.contactPerson')}</label>
               <input style={styles.input} value={form.contactPerson} onChange={(e) => update('contactPerson', e.target.value)} />
             </div>
             <div style={styles.field}>
-              <label style={styles.label}>Notes</label>
+              <label style={styles.label}>{t('vendor.suppliers.notes')}</label>
               <textarea style={styles.textarea} value={form.notes} onChange={(e) => update('notes', e.target.value)} />
             </div>
             {formError && <div style={styles.smallError}>{formError}</div>}
             <div style={styles.footer}>
-              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>Cancel</button>
+              <button style={styles.cancelBtn} onClick={() => setOpen(false)} disabled={saving}>{t('vendor.suppliers.cancel')}</button>
               <button style={{ ...styles.saveBtn, ...(saving ? { opacity: 0.6 } : {}) }} onClick={submit} disabled={saving}>
-                {saving ? 'Saving…' : 'Save Supplier'}
+                {saving ? t('vendor.suppliers.saving') : t('vendor.suppliers.saveSupplier')}
               </button>
             </div>
           </div>

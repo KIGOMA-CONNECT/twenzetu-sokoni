@@ -1,0 +1,7 @@
+{
+  "name": "@abms/ubr-api",
+  "sourceRoot": "libs/ubr/api/src",
+  "projectType": "library",
+  "tags": ["scope:ubr", "type:lib"],
+  "targets": {}
+}

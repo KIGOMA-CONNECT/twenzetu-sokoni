@@ -1,0 +1,7 @@
+{
+  "name": "@abms/metadata-infrastructure",
+  "sourceRoot": "libs/metadata/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:metadata", "type:lib"],
+  "targets": {}
+}

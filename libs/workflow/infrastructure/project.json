@@ -1,0 +1,7 @@
+{
+  "name": "@abms/workflow-infrastructure",
+  "sourceRoot": "libs/workflow/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:workflow", "type:lib"],
+  "targets": {}
+}

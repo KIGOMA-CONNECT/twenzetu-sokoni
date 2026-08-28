@@ -1,0 +1,7 @@
+{
+  "name": "@abms/notification-infrastructure",
+  "sourceRoot": "libs/notification/infrastructure/src",
+  "projectType": "library",
+  "tags": ["scope:notification", "type:lib"],
+  "targets": {}
+}

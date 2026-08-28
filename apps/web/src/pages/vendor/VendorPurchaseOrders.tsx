@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -49,6 +50,7 @@ const styles: Record<string, React.CSSProperties> = {
 };
 
 export default function VendorPurchaseOrders() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const { data: raw, loading, error, refetch } = useApi<PurchaseOrder[]>('/vendor/purchase-orders');
   const orders: PurchaseOrder[] = Array.isArray(raw) ? raw : [];
@@ -176,9 +178,9 @@ export default function VendorPurchaseOrders() {
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.headerRow}>
         <div>
-          <h1 style={styles.title}>Purchase Orders</h1>
+          <h1 style={styles.title}>{t('vendor.purchaseOrders.title')}</h1>
           <div style={styles.subtitle}>
-            {orders.length} orders Â· {itemCount} units ordered Â· {pendingCount} awaiting receipt
+            {orders.length} {t('vendor.purchaseOrders.orders')} · {itemCount} {t('vendor.purchaseOrders.unitsOrdered')} · {pendingCount} {t('vendor.purchaseOrders.awaitingReceipt')}
           </div>
         </div>
         <button style={styles.addButton} onClick={openCreate}>+ New Purchase Order</button>

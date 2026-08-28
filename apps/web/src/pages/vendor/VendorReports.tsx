@@ -1,4 +1,5 @@
 ﻿import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -70,6 +71,7 @@ function downloadCsv(filename: string, rows: string[][]) {
 }
 
 export default function VendorReports() {
+  const { t } = useTranslation();
   const { formatCurrency } = useCurrency();
   const [period, setPeriod] = useState<AccountingPeriod>('30d');
   const [tab, setTab] = useState<string>('income');
@@ -222,9 +224,9 @@ export default function VendorReports() {
       {actionError && <div style={{ color: 'var(--danger)', fontSize: '0.82rem', marginBottom: '0.75rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '6px' }}>{actionError}</div>}
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Financial Reports</h1>
+          <h1 style={styles.title}>{t('vendor.reports.title')}</h1>
           <div style={styles.subtitle}>
-            {report?.shopName ? `${report.shopName} â€” standard statements for loan applications` : 'Standard financial statements'}
+            {report?.shopName ? `${report.shopName} — ${t('vendor.reports.standardStatements')}` : t('vendor.reports.standardFinancialStatements')}
           </div>
         </div>
         <div style={styles.controls}>
@@ -237,9 +239,9 @@ export default function VendorReports() {
               {p.label}
             </button>
           ))}
-          <button style={styles.refreshBtn} onClick={() => refetch()}>Refresh</button>
-          <button style={styles.printBtn} onClick={() => window.print()}>Print</button>
-          <button style={styles.exportBtn} onClick={exportCsv} disabled={!report}>CSV</button>
+          <button style={styles.refreshBtn} onClick={() => refetch()}>{t('vendor.reports.refresh')}</button>
+          <button style={styles.printBtn} onClick={() => window.print()}>{t('vendor.reports.print')}</button>
+          <button style={styles.exportBtn} onClick={exportCsv} disabled={!report}>{t('vendor.reports.csv')}</button>
         </div>
       </div>
 
@@ -256,13 +258,13 @@ export default function VendorReports() {
       ) : error ? (
         <ErrorMessage message={error} />
       ) : !report ? (
-        <div style={styles.empty}>No data for the selected period</div>
+        <div style={styles.empty}>{t('vendor.reports.noData')}</div>
       ) : (
         <>
           {tab === 'income' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Income Statement</span>
+                <span>{t('vendor.reports.incomeStatement')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                   {period === 'all_time' ? 'All time' : `Last ${period}`} Â· {report.incomeStatement.currency}
                 </span>
@@ -288,7 +290,7 @@ export default function VendorReports() {
           {tab === 'cashflow' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Cash Flow Statement</span>
+                <span>{t('vendor.reports.cashFlowStatement')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>{report.cashFlow.currency}</span>
               </div>
               <table style={styles.table}>
@@ -312,13 +314,13 @@ export default function VendorReports() {
           {tab === 'trial' && (
             <div style={styles.panel}>
               <div style={styles.panelHeader}>
-                <span>Trial Balance</span>
+                <span>{t('vendor.reports.trialBalance')}</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                   Totals: {formatCurrency(totalTrialDebit)} / {formatCurrency(totalTrialCredit)} {report.trialBalance[0]?.currency ?? ''}
                 </span>
               </div>
               {report.trialBalance.length === 0 ? (
-                <div style={styles.empty}>No ledger activity in this period</div>
+                <div style={styles.empty}>{t('vendor.reports.noLedgerActivity')}</div>
               ) : (
                 <table style={styles.table}>
                   <thead>
@@ -351,7 +353,7 @@ export default function VendorReports() {
             <>
               <div style={styles.panel}>
                 <div style={styles.panelHeader}>
-                  <span>Balance Sheet</span>
+                  <span>{t('vendor.reports.balanceSheet')}</span>
                   <span style={{ fontSize: '0.75rem', color: 'var(--muted)', fontWeight: 500 }}>
                     As of {new Date(report.asOf).toLocaleDateString()} Â· {report.financialPosition.currency}
                   </span>
@@ -359,7 +361,7 @@ export default function VendorReports() {
                 <table style={styles.table}>
                   <tbody>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Assets</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t('vendor.reports.assets')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.assets.map((l, i) => (
@@ -372,11 +374,11 @@ export default function VendorReports() {
                       </tr>
                     ))}
                     <tr>
-                      <td style={styles.total}>Total Assets</td>
+                      <td style={styles.total}>{t('vendor.reports.totalAssets')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalAssets)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Liabilities</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t('vendor.reports.liabilities')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     {report.financialPosition.liabilities.map((l, i) => (
@@ -389,23 +391,23 @@ export default function VendorReports() {
                       </tr>
                     ))}
                     <tr>
-                      <td style={styles.total}>Total Liabilities</td>
+                      <td style={styles.total}>{t('vendor.reports.totalLiabilities')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalLiabilities)}</td>
                     </tr>
                     <tr>
-                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>Owner's Equity</td>
+                      <td style={{ ...styles.td, fontWeight: 700, background: 'var(--bg)' }}>{t('vendor.reports.ownersEquity')}</td>
                       <td style={styles.tdRight}></td>
                     </tr>
                     <tr>
-                      <td style={styles.td}>Owner capital (wallet top-ups)</td>
+                      <td style={styles.td}>{t('vendor.reports.ownerCapital')}</td>
                       <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.ownerCapital)}</td>
                     </tr>
                     <tr>
-                      <td style={styles.td}>Retained earnings</td>
+                      <td style={styles.td}>{t('vendor.reports.retainedEarnings')}</td>
                       <td style={{ ...styles.tdRight, ...styles.pos }}>{formatCurrency(report.financialPosition.retainedEarnings)}</td>
                     </tr>
                     <tr>
-                      <td style={styles.total}>Total Equity</td>
+                      <td style={styles.total}>{t('vendor.reports.totalEquity')}</td>
                       <td style={styles.totalRight}>{formatCurrency(report.financialPosition.totalEquity)}</td>
                     </tr>
                   </tbody>
@@ -419,16 +421,16 @@ export default function VendorReports() {
 
               <div style={styles.panel}>
                 <div style={styles.panelHeader}>
-                  <span>Manage Accounts</span>
+                  <span>{t('vendor.reports.manageAccounts')}</span>
                   <button
                     style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
                     onClick={openCreateAccount}
                   >
-                    + Add Account
+                    + {t('vendor.reports.addAccount')}
                   </button>
                 </div>
                 {accounts.length === 0 ? (
-                  <div style={styles.empty}>No manual accounts yet. Add equipment, receivables, supplier payables or other line items.</div>
+                  <div style={styles.empty}>{t('vendor.reports.noManualAccounts')}</div>
                 ) : (
                   <table style={styles.table}>
                     <thead>
@@ -469,9 +471,9 @@ export default function VendorReports() {
               {accountModalOpen && (
                 <div style={styles.overlay}>
                   <div style={styles.modal}>
-                    <div style={styles.modalTitle}>{editingAccount ? 'Edit Account' : 'Add Account'}</div>
+                    <div style={styles.modalTitle}>{editingAccount ? t('vendor.reports.editAccount') : t('vendor.reports.addAccount')}</div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Name</label>
+                      <label style={styles.label}>{t('vendor.reports.name')}</label>
                       <input
                         style={styles.input}
                         value={accountForm.name}
@@ -480,7 +482,7 @@ export default function VendorReports() {
                       />
                     </div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Type</label>
+                      <label style={styles.label}>{t('vendor.reports.type')}</label>
                       <select
                         style={styles.input}
                         value={accountForm.category}
@@ -491,7 +493,7 @@ export default function VendorReports() {
                       </select>
                     </div>
                     <div style={styles.field}>
-                      <label style={styles.label}>Amount (TZS)</label>
+                      <label style={styles.label}>{t('vendor.reports.amountTzs')}</label>
                       <input
                         style={styles.input}
                         type="number"
@@ -503,13 +505,13 @@ export default function VendorReports() {
                     </div>
                     {accountError && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>{accountError}</div>}
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1rem' }}>
-                      <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>Cancel</button>
+                      <button style={styles.refreshBtn} onClick={() => setAccountModalOpen(false)}>{t('vendor.reports.cancel')}</button>
                       <button
                         style={{ ...styles.refreshBtn, background: '#1e40af', border: 'none', color: '#fff' }}
                         onClick={saveAccount}
                         disabled={accountSaving}
                       >
-                        {accountSaving ? 'Saving...' : 'Save'}
+                        {accountSaving ? t('vendor.reports.saving') : t('vendor.reports.save')}
                       </button>
                     </div>
                   </div>

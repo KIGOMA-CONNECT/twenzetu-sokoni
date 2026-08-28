@@ -1,0 +1,7 @@
+{
+  "name": "@abms/metadata",
+  "sourceRoot": "libs/metadata/src",
+  "projectType": "library",
+  "tags": ["scope:metadata", "type:lib"],
+  "targets": {}
+}

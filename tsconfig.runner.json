@@ -24,7 +24,20 @@
       "@afri-market/core-audit": ["libs/core-audit/src/index"],
       "@afri-market/core-resilience": ["libs/core-resilience/src/index"],
       "@afri-market/core-tracing": ["libs/core-tracing/src/index"],
-      "@afri-market/core-finance": ["libs/core-finance/src/index"]
+      "@afri-market/core-finance": ["libs/core-finance/src/index"],
+      "@abms/kernel": ["libs/kernel/src/index"],
+      "@abms/ubr": ["libs/ubr/src/index"],
+      "@abms/ubr-infrastructure": ["libs/ubr/infrastructure/src/index"],
+      "@abms/ubr-api": ["libs/ubr/api/src/index"],
+      "@abms/metadata": ["libs/metadata/src/index"],
+      "@abms/metadata-infrastructure": ["libs/metadata/infrastructure/src/index"],
+      "@abms/metadata-api": ["libs/metadata/api/src/index"],
+      "@abms/configuration-infrastructure": ["libs/configuration/infrastructure/src/index"],
+      "@abms/configuration-api": ["libs/configuration/api/src/index"],
+      "@abms/workflow-infrastructure": ["libs/workflow/infrastructure/src/index"],
+      "@abms/workflow-api": ["libs/workflow/api/src/index"],
+      "@abms/notification-infrastructure": ["libs/notification/infrastructure/src/index"],
+      "@abms/notification-api": ["libs/notification/api/src/index"]
     }
   }
 }
