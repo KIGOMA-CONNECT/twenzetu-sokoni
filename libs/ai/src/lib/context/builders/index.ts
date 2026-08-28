@@ -21,6 +21,8 @@ import { registerConfigurationContext } from './configuration.builder';
 import { registerNotificationContext } from './notification.builder';
 import { registerConsumerContext } from './consumer.builder';
 import { registerPosContext } from './pos.builder';
+import { registerPurchaseOrdersContext } from './purchase-orders.builder';
+import { registerSuppliersContext } from './suppliers.builder';
 import { registerFinanceTools } from '../../tools/finance-tools';
 
 let registered = false;
@@ -41,6 +43,8 @@ export function registerCoreAiContexts(): void {
   registerNotificationContext();
   registerConsumerContext();
   registerPosContext();
+  registerPurchaseOrdersContext();
+  registerSuppliersContext();
   registerFinanceTools();
   registered = true;
 }
@@ -68,6 +72,8 @@ export { CONFIGURATION_MODULE_ID, CONFIGURATION_ALIASES } from './configuration.
 export { NOTIFICATION_MODULE_ID, NOTIFICATION_ALIASES } from './notification.builder';
 export { CONSUMER_MODULE_ID, CONSUMER_ALIASES } from './consumer.builder';
 export { POS_MODULE_ID, POS_ALIASES } from './pos.builder';
+export { PURCHASE_ORDERS_MODULE_ID, PURCHASE_ORDERS_ALIASES } from './purchase-orders.builder';
+export { SUPPLIERS_MODULE_ID, SUPPLIERS_ALIASES } from './suppliers.builder';
 export { vendorAnalyticsContextBuilder } from './vendor-analytics.builder';
 export { vendorCatalogContextBuilder } from './vendor-catalog.builder';
 export { adminAnalyticsContextBuilder } from './admin-analytics.builder';
@@ -82,3 +88,5 @@ export { configurationContextBuilder } from './configuration.builder';
 export { notificationContextBuilder } from './notification.builder';
 export { consumerContextBuilder } from './consumer.builder';
 export { posContextBuilder } from './pos.builder';
+export { purchaseOrdersContextBuilder } from './purchase-orders.builder';
+export { suppliersContextBuilder } from './suppliers.builder';
