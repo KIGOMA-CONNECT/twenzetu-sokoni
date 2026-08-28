@@ -69,7 +69,8 @@
       "@abms/notification": ["./libs/notification/src/index"],
       "@abms/notification-infrastructure": ["./libs/notification/infrastructure/src/index"],
       "@abms/notification-api": ["./libs/notification/api/src/index"],
-      "@afri-market/ai": ["./libs/ai/src/index"]
+      "@afri-market/ai": ["./libs/ai/src/index"],
+      "@afri-market/ai-api": ["./libs/ai/api/src/index"]
     }
   },
   "exclude": ["node_modules", "tmp", "**/__tests__/**", "**/*.spec.ts"]
