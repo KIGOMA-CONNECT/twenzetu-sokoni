@@ -18,6 +18,7 @@ import { registerMarketplaceContext } from './marketplace.builder';
 import { registerMetadataContext } from './metadata.builder';
 import { registerWorkflowContext } from './workflow.builder';
 import { registerConfigurationContext } from './configuration.builder';
+import { registerNotificationContext } from './notification.builder';
 import { registerFinanceTools } from '../../tools/finance-tools';
 
 let registered = false;
@@ -35,6 +36,7 @@ export function registerCoreAiContexts(): void {
   registerMetadataContext();
   registerWorkflowContext();
   registerConfigurationContext();
+  registerNotificationContext();
   registerFinanceTools();
   registered = true;
 }
@@ -59,6 +61,7 @@ export { MARKETPLACE_MODULE_ID, MARKETPLACE_ALIASES } from './marketplace.builde
 export { METADATA_MODULE_ID, METADATA_ALIASES } from './metadata.builder';
 export { WORKFLOW_MODULE_ID, WORKFLOW_ALIASES } from './workflow.builder';
 export { CONFIGURATION_MODULE_ID, CONFIGURATION_ALIASES } from './configuration.builder';
+export { NOTIFICATION_MODULE_ID, NOTIFICATION_ALIASES } from './notification.builder';
 export { vendorAnalyticsContextBuilder } from './vendor-analytics.builder';
 export { vendorCatalogContextBuilder } from './vendor-catalog.builder';
 export { adminAnalyticsContextBuilder } from './admin-analytics.builder';
@@ -70,3 +73,4 @@ export { marketplaceContextBuilder } from './marketplace.builder';
 export { metadataContextBuilder } from './metadata.builder';
 export { workflowContextBuilder } from './workflow.builder';
 export { configurationContextBuilder } from './configuration.builder';
+export { notificationContextBuilder } from './notification.builder';
