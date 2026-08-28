@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCurrency } from '../../context/CurrencyContext';
 import api from '../../api/client';
@@ -6,6 +6,7 @@ import { useApi } from '../../hooks/useApi';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { Product, PurchaseOrder, Supplier } from '../../types';
 
 interface DraftLine {
@@ -80,6 +81,14 @@ export default function VendorPurchaseOrders() {
   const draftTotal = lines.reduce((sum, l) => sum + l.unitCost * l.quantity, 0);
   const itemCount = orders.reduce((sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0), 0);
   const pendingCount = orders.filter((o) => o.status === 'ORDERED').length;
+
+  const purchaseOrdersContext = useMemo(() => {
+    const byStatus: Record<string, number> = {};
+    orders.forEach((o) => { byStatus[o.status] = (byStatus[o.status] ?? 0) + 1; });
+    const facts: Record<string, unknown> = { totalOrders: orders.length, pendingCount, itemCount, draftTotal, byStatus, supplierCount: suppliers.length, productCount: products.length };
+    const rows = orders.slice(0, 20).map((o) => ({ kind: 'purchaseOrder', poNumber: o.poNumber, status: o.status, paymentStatus: o.paymentStatus, subtotal: o.subtotal, itemCount: o.items.length, supplierId: o.supplierId }));
+    return { summary: `Purchase orders — ${orders.length} orders — ${pendingCount} pending`, facts, rows, constraints: ['Ground in PO rows.'] };
+  }, [orders, pendingCount, itemCount, draftTotal, suppliers.length, products.length]);
 
   const openCreate = () => {
     setSupplierId(suppliers[0]?.id ?? '');
@@ -384,6 +393,19 @@ export default function VendorPurchaseOrders() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="purchase-orders"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend', 'review']}
+          context={purchaseOrdersContext}
+          title="AI · Purchase Orders"
+          description={`Ask about ${orders.length} POs — AI sees the same procurement data.`}
+          placeholder="e.g. Which POs need receiving? Summarize spend…"
+          suggestedPrompts={['Analyze POs — what needs action?', 'Which suppliers have most pending POs?', 'Summarize spend by status', 'Recommend next procurement actions']}
+        />
+      </div>
     </div>
   );
 }
