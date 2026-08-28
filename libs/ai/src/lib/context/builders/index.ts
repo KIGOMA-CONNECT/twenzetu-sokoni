@@ -15,6 +15,9 @@ import { registerHrContext } from './hr.builder';
 import { registerUbrContext } from './ubr.builder';
 import { registerDeliveryContext } from './delivery.builder';
 import { registerMarketplaceContext } from './marketplace.builder';
+import { registerMetadataContext } from './metadata.builder';
+import { registerWorkflowContext } from './workflow.builder';
+import { registerConfigurationContext } from './configuration.builder';
 import { registerFinanceTools } from '../../tools/finance-tools';
 
 let registered = false;
@@ -29,6 +32,9 @@ export function registerCoreAiContexts(): void {
   registerUbrContext();
   registerDeliveryContext();
   registerMarketplaceContext();
+  registerMetadataContext();
+  registerWorkflowContext();
+  registerConfigurationContext();
   registerFinanceTools();
   registered = true;
 }
@@ -50,6 +56,9 @@ export { HR_MODULE_ID, HR_ALIASES } from './hr.builder';
 export { UBR_MODULE_ID, UBR_ALIASES } from './ubr.builder';
 export { DELIVERY_MODULE_ID, DELIVERY_ALIASES } from './delivery.builder';
 export { MARKETPLACE_MODULE_ID, MARKETPLACE_ALIASES } from './marketplace.builder';
+export { METADATA_MODULE_ID, METADATA_ALIASES } from './metadata.builder';
+export { WORKFLOW_MODULE_ID, WORKFLOW_ALIASES } from './workflow.builder';
+export { CONFIGURATION_MODULE_ID, CONFIGURATION_ALIASES } from './configuration.builder';
 export { vendorAnalyticsContextBuilder } from './vendor-analytics.builder';
 export { vendorCatalogContextBuilder } from './vendor-catalog.builder';
 export { adminAnalyticsContextBuilder } from './admin-analytics.builder';
@@ -58,3 +67,6 @@ export { hrContextBuilder } from './hr.builder';
 export { ubrContextBuilder } from './ubr.builder';
 export { deliveryContextBuilder } from './delivery.builder';
 export { marketplaceContextBuilder } from './marketplace.builder';
+export { metadataContextBuilder } from './metadata.builder';
+export { workflowContextBuilder } from './workflow.builder';
+export { configurationContextBuilder } from './configuration.builder';
