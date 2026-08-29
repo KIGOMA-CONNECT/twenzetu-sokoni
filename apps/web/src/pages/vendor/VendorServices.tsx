@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
@@ -6,6 +6,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import { VENDOR_CATEGORIES } from '../../constants/categories';
 import type { ServiceListing, ServiceRequest, ServiceMessage } from '../../types';
 
@@ -93,6 +94,12 @@ const [chatError, setChatError] = useState<string | null>(null);
 
   const myListings: ServiceListing[] = Array.isArray(listings) ? listings : ((listings as ApiResponse<ServiceListing[]>)?.data ?? []);
   const requests: ServiceRequest[] = Array.isArray(reqRaw) ? reqRaw : ((reqRaw as ApiResponse<ServiceRequest[]>)?.data ?? []);
+
+  const servicesContext = useMemo(() => {
+    const facts: Record<string, unknown> = { listingCount: myListings.length, requestCount: requests.length, activeTab: tab, pendingRequests: requests.filter((r) => r.status === 'PENDING').length };
+    const rows = [...myListings.slice(0, 10).map((l) => ({ kind: 'listing', name: l.name, category: l.category, basePrice: l.basePrice })), ...requests.slice(0, 10).map((r) => ({ kind: 'request', title: r.title, status: r.status }))];
+    return { summary: `Services — ${myListings.length} listings, ${requests.length} requests — ${tab}`, facts, rows, constraints: ['Ground in listings and requests.'] };
+  }, [myListings, requests, tab]);
 
   const openModal = () => {
     setForm(emptyForm);
@@ -406,6 +413,19 @@ const [chatError, setChatError] = useState<string | null>(null);
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="marketplace"
+          feature="recommend"
+          features={['assistant', 'recommend', 'analyze', 'summarize']}
+          context={servicesContext}
+          title="AI · Services"
+          description={`Ask about ${myListings.length} listings and ${requests.length} requests — AI sees your services.`}
+          placeholder="e.g. Which requests need quotes? Draft a service description…"
+          suggestedPrompts={['Which requests need quotes?', 'Draft a service description', 'Summarize my services', 'Recommend next actions']}
+        />
+      </div>
     </div>
   );
 }
