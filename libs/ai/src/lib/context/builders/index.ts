@@ -22,6 +22,8 @@ import { registerFinanceTools } from '../../tools/finance-tools';
 import { registerMarketingTools } from '../../tools/marketing-tools';
 import { registerHrTools } from '../../tools/hr-tools';
 import { registerLaundryTools } from '../../tools/laundry-tools';
+import { registerDeliveryTools } from '../../tools/delivery-tools';
+import { registerMarketplaceTools } from '../../tools/marketplace-tools';
 
 let registered = false;
 
@@ -42,6 +44,8 @@ export function registerCoreAiContexts(): void {
   registerMarketingTools();
   registerHrTools();
   registerLaundryTools();
+  registerDeliveryTools();
+  registerMarketplaceTools();
   registered = true;
 }
 

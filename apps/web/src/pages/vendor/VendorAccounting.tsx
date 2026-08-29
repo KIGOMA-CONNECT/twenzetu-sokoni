@@ -3,6 +3,7 @@ import { useApi } from '../../hooks/useApi';
 import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import type { AccountingPeriod, AccountingEntry, VendorAccountingReport } from '../../types';
 
 
@@ -76,6 +77,21 @@ export default function VendorAccounting() {
   }, [report]);
 
   const entriesTotal = sortedEntries.reduce((sum, e) => sum + e.amount, 0);
+
+  const accountingContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      period: from || to ? `${from || '...'} to ${to || '...'}` : period,
+      grossRevenue: report?.summary.grossRevenue ?? 0,
+      netEarnings: report?.summary.netEarnings ?? 0,
+      netCashFlow: report?.summary.netCashFlow ?? 0,
+      commissions: report?.summary.commissions ?? 0,
+      orderCount: report?.summary.orderCount ?? 0,
+      entriesCount: sortedEntries.length,
+      entriesTotal,
+    };
+    const rows = sortedEntries.slice(0, 15).map((e) => ({ kind: 'entry', date: e.date, type: e.type, amount: e.amount, description: e.description }));
+    return { summary: `Accounting — ${from || to ? `${from} to ${to}` : period} — ${sortedEntries.length} entries`, facts, rows, constraints: ['Ground in ledger rows.'] };
+  }, [report, sortedEntries, entriesTotal, period, from, to]);
 
   return (
     <div style={styles.container}>
@@ -214,6 +230,19 @@ export default function VendorAccounting() {
           </div>
         </>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="finance"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend']}
+          context={accountingContext}
+          title="AI · Accounting"
+          description={`Ask about ${period} ledger — AI sees ${sortedEntries.length} entries.`}
+          placeholder="e.g. Explain net earnings, summarize cash flow…"
+          suggestedPrompts={['Analyze this period — what stands out?', 'Explain net earnings vs cash flow', 'What to reconcile?', 'Summarize ledger']}
+        />
+      </div>
     </div>
   );
 }
