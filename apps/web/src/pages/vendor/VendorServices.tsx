@@ -26,10 +26,12 @@ interface ListingForm {
 }
 
 const PRICING_MODELS = [
-  { value: 'per_sqm', label: 'Per mÂ² (e.g. painting, tiling, fumigation)' },
+  { value: 'per_sqm', label: 'Per m² (e.g. painting, tiling, fumigation)' },
   { value: 'per_hour', label: 'Per hour (e.g. plumbing, electrical)' },
   { value: 'per_room', label: 'Per room (e.g. deep cleaning)' },
   { value: 'per_unit', label: 'Per unit (e.g. tailoring, laundry item)' },
+  { value: 'per_kg', label: 'Per KG — Premium Laundry by KG (afriMarket, inspired by UClean)' },
+  { value: 'per_pair', label: 'Per pair — Shoe/Bag Cleaning (add-on)' },
 ];
 
 const styles: Record<string, React.CSSProperties> = {
