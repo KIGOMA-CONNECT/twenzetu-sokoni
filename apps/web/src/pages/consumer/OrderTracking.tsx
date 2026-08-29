@@ -1,10 +1,11 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useApi } from '../../hooks/useApi';
 import { useSocket } from '../../hooks/useSocket';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api/client';
+import AiAssistant from '../../components/AiAssistant';
 import type { Order, TrackingInfo } from '../../types';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -190,6 +191,23 @@ export default function OrderTracking() {
   const activeStep = getActiveStep(orderStatus);
   const isDelivered = orderStatus === 'DELIVERED';
   const isCancelled = orderStatus === 'CANCELLED';
+
+  const trackingContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      orderId: orderId ?? '(unknown)',
+      orderStatus: orderStatus || orderData?.status || '(unknown)',
+      totalAmount: orderData?.totalAmount ?? 0,
+      currency: orderData?.currency ?? 'TZS',
+      deliveryStatus: trackingData?.status ?? '(none)',
+      distanceKm: trackingData?.distanceKm ?? 0,
+      driverOnline: connected ? 'yes' : 'no',
+    };
+    const rows = [
+      { kind: 'order', status: orderStatus, totalAmount: orderData?.totalAmount },
+      ...(trackingData ? [{ kind: 'tracking', status: trackingData.status, distanceKm: trackingData.distanceKm, estimatedTimeMinutes: trackingData.estimatedTimeMinutes }] : []),
+    ];
+    return { summary: `Order ${orderId?.slice(0, 8) ?? 'unknown'} — ${orderStatus} — tracking`, facts, rows, constraints: ['Ground in order and tracking.'] };
+  }, [orderId, orderStatus, orderData, trackingData, connected]);
 
   const styles = {
     container: {
@@ -460,6 +478,19 @@ export default function OrderTracking() {
                 onClick={sendChat}
               >{t('chat.send')}</button>
             </div>
+          </div>
+
+          <div style={{ marginTop: '1.5rem' }}>
+            <AiAssistant
+              module="delivery"
+              feature="assistant"
+              features={['assistant', 'analyze', 'summarize']}
+              context={trackingContext}
+              title="AI · Tracking"
+              description={`Order ${orderId?.slice(0, 8) ?? ''} — ${orderStatus} — AI sees the same tracking.`}
+              placeholder="e.g. Where is my order? When will it arrive?"
+              suggestedPrompts={['Where is my order?', 'When will it arrive?', 'Summarize delivery status']}
+            />
           </div>
         </>
       )}
