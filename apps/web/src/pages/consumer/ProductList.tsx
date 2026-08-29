@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { PageHeader, ProductCard } from '../../components/ui';
+import AiAssistant from '../../components/AiAssistant';
 import { PageTitle } from '../../components/PageTitle';
 import type { Product, Vendor } from '../../types';
 
@@ -25,6 +26,20 @@ function ProductList() {
   const [similarProducts, setSimilarProducts] = useState<any[]>([]);
 
   const { cart, activeVendorId, setActiveVendor, addItem, updateItem, removeItem, mutation, error: cartError } = useCart();
+
+  const productListContext = useMemo(() => {
+    const prods = products ?? [];
+    const facts: Record<string, unknown> = {
+      vendorName: currentVendor?.shopName ?? '(unknown vendor)',
+      productCount: prods.length,
+      inStock: prods.filter((p) => p.stockQuantity > 0).length,
+      outOfStock: prods.filter((p) => p.stockQuantity <= 0).length,
+      cartItemCount: cart?.itemCount ?? 0,
+      cartSubtotal: cart?.subtotal ?? 0,
+    };
+    const rows = prods.slice(0, 15).map((p) => ({ kind: 'product', name: p.name, price: p.price, stockQuantity: p.stockQuantity }));
+    return { summary: `Products — ${currentVendor?.shopName ?? 'vendor'} — ${prods.length} products`, facts, rows, constraints: ['Ground in displayed products.'] };
+  }, [products, currentVendor, cart]);
 
   useEffect(() => {
     if (vendorId && activeVendorId !== vendorId) {
@@ -192,6 +207,19 @@ function ProductList() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="consumer"
+          feature="recommend"
+          features={['assistant', 'recommend', 'analyze', 'summarize']}
+          context={productListContext}
+          title="AI · Products"
+          description={`Ask about ${currentVendor?.shopName ?? 'this vendor'} — ${products?.length ?? 0} products.`}
+          placeholder="e.g. Which product is best value? Recommend for my cart…"
+          suggestedPrompts={['Which product is best value?', 'Recommend for my budget', 'What is in stock?', 'Compare these products']}
+        />
+      </div>
     </div>
   );
 }

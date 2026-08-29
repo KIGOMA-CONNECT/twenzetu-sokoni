@@ -25,6 +25,8 @@ import { registerPurchaseOrdersContext } from './purchase-orders.builder';
 import { registerSuppliersContext } from './suppliers.builder';
 import { registerFinanceTools } from '../../tools/finance-tools';
 import { registerMarketingTools } from '../../tools/marketing-tools';
+import { registerHrTools } from '../../tools/hr-tools';
+import { registerUbrTools } from '../../tools/ubr-tools';
 
 let registered = false;
 
@@ -48,6 +50,8 @@ export function registerCoreAiContexts(): void {
   registerSuppliersContext();
   registerFinanceTools();
   registerMarketingTools();
+  registerHrTools();
+  registerUbrTools();
   registered = true;
 }
 

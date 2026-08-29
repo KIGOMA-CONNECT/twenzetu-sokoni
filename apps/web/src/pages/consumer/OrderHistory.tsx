@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
@@ -7,6 +7,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import { PageHeader, EmptyState } from '../../components/ui';
 import type { Order, Vendor, OrderItem } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
@@ -62,6 +63,19 @@ function OrderHistory() {
   const allOrders = orders || [];
   const totalPages = Math.ceil(allOrders.length / PAGE_SIZE);
   const paged = allOrders.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const consumerOrdersContext = useMemo(() => {
+    const facts: Record<string, unknown> = {
+      totalOrders: allOrders.length,
+      pagedCount: paged.length,
+      page,
+      totalPages,
+      pendingReview: allOrders.filter((o) => o.status === 'DELIVERED' && !reviewedOrders[o.id]).length,
+      delivered: allOrders.filter((o) => o.status === 'DELIVERED').length,
+    };
+    const rows = paged.slice(0, 15).map((o) => ({ kind: 'order', status: o.status, totalAmount: o.totalAmount, vendorId: o.vendorId }));
+    return { summary: `Orders — ${allOrders.length} total — page ${page}/${totalPages}`, facts, rows, constraints: ['Ground in order rows.'] };
+  }, [allOrders, paged, page, totalPages, reviewedOrders]);
 
   const vendorName = (vendorId: string): string => {
     const v = (vendors || []).find((x) => x.id === vendorId);
@@ -372,6 +386,19 @@ function OrderHistory() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="consumer"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend']}
+          context={consumerOrdersContext}
+          title="AI · Orders"
+          description={`Ask about your ${allOrders.length} orders — AI sees the same order history.`}
+          placeholder="e.g. Which orders can I track? Summarize my orders…"
+          suggestedPrompts={['Summarize my orders', 'Which orders need review?', 'Analyze my spending', 'What should I reorder?']}
+        />
+      </div>
     </div>
   );
 }
