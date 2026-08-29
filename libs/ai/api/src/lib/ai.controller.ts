@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Headers, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AiAgent, AiLearningService, AiService } from '@afri-market/ai';
+import { AiAgent, AiLearningService, AiQuotaService, AiService } from '@afri-market/ai';
+import { AuditLoggerService } from '@afri-market/core-security';
 import type { AiFeature } from '@afri-market/ai';
 import { AiChatDto, AiFeedbackDto, AiStatusDto } from './dto/ai-request.dto';
 import type { Request, Response } from 'express';
@@ -15,9 +17,12 @@ export class AiController {
     private readonly aiService: AiService,
     private readonly aiAgent: AiAgent,
     private readonly learningService: AiLearningService,
+    private readonly quotaService: AiQuotaService,
+    private readonly auditLogger: AuditLoggerService,
   ) {}
 
   @Post('chat')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Module-aware AI assistant response (grounded in module context)' })
   public async chat(
     @Body() dto: AiChatDto,
@@ -28,6 +33,16 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    this.auditLogger.log({
+      action: 'ai.chat',
+      actorId: userId ?? 'anonymous',
+      actorRole: ((req as unknown as { user?: { role?: string } }).user?.role as string) ?? 'unknown',
+      tenantId: tenantId ?? 'unknown',
+      targetType: 'ai',
+      targetId: dto.module,
+      metadata: { feature, messageLength: dto.message.length },
+    });
     const result = await this.aiService.complete({
       module: dto.module,
       message: dto.message,
@@ -50,6 +65,7 @@ export class AiController {
   }
 
   @Post('stream')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Streaming module-aware AI response (grounded, chunked)' })
   public async stream(
     @Body() dto: AiChatDto,
@@ -61,6 +77,16 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    this.auditLogger.log({
+      action: 'ai.stream',
+      actorId: userId ?? 'anonymous',
+      actorRole: ((req as unknown as { user?: { role?: string } }).user?.role as string) ?? 'unknown',
+      tenantId: tenantId ?? 'unknown',
+      targetType: 'ai',
+      targetId: dto.module,
+      metadata: { feature },
+    });
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('X-Accel-Buffering', 'no');
@@ -93,6 +119,7 @@ export class AiController {
   }
 
   @Post('agent/vendor-restock')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Heavy-task agent: vendor restock plan (tool + LLM)' })
   public async vendorRestock(
     @Body() dto: AiChatDto,
@@ -103,6 +130,16 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    this.auditLogger.log({
+      action: 'ai.agent.vendor-restock',
+      actorId: userId ?? 'anonymous',
+      actorRole: ((req as unknown as { user?: { role?: string } }).user?.role as string) ?? 'unknown',
+      tenantId: tenantId ?? 'unknown',
+      targetType: 'ai',
+      targetId: dto.module,
+      metadata: { feature },
+    });
     const result = await this.aiAgent.vendorRestockPlan({
       module: dto.module,
       message: dto.message,
@@ -125,6 +162,7 @@ export class AiController {
   }
 
   @Post('agent/finance-reconcile')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Heavy-task agent: finance reconciler (2 tools + LLM)' })
   public async financeReconcile(
     @Body() dto: AiChatDto,
@@ -135,6 +173,16 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    this.auditLogger.log({
+      action: 'ai.agent.finance-reconcile',
+      actorId: userId ?? 'anonymous',
+      actorRole: ((req as unknown as { user?: { role?: string } }).user?.role as string) ?? 'unknown',
+      tenantId: tenantId ?? 'unknown',
+      targetType: 'ai',
+      targetId: dto.module,
+      metadata: { feature },
+    });
     const result = await this.aiAgent.financeReconciler({
       module: dto.module,
       message: dto.message,
@@ -157,6 +205,7 @@ export class AiController {
   }
 
   @Post('agent/pos-close')
+  @Throttle({ default: { limit: 30, ttl: 60000 } })
   @ApiOperation({ summary: 'Heavy-task agent: POS closer (2 tools + LLM)' })
   public async posClose(
     @Body() dto: AiChatDto,
@@ -167,6 +216,16 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    this.auditLogger.log({
+      action: 'ai.agent.pos-close',
+      actorId: userId ?? 'anonymous',
+      actorRole: ((req as unknown as { user?: { role?: string } }).user?.role as string) ?? 'unknown',
+      tenantId: tenantId ?? 'unknown',
+      targetType: 'ai',
+      targetId: dto.module,
+      metadata: { feature },
+    });
     const result = await this.aiAgent.posCloser({
       module: dto.module,
       message: dto.message,

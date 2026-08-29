@@ -90,3 +90,23 @@ groups:
         annotations:
           summary: "Vendor wallet balance low"
           description: "Vendor {{ $labels.vendor_id }} has only {{ $value }} TZS in wallet."
+
+      # AI High Latency
+      - alert: AiHighLatency
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{route=~"/api/ai/.*"}[5m])) > 3
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI latency p95 >3s"
+          description: "AI p95 latency is {{ $value }}s (threshold: 3s) — check provider or auto-tune."
+
+      # AI Feedback Down High
+      - alert: AiFeedbackDownHigh
+        expr: increase(ai_interactions_feedback_down_total[1h]) > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI feedback 👎 >5 in 1h"
+          description: "{{ $value }} thumbs-down in last hour — review /admin/ai/insights and tighten builders."
