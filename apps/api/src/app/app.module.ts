@@ -18,16 +18,6 @@ import { AuditModule, AuditLogEntity } from '@afri-market/core-audit';
 import { ResilienceModule } from '@afri-market/core-resilience';
 import { TracingModule } from '@afri-market/core-tracing';
 import { FinanceModule, FINANCE_ENTITIES } from '@afri-market/core-finance';
-import { UbrModule } from '@abms/ubr-api';
-import { UBR_ENTITIES } from '@abms/ubr-infrastructure';
-import { MetadataModule } from '@abms/metadata-api';
-import { METADATA_ENTITIES } from '@abms/metadata-infrastructure';
-import { CONFIG_ENTITIES } from '@abms/configuration-infrastructure';
-import { ConfigurationModule } from '@abms/configuration-api';
-import { WORKFLOW_ENTITIES } from '@abms/workflow-infrastructure';
-import { WorkflowModule } from '@abms/workflow-api';
-import { NOTIFICATION_ENTITIES } from '@abms/notification-infrastructure';
-import { NotificationModule } from '@abms/notification-api';
 import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AiModule, AI_ENTITIES } from '@afri-market/ai';
@@ -60,11 +50,6 @@ import { SchedulerModule } from './scheduler/scheduler.module';
       ...IDENTITY_ENTITIES,
       ...MARKETPLACE_ENTITIES,
       ...FINANCE_ENTITIES,
-      ...UBR_ENTITIES,
-      ...METADATA_ENTITIES,
-      ...CONFIG_ENTITIES,
-      ...WORKFLOW_ENTITIES,
-      ...NOTIFICATION_ENTITIES,
       ...AI_ENTITIES,
       UssdSessionEntity,
       AuditLogEntity,
@@ -74,11 +59,6 @@ import { SchedulerModule } from './scheduler/scheduler.module';
     ResilienceModule,
     TracingModule,
     FinanceModule,
-    UbrModule,
-    MetadataModule,
-    ConfigurationModule,
-    WorkflowModule,
-    NotificationModule,
     HealthModule,
     MetricsModule,
     IdentityModule,
