@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { IsArray, IsNotEmpty, IsObject, IsOptional, IsString, Matches, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsNotEmpty, IsObject, IsOptional, IsString, Matches, MaxLength, ValidateNested } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
 function sanitizeString(value: unknown): unknown {
@@ -12,6 +12,7 @@ function sanitizeString(value: unknown): unknown {
 export class AiContextDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(500)
   @Transform(({ value }) => sanitizeString(value))
   summary!: string;
 
@@ -20,15 +21,18 @@ export class AiContextDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(60)
   rows?: Record<string, unknown>[];
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
   constraints?: string[];
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
   questions?: string[];
 
@@ -39,17 +43,20 @@ export class AiContextDto {
 export class AiChatDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(50)
   @Matches(/^[a-z0-9-]{2,50}$/, { message: 'module must be 2-50 chars, lowercase alphanumeric and hyphens' })
   @Transform(({ value }) => sanitizeString(value))
   module!: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(2000)
   @Transform(({ value }) => sanitizeString(value))
   message!: string;
 
   @IsOptional()
   @IsString()
+  @MaxLength(20)
   @Transform(({ value }) => sanitizeString(value))
   feature?: string;
 
@@ -59,6 +66,7 @@ export class AiChatDto {
 
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   history?: { role: 'system' | 'user' | 'assistant'; content: string }[];
 
   @IsOptional()
