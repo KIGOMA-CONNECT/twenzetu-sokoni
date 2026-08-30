@@ -59,11 +59,12 @@ echo "1. Pulling latest images..."
 docker compose -f docker-compose.prod.yml pull 2>/dev/null || echo "  (pull skipped: images built locally)"
 
 echo ""
-echo "2. Building services..."
-docker compose -f docker-compose.prod.yml build
+echo "2. Building services (api --no-cache to avoid stale COPY --from=builder)..."
+docker compose -f docker-compose.prod.yml build --no-cache api
+docker compose -f docker-compose.prod.yml build web
 
 echo ""
-echo "3. Running database migrations..."
+echo "3. Running database migrations (idempotent IF NOT EXISTS)..."
 docker compose -f docker-compose.prod.yml run --rm api npm run migration:run:prod
 
 echo ""
@@ -71,19 +72,28 @@ echo "4. Starting services..."
 docker compose -f docker-compose.prod.yml up -d
 
 echo ""
-echo "5. Waiting for API health..."
+echo "5. Waiting for API health (strong: fail-fast)..."
+HEALTH_OK=0
 for i in $(seq 1 24); do
   if docker compose -f docker-compose.prod.yml exec -T api wget -q -O- http://localhost:3000/api/health >/dev/null 2>&1; then
     echo "  API is healthy."
+    HEALTH_OK=1
     break
   fi
   if [ "$i" -eq 24 ]; then
-    echo "  WARNING: API health check did not pass within 2 minutes."
+    echo "  ERROR: API health check failed within 2 minutes — deployment considered FAILED."
+    docker compose -f docker-compose.prod.yml ps
+    docker compose -f docker-compose.prod.yml logs --tail 50 api
+    exit 1
   else
     echo "  waiting... (${i}/24)"
     sleep 5
   fi
 done
+if [ "$HEALTH_OK" -ne 1 ]; then
+  echo "  ERROR: API never became healthy."
+  exit 1
+fi
 
 echo ""
 echo "6. Checking service status..."

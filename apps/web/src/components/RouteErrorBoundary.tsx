@@ -23,6 +23,17 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Route error:', error, errorInfo);
+    // Strong solution: capture to Sentry if available, and beacon to API for server logs
+    try {
+      const sentry = (window as unknown as { Sentry?: { captureException: (e: Error, ctx?: unknown) => void } }).Sentry;
+      sentry?.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+      if (navigator.sendBeacon) {
+        const payload = JSON.stringify({ message: error.message, stack: error.stack, componentStack: errorInfo.componentStack, url: window.location.href });
+        navigator.sendBeacon('/api/metrics/client-error', new Blob([payload], { type: 'application/json' }));
+      }
+    } catch {
+      // ignore beacon failures
+    }
   }
 
   render() {
