@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
 import { StatusBadge } from '../../components/StatusBadge';
+import AiAssistant from '../../components/AiAssistant';
 import type { VendorStaffMember, VendorStaffRole } from '../../types';
 
 interface StaffResponse {
@@ -87,6 +88,11 @@ export default function VendorStaff() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   const staff: VendorStaffMember[] = Array.isArray(raw) ? raw : (raw?.staff ?? []);
+  const staffContext = useMemo(() => {
+    const facts: Record<string, unknown> = { totalStaff: staff.length, managers: staff.filter((s) => s.role === 'manager').length, cashiers: staff.filter((s) => s.role === 'cashier').length };
+    const rows = staff.slice(0, 15).map((s) => ({ kind: 'staff', fullName: s.fullName, role: s.role, status: s.status }));
+    return { summary: `Staff — ${staff.length} members`, facts, rows, constraints: ['Ground in staff rows.'] };
+  }, [staff]);
 
   const openModal = () => {
     setForm(emptyForm);
@@ -239,6 +245,19 @@ export default function VendorStaff() {
           </div>
         </div>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="hr"
+          feature="recommend"
+          features={['assistant', 'recommend', 'analyze', 'summarize']}
+          context={staffContext}
+          title="AI · Staff"
+          description={`Ask about ${staff.length} staff — AI sees your team.`}
+          placeholder="e.g. Who should be manager? Recommend staffing…"
+          suggestedPrompts={['Analyze staff mix', 'Recommend staffing next', 'Summarize team']}
+        />
+      </div>
     </div>
   );
 }

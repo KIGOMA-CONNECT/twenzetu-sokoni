@@ -58,4 +58,25 @@ export function registerFinanceTools(): void {
       return { kind: args.kind ?? 'all', note: 'Sum amounts from provided rows filtered by kind/status; do not invent amounts' };
     },
   });
+
+  registerAiTool('assessLoanEligibility', {
+    schema: {
+      name: 'assessLoanEligibility',
+      description: 'Assess loan eligibility from wallet balance and order history',
+      usage: 'Use when user asks if they qualify for a loan',
+      parameters: {
+        walletBalance: { type: 'number', required: true },
+        avgMonthlyRevenue: { type: 'number', required: true },
+        requestedAmount: { type: 'number', required: true },
+      },
+    },
+    handler: (args) => {
+      const bal = args.walletBalance as number;
+      const rev = args.avgMonthlyRevenue as number;
+      const req = args.requestedAmount as number;
+      const maxEligible = Math.round((bal * 0.5 + rev * 0.3) * 100) / 100;
+      const eligible = req <= maxEligible;
+      return { walletBalance: bal, avgMonthlyRevenue: rev, requestedAmount: req, maxEligible, eligible, reason: eligible ? 'Within 50% wallet + 30% revenue' : 'Exceeds 50% wallet + 30% revenue' };
+    },
+  });
 }

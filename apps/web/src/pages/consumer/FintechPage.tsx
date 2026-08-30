@@ -5,6 +5,7 @@ import { useCurrency } from '../../context/CurrencyContext';
 import { useAuth } from '../../context/AuthContext';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import { PageHeader, EmptyState } from '../../components/ui';
 import LoanManagement from './LoanManagement';
 import api from '../../api/client';
@@ -103,6 +104,11 @@ export default function FintechPage() {
   const activeTabs = tabs.filter((t) => t.show);
   const activeTab = activeTabs.some((t) => t.id === tab) ? tab : activeTabs[0]?.id;
 
+  const fintechContext = useMemo(() => {
+    const facts: Record<string, unknown> = { activeTab, isVendor: isVendor ? 'yes' : 'no', isDriver: isDriver ? 'yes' : 'no', isAdmin: isAdmin ? 'yes' : 'no' };
+    return { summary: `Fintech — ${activeTab} tab`, facts, rows: [], constraints: ['Ground in fintech tab.'] };
+  }, [activeTab, isVendor, isDriver, isAdmin]);
+
   return (
     <div className="page">
       <PageTitle title={t('fintech.pageTitle')} />
@@ -135,6 +141,19 @@ export default function FintechPage() {
       {activeTab === 'loans' && <LoanManagement />}
       {activeTab === 'subscription' && <SubscriptionTab />}
       {activeTab === 'commissions' && <CommissionsTab />}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="finance"
+          feature="assistant"
+          features={['assistant', 'analyze', 'recommend', 'summarize']}
+          context={fintechContext}
+          title="AI · Fintech"
+          description={`Ask about ${activeTab} — AI sees your fintech tab.`}
+          placeholder="e.g. Explain savings, recommend deposit, analyze commissions…"
+          suggestedPrompts={['Explain my savings', 'Recommend a fixed deposit', 'Analyze commissions', 'What loan should I take?']}
+        />
+      </div>
     </div>
   );
 
