@@ -11,6 +11,7 @@ export * from './lib/agent/ai-agent';
 export * from './lib/learning/ai-interaction.entity';
 export * from './lib/learning/ai-entities';
 export * from './lib/learning/ai-learning.service';
+export * from './lib/metrics/ai-metrics.service';
 export * from './lib/quota/ai-quota.service';
 export * from './lib/prompts/prompt-templates';
 export * from './lib/service/ai.service';

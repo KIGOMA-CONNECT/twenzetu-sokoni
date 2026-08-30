@@ -5,34 +5,39 @@ import { AiLearningService } from '../learning/ai-learning.service';
 export class AiQuotaService {
   private readonly logger = new Logger(AiQuotaService.name);
   private readonly dailyLimit = Number(process.env.AI_DAILY_QUOTA_PER_TENANT ?? '1000');
+  private readonly userDailyLimit = Number(process.env.AI_DAILY_QUOTA_PER_USER ?? '100');
   private readonly cache = new Map<string, { count: number; day: string }>();
 
   constructor(private readonly learningService: AiLearningService) {}
 
-  public async assertQuota(tenantId: string): Promise<void> {
-    if (!tenantId || !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId)) return;
-    const day = new Date().toISOString().slice(0, 10);
-    const key = `${tenantId}:${day}`;
-    const cached = this.cache.get(key);
-    if (cached && cached.day === day && cached.count >= this.dailyLimit) {
-      throw new HttpException(`AI daily quota exceeded (${this.dailyLimit}/day)`, HttpStatus.TOO_MANY_REQUESTS);
+  public async assertQuota(tenantId: string, userId?: string): Promise<void> {
+    if (tenantId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(tenantId)) {
+      await this.assertQuotaForKey(`tenant:${tenantId}`, tenantId, this.dailyLimit, `tenant ${tenantId}`);
     }
-    // Use learning service to count today; fallback to 0 on error
+    if (userId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userId)) {
+      await this.assertQuotaForKey(`user:${userId}`, tenantId, this.userDailyLimit, `user ${userId}`);
+    }
+  }
+
+  private async assertQuotaForKey(keyPrefix: string, tenantId: string, limit: number, label: string): Promise<void> {
+    const day = new Date().toISOString().slice(0, 10);
+    const key = `${keyPrefix}:${day}`;
+    const cached = this.cache.get(key);
+    if (cached && cached.day === day && cached.count >= limit) {
+      throw new HttpException(`AI daily quota exceeded for ${label} (${limit}/day)`, HttpStatus.TOO_MANY_REQUESTS);
+    }
     let count = cached?.count ?? 0;
     try {
       const insights = await this.learningService.getInsights(tenantId, 1);
-      // insights.byModule total for today is sum of counts; use that as approximation
       const todayCount = insights.byModule.reduce((s, r) => s + r.count, 0);
-      // If insights says more than cached, update
       if (todayCount > count) count = todayCount;
     } catch (e) {
-      this.logger.warn(`quota check failed for ${tenantId}: ${(e as Error).message}`);
+      this.logger.warn(`quota check failed for ${label}: ${(e as Error).message}`);
     }
-    if (count >= this.dailyLimit) {
+    if (count >= limit) {
       this.cache.set(key, { count, day });
-      throw new HttpException(`AI daily quota exceeded (${this.dailyLimit}/day)`, HttpStatus.TOO_MANY_REQUESTS);
+      throw new HttpException(`AI daily quota exceeded for ${label} (${limit}/day)`, HttpStatus.TOO_MANY_REQUESTS);
     }
-    // Increment cache optimistically; will be corrected on next insights fetch
     this.cache.set(key, { count: count + 1, day });
   }
 }

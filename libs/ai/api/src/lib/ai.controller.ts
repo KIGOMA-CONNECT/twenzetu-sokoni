@@ -2,7 +2,7 @@ import { Body, Controller, Get, Headers, Post, Query, Req, Res, UseGuards } from
 import { AuthGuard } from '@nestjs/passport';
 import { Throttle } from '@nestjs/throttler';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AiAgent, AiLearningService, AiQuotaService, AiService } from '@afri-market/ai';
+import { AiAgent, AiLearningService, AiMetricsService, AiQuotaService, AiService } from '@afri-market/ai';
 import { AuditLoggerService } from '@afri-market/core-security';
 import type { AiFeature } from '@afri-market/ai';
 import { AiChatDto, AiFeedbackDto, AiStatusDto } from './dto/ai-request.dto';
@@ -18,6 +18,7 @@ export class AiController {
     private readonly aiAgent: AiAgent,
     private readonly learningService: AiLearningService,
     private readonly quotaService: AiQuotaService,
+    private readonly metricsService: AiMetricsService,
     private readonly auditLogger: AuditLoggerService,
   ) {}
 
@@ -33,7 +34,7 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
-    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.chat',
       actorId: userId ?? 'anonymous',
@@ -77,7 +78,7 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
-    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.stream',
       actorId: userId ?? 'anonymous',
@@ -130,7 +131,7 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
-    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.vendor-restock',
       actorId: userId ?? 'anonymous',
@@ -173,7 +174,7 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
-    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.finance-reconcile',
       actorId: userId ?? 'anonymous',
@@ -216,7 +217,7 @@ export class AiController {
     const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
     const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
       (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
-    if (tenantId) await this.quotaService.assertQuota(tenantId);
+    await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.pos-close',
       actorId: userId ?? 'anonymous',
@@ -258,7 +259,15 @@ export class AiController {
     if (!tenantId) return { ok: false };
     const feedback = dto.feedback as 'up' | 'down';
     await this.learningService.submitFeedback(dto.id, tenantId, feedback);
+    if (feedback === 'down') this.metricsService.observe(0, 'feedback', feedback, 'down');
     return { ok: true };
+  }
+
+  @Get('metrics')
+  @ApiOperation({ summary: 'AI Prometheus metrics (latency histogram, feedback)' })
+  public metrics(@Res() res: Response): void {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.send(this.metricsService.getMetrics());
   }
 
   @Get('learning/insights')

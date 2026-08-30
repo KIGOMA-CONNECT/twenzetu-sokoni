@@ -29,6 +29,7 @@ import type {
   AiProvider,
 } from '../provider/ai-provider.interface';
 import { AiLearningService } from '../learning/ai-learning.service';
+import { AiMetricsService } from '../metrics/ai-metrics.service';
 
 @Injectable()
 export class AiService {
@@ -36,7 +37,10 @@ export class AiService {
   private readonly config: AiConfig;
   private readonly provider: AiProvider | null;
 
-  constructor(@Optional() private readonly learningService?: AiLearningService) {
+  constructor(
+    @Optional() private readonly learningService?: AiLearningService,
+    @Optional() private readonly metricsService?: AiMetricsService,
+  ) {
     const rawTemp = process.env.AI_TEMPERATURE ? Number(process.env.AI_TEMPERATURE) : undefined;
     const rawMax = process.env.AI_MAX_TOKENS ? Number(process.env.AI_MAX_TOKENS) : undefined;
     const rawTimeout = process.env.AI_TIMEOUT_MS ? Number(process.env.AI_TIMEOUT_MS) : undefined;
@@ -163,6 +167,9 @@ export class AiService {
   }
 
   private async logAndGetId(request: AiContextRequest, response: string, latencyMs: number): Promise<string | undefined> {
+    if (this.metricsService) {
+      this.metricsService.observe(latencyMs / 1000, request.module, request.feature ?? null, null);
+    }
     if (!this.learningService || !request.tenantId) return undefined;
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(request.tenantId)) return undefined;
     try {
