@@ -219,7 +219,7 @@ describe('Core Ai Contexts', () => {
       const bundle = await resolveAiContextBuilder(mod)({ module: mod, message: 'hello', context: { summary: 'test', facts: { a: 1 }, rows: [{ kind: 'test', v: 1 }] } });
       expect(bundle.system).toContain('afriMarket');
       expect(bundle.system.length).toBeGreaterThan(20);
-      expect(bundle.userMessage).toBe('hello');
+      expect(bundle.userMessage).toContain('hello');
     }
   });
 

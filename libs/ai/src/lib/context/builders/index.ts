@@ -47,6 +47,8 @@ export function registerCoreAiContexts(): void {
   registerHrTools();
   registerLaundryTools();
   registerUbrTools();
+  registerDeliveryTools();
+  registerMarketplaceTools();
   registerUbrContext();
   registered = true;
 }

@@ -5,6 +5,7 @@ import { Transform, Type } from 'class-transformer';
 function sanitizeString(value: unknown): unknown {
   if (typeof value !== 'string') return value;
   // Strip angle brackets and control chars to block XSS/prompt injection via HTML/script
+  // eslint-disable-next-line no-control-regex -- intentional control-char strip for XSS
   return value.replace(/[<>]/g, '').replace(/[\u0000-\u001F\u007F]/g, '').trim();
 }
 
