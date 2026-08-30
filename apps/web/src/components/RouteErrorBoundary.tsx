@@ -36,27 +36,62 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     }
   }
 
+  private handleGoHome = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/';
+  };
+
+  private handleGoBack = () => {
+    this.setState({ hasError: false, error: null });
+    if (window.history.length > 1) window.history.back();
+    else window.location.href = '/';
+  };
+
+  private handleBrowseVendors = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/vendors';
+  };
+
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h2>{this.props.fallbackTitle || i18n.t('common.somethingWentWrong')}</h2>
-          <p style={{ color: 'var(--text-muted)', margin: '1rem 0' }}>
+        <div style={{ padding: '1.5rem', textAlign: 'center', maxWidth: 520, margin: '0 auto' }}>
+          <h2 style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--ink)' }}>{this.props.fallbackTitle || i18n.t('common.somethingWentWrong')}</h2>
+          <p style={{ color: 'var(--text-muted)', margin: '0.75rem 0 1rem', fontSize: '0.85rem' }}>
             {i18n.t('common.sectionError')}
           </p>
-          <button
-            onClick={() => this.setState({ hasError: false, error: null })}
-            style={{
-              padding: '0.5rem 1.5rem',
-              background: 'var(--accent)',
-              color: '#fff',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-            }}
-          >
-            {i18n.t('common.tryAgain')}
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
+            <button
+              onClick={() => this.setState({ hasError: false, error: null })}
+              style={{ padding: '0.5rem 1.1rem', background: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              {i18n.t('common.tryAgain')}
+            </button>
+            <button
+              onClick={this.handleGoBack}
+              style={{ padding: '0.5rem 1.1rem', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--line)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              ← Back
+            </button>
+            <button
+              onClick={this.handleGoHome}
+              style={{ padding: '0.5rem 1.1rem', background: 'var(--surface)', color: 'var(--text)', border: '1px solid var(--line)', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+            >
+              Home
+            </button>
+          </div>
+          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <button onClick={this.handleBrowseVendors} style={{ padding: '0.4rem 0.9rem', background: 'var(--surface)', color: 'var(--brand)', border: '1px solid #bfdbfe', borderRadius: '999px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+              🏪 Browse Vendors
+            </button>
+            <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/services'; }} style={{ padding: '0.4rem 0.9rem', background: 'var(--surface)', color: 'var(--brand)', border: '1px solid #bfdbfe', borderRadius: '999px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+              🧰 Services
+            </button>
+            <button onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/cart'; }} style={{ padding: '0.4rem 0.9rem', background: 'var(--surface)', color: 'var(--brand)', border: '1px solid #bfdbfe', borderRadius: '999px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}>
+              💳 Smart Cart
+            </button>
+          </div>
+          <div style={{ fontSize: '0.7rem', color: 'var(--faint)', marginTop: '1rem' }}>If this keeps happening, hard refresh (Ctrl+Shift+R) or clear site data.</div>
         </div>
       );
     }
