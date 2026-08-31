@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import api from '../../api/client';
 import { useApi } from '../../hooks/useApi';
@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { StatusBadge } from '../../components/StatusBadge';
 import { LoadingSpinner } from '../../components/LoadingSpinner';
 import { ErrorMessage } from '../../components/ErrorMessage';
+import AiAssistant from '../../components/AiAssistant';
 import type { Vendor } from '../../types';
 import { PageTitle } from '../../components/PageTitle';
 
@@ -48,6 +49,12 @@ export default function AdminVendors() {
   ) : vendors;
   const loading = tab === 'PENDING' ? pendingLoading : allLoading;
   const error = tab === 'PENDING' ? pendingError : allError;
+
+  const vendorsContext = useMemo(() => {
+    const facts: Record<string, unknown> = { pending: pendingVendors?.length ?? 0, total: allVendors?.length ?? 0, filtered: filtered.length, tab, search: search || '(none)' };
+    const rows = filtered.slice(0, 15).map((v) => ({ kind: 'vendor', shopName: v.shopName, category: v.category, status: v.status }));
+    return { summary: `Vendors — ${tab} — ${filtered.length}/${vendors.length}`, facts, rows, constraints: [`Active tab is "${tab}".`] };
+  }, [pendingVendors, allVendors, filtered, vendors.length, tab, search]);
 
   const handleAction = async (id: string, action: 'approve' | 'suspend') => {
     if (action === 'suspend' && !window.confirm(t('admin.suspendConfirm'))) return;
@@ -147,6 +154,19 @@ export default function AdminVendors() {
             {tab === 'PENDING' ? t('admin.noPendingVendorsAwaiting') : t('admin.noVendorsFound')}
           </div>
         )}
+      </div>
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <AiAssistant
+          module="admin-analytics"
+          feature="analyze"
+          features={['assistant', 'analyze', 'summarize', 'recommend']}
+          context={vendorsContext}
+          title="AI · Vendors"
+          description={`Ask about ${tab} vendors — AI sees the same ${filtered.length} vendors.`}
+          placeholder="e.g. Which vendors need approval? Summarize pending…"
+          suggestedPrompts={['Which vendors need approval first?', 'Summarize vendors by category', 'Analyze pending vendors']}
+        />
       </div>
     </div>
   );
