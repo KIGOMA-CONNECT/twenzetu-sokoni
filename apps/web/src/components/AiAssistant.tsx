@@ -332,9 +332,9 @@ export default function AiAssistant({
       {!statusLoading && !status?.enabled && (
         <div style={styles.hint}>AI is not configured on this environment. Set AI_PROVIDER and GEMINI_API_KEY (or OPENAI/ANTHROPIC) to enable. The component still renders — requests will return a clear error.</div>
       )}
-      {context && (Object.keys(context.facts).length > 0 || (context.rows && context.rows.length > 0)) && (
+      {context && ((context.facts && Object.keys(context.facts).length > 0) || (context.rows && context.rows.length > 0)) && (
         <div style={styles.hint}>
-          Grounded in {Object.keys(context.facts).length} fact{Object.keys(context.facts).length === 1 ? '' : 's'} {context.rows?.length ? `· ${context.rows.length} row${context.rows.length === 1 ? '' : 's'}` : ''} · {context.summary}
+          Grounded in {context.facts ? Object.keys(context.facts).length : 0} fact{(context.facts ? Object.keys(context.facts).length : 0) === 1 ? '' : 's'} {context.rows?.length ? `· ${context.rows.length} row${context.rows.length === 1 ? '' : 's'}` : ''} · {context.summary}
         </div>
       )}
     </div>

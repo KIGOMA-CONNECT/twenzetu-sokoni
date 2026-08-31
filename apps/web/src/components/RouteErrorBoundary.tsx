@@ -21,6 +21,12 @@ export class RouteErrorBoundary extends React.Component<Props, State> {
     return { hasError: true, error };
   }
 
+  componentDidUpdate(prevProps: Props) {
+    if (this.state.hasError && prevProps.children !== this.props.children) {
+      this.setState({ hasError: false, error: null });
+    }
+  }
+
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error('Route error:', error, errorInfo);
     // Strong solution: capture to Sentry if available, and beacon to API for server logs

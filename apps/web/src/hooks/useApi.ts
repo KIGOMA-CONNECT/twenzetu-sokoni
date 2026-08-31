@@ -7,7 +7,7 @@ export function useApi<T>(url: string | null, deps?: unknown[]) {
   const [error, setError] = useState<string | null>(null);
 
   const refetch = useCallback(async () => {
-    if (!url) { setLoading(false); return; }
+    if (!url) { setLoading(false); setData(null); return; }
     setLoading(true);
     try {
       const res = await api.get(url);
@@ -31,6 +31,12 @@ export function useApi<T>(url: string | null, deps?: unknown[]) {
 
   useEffect(() => {
     refetch();
+  }, [refetch]);
+
+  // Keep deps-based refetch for callers that pass explicit deps (backwards compat), but also ensure url changes trigger
+  useEffect(() => {
+    if (deps) refetch();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps || []);
 
   return { data, loading, error, refetch };

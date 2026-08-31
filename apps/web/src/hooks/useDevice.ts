@@ -31,39 +31,58 @@ function getDeviceType(width: number): DeviceType {
   return 'desktop';
 }
 
+function safeWindow(): boolean {
+  return typeof window !== 'undefined';
+}
+
 function detectHasNotch(): boolean {
-  const ua = navigator.userAgent.toLowerCase();
-  const hasNotchUA = /iphone\s?(1[2-9]|x|1[1-4]|pro|pro\s?max)/i.test(ua);
-  const cssSupportsEnv = CSS.supports('env(safe-area-inset-top)', '1px');
-  return hasNotchUA || cssSupportsEnv;
+  if (!safeWindow()) return false;
+  try {
+    const ua = navigator.userAgent.toLowerCase();
+    const hasNotchUA = /iphone\s?(1[2-9]|x|1[1-4]|pro|pro\s?max)/i.test(ua);
+    const cssSupportsEnv = typeof CSS !== 'undefined' && CSS.supports('env(safe-area-inset-top)', '1px');
+    return hasNotchUA || cssSupportsEnv;
+  } catch {
+    return false;
+  }
 }
 
 function getSafeAreaInsets(): { top: number; bottom: number; left: number; right: number } {
-  const style = getComputedStyle(document.documentElement);
+  if (!safeWindow() || typeof document === 'undefined') return { top: 0, bottom: 0, left: 0, right: 0 };
+  try {
+    const style = getComputedStyle(document.documentElement);
+    return {
+      top: parseInt(style.getPropertyValue('--sat') || '0', 10),
+      bottom: parseInt(style.getPropertyValue('--sab') || '0', 10),
+      left: parseInt(style.getPropertyValue('--sal') || '0', 10),
+      right: parseInt(style.getPropertyValue('--sar') || '0', 10),
+    };
+  } catch {
+    return { top: 0, bottom: 0, left: 0, right: 0 };
+  }
+}
+
+function getInitialDeviceInfo(): DeviceInfo {
+  if (!safeWindow()) {
+    return { type: 'desktop', phoneSize: null, width: 1024, height: 768, isTouchDevice: false, pixelRatio: 1, isStandalone: false, hasNotch: false, safeAreaInsets: { top: 0, bottom: 0, left: 0, right: 0 } };
+  }
+  const w = window.innerWidth;
+  const h = window.innerHeight;
   return {
-    top: parseInt(style.getPropertyValue('--sat') || '0', 10),
-    bottom: parseInt(style.getPropertyValue('--sab') || '0', 10),
-    left: parseInt(style.getPropertyValue('--sal') || '0', 10),
-    right: parseInt(style.getPropertyValue('--sar') || '0', 10),
+    type: getDeviceType(w),
+    phoneSize: getDeviceType(w) === 'phone' ? getPhoneSize(w) : null,
+    width: w,
+    height: h,
+    isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+    pixelRatio: window.devicePixelRatio || 1,
+    isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as NavigatorStandalone).standalone === true,
+    hasNotch: detectHasNotch(),
+    safeAreaInsets: getSafeAreaInsets(),
   };
 }
 
 export function useDevice(): DeviceInfo {
-  const [info, setInfo] = useState<DeviceInfo>(() => {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
-    return {
-      type: getDeviceType(w),
-      phoneSize: getDeviceType(w) === 'phone' ? getPhoneSize(w) : null,
-      width: w,
-      height: h,
-      isTouchDevice: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
-      pixelRatio: window.devicePixelRatio || 1,
-      isStandalone: window.matchMedia('(display-mode: standalone)').matches || (window.navigator as NavigatorStandalone).standalone === true,
-      hasNotch: detectHasNotch(),
-      safeAreaInsets: getSafeAreaInsets(),
-    };
-  });
+  const [info, setInfo] = useState<DeviceInfo>(() => getInitialDeviceInfo());
 
   useEffect(() => {
     const handleResize = () => {
@@ -82,10 +101,12 @@ export function useDevice(): DeviceInfo {
       });
     };
 
+    const handleOrientation = () => setTimeout(handleResize, 100);
     window.addEventListener('resize', handleResize);
-    window.addEventListener('orientationchange', () => setTimeout(handleResize, 100));
+    window.addEventListener('orientationchange', handleOrientation);
     return () => {
       window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleOrientation);
     };
   }, []);
 

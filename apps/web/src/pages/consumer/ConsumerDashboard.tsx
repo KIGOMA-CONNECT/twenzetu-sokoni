@@ -142,6 +142,11 @@ function ConsumerDashboard() {
   const firstName = user?.fullName?.split(' ')[0] || 'there';
   const firstNameLabel = firstName.charAt(0).toUpperCase() + firstName.slice(1);
 
+  // Only show parent categories (no parentId) that are active — must be before consumerDashboardContext to avoid TDZ
+  const parentCategories = useMemo(() => (categories ?? [])
+    .filter((c) => c.isActive && !c.parentId)
+    .sort((a, b) => (PARENT_ORDER[a.id] ?? 999) - (PARENT_ORDER[b.id] ?? 999)), [categories]);
+
   const consumerDashboardContext = useMemo(() => {
     const facts: Record<string, unknown> = { activeOrders, totalSpent, loyaltyPoints, categoryCount: parentCategories.length, orderCount: (orders ?? []).length };
     const rows = [
@@ -155,11 +160,6 @@ function ConsumerDashboard() {
   const isSmallPhone = device.phoneSize === 'small';
   const heroMinHeight = isSmallPhone ? '160px' : isPhone ? '180px' : '220px';
   const heroPadding = isSmallPhone ? '1.5rem 1rem' : isPhone ? '1.75rem 1.25rem' : '2rem';
-
-  // Only show parent categories (no parentId) that are active
-  const parentCategories = useMemo(() => (categories ?? [])
-    .filter((c) => c.isActive && !c.parentId)
-    .sort((a, b) => (PARENT_ORDER[a.id] ?? 999) - (PARENT_ORDER[b.id] ?? 999)), [categories]);
 
   function handleCategoryClick(cat: Category) {
     if (cat.id === PARENT_IDS.USED) {

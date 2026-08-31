@@ -20,10 +20,9 @@ const PAYMENT_METHODS: { value: PosPaymentMethod; label: string }[] = [
   { value: 'cash', label: 'Cash' },
   { value: 'mpesa', label: 'M-Pesa' },
   { value: 'tigo_pesa', label: 'Tigo Pesa' },
-  { value: 'tigo_money', label: 'Tigo Money' },
   { value: 'airtel_money', label: 'Airtel Money' },
   { value: 'halotel', label: 'Halotel' },
-  { value: 'azampesa', label: 'Airtel Azam Pesa' },
+  { value: 'azampesa', label: 'AzamPesa' },
   { value: 'card', label: 'Card' },
   { value: 'wallet', label: 'Wallet' },
 ];
@@ -100,8 +99,8 @@ export default function VendorPos() {
   const [closingCash, setClosingCash] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
   const [shiftSaving, setShiftSaving] = useState(false);
-  const [, setPosError] = useState<string | null>(null);
-  const [, setPosSuccess] = useState<string | null>(null);
+  const [posError, setPosError] = useState<string | null>(null);
+  const [posSuccess, setPosSuccess] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const fetchShift = useCallback(async () => {

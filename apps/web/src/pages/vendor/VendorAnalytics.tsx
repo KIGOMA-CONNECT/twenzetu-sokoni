@@ -261,7 +261,7 @@ export default function VendorAnalytics() {
             {renderStatCard('Cancellation', `${(overview.summary.cancellationRate * 100).toFixed(1)}%`, `${overview.summary.cancelledOrders} orders`)}
             {renderStatCard('Customers', String(overview.customers.uniqueCustomers), `${overview.customers.newCustomers} new Â· ${overview.customers.returningCustomers} returning`)}
             {renderStatCard('Deliveries', String(overview.deliveries.completed), `${overview.deliveries.active} active Â· ${overview.deliveries.failed} failed`)}
-            {renderStatCard('Avg Delivery', `${formatCurrency(overview.deliveries.averageDistanceKm)} km`, `${formatCurrency(overview.deliveries.averageDurationMinutes)} min avg`)}
+            {renderStatCard('Avg Delivery', `${overview.deliveries.averageDistanceKm.toFixed(1)} km`, `${overview.deliveries.averageDurationMinutes.toFixed(0)} min avg`)}
             {renderStatCard('Driver Earnings', formatCurrency(overview.deliveries.driverEarnings))}
           </div>
 
