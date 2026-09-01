@@ -36,7 +36,6 @@ export function useApi<T>(url: string | null, deps?: unknown[]) {
   // Keep deps-based refetch for callers that pass explicit deps (backwards compat), but also ensure url changes trigger
   useEffect(() => {
     if (deps) refetch();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps || []);
 
   return { data, loading, error, refetch };

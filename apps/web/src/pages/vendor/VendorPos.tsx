@@ -99,8 +99,6 @@ export default function VendorPos() {
   const [closingCash, setClosingCash] = useState('');
   const [shiftNotes, setShiftNotes] = useState('');
   const [shiftSaving, setShiftSaving] = useState(false);
-  const [posError, setPosError] = useState<string | null>(null);
-  const [posSuccess, setPosSuccess] = useState<string | null>(null);
   const scanRef = useRef<HTMLInputElement>(null);
 
   const fetchShift = useCallback(async () => {
