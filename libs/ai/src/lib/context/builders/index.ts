@@ -26,6 +26,7 @@ import { registerUbrTools } from '../../tools/ubr-tools';
 import { registerUbrContext } from './ubr.builder';
 import { registerDeliveryTools } from '../../tools/delivery-tools';
 import { registerMarketplaceTools } from '../../tools/marketplace-tools';
+import { registerFulfillmentTools } from '../../tools/fulfillment-tools';
 
 let registered = false;
 
@@ -49,7 +50,7 @@ export function registerCoreAiContexts(): void {
   registerUbrTools();
   registerDeliveryTools();
   registerMarketplaceTools();
-  registerUbrContext();
+  registerFulfillmentTools();
   registered = true;
 }
 
