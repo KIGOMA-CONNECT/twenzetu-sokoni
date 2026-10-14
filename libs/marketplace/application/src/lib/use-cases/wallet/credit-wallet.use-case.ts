@@ -29,6 +29,15 @@ export class CreditWalletUseCase {
       throw new BadRequestException('Amount must be positive');
     }
 
+    // Idempotency: a repeated credit with the same reference must not double-credit.
+    if (referenceId) {
+      const existing = await this.txRepo.findByReference(tenantId, referenceId);
+      if (existing) {
+        const existingWallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
+        return { walletId: existingWallet?.id.value ?? '', balance: existingWallet?.balance.amount ?? 0 };
+      }
+    }
+
     let wallet = await this.walletRepo.findByOwnerId(ownerId, tenantId);
     const balanceBefore = wallet ? wallet.balance.amount : 0;
 

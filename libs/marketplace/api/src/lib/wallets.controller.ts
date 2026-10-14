@@ -1,9 +1,11 @@
-import { Body, Controller, ForbiddenException, BadRequestException, Get, Post, Query, UseGuards, UseInterceptors, Logger } from '@nestjs/common';
+import { Body, Controller, ForbiddenException, BadRequestException, Get, Post, Query, Req, UseGuards, UseInterceptors, Logger } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery, ApiResponse, ApiBody } from '@nestjs/swagger';
+import { Request } from 'express';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { DataSource } from 'typeorm';
-import { CurrentUser, JwtPayload, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
+import { CurrentUser, JwtPayload, PermissionsGuard, RequirePermissions, Roles, RolesGuard } from '@afri-market/identity-infrastructure';
+import { AuditLogService } from './audit-log.service';
 import { WalletCreditDto } from './dto/wallet-credit.dto';
 import { WalletDebitDto } from './dto/wallet-debit.dto';
 import { WalletTopupDto } from './dto/wallet-topup.dto';
@@ -34,6 +36,7 @@ export class WalletsController {
     private readonly listTransactions: ListWalletTransactionsUseCase,
     private readonly mobileMoney: MobileMoneyService,
     private readonly vendorAccess: VendorAccessService,
+    private readonly auditLog: AuditLogService,
     @InjectDataSource() private readonly ds: DataSource,
   ) {}
 
@@ -81,27 +84,45 @@ export class WalletsController {
 
   @Post('credit')
   @UseInterceptors(CacheInvalidationInterceptor)
-  @UseGuards(AuthGuard('jwt'))
-  @ApiOperation({ summary: 'Credit wallet (top-up / payout received)' })
+  @UseGuards(AuthGuard('jwt'), PermissionsGuard)
+  @RequirePermissions('manage_finance')
+  @ApiOperation({ summary: 'Credit an explicit target wallet (requires manage_finance)' })
   @ApiBody({ type: WalletCreditDto })
   @ApiResponse({ status: 201, description: 'Wallet credited' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden' })
   public async credit(
     @CurrentUser() user: JwtPayload,
     @Body() body: WalletCreditDto,
+    @Req() req: Request,
   ) {
-    const adminRoles = ['admin', 'super_admin', 'finance_admin', 'operations_admin', 'compliance_admin'];
-    if (!adminRoles.includes(user.role)) {
-      throw new ForbiddenException('Only finance/admin users can credit wallets');
+    if (!body.ownerId || body.ownerId === user.sub) {
+      throw new BadRequestException('An explicit target owner other than yourself is required');
     }
+    const referenceType = body.referenceType ?? 'manual_credit';
     const wallet = await this.creditWallet.execute(
-      user.tenantId, await this.resolveWalletOwner(user), body.amount,
-      body.description ?? 'Wallet top-up',
+      user.tenantId, body.ownerId, body.amount,
+      body.description ?? 'Wallet credit',
       body.referenceId,
-      body.referenceType,
+      referenceType,
       getCurrencyForPhone(user.phoneNumber),
     );
+    await this.auditLog.log({
+      action: 'wallet.credit',
+      actorId: user.sub,
+      actorRole: user.role,
+      tenantId: user.tenantId,
+      targetType: 'wallet',
+      targetId: wallet.walletId,
+      metadata: {
+        ownerId: body.ownerId,
+        amount: body.amount,
+        referenceId: body.referenceId,
+        referenceType,
+      },
+      ipAddress: req.ip,
+    });
     return {
       walletId: wallet.walletId,
       balance: wallet.balance,

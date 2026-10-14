@@ -7,4 +7,6 @@ export interface IWalletTransactionRepository extends IRepository<WalletTransact
     ownerId: string,
     opts?: { limit?: number; offset?: number },
   ): Promise<{ data: WalletTransaction[]; total: number }>;
+
+  findByReference(tenantId: string, referenceId: string): Promise<WalletTransaction | null>;
 }

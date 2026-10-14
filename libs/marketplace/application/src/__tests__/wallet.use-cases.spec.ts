@@ -15,7 +15,7 @@ describe('CreditWalletUseCase', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockWalletRepo = { findByOwnerId: jest.fn(), save: jest.fn().mockResolvedValue(undefined) };
-    mockTxRepo = { save: jest.fn().mockResolvedValue(undefined) };
+    mockTxRepo = { save: jest.fn().mockResolvedValue(undefined), findByReference: jest.fn().mockResolvedValue(null) };
     useCase = new CreditWalletUseCase(mockWalletRepo, mockTxRepo);
   });
 
@@ -27,6 +27,27 @@ describe('CreditWalletUseCase', () => {
     expect(result.balance).toBe(5000);
     expect(mockWalletRepo.save).toHaveBeenCalledTimes(1);
     expect(mockTxRepo.save).toHaveBeenCalledTimes(1);
+  });
+
+  it('should not double-credit when the same reference is replayed (idempotency)', async () => {
+    mockTxRepo.findByReference.mockResolvedValue({ referenceId: 'ref-1' });
+    mockWalletRepo.findByOwnerId.mockResolvedValue(
+      Wallet.reconstitute({
+        id: EntityId.from('w1'),
+        tenantId: TenantId.create(TENANT_ID),
+        ownerId: EntityId.from(OWNER_ID),
+        ownerType: 'customer',
+        balance: Money.create(5000),
+        pendingBalance: Money.create(0),
+        version: 1,
+      }),
+    );
+
+    const result = await useCase.execute(TENANT_ID, OWNER_ID, 5000, 'Replay', 'ref-1', 'manual_credit');
+
+    expect(result.balance).toBe(5000);
+    expect(mockWalletRepo.save).not.toHaveBeenCalled();
+    expect(mockTxRepo.save).not.toHaveBeenCalled();
   });
 
   it('should credit existing wallet', async () => {

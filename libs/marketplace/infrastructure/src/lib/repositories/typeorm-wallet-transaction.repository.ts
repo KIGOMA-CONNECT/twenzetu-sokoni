@@ -32,6 +32,11 @@ export class TypeOrmWalletTransactionRepository extends TypeOrmRepository<Wallet
     return { data: entities.map((e) => this.toDomain(e)), total };
   }
 
+  public async findByReference(tenantId: string, referenceId: string): Promise<WalletTransaction | null> {
+    const entity = await this.repository.findOne({ where: { tenantId, referenceId } });
+    return entity ? this.toDomain(entity) : null;
+  }
+
   public async save(entity: WalletTransaction): Promise<void> {
     const orm = this.toOrm(entity);
     const existing = await this.repository.findOne({ where: { id: entity.id.value } });

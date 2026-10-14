@@ -4,7 +4,8 @@ import { ExecutionContext } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { getDataSourceToken } from '@nestjs/typeorm';
 import { WalletsController } from './wallets.controller';
-import { RolesGuard, ROLES_KEY } from '@afri-market/identity-infrastructure';
+import { AuditLogService } from './audit-log.service';
+import { RolesGuard, PermissionsGuard, ROLES_KEY, PERMISSIONS_KEY } from '@afri-market/identity-infrastructure';
 import {
   GetWalletUseCase,
   CreditWalletUseCase,
@@ -53,7 +54,9 @@ describe('WalletsController', () => {
         { provide: VendorAccessService, useValue: vendorAccess },
         { provide: getDataSourceToken(), useValue: dataSource },
         { provide: CACHE_MANAGER, useValue: { reset: jest.fn().mockResolvedValue(undefined) } },
+        { provide: AuditLogService, useValue: { log: jest.fn().mockResolvedValue(undefined) } },
         RolesGuard,
+        PermissionsGuard,
         { provide: Reflector, useValue: new Reflector() },
       ],
     }).compile();
@@ -86,5 +89,32 @@ describe('WalletsController', () => {
   it('should allow debit for super_admin', () => {
     const guard = module.get(RolesGuard);
     expect(guard.canActivate(makeCtx('super_admin'))).toBe(true);
+  });
+
+  describe('credit authorization', () => {
+    it('should require manage_finance permission', () => {
+      const perms = Reflect.getMetadata(PERMISSIONS_KEY, (WalletsController.prototype as any).credit);
+      expect(perms).toEqual(['manage_finance']);
+    });
+
+    it('should allow finance_admin (has manage_finance)', () => {
+      const guard = module.get(PermissionsGuard);
+      const ctx = {
+        switchToHttp: () => ({ getRequest: () => ({ user: { role: 'finance_admin', permissions: 'manage_finance,manage_orders' } }) }),
+        getHandler: () => (WalletsController.prototype as any).credit,
+        getClass: () => WalletsController,
+      } as unknown as ExecutionContext;
+      expect(guard.canActivate(ctx)).toBe(true);
+    });
+
+    it('should forbid support_admin (no manage_finance)', () => {
+      const guard = module.get(PermissionsGuard);
+      const ctx = {
+        switchToHttp: () => ({ getRequest: () => ({ user: { role: 'support_admin', permissions: 'manage_disputes' } }) }),
+        getHandler: () => (WalletsController.prototype as any).credit,
+        getClass: () => WalletsController,
+      } as unknown as ExecutionContext;
+      expect(guard.canActivate(ctx)).toBe(false);
+    });
   });
 });
