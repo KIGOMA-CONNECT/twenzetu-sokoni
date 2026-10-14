@@ -60,8 +60,11 @@ export class DisputesController {
   @ApiOperation({ summary: 'Get dispute by ID' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async findOneEndpoint(@Param('id', ParseUUIDPipe) id: string) {
-    return this.getDisputeDetail.execute(id);
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not Found' })
+  public async findOneEndpoint(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: JwtPayload) {
+    const isAdmin = user.role === 'admin' || user.role === 'super_admin' || user.role === 'finance_admin' || user.role === 'operations_admin' || user.role === 'compliance_admin' || user.role === 'support_admin';
+    return this.getDisputeDetail.execute({ disputeId: id, tenantId: user.tenantId, requesterId: user.sub, isAdmin });
   }
 
   @Patch(':id/resolve')
@@ -73,12 +76,18 @@ export class DisputesController {
   @ApiResponse({ status: 200, description: 'Dispute resolved' })
   @ApiResponse({ status: 400, description: 'Bad Request' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  public async resolve(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ResolveDisputeDto) {
+  @ApiResponse({ status: 403, description: 'Forbidden' })
+  @ApiResponse({ status: 404, description: 'Not Found' })
+  public async resolve(@Param('id', ParseUUIDPipe) id: string, @Body() dto: ResolveDisputeDto, @CurrentUser() user: JwtPayload) {
+    const isAdmin = user.role === 'admin' || user.role === 'super_admin' || user.role === 'finance_admin' || user.role === 'operations_admin' || user.role === 'compliance_admin';
     return this.resolveDispute.execute({
       disputeId: id,
       resolutionType: dto.resolutionType as DisputeResolutionType,
       resolvedAmount: dto.resolvedAmount,
       notes: dto.resolutionNotes ?? '',
+      tenantId: user.tenantId,
+      requesterId: user.sub,
+      isAdmin,
     });
   }
 }

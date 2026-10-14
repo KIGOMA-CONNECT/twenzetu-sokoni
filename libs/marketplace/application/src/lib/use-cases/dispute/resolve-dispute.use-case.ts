@@ -1,4 +1,4 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EntityId, Money } from '@afri-market/kernel';
 import { IDisputeRepository, DisputeResolutionType } from '@afri-market/marketplace-domain';
 import { DISPUTE_REPOSITORY } from '../../tokens';
@@ -14,9 +14,18 @@ export class ResolveDisputeUseCase {
     resolutionType: DisputeResolutionType;
     resolvedAmount: number;
     notes: string;
+    tenantId: string;
+    requesterId: string;
+    isAdmin: boolean;
   }): Promise<{ disputeId: string; status: string }> {
     const dispute = await this.disputeRepo.findById(EntityId.from(params.disputeId));
     if (!dispute) throw new NotFoundException('Dispute not found');
+    if (dispute.tenantId.value !== params.tenantId) {
+      throw new ForbiddenException('Access denied');
+    }
+    if (!params.isAdmin) {
+      throw new ForbiddenException('Access denied');
+    }
 
     dispute.resolve(
       params.resolutionType,

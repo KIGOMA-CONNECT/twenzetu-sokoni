@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { EntityId } from '@afri-market/kernel';
 import { IDisputeRepository } from '@afri-market/marketplace-domain';
 import { DISPUTE_REPOSITORY } from '../../tokens';
@@ -33,10 +33,26 @@ export class GetDisputeDetailUseCase {
     @Inject(DISPUTE_REPOSITORY) private readonly disputeRepo: IDisputeRepository,
   ) {}
 
-  public async execute(disputeId: string): Promise<{ data: Record<string, unknown> | null }> {
-    const dispute = await this.disputeRepo.findById(EntityId.from(disputeId));
+  public async execute(params: {
+    disputeId: string;
+    tenantId: string;
+    requesterId: string;
+    isAdmin: boolean;
+  }): Promise<{ data: Record<string, unknown> | null }> {
+    const dispute = await this.disputeRepo.findById(EntityId.from(params.disputeId));
     if (!dispute) {
-      return { data: null };
+      throw new NotFoundException('Dispute not found');
+    }
+    if (dispute.tenantId.value !== params.tenantId) {
+      throw new ForbiddenException('Access denied');
+    }
+    if (
+      !params.isAdmin &&
+      dispute.customerId.value !== params.requesterId &&
+      dispute.vendorId.value !== params.requesterId &&
+      dispute.assignedAgentId?.value !== params.requesterId
+    ) {
+      throw new ForbiddenException('Access denied');
     }
     return {
       data: {
