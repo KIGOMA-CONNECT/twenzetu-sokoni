@@ -28,12 +28,11 @@ export class AiController {
   public async chat(
     @Body() dto: AiChatDto,
     @Req() req: Request,
-    @Headers('x-tenant-id') headerTenantId?: string,
   ): Promise<{ text: string; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
-    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
-    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
-      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    const user = (req as unknown as { user?: { id?: string; userId?: string; sub?: string; tenantId?: string; role?: string } }).user;
+    const tenantId = user?.tenantId as string | undefined;
+    const userId = (user?.sub ?? user?.userId ?? user?.id) as string | undefined;
     await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.chat',
@@ -75,9 +74,9 @@ export class AiController {
     @Headers('x-tenant-id') headerTenantId?: string,
   ): Promise<void> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
-    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
-    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
-      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    const user = (req as unknown as { user?: { id?: string; userId?: string; sub?: string; tenantId?: string; role?: string } }).user;
+    const tenantId = user?.tenantId as string | undefined;
+    const userId = (user?.sub ?? user?.userId ?? user?.id) as string | undefined;
     await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.stream',
@@ -128,9 +127,9 @@ export class AiController {
     @Headers('x-tenant-id') headerTenantId?: string,
   ): Promise<{ text: string; toolResult: unknown; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
-    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
-    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
-      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    const user = (req as unknown as { user?: { id?: string; userId?: string; sub?: string; tenantId?: string; role?: string } }).user;
+    const tenantId = user?.tenantId as string | undefined;
+    const userId = (user?.sub ?? user?.userId ?? user?.id) as string | undefined;
     await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.vendor-restock',
@@ -171,9 +170,9 @@ export class AiController {
     @Headers('x-tenant-id') headerTenantId?: string,
   ): Promise<{ text: string; toolResults: Record<string, unknown>; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
-    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
-    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
-      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    const user = (req as unknown as { user?: { id?: string; userId?: string; sub?: string; tenantId?: string; role?: string } }).user;
+    const tenantId = user?.tenantId as string | undefined;
+    const userId = (user?.sub ?? user?.userId ?? user?.id) as string | undefined;
     await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.finance-reconcile',
@@ -214,9 +213,9 @@ export class AiController {
     @Headers('x-tenant-id') headerTenantId?: string,
   ): Promise<{ text: string; toolResults: Record<string, unknown>; id?: string; enabled: boolean }> {
     const feature: AiFeature | undefined = this.validFeature(dto.feature);
-    const tenantId = dto.tenantId ?? headerTenantId ?? ((req as unknown as { tenantId?: string }).tenantId as string | undefined);
-    const userId = ((req as unknown as { user?: { id?: string; userId?: string } }).user?.id ??
-      (req as unknown as { user?: { id?: string; userId?: string } }).user?.userId) as string | undefined;
+    const user = (req as unknown as { user?: { id?: string; userId?: string; sub?: string; tenantId?: string; role?: string } }).user;
+    const tenantId = user?.tenantId as string | undefined;
+    const userId = (user?.sub ?? user?.userId ?? user?.id) as string | undefined;
     await this.quotaService.assertQuota(tenantId ?? '', userId);
     this.auditLogger.log({
       action: 'ai.agent.pos-close',
