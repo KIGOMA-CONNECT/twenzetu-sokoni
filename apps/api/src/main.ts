@@ -13,7 +13,9 @@ import { Request, Response, NextFunction } from 'express';
 import { join, resolve } from 'path';
 import { readFileSync, existsSync, statSync } from 'fs';
 import compression from 'compression';
-import { FileUploadService } from '@afri-market/integrations';
+import { FileUploadService, canAccessUploadKey, isPublicUploadKey } from '@afri-market/integrations';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from '@afri-market/identity-infrastructure';
 import { AppModule } from './app/app.module';
 import { QueryPerformanceInterceptor } from '@afri-market/database';
 
@@ -69,8 +71,23 @@ async function bootstrap(): Promise<void> {
       try {
         const uploads = app.get(FileUploadService);
         const key = decodeURIComponent(req.path.replace(/^\/api\/uploads\//, ''));
-        const fullPath = uploads.resolvePath(key);
+        if (!isPublicUploadKey(key)) {
+          const header = req.headers.authorization;
+          if (!header || !header.startsWith('Bearer ')) {
+            return res.status(401).send('Unauthorized');
+          }
+          let payload: JwtPayload;
+          try {
+            payload = app.get(JwtService).verify<JwtPayload>(header.slice(7));
+          } catch {
+            return res.status(401).send('Unauthorized');
+          }
+          if (!canAccessUploadKey(key, payload)) {
+            return res.status(403).send('Forbidden');
+          }
+        }
         if (uploads.pathExists(key)) {
+          const fullPath = uploads.resolvePath(key);
           const ext = fullPath.split('.').pop()?.toLowerCase() || '';
           const mime: Record<string, string> = {
             js: 'application/javascript', css: 'text/css', html: 'text/html',
@@ -80,9 +97,14 @@ async function bootstrap(): Promise<void> {
             pdf: 'application/pdf',
           };
           res.type(mime[ext] || 'application/octet-stream');
-          // Upload keys are content-addressed by unique folder/name — safe to
-          // cache hard at the edge/browser and skip repeat bandwidth.
-          res.setHeader('Cache-Control', 'public, max-age=604800, immutable');
+          // Public asset keys are content-addressed — safe to cache hard.
+          // Sensitive folders (e.g. KYC) must never be stored by shared caches.
+          res.setHeader(
+            'Cache-Control',
+            isPublicUploadKey(key)
+              ? 'public, max-age=604800, immutable'
+              : 'private, no-store',
+          );
           res.send(readFileSync(fullPath));
           return;
         }

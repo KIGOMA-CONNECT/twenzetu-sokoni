@@ -14,17 +14,26 @@ interface MulterFile {
   buffer: Buffer;
 }
 
+const IMAGE_MIME = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const IMAGE_EXT = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+const DOC_MIME = ['application/pdf', 'image/jpeg', 'image/png'];
+const DOC_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
+
+const extensionOf = (name: string): string => {
+  const idx = (name || '').lastIndexOf('.');
+  return idx >= 0 ? (name || '').slice(idx).toLowerCase() : '';
+};
+
 const imageFilter = (_req: Express.Request, file: MulterFile, cb: (error: Error | null, acceptFile: boolean) => void) => {
-  if (file.mimetype.startsWith('image/')) {
+  if (IMAGE_MIME.includes(file.mimetype) && IMAGE_EXT.includes(extensionOf(file.originalname))) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed'), false);
+    cb(new Error('Only JPEG, PNG, GIF, or WebP images are allowed'), false);
   }
 };
 
 const docFilter = (_req: Express.Request, file: MulterFile, cb: (error: Error | null, acceptFile: boolean) => void) => {
-  const allowed = ['application/pdf', 'image/jpeg', 'image/png'];
-  if (allowed.includes(file.mimetype)) {
+  if (DOC_MIME.includes(file.mimetype) && DOC_EXT.includes(extensionOf(file.originalname))) {
     cb(null, true);
   } else {
     cb(new Error('Only PDF, JPEG, or PNG files are allowed'), false);

@@ -20,6 +20,43 @@ export interface IFileUploadService {
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024;
 
+/** Folders whose contents are safe to serve without authentication (public assets). */
+export const PUBLIC_UPLOAD_FOLDERS: ReadonlySet<string> = new Set([
+  'products',
+  'vendor-logos',
+  'avatars',
+  'general',
+]);
+
+const ADMIN_ROLES: ReadonlySet<string> = new Set([
+  'admin',
+  'super_admin',
+  'finance_admin',
+  'operations_admin',
+  'compliance_admin',
+  'support_admin',
+]);
+
+export function isPublicUploadKey(key: string): boolean {
+  return PUBLIC_UPLOAD_FOLDERS.has((key.split('/')[0] ?? ''));
+}
+
+/**
+ * Decides whether an authenticated (or anonymous) caller may read a stored key.
+ * Sensitive folders (e.g. `kyc/<tenantId>/...`) require a valid token whose
+ * tenant matches the key's tenant segment, or an admin role.
+ */
+export function canAccessUploadKey(
+  key: string,
+  payload?: { tenantId?: string; role?: string } | null,
+): boolean {
+  if (isPublicUploadKey(key)) return true;
+  if (!payload) return false;
+  if (payload.role && ADMIN_ROLES.has(payload.role)) return true;
+  const tenantSegment = key.split('/')[1] ?? '';
+  return !!payload.tenantId && payload.tenantId === tenantSegment;
+}
+
 @Injectable()
 export class FileUploadService implements IFileUploadService {
   private readonly storageDir: string;
