@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { EntityId } from '@afri-market/kernel';
 import { IVendorRepository } from '@afri-market/marketplace-domain';
 import { VENDOR_REPOSITORY } from '../../tokens';
@@ -9,10 +9,13 @@ export class ApproveVendorAdminUseCase {
     @Inject(VENDOR_REPOSITORY) private readonly vendorRepo: IVendorRepository,
   ) {}
 
-  public async execute(vendorId: string) {
+  public async execute(vendorId: string, tenantId: string) {
     const vendor = await this.vendorRepo.findById(EntityId.from(vendorId));
     if (!vendor) {
-      return { error: 'Vendor not found' };
+      throw new NotFoundException('Vendor not found');
+    }
+    if (vendor.tenantId.value !== tenantId) {
+      throw new ForbiddenException('Access denied');
     }
     vendor.approve();
     await this.vendorRepo.save(vendor);

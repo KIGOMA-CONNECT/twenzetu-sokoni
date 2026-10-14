@@ -160,7 +160,7 @@ export class AdminController {
     @CurrentUser() user: JwtPayload,
     @Req() req: Request,
   ) {
-    const result = await this.approveVendor.execute(id);
+    const result = await this.approveVendor.execute(id, user.tenantId);
     await this.auditLog.log({
       action: 'vendor.approved',
       actorId: user.sub,
@@ -185,7 +185,7 @@ export class AdminController {
     @CurrentUser() user: JwtPayload,
     @Req() req: Request,
   ) {
-    const result = await this.suspendVendor.execute(id);
+    const result = await this.suspendVendor.execute(id, user.tenantId);
     await this.auditLog.log({
       action: 'vendor.suspended',
       actorId: user.sub,
